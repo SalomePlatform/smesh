@@ -36,7 +36,7 @@
 using namespace std;
 
 // -----------------------------------------------------------------------------------------
-MonMeshInfo::MonMeshInfo(QWidget* parent, bool modal, HOMARD::HOMARD_Gen_var myHomardGen0)
+MonMeshInfo::MonMeshInfo(QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen0)
 // -----------------------------------------------------------------------------------------
 /* Constructs a MonMeshInfo
  * Inherits from CasHomard
@@ -51,7 +51,7 @@ MonMeshInfo::MonMeshInfo(QWidget* parent, bool modal, HOMARD::HOMARD_Gen_var myH
     _Entanglement(0),
     _Quality(0)
 {
-      myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen0);
+      myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
       setupUi(this);
       setModal(modal);
       InitConnect();
@@ -168,9 +168,9 @@ bool MonMeshInfo::PushOnApply()
   // Le bilan de l'analyse a afficher
   aCase = myHomardGen->GetCase(_aCaseName.toStdString().c_str());
   string iter0 = aCase->GetIter0Name();
-  HOMARD::HOMARD_Iteration_var aIter =  myHomardGen->GetIteration(iter0.c_str());
+  ADAPT::HOMARD_Iteration_var aIter =  myHomardGen->GetIteration(iter0.c_str());
   aFileName = aIter->GetFileInfo() ;
-  MonEditFile *aDlg = new MonEditFile( 0, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen), aFileName, 1 ) ;
+  MonEditFile *aDlg = new MonEditFile( 0, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen), aFileName, 1 ) ;
   if ( aDlg->_codret == 0 ) { aDlg->show(); }
 
 HOMARD_UTILS::updateObjBrowser();
@@ -194,7 +194,7 @@ void MonMeshInfo::PushOnHelp()
 void MonMeshInfo::SetNewCaseName()
 // ------------------------------
 {
-  HOMARD::listeCases_var  MyCases = myHomardGen->GetAllCasesName();
+  ADAPT::listeCases_var  MyCases = myHomardGen->GetAllCasesName();
   int num = 0; QString aCaseName="";
   while (aCaseName=="" )
   {

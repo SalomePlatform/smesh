@@ -144,7 +144,7 @@ std::string YACSDriver::Texte_Iter_1_Zone( int ZoneType, const std::string pytho
   _Texte += Texte_inport( "string", "ZoneName" ) ;
    TexteParametre( node, "ZoneName", "string", ZoneName ) ;
 // 4.2. Les valeurs numeriques
-//      ATTENTION : les noms doivent etre les memes que dans Gen.xml, donc HOMARD_Gen.idl
+//      ATTENTION : les noms doivent etre les memes que dans Gen.xml, donc ADAPT_Gen.idl
 // 4.2.1. Decodage des valeurs
 // La chaine pythonStructure est de ce genre :
 //   CreateZoneBox( "Zone_1", 0.144, 0.216, 0.096, 0.1464, 0.076, 0.12)
@@ -312,7 +312,7 @@ std::string YACSDriver::Texte_Iter_1_Boundary( int BoundaryType, const std::stri
   _Texte += "                              <node>" + motcle + ".UpdateStudy</node>\n" ;
   _Texte += "                              <method>" + methode + "</method>\n" ;
 // 4. Les inports
-//    ATTENTION : les noms doivent etre les memes que dans Gen.xml, donc HOMARD_Gen.idl
+//    ATTENTION : les noms doivent etre les memes que dans Gen.xml, donc ADAPT_Gen.idl
 // 4.1. Le nom de la frontiere
   _Texte += Texte_inport( "string", "BoundaryName" ) ;
   TexteParametre( node, "BoundaryName", "string", BoundaryName ) ;
@@ -658,7 +658,7 @@ void YACSDriver::CreeFichier( )
 //
 }
 //===============================================================================
-// REMARQUE : on devrait utiliser le GetStringInTexte de HOMARD_Gen_i mais je ne sais pas
+// REMARQUE : on devrait utiliser le GetStringInTexte de ADAPT_Gen_i mais je ne sais pas
 //            comment l'appeler. ALors je clone.
 // Recuperation de la chaine de caracteres par rapport l'apparition d'un texte
 // ligne : la ligne a manipuler

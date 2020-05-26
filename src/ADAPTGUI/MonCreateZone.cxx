@@ -38,7 +38,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 MonCreateZone::MonCreateZone(MonCreateHypothesis* parent, bool modal,
-                             HOMARD::HOMARD_Gen_var myHomardGen0,
+                             ADAPT::ADAPT_Gen_var myHomardGen0,
                              QString caseName) :
 // ----------------------------------------------------------------------
 /* Constructs a MonCreateZone
@@ -61,7 +61,7 @@ MonCreateZone::MonCreateZone(MonCreateHypothesis* parent, bool modal,
     Chgt (false)
     {
       MESSAGE("Constructeur") ;
-      myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen0) ;
+      myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0) ;
       setupUi(this) ;
       setModal(modal) ;
       InitConnect( ) ;
@@ -74,7 +74,7 @@ MonCreateZone::MonCreateZone(MonCreateHypothesis* parent, bool modal,
     }
 // ----------------------------------------------------------------------
 MonCreateZone::MonCreateZone(MonCreateHypothesis* parent,
-                             HOMARD::HOMARD_Gen_var myHomardGen0,
+                             ADAPT::ADAPT_Gen_var myHomardGen0,
                              QString caseName):
 // ----------------------------------------------------------------------
 // Constructeur appele par MonEditZone
@@ -131,8 +131,8 @@ void MonCreateZone::InitValZone()
 //
   if (_aCaseName == QString("")) { return; }
 
-  HOMARD::HOMARD_Cas_var aCas = myHomardGen->GetCase(_aCaseName.toStdString().c_str()) ;
-  HOMARD::extrema_var  MesExtremes = aCas->GetBoundingBox() ;
+  ADAPT::HOMARD_Cas_var aCas = myHomardGen->GetCase(_aCaseName.toStdString().c_str()) ;
+  ADAPT::extrema_var  MesExtremes = aCas->GetBoundingBox() ;
   int num = MesExtremes->length() ;
   ASSERT(num == 10) ;
   _Xmin=MesExtremes[0]; _Xmax=MesExtremes[1]; _Xincr=MesExtremes[2];
@@ -600,7 +600,7 @@ void MonCreateZone::SetNewName()
   MESSAGE("SetNewName");
 // Recherche d'un nom par defaut qui n'existe pas encore
 
-  HOMARD::listeZones_var  MyObjects = myHomardGen->GetAllZonesName() ;
+  ADAPT::listeZones_var  MyObjects = myHomardGen->GetAllZonesName() ;
   int num = 0; QString aName="";
   while (aName=="" )
   {

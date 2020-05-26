@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Cas)
 
 #include "ui_PursueIteration.h"
@@ -37,7 +37,7 @@ class HOMARD_EXPORT MonPursueIteration : public QDialog, public Ui_PursueIterati
     Q_OBJECT
 
   public:
-    MonPursueIteration( bool modal, HOMARD::HOMARD_Gen_var myHomardGen );
+    MonPursueIteration( bool modal, ADAPT::ADAPT_Gen_var myHomardGen );
     virtual ~MonPursueIteration();
 
   protected :
@@ -47,8 +47,8 @@ class HOMARD_EXPORT MonPursueIteration : public QDialog, public Ui_PursueIterati
 
     int _Type ;
 
-    HOMARD::HOMARD_Cas_var aCase ;
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::HOMARD_Cas_var aCase ;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
     virtual void InitConnect();
     virtual void SetNewCaseName();

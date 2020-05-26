@@ -31,7 +31,7 @@
 #define _HOMARD_ITERATION_I_HXX_
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(HOMARD_Gen)
+#include CORBA_SERVER_HEADER(ADAPT_Gen)
 #include CORBA_SERVER_HEADER(HOMARD_Iteration)
 
 #include "HOMARD_i.hxx"
@@ -45,12 +45,12 @@ class HOMARD_Iteration;
 
 class HOMARDENGINE_EXPORT HOMARD_Iteration_i:
   public virtual Engines_Component_i,
-  public virtual POA_HOMARD::HOMARD_Iteration,
+  public virtual POA_ADAPT::HOMARD_Iteration,
   public virtual PortableServer::ServantBase
 {
 public:
   HOMARD_Iteration_i( CORBA::ORB_ptr orb,
-                      HOMARD::HOMARD_Gen_var gen_i );
+                      ADAPT::ADAPT_Gen_var gen_i );
   HOMARD_Iteration_i();
 
   virtual ~HOMARD_Iteration_i();
@@ -95,9 +95,9 @@ public:
 // Instants pour un champ a interpoler
   void                   SetFieldInterpTimeStep( const char* FieldInterp, CORBA::Long TimeStep );
   void                   SetFieldInterpTimeStepRank( const char* FieldInterp, CORBA::Long TimeStep, CORBA::Long Rank );
-  HOMARD::listeFieldInterpTSRsIter* GetFieldInterpsTimeStepRank();
+  ADAPT::listeFieldInterpTSRsIter* GetFieldInterpsTimeStepRank();
   void                   SetFieldInterp( const char* FieldInterp );
-  HOMARD::listeFieldInterpsIter* GetFieldInterps();
+  ADAPT::listeFieldInterpsIter* GetFieldInterps();
   void                   SupprFieldInterps();
 
   void                   SetLogFile( const char* LogFile );
@@ -113,15 +113,15 @@ public:
   char*                  GetFileInfo();
 
   // Liens avec les autres iterations
-  HOMARD::HOMARD_Iteration_ptr NextIteration( const char* Name) ;
+  ADAPT::HOMARD_Iteration_ptr NextIteration( const char* Name) ;
 
   void                   LinkNextIteration( const char* NomIteration );
   void                   UnLinkNextIteration( const char* NomIteration );
-  HOMARD::listeIterFilles* GetIterations();
+  ADAPT::listeIterFilles* GetIterations();
 
   void                   SetIterParentName( const char* NomIterParent );
   char*                  GetIterParentName();
-  HOMARD::HOMARD_Iteration_ptr GetIterParent() ;
+  ADAPT::HOMARD_Iteration_ptr GetIterParent() ;
 
 // Liens avec les autres structures
   void                   SetCaseName( const char* NomCas );
@@ -139,7 +139,7 @@ private:
   ::HOMARD_Iteration*    myHomardIteration;
 
   CORBA::ORB_ptr         _orb;
-  HOMARD::HOMARD_Gen_var _gen_i;
+  ADAPT::ADAPT_Gen_var _gen_i;
 };
 
 #endif

@@ -25,7 +25,7 @@ using namespace std;
 MonEditListGroup::MonEditListGroup( MonCreateHypothesis* parentHyp,
                                     MonCreateBoundaryDi* parentBound,
                                     bool modal,
-                                    HOMARD::HOMARD_Gen_var myHomardGen,
+                                    ADAPT::ADAPT_Gen_var myHomardGen,
                                     QString aCaseName,
                                     QStringList listeGroupesHypo):
 //---------------------------------------------------------------------

@@ -27,7 +27,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Cas)
 
 #include "ui_EditFile.h"
@@ -42,14 +42,14 @@ class HOMARD_EXPORT MonEditFile : public QWidget, public Ui_EditFile
 
 public:
     MonEditFile( QWidget* parent,  bool modal,
-                 HOMARD::HOMARD_Gen_var myHomardGen,
+                 ADAPT::ADAPT_Gen_var myHomardGen,
                  QString FileName, int option );
     ~MonEditFile();
     int _codret ;
 
 protected :
 
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myHomardGen;
     QString _aFileName ;
     int _option ;
 

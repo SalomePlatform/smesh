@@ -28,7 +28,7 @@
 //
 
 #include "HOMARD_Hypothesis_i.hxx"
-#include "HOMARD_Gen_i.hxx"
+#include "ADAPT_Gen_i.hxx"
 #include "HOMARD_Hypothesis.hxx"
 #include "HOMARD_DriverTools.hxx"
 
@@ -51,7 +51,7 @@ HOMARD_Hypothesis_i::HOMARD_Hypothesis_i()
  */
 //=============================================================================
 HOMARD_Hypothesis_i::HOMARD_Hypothesis_i( CORBA::ORB_ptr orb,
-                                          HOMARD::HOMARD_Gen_var engine )
+                                          ADAPT::ADAPT_Gen_var engine )
 {
   MESSAGE( "standard constructor" );
   _gen_i = engine;
@@ -101,12 +101,12 @@ char* HOMARD_Hypothesis_i::GetDumpPython()
 //=============================================================================
 std::string HOMARD_Hypothesis_i::Dump() const
 {
-  return HOMARD::Dump( *myHomardHypothesis );
+  return ADAPT::Dump( *myHomardHypothesis );
 }
 //=============================================================================
 bool HOMARD_Hypothesis_i::Restore( const std::string& stream )
 {
-  return HOMARD::Restore( *myHomardHypothesis, stream );
+  return ADAPT::Restore( *myHomardHypothesis, stream );
 }
 //=============================================================================
 //=============================================================================
@@ -132,10 +132,10 @@ void HOMARD_Hypothesis_i::SetUnifRefinUnRef( CORBA::Long TypeRaffDera )
   myHomardHypothesis->SetRefinTypeDera( TypeRaff, TypeDera );
 }
 //=============================================================================
-HOMARD::listeTypes* HOMARD_Hypothesis_i::GetAdapRefinUnRef()
+ADAPT::listeTypes* HOMARD_Hypothesis_i::GetAdapRefinUnRef()
 {
   ASSERT( myHomardHypothesis );
-  HOMARD::listeTypes_var aResult = new HOMARD::listeTypes;
+  ADAPT::listeTypes_var aResult = new ADAPT::listeTypes;
   aResult->length( 3 );
   aResult[0] = CORBA::Long( myHomardHypothesis->GetAdapType() );
   aResult[1] = CORBA::Long( myHomardHypothesis->GetRefinType() );
@@ -177,10 +177,10 @@ void HOMARD_Hypothesis_i::SetUseField( CORBA::Long UsField )
   myHomardHypothesis->SetUseField( UsField );
 }
 //=============================================================================
-HOMARD::InfosHypo* HOMARD_Hypothesis_i::GetField()
+ADAPT::InfosHypo* HOMARD_Hypothesis_i::GetField()
 {
   ASSERT( myHomardHypothesis );
-  HOMARD::InfosHypo* aInfosHypo = new HOMARD::InfosHypo();
+  ADAPT::InfosHypo* aInfosHypo = new ADAPT::InfosHypo();
   aInfosHypo->FieldName  = CORBA::string_dup( myHomardHypothesis->GetFieldName().c_str() );
   aInfosHypo->TypeThR    = CORBA::Long( myHomardHypothesis->GetRefinThrType() );
   aInfosHypo->ThreshR    = CORBA::Double( myHomardHypothesis->GetThreshR() );
@@ -214,11 +214,11 @@ void HOMARD_Hypothesis_i::SupprComps()
   myHomardHypothesis->SupprComps();
 }
 //=============================================================================
-HOMARD::listeComposantsHypo* HOMARD_Hypothesis_i::GetComps()
+ADAPT::listeComposantsHypo* HOMARD_Hypothesis_i::GetComps()
 {
   ASSERT( myHomardHypothesis );
   const std::list<std::string>& ListString = myHomardHypothesis->GetComps();
-  HOMARD::listeComposantsHypo_var aResult = new HOMARD::listeComposantsHypo;
+  ADAPT::listeComposantsHypo_var aResult = new ADAPT::listeComposantsHypo;
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -329,7 +329,7 @@ void HOMARD_Hypothesis_i::SupprGroups()
   myHomardHypothesis->SupprGroups();
 }
 //=============================================================================
-void HOMARD_Hypothesis_i::SetGroups(const HOMARD::ListGroupType& ListGroup)
+void HOMARD_Hypothesis_i::SetGroups(const ADAPT::ListGroupType& ListGroup)
 {
   ASSERT( myHomardHypothesis );
   std::list<std::string> ListString;
@@ -340,11 +340,11 @@ void HOMARD_Hypothesis_i::SetGroups(const HOMARD::ListGroupType& ListGroup)
   myHomardHypothesis->SetGroups( ListString );
 }
 //=============================================================================
-HOMARD::ListGroupType*  HOMARD_Hypothesis_i::GetGroups()
+ADAPT::ListGroupType*  HOMARD_Hypothesis_i::GetGroups()
 {
   ASSERT( myHomardHypothesis );
   const std::list<std::string>& ListString = myHomardHypothesis->GetGroups();
-  HOMARD::ListGroupType_var aResult = new HOMARD::ListGroupType;
+  ADAPT::ListGroupType_var aResult = new ADAPT::ListGroupType;
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -391,11 +391,11 @@ void HOMARD_Hypothesis_i::SupprFieldInterps()
   myHomardHypothesis->SupprFieldInterps();
 }
 //=============================================================================
-HOMARD::listeFieldInterpsHypo* HOMARD_Hypothesis_i::GetFieldInterps()
+ADAPT::listeFieldInterpsHypo* HOMARD_Hypothesis_i::GetFieldInterps()
 {
   ASSERT( myHomardHypothesis );
   const std::list<std::string>& ListString = myHomardHypothesis->GetFieldInterps();
-  HOMARD::listeFieldInterpsHypo_var aResult = new HOMARD::listeFieldInterpsHypo;
+  ADAPT::listeFieldInterpsHypo_var aResult = new ADAPT::listeFieldInterpsHypo;
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -434,11 +434,11 @@ void HOMARD_Hypothesis_i::UnLinkIteration( const char* NomIteration )
   myHomardHypothesis->UnLinkIteration( NomIteration );
 }
 //=============================================================================
-HOMARD::listeIters* HOMARD_Hypothesis_i::GetIterations()
+ADAPT::listeIters* HOMARD_Hypothesis_i::GetIterations()
 {
   ASSERT( myHomardHypothesis );
   const std::list<std::string>& ListString = myHomardHypothesis->GetIterations();
-  HOMARD::listeIters_var aResult = new HOMARD::listeIters;
+  ADAPT::listeIters_var aResult = new ADAPT::listeIters;
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -490,11 +490,11 @@ void HOMARD_Hypothesis_i::SupprZones()
   myHomardHypothesis->SupprZones();
 }
 //=============================================================================
-HOMARD::listeZonesHypo* HOMARD_Hypothesis_i::GetZones()
+ADAPT::listeZonesHypo* HOMARD_Hypothesis_i::GetZones()
 {
   ASSERT( myHomardHypothesis );
   const std::list<std::string>& ListString = myHomardHypothesis->GetZones();
-  HOMARD::listeZonesHypo_var aResult = new HOMARD::listeZonesHypo;
+  ADAPT::listeZonesHypo_var aResult = new ADAPT::listeZonesHypo;
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;

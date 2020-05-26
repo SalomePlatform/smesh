@@ -103,10 +103,10 @@ ADAPTGUI::~ADAPTGUI()
 // function : InitHOMARDGen
 // launch HOMARD component and return a handle
 //=======================================================================
-HOMARD::HOMARD_Gen_var ADAPTGUI::InitHOMARDGen(SalomeApp_Application* app)
+ADAPT::ADAPT_Gen_var ADAPTGUI::InitHOMARDGen(SalomeApp_Application* app)
 {
   Engines::EngineComponent_var comp = app->lcc()->FindOrLoad_Component( "FactoryServer","HOMARD" );
-  HOMARD::HOMARD_Gen_var clr = HOMARD::HOMARD_Gen::_narrow(comp);
+  ADAPT::ADAPT_Gen_var clr = ADAPT::ADAPT_Gen::_narrow(comp);
   ASSERT(!CORBA::is_nil(clr));
   return clr;
 }
@@ -261,10 +261,10 @@ void ADAPTGUI::createMenus()
 
 //================================================
 // function : recupPreferences
-// Pour chaque valeur, le defaut est la valeur definie dans HOMARD_Gen
-// . Si la recuperation dans config/salome s'est bien passee a la creation de HOMARD_Gen,
+// Pour chaque valeur, le defaut est la valeur definie dans ADAPT_Gen
+// . Si la recuperation dans config/salome s'est bien passee a la creation de ADAPT_Gen,
 //   ces valeurs sont les valeurs definies.
-// . Si cela ne s'est pas bien passe, ce sont les valeurs par defaut de HOMARD_Gen
+// . Si cela ne s'est pas bien passe, ce sont les valeurs par defaut de ADAPT_Gen
 //================================================
 void ADAPTGUI::recupPreferences()
 {
@@ -273,7 +273,7 @@ void ADAPTGUI::recupPreferences()
 // A. Declarations
 //
   SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( application() );
-  HOMARD::HOMARD_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
+  ADAPT::ADAPT_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
   int defaut_i ;
   std::string defaut_s ;
   QString QString_v ;
@@ -370,7 +370,7 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
 
   SUIT_Desktop* parent = application()->desktop();
 
-  HOMARD::HOMARD_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
+  ADAPT::ADAPT_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
 
   if (!CORBA::is_nil(homardGen))
     homardGen->UpdateStudy();
@@ -385,7 +385,7 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
     {
       MESSAGE("command " << theCommandID << " activated");
       MonCreateCase *aDlg = new MonCreateCase( true,
-                            HOMARD::HOMARD_Gen::_duplicate(homardGen) ) ;
+                            ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
       aDlg->show();
       break;
     }
@@ -394,7 +394,7 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
     {
       MESSAGE("command " << theCommandID << " activated");
       MonPursueIteration *aDlg = new MonPursueIteration( true,
-                                HOMARD::HOMARD_Gen::_duplicate(homardGen) ) ;
+                                ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
       aDlg->show();
       break;
     }
@@ -403,7 +403,7 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
     {
       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
       MonCreateIteration *IterDlg = new MonCreateIteration( parent, true,
-                                     HOMARD::HOMARD_Gen::_duplicate(homardGen), _ObjectName ) ;
+                                     ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
       IterDlg->show();
       break;
     }
@@ -439,7 +439,7 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
     case 1121: // Information sur le maillage de l'iteration
     {
       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-      MonIterInfo *IterDlg = new MonIterInfo( parent, true, HOMARD::HOMARD_Gen::_duplicate(homardGen), _ObjectName ) ;
+      MonIterInfo *IterDlg = new MonIterInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
       IterDlg->show();
       break;
     }
@@ -469,50 +469,50 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
         // Edition d'une frontiere CAO
         if (HOMARD_UTILS::isBoundaryCAO(obj))
         {
-          MonEditBoundaryCAO *aDlg = new MonEditBoundaryCAO(0, true, HOMARD::HOMARD_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+          MonEditBoundaryCAO *aDlg = new MonEditBoundaryCAO(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
           aDlg->show();
         }
         // Edition d'une frontiere discrete
         else if (HOMARD_UTILS::isBoundaryDi(obj))
         {
-          MonEditBoundaryDi *aDlg = new MonEditBoundaryDi(0, true, HOMARD::HOMARD_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+          MonEditBoundaryDi *aDlg = new MonEditBoundaryDi(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
           aDlg->show();
         }
         // Edition d'une frontiere analytique
         else if (HOMARD_UTILS::isBoundaryAn(obj))
         {
-          MonEditBoundaryAn *aDlg = new MonEditBoundaryAn(0, true, HOMARD::HOMARD_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+          MonEditBoundaryAn *aDlg = new MonEditBoundaryAn(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
           aDlg->show();
         }
         // Edition d'un cas
         else if (HOMARD_UTILS::isCase(obj))
         {
-          MonEditCase *aDlg = new MonEditCase(true, HOMARD::HOMARD_Gen::_duplicate(homardGen), _ObjectName ) ;
+          MonEditCase *aDlg = new MonEditCase(true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
           aDlg->show();
         }
         // Edition d'une hypothese
         else if (HOMARD_UTILS::isHypo(obj))
         {
-          MonEditHypothesis *aDlg = new MonEditHypothesis(0, true, HOMARD::HOMARD_Gen::_duplicate(homardGen),  _ObjectName, QString(""), QString("")) ;
+          MonEditHypothesis *aDlg = new MonEditHypothesis(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen),  _ObjectName, QString(""), QString("")) ;
           aDlg->show();
         }
         // Edition d'une iteration
         else if (HOMARD_UTILS::isIter(obj))
         {
-          MonEditIteration *aDlg = new MonEditIteration(parent, true, HOMARD::HOMARD_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+          MonEditIteration *aDlg = new MonEditIteration(parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
           aDlg->show();
         }
         // Edition d'un schema YACS
         else if (HOMARD_UTILS::isYACS(obj))
         {
           MESSAGE("appel de MonEditYACS");
-          MonEditYACS *aDlg = new MonEditYACS(true, HOMARD::HOMARD_Gen::_duplicate(homardGen), _ObjectName) ;
+          MonEditYACS *aDlg = new MonEditYACS(true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName) ;
           aDlg->show();
         }
         // Edition d'une zone
         else if (HOMARD_UTILS::isZone(obj))
         {
-          MonEditZone *aDlg = new MonEditZone(0, true, HOMARD::HOMARD_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+          MonEditZone *aDlg = new MonEditZone(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
           aDlg->show();
         }
       }
@@ -613,7 +613,7 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
     {
       MESSAGE("etape 1301")
       MESSAGE("command " << theCommandID << " activated");
-      MonMeshInfo *aDlg = new MonMeshInfo( parent, true, HOMARD::HOMARD_Gen::_duplicate(homardGen) ) ;
+      MonMeshInfo *aDlg = new MonMeshInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
       aDlg->show();
       break;
     }
@@ -624,7 +624,7 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
       _PTR(SObject) obj = chercheMonObjet();
       if ( (obj) && ( HOMARD_UTILS::isFileType(obj,QString("log")) || HOMARD_UTILS::isFileType(obj,QString("Summary")) || HOMARD_UTILS::isFileType(obj,QString("xml")) ) )
       {
-          MonEditFile *aDlg = new MonEditFile( 0, true, HOMARD::HOMARD_Gen::_duplicate(homardGen), _ObjectName, 0 ) ;
+          MonEditFile *aDlg = new MonEditFile( 0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName, 0 ) ;
           if ( aDlg->_codret == 0 ) { aDlg->show(); }
       }
       break;
@@ -634,7 +634,7 @@ bool ADAPTGUI::OnGUIEvent (int theCommandID)
     {
       MESSAGE("etape 1401")
       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-      MonCreateYACS *aDlg = new MonCreateYACS( true, HOMARD::HOMARD_Gen::_duplicate(homardGen), _ObjectName ) ;
+      MonCreateYACS *aDlg = new MonCreateYACS( true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
       aDlg->show();
       break;
     }

@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 
 #include <MonCreateListGroupCAO.h>
 
@@ -37,7 +37,7 @@ class HOMARD_EXPORT MonEditListGroupCAO : public MonCreateListGroupCAO
     Q_OBJECT
 
 public:
-    MonEditListGroupCAO( MonCreateHypothesis* parentHyp, MonCreateBoundaryCAO* parentBound, bool modal, HOMARD::HOMARD_Gen_var myHomardGen, QString aCaseName,  QStringList listeGroupesHypo);
+    MonEditListGroupCAO( MonCreateHypothesis* parentHyp, MonCreateBoundaryCAO* parentBound, bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString aCaseName,  QStringList listeGroupesHypo);
     virtual ~MonEditListGroupCAO();
 
 protected :

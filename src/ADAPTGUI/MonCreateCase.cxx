@@ -46,7 +46,7 @@ using namespace std;
  * Sets attributes to default values
  */
 // -----------------------------------------------------------------------------------------
-MonCreateCase::MonCreateCase( bool modal, HOMARD::HOMARD_Gen_var myHomardGen0 )
+MonCreateCase::MonCreateCase( bool modal, ADAPT::ADAPT_Gen_var myHomardGen0 )
     :
     Ui_CreateCase(),
     _aCaseName(""),_aDirName(""),
@@ -55,7 +55,7 @@ MonCreateCase::MonCreateCase( bool modal, HOMARD::HOMARD_Gen_var myHomardGen0 )
     _Pyram(0)
 {
   MESSAGE("Debut du constructeur de MonCreateCase");
-  myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen0);
+  myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
   setupUi(this);
   setModal(modal);
   InitConnect();
@@ -132,7 +132,7 @@ void MonCreateCase::InitBoundarys()
 {
   MESSAGE("InitBoundarys");
 // Pour les frontieres analytiques : la colonne des groupes
-  HOMARD::ListGroupType_var _listeGroupesCas = aCase->GetGroups();
+  ADAPT::ListGroupType_var _listeGroupesCas = aCase->GetGroups();
   QTableWidgetItem *__colItem = new QTableWidgetItem();
   __colItem->setText(QApplication::translate("CreateCase", "", 0));
   TWBoundary->setHorizontalHeaderItem(0, __colItem);
@@ -145,8 +145,8 @@ void MonCreateCase::InitBoundarys()
 // Pour les frontieres CAO : la liste a saisir
 // Pour les frontieres discretes : la liste a saisir
 // Pour les frontieres analytiques : les colonnes de chaque frontiere
-  HOMARD::HOMARD_Boundary_var myBoundary ;
-  HOMARD::listeBoundarys_var  mesBoundarys = myHomardGen->GetAllBoundarysName();
+  ADAPT::HOMARD_Boundary_var myBoundary ;
+  ADAPT::listeBoundarys_var  mesBoundarys = myHomardGen->GetAllBoundarysName();
 //   MESSAGE("Nombre de frontieres enregistrees : "<<mesBoundarys->length());
   for (int i=0; i<mesBoundarys->length(); i++)
   {
@@ -352,7 +352,7 @@ void MonCreateCase::PushOnHelp()
 void MonCreateCase::SetNewName()
 // ------------------------------
 {
-  HOMARD::listeCases_var  MyCases = myHomardGen->GetAllCasesName();
+  ADAPT::listeCases_var  MyCases = myHomardGen->GetAllCasesName();
   int num = 0; QString aCaseName="";
   while (aCaseName=="" )
   {
@@ -507,7 +507,7 @@ void MonCreateCase::PushBoundaryCAONew()
 // ------------------------------------------------------------------------
 {
    MonCreateBoundaryCAO *BoundaryDlg = new MonCreateBoundaryCAO(this, true,
-                HOMARD::HOMARD_Gen::_duplicate(myHomardGen), _aCaseName, "") ;
+                ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName, "") ;
    BoundaryDlg->show();
 }
 // ------------------------------------------------------------------------
@@ -516,7 +516,7 @@ void MonCreateCase::PushBoundaryCAOEdit()
 {
   if (CBBoundaryCAO->currentText() == QString(""))  return;
   MonEditBoundaryCAO *BoundaryDlg = new MonEditBoundaryCAO(this, true,
-       HOMARD::HOMARD_Gen::_duplicate(myHomardGen), _aCaseName, CBBoundaryCAO->currentText() ) ;
+       ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName, CBBoundaryCAO->currentText() ) ;
   BoundaryDlg->show();
 }
 // ------------------------------------------------------------------------
@@ -555,7 +555,7 @@ void MonCreateCase::PushBoundaryDiNew()
 // ------------------------------------------------------------------------
 {
    MonCreateBoundaryDi *BoundaryDlg = new MonCreateBoundaryDi(this, true,
-                HOMARD::HOMARD_Gen::_duplicate(myHomardGen), _aCaseName, "") ;
+                ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName, "") ;
    BoundaryDlg->show();
 }
 // ------------------------------------------------------------------------
@@ -564,7 +564,7 @@ void MonCreateCase::PushBoundaryDiEdit()
 {
   if (CBBoundaryDi->currentText() == QString(""))  return;
   MonEditBoundaryDi *BoundaryDlg = new MonEditBoundaryDi(this, true,
-       HOMARD::HOMARD_Gen::_duplicate(myHomardGen), _aCaseName, CBBoundaryDi->currentText() ) ;
+       ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName, CBBoundaryDi->currentText() ) ;
   BoundaryDlg->show();
 }
 // ------------------------------------------------------------------------
@@ -624,7 +624,7 @@ void MonCreateCase::PushBoundaryAnNew()
 // ------------------------------------------------------------------------
 {
    MonCreateBoundaryAn *BoundaryDlg = new MonCreateBoundaryAn(this, true,
-                HOMARD::HOMARD_Gen::_duplicate(myHomardGen), _aCaseName) ;
+                ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName) ;
    BoundaryDlg->show();
 }
 // ------------------------------------------------------------------------
@@ -641,7 +641,7 @@ void MonCreateCase::PushBoundaryAnEdit()
     MESSAGE("nom "<<nom.toStdString().c_str());
     if (nom != QString(""))
     { MonEditBoundaryAn *BoundaryDlg = new MonEditBoundaryAn(this, true,
-        HOMARD::HOMARD_Gen::_duplicate(myHomardGen), _aCaseName, nom ) ;
+        ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName, nom ) ;
       BoundaryDlg->show(); }
   }
 }

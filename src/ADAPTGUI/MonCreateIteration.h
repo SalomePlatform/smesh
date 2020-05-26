@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Cas)
 
 #include "ui_CreateIteration.h"
@@ -37,24 +37,24 @@ class HOMARD_EXPORT MonCreateIteration : public QScrollArea, public Ui_CreateIte
     Q_OBJECT
 
 public:
-    MonCreateIteration( QWidget* parent, bool modal, HOMARD::HOMARD_Gen_var myHomardGen, QString IterParentName );
+    MonCreateIteration( QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString IterParentName );
     ~MonCreateIteration();
 
     void addHypothese(QString newHypothese);
 
 
 protected :
-    MonCreateIteration( QWidget* parent, HOMARD::HOMARD_Gen_var myHomardGen, QString IterParentName );
+    MonCreateIteration( QWidget* parent, ADAPT::ADAPT_Gen_var myHomardGen, QString IterParentName );
 
     QString _Name;
     QString _IterParentName;
     QString _CaseName;
 
 
-    HOMARD::HOMARD_Iteration_var aIter ;
-    HOMARD::HOMARD_Iteration_var aIterParent ;
-    HOMARD::HOMARD_Cas_var aCas ;
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::HOMARD_Iteration_var aIter ;
+    ADAPT::HOMARD_Iteration_var aIterParent ;
+    ADAPT::HOMARD_Cas_var aCas ;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
 
     virtual void InitConnect();

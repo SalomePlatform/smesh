@@ -90,7 +90,7 @@ void HOMARD_UTILS::updateObjBrowser()
         appMod->updateObjBrowser( true );
       }
       else
-        MESSAGE( "---   HOMARD::updateObjBrowser: appMod = NULL");
+        MESSAGE( "---   ADAPT::updateObjBrowser: appMod = NULL");
     }
 }
 

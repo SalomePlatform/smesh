@@ -38,7 +38,7 @@ using namespace std;
 
 // --------------------------------------------------------------------------------------------------------------
 MonCreateListGroupCAO::MonCreateListGroupCAO(MonCreateHypothesis* parentHyp, MonCreateBoundaryCAO* parentBound, bool modal,
-                                       HOMARD::HOMARD_Gen_var myHomardGen0, QString aCaseName,  QStringList listeGroupesHypo) :
+                                       ADAPT::ADAPT_Gen_var myHomardGen0, QString aCaseName,  QStringList listeGroupesHypo) :
 // --------------------------------------------------------------------------------------------------------------
 //
     QDialog(0), Ui_CreateListGroup(),
@@ -48,7 +48,7 @@ MonCreateListGroupCAO::MonCreateListGroupCAO(MonCreateHypothesis* parentHyp, Mon
     _parentBound(parentBound)
 {
     MESSAGE("Debut de  MonCreateListGroupCAO")
-     myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen0);
+     myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
     setupUi(this);
     setModal(modal);
     InitConnect();
@@ -56,7 +56,7 @@ MonCreateListGroupCAO::MonCreateListGroupCAO(MonCreateHypothesis* parentHyp, Mon
 }
 // --------------------------------------------------------------------------------------------------------------
 MonCreateListGroupCAO::MonCreateListGroupCAO(MonCreateHypothesis* parentHyp, MonCreateBoundaryCAO* parentBound,
-                                       HOMARD::HOMARD_Gen_var myHomardGen, QString aCaseName,  QStringList listeGroupesHypo) :
+                                       ADAPT::ADAPT_Gen_var myHomardGen, QString aCaseName,  QStringList listeGroupesHypo) :
 // --------------------------------------------------------------------------------------------------------------
 //
     QDialog(0), Ui_CreateListGroup(),
@@ -65,7 +65,7 @@ MonCreateListGroupCAO::MonCreateListGroupCAO(MonCreateHypothesis* parentHyp, Mon
     _parentHyp(parentHyp),
     _parentBound(parentBound)
 {
-    myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen);
+    myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen);
     setupUi(this);
     InitConnect();
 }
@@ -127,8 +127,8 @@ void MonCreateListGroupCAO::InitGroupes()
       TWGroupe->removeRow(row);
   TWGroupe->setRowCount(0);
   if (_aCaseName == QString("")) { return; };
-  HOMARD::HOMARD_Cas_var monCas= myHomardGen->GetCase(_aCaseName.toStdString().c_str());
-  HOMARD::ListGroupType_var _listeGroupesCas = monCas->GetGroups();
+  ADAPT::HOMARD_Cas_var monCas= myHomardGen->GetCase(_aCaseName.toStdString().c_str());
+  ADAPT::ListGroupType_var _listeGroupesCas = monCas->GetGroups();
   for ( int i = 0; i < _listeGroupesCas->length(); i++ )
   {
     TWGroupe->insertRow(i);

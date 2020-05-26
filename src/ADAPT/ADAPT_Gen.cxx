@@ -18,24 +18,24 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  File   : HOMARD_Gen.cxx
+//  File   : ADAPT_Gen.cxx
 //  Author : Gerald NICOLAS, EDF
 //  Module : HOMARD
 
-#include "HOMARD_Gen.hxx"
+#include "ADAPT_Gen.hxx"
 #include "utilities.h"
 
 //=============================================================================
 //=============================================================================
-HOMARD_Gen::HOMARD_Gen()
+ADAPT_Gen::ADAPT_Gen()
 {
-  MESSAGE("HOMARD_Gen");
+  MESSAGE("ADAPT_Gen");
 }
 
 //=============================================================================
 //=============================================================================
-HOMARD_Gen::~HOMARD_Gen()
+ADAPT_Gen::~ADAPT_Gen()
 {
-  MESSAGE("~HOMARD_Gen");
+  MESSAGE("~ADAPT_Gen");
 }
 //=============================================================================

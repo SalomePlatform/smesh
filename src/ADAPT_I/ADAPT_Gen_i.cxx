@@ -17,7 +17,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#include "HOMARD_Gen_i.hxx"
+#include "ADAPT_Gen_i.hxx"
 #include "HOMARD_Cas_i.hxx"
 #include "HOMARD_Hypothesis_i.hxx"
 #include "HOMARD_Iteration_i.hxx"
@@ -88,7 +88,7 @@ std::string RemoveTabulation( std::string theScript )
  *  standard constructor
  */
 //=============================================================================
-HOMARD_Gen_i::HOMARD_Gen_i( CORBA::ORB_ptr orb,
+ADAPT_Gen_i::ADAPT_Gen_i( CORBA::ORB_ptr orb,
                             PortableServer::POA_ptr poa,
                             PortableServer::ObjectId * contId,
                             const char *instanceName,
@@ -99,7 +99,7 @@ Engines_Component_i(orb, poa, contId, instanceName, interfaceName)
   _thisObj = this;
   _id = _poa->activate_object(_thisObj);
 
-  myHomard = new ::HOMARD_Gen();
+  myHomard = new ::ADAPT_Gen();
   _NS = SINGLETON_<SALOME_NamingService>::Instance();
   ASSERT(SINGLETON_<SALOME_NamingService>::IsAlreadyExisting());
   _NS->init_orb(_orb);
@@ -119,7 +119,7 @@ Engines_Component_i(orb, poa, contId, instanceName, interfaceName)
  *  standard destructor
  */
 //================================
-HOMARD_Gen_i::~HOMARD_Gen_i()
+ADAPT_Gen_i::~ADAPT_Gen_i()
 {
 }
 //=============================================================================
@@ -127,7 +127,7 @@ HOMARD_Gen_i::~HOMARD_Gen_i()
 // Utilitaires pour l'étude
 //=============================================================================
 //=============================================================================
-void HOMARD_Gen_i::UpdateStudy()
+void ADAPT_Gen_i::UpdateStudy()
 {
   ASSERT(!CORBA::is_nil(myStudy));
   SALOMEDS::StudyBuilder_var myBuilder = myStudy->NewBuilder();
@@ -157,7 +157,7 @@ void HOMARD_Gen_i::UpdateStudy()
     anAttr = myBuilder->FindOrCreateAttribute(homardFather,"AttributePixMap");
     SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap("HOMARD_2.png");
-    myBuilder->DefineComponentInstance(homardFather, HOMARD_Gen::_this());
+    myBuilder->DefineComponentInstance(homardFather, ADAPT_Gen::_this());
 
     if (aLocked) myStudy->GetProperties()->SetLocked(true);
     myBuilder->CommitCommand();
@@ -169,11 +169,11 @@ void HOMARD_Gen_i::UpdateStudy()
 // Utilitaires pour l'iteration
 //=============================================================================
 //=============================================================================
-void HOMARD_Gen_i::SetEtatIter(const char* nomIter, const CORBA::Long Etat)
+void ADAPT_Gen_i::SetEtatIter(const char* nomIter, const CORBA::Long Etat)
 //=====================================================================================
 {
   MESSAGE( "SetEtatIter : affectation de l'etat " << Etat << " a l'iteration " << nomIter );
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
   if (CORBA::is_nil(myIteration))
   {
       SALOME::ExceptionStruct es;
@@ -208,10 +208,10 @@ void HOMARD_Gen_i::SetEtatIter(const char* nomIter, const CORBA::Long Etat)
 // Destruction des structures identifiees par leurs noms
 //=============================================================================
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::DeleteBoundary(const char* BoundaryName)
+CORBA::Long ADAPT_Gen_i::DeleteBoundary(const char* BoundaryName)
 {
   MESSAGE ( "DeleteBoundary : BoundaryName = " << BoundaryName );
-  HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
+  ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
   if (CORBA::is_nil(myBoundary))
   {
     SALOME::ExceptionStruct es;
@@ -222,13 +222,13 @@ CORBA::Long HOMARD_Gen_i::DeleteBoundary(const char* BoundaryName)
   };
 
 // On verifie que la frontiere n'est plus utilisee
-  HOMARD::listeCases* maListe = GetAllCasesName();
+  ADAPT::listeCases* maListe = GetAllCasesName();
   int numberOfCases = maListe->length();
   MESSAGE ( ".. Nombre de cas = " << numberOfCases );
   std::string CaseName ;
-  HOMARD::ListBoundaryGroupType* ListBoundaryGroupType ;
+  ADAPT::ListBoundaryGroupType* ListBoundaryGroupType ;
   int numberOfitems ;
-  HOMARD::HOMARD_Cas_var myCase ;
+  ADAPT::HOMARD_Cas_var myCase ;
   for (int NumeCas = 0; NumeCas< numberOfCases; NumeCas++)
   {
     CaseName = std::string((*maListe)[NumeCas]);
@@ -261,11 +261,11 @@ CORBA::Long HOMARD_Gen_i::DeleteBoundary(const char* BoundaryName)
   return 0 ;
 }
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::DeleteCase(const char* nomCas, CORBA::Long Option)
+CORBA::Long ADAPT_Gen_i::DeleteCase(const char* nomCas, CORBA::Long Option)
 {
   // Pour detruire un cas
   MESSAGE ( "DeleteCase : nomCas = " << nomCas << ", avec option = " << Option );
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
   if (CORBA::is_nil(myCase))
   {
     SALOME::ExceptionStruct es;
@@ -292,10 +292,10 @@ CORBA::Long HOMARD_Gen_i::DeleteCase(const char* nomCas, CORBA::Long Option)
   return 0 ;
 }
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::DeleteHypo(const char* nomHypo)
+CORBA::Long ADAPT_Gen_i::DeleteHypo(const char* nomHypo)
 {
   MESSAGE ( "DeleteHypo : nomHypo = " << nomHypo );
-  HOMARD::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
+  ADAPT::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
   if (CORBA::is_nil(myHypo))
   {
     SALOME::ExceptionStruct es;
@@ -306,7 +306,7 @@ CORBA::Long HOMARD_Gen_i::DeleteHypo(const char* nomHypo)
   };
 
 // On verifie que l'hypothese n'est plus utilisee
-  HOMARD::listeIters* maListeIter = myHypo->GetIterations();
+  ADAPT::listeIters* maListeIter = myHypo->GetIterations();
   int numberOfIter = maListeIter->length();
   if ( numberOfIter > 0 )
   {
@@ -318,7 +318,7 @@ CORBA::Long HOMARD_Gen_i::DeleteHypo(const char* nomHypo)
   };
 
   // suppression du lien avec les zones eventuelles
-  HOMARD::listeZonesHypo* maListe = myHypo->GetZones();
+  ADAPT::listeZonesHypo* maListe = myHypo->GetZones();
   int numberOfZones = maListe->length();
   MESSAGE ( ".. Nombre de zones = " << numberOfZones );
   for (int NumeZone = 0; NumeZone< numberOfZones; NumeZone++)
@@ -339,7 +339,7 @@ CORBA::Long HOMARD_Gen_i::DeleteHypo(const char* nomHypo)
   return 0 ;
 }
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::DeleteIteration(const char* nomIter, CORBA::Long Option)
+CORBA::Long ADAPT_Gen_i::DeleteIteration(const char* nomIter, CORBA::Long Option)
 {
   //  Option = 0 : On ne supprime pas le fichier du maillage associe
   //  Option = 1 : On supprime le fichier du maillage associe
@@ -349,7 +349,7 @@ CORBA::Long HOMARD_Gen_i::DeleteIteration(const char* nomIter, CORBA::Long Optio
   return DeleteIterationOption(nomIter, Option1, Option);
 }
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::DeleteIterationOption(const char* nomIter, CORBA::Long Option1, CORBA::Long Option2)
+CORBA::Long ADAPT_Gen_i::DeleteIterationOption(const char* nomIter, CORBA::Long Option1, CORBA::Long Option2)
 {
   //  Option1 = 0 : On autorise la destruction de l'iteration 0
   //  Option1 = 1 : On interdit la destruction de l'iteration 0
@@ -357,7 +357,7 @@ CORBA::Long HOMARD_Gen_i::DeleteIterationOption(const char* nomIter, CORBA::Long
   //  Option2 = 0 : On ne supprime pas le fichier du maillage associe
   //  Option2 = 1 : On supprime le fichier du maillage associe
   MESSAGE ( "DeleteIterationOption : nomIter = " << nomIter << ", avec options = " << Option1<< ", " << Option2 );
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
   if (CORBA::is_nil(myIteration))
   {
     SALOME::ExceptionStruct es;
@@ -379,7 +379,7 @@ CORBA::Long HOMARD_Gen_i::DeleteIterationOption(const char* nomIter, CORBA::Long
   };
 
   // On detruit recursivement toutes les filles
-  HOMARD::listeIterFilles* maListe = myIteration->GetIterations();
+  ADAPT::listeIterFilles* maListe = myIteration->GetIterations();
   int numberOfIter = maListe->length();
   for (int NumeIter = 0; NumeIter< numberOfIter; NumeIter++)
   {
@@ -402,7 +402,7 @@ CORBA::Long HOMARD_Gen_i::DeleteIterationOption(const char* nomIter, CORBA::Long
   {
     std::string nomIterationParent = myIteration->GetIterParentName();
     MESSAGE ( "Retrait dans la descendance de nomIterationParent " << nomIterationParent );
-    HOMARD::HOMARD_Iteration_var myIterationParent = myStudyContext._mesIterations[nomIterationParent];
+    ADAPT::HOMARD_Iteration_var myIterationParent = myStudyContext._mesIterations[nomIterationParent];
     if (CORBA::is_nil(myIterationParent))
     {
       SALOME::ExceptionStruct es;
@@ -418,7 +418,7 @@ CORBA::Long HOMARD_Gen_i::DeleteIterationOption(const char* nomIter, CORBA::Long
   if ( numero > 0 )
   {
     std::string nomHypo = myIteration->GetHypoName();
-    HOMARD::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
+    ADAPT::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
     ASSERT(!CORBA::is_nil(myHypo));
     myHypo->UnLinkIteration(nomIter);
   }
@@ -431,7 +431,7 @@ CORBA::Long HOMARD_Gen_i::DeleteIterationOption(const char* nomIter, CORBA::Long
   myStudy->NewBuilder()->RemoveObjectWithChildren(aSO);
   // on peut aussi faire RemoveObject
 //   MESSAGE ( "Au final" );
-//   HOMARD::listeIterations* Liste = GetAllIterationsName() ;
+//   ADAPT::listeIterations* Liste = GetAllIterationsName() ;
 //   numberOfIter = Liste->length();
 //   for (int NumeIter = 0; NumeIter< numberOfIter; NumeIter++)
 //   {
@@ -442,12 +442,12 @@ CORBA::Long HOMARD_Gen_i::DeleteIterationOption(const char* nomIter, CORBA::Long
   return 0 ;
 }
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::DeleteYACS(const char* nomYACS, CORBA::Long Option)
+CORBA::Long ADAPT_Gen_i::DeleteYACS(const char* nomYACS, CORBA::Long Option)
 {
   //  Option = 0 : On ne supprime pas le fichier du schema associe
   //  Option = 1 : On supprime le fichier du schema associe
   MESSAGE ( "DeleteYACS : nomYACS = " << nomYACS << ", avec option = " << Option );
-  HOMARD::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
+  ADAPT::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
   if (CORBA::is_nil(myYACS))
   {
     SALOME::ExceptionStruct es;
@@ -481,10 +481,10 @@ CORBA::Long HOMARD_Gen_i::DeleteYACS(const char* nomYACS, CORBA::Long Option)
   return 0 ;
 }
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::DeleteZone(const char* nomZone)
+CORBA::Long ADAPT_Gen_i::DeleteZone(const char* nomZone)
 {
   MESSAGE ( "DeleteZone : nomZone = " << nomZone );
-  HOMARD::HOMARD_Zone_var myZone = myStudyContext._mesZones[nomZone];
+  ADAPT::HOMARD_Zone_var myZone = myStudyContext._mesZones[nomZone];
   if (CORBA::is_nil(myZone))
   {
     SALOME::ExceptionStruct es;
@@ -495,7 +495,7 @@ CORBA::Long HOMARD_Gen_i::DeleteZone(const char* nomZone)
   };
 
 // On verifie que la zone n'est plus utilisee
-  HOMARD::listeHypo* maListe = myZone->GetHypo();
+  ADAPT::listeHypo* maListe = myZone->GetHypo();
   int numberOfHypo = maListe->length();
   MESSAGE ( ".. Nombre d'hypotheses = " << numberOfHypo );
   if ( numberOfHypo > 0 )
@@ -524,10 +524,10 @@ CORBA::Long HOMARD_Gen_i::DeleteZone(const char* nomZone)
 // Invalidation des structures identifiees par leurs noms
 //=============================================================================
 //=============================================================================
-void HOMARD_Gen_i::InvalideBoundary(const char* BoundaryName)
+void ADAPT_Gen_i::InvalideBoundary(const char* BoundaryName)
 {
   MESSAGE( "InvalideBoundary : BoundaryName = " << BoundaryName  );
-  HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
+  ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
   if (CORBA::is_nil(myBoundary))
   {
     SALOME::ExceptionStruct es;
@@ -546,10 +546,10 @@ void HOMARD_Gen_i::InvalideBoundary(const char* BoundaryName)
   };
 }
 //=============================================================================
-void HOMARD_Gen_i::InvalideHypo(const char* nomHypo)
+void ADAPT_Gen_i::InvalideHypo(const char* nomHypo)
 {
   MESSAGE( "InvalideHypo : nomHypo    = " << nomHypo  );
-  HOMARD::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
+  ADAPT::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
   if (CORBA::is_nil(myHypo))
   {
       SALOME::ExceptionStruct es;
@@ -559,7 +559,7 @@ void HOMARD_Gen_i::InvalideHypo(const char* nomHypo)
       return ;
   };
 
-  HOMARD::listeIters* maListe = myHypo->GetIterations();
+  ADAPT::listeIters* maListe = myHypo->GetIterations();
   int numberOfIter = maListe->length();
   for (int NumeIter = 0; NumeIter< numberOfIter; NumeIter++)
   {
@@ -569,7 +569,7 @@ void HOMARD_Gen_i::InvalideHypo(const char* nomHypo)
   }
 }
 //=============================================================================
-void HOMARD_Gen_i::InvalideIter(const char* nomIter)
+void ADAPT_Gen_i::InvalideIter(const char* nomIter)
 {
   MESSAGE("InvalideIter : nomIter = " << nomIter);
   // Pour invalider totalement une iteration courante
@@ -577,12 +577,12 @@ void HOMARD_Gen_i::InvalideIter(const char* nomIter)
   return InvalideIterOption(nomIter, Option);
 }
 //=============================================================================
-void HOMARD_Gen_i::InvalideIterOption(const char* nomIter, CORBA::Long Option)
+void ADAPT_Gen_i::InvalideIterOption(const char* nomIter, CORBA::Long Option)
 {
   //  Option = 0 : On ne supprime pas le fichier du maillage associe
   //  Option = 1 : On supprime le fichier du maillage associe
   MESSAGE ( "InvalideIterOption : nomIter = " << nomIter << ", avec option = " << Option );
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
   if (CORBA::is_nil(myIteration))
   {
       SALOME::ExceptionStruct es;
@@ -592,7 +592,7 @@ void HOMARD_Gen_i::InvalideIterOption(const char* nomIter, CORBA::Long Option)
       return ;
   };
 
-  HOMARD::listeIterFilles* maListe = myIteration->GetIterations();
+  ADAPT::listeIterFilles* maListe = myIteration->GetIterations();
   int numberOfIter = maListe->length();
   for (int NumeIter = 0; NumeIter< numberOfIter; NumeIter++)
   {
@@ -623,7 +623,7 @@ void HOMARD_Gen_i::InvalideIterOption(const char* nomIter, CORBA::Long Option)
   {
     SetEtatIter(nomIter,1);
     const char * nomCas = myIteration->GetCaseName();
-    HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+    ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
     if (CORBA::is_nil(myCase))
     {
         SALOME::ExceptionStruct es;
@@ -652,10 +652,10 @@ void HOMARD_Gen_i::InvalideIterOption(const char* nomIter, CORBA::Long Option)
 
 }
 //=============================================================================
-void HOMARD_Gen_i::InvalideIterInfo(const char* nomIter)
+void ADAPT_Gen_i::InvalideIterInfo(const char* nomIter)
 {
   MESSAGE("InvalideIterInfo : nomIter = " << nomIter);
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
   if (CORBA::is_nil(myIteration))
   {
       SALOME::ExceptionStruct es;
@@ -683,7 +683,7 @@ void HOMARD_Gen_i::InvalideIterInfo(const char* nomIter)
   }
 
   const char * nomCas = myIteration->GetCaseName();
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
   if (CORBA::is_nil(myCase))
   {
       SALOME::ExceptionStruct es;
@@ -706,10 +706,10 @@ void HOMARD_Gen_i::InvalideIterInfo(const char* nomIter)
   }
 }
 //=============================================================================
-void HOMARD_Gen_i::InvalideYACS(const char* YACSName)
+void ADAPT_Gen_i::InvalideYACS(const char* YACSName)
 {
   MESSAGE( "InvalideYACS : YACSName    = " << YACSName );
-  HOMARD::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[YACSName];
+  ADAPT::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[YACSName];
   if (CORBA::is_nil(myYACS))
   {
       SALOME::ExceptionStruct es;
@@ -747,10 +747,10 @@ void HOMARD_Gen_i::InvalideYACS(const char* YACSName)
   }
 }
 //=============================================================================
-void HOMARD_Gen_i::InvalideZone(const char* ZoneName)
+void ADAPT_Gen_i::InvalideZone(const char* ZoneName)
 {
   MESSAGE( "InvalideZone : ZoneName    = " << ZoneName );
-  HOMARD::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
+  ADAPT::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
   if (CORBA::is_nil(myZone))
   {
       SALOME::ExceptionStruct es;
@@ -759,7 +759,7 @@ void HOMARD_Gen_i::InvalideZone(const char* ZoneName)
       throw SALOME::SALOME_Exception(es);
       return ;
   };
-  HOMARD::listeHypo* maListe = myZone->GetHypo();
+  ADAPT::listeHypo* maListe = myZone->GetHypo();
   int numberOfHypo = maListe->length();
   MESSAGE( ".. numberOfHypo = " << numberOfHypo );
   for (int NumeHypo = 0; NumeHypo< numberOfHypo; NumeHypo++)
@@ -777,11 +777,11 @@ void HOMARD_Gen_i::InvalideZone(const char* ZoneName)
 // Association de lien entre des structures identifiees par leurs noms
 //=============================================================================
 //=============================================================================
-void HOMARD_Gen_i::AssociateCaseIter(const char* nomCas, const char* nomIter, const char* labelIter)
+void ADAPT_Gen_i::AssociateCaseIter(const char* nomCas, const char* nomIter, const char* labelIter)
 {
   MESSAGE( "AssociateCaseIter : " << nomCas << ", " << nomIter << ", "  << labelIter );
 
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
   if (CORBA::is_nil(myCase))
   {
     SALOME::ExceptionStruct es;
@@ -791,7 +791,7 @@ void HOMARD_Gen_i::AssociateCaseIter(const char* nomCas, const char* nomIter, co
     return ;
   };
 
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
   if (CORBA::is_nil(myIteration))
   {
     SALOME::ExceptionStruct es;
@@ -822,16 +822,16 @@ void HOMARD_Gen_i::AssociateCaseIter(const char* nomCas, const char* nomIter, co
   myIteration->SetCaseName(nomCas);
 }
 //=====================================================================================
-void HOMARD_Gen_i::AssociateHypoZone(const char* nomHypothesis, const char* ZoneName, CORBA::Long TypeUse)
+void ADAPT_Gen_i::AssociateHypoZone(const char* nomHypothesis, const char* ZoneName, CORBA::Long TypeUse)
 {
   MESSAGE ( "AssociateHypoZone : nomHypo = " << nomHypothesis << ", ZoneName= " << ZoneName << ", TypeUse = " << TypeUse);
 
-  HOMARD::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypothesis];
+  ADAPT::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypothesis];
   ASSERT(!CORBA::is_nil(myHypo));
   SALOMEDS::SObject_var aHypoSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myHypo)));
   ASSERT(!CORBA::is_nil(aHypoSO));
 
-  HOMARD::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
+  ADAPT::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
   ASSERT(!CORBA::is_nil(myZone));
   SALOMEDS::SObject_var aZoneSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myZone)));
   ASSERT(!CORBA::is_nil(aZoneSO));
@@ -849,18 +849,18 @@ void HOMARD_Gen_i::AssociateHypoZone(const char* nomHypothesis, const char* Zone
   myHypo->AddZone0(ZoneName, TypeUse);
 };
 //=============================================================================
-void HOMARD_Gen_i::AssociateIterHypo(const char* nomIter, const char* nomHypo)
+void ADAPT_Gen_i::AssociateIterHypo(const char* nomIter, const char* nomHypo)
 {
   MESSAGE("AssociateIterHypo : nomHypo = " << nomHypo << " nomIter = " << nomIter);
 
   // Verification de l'existence de l'hypothese
-  HOMARD::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
+  ADAPT::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
   ASSERT(!CORBA::is_nil(myHypo));
   SALOMEDS::SObject_var aHypoSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myHypo)));
   ASSERT(!CORBA::is_nil(aHypoSO));
 
   // Verification de l'existence de l'iteration
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[nomIter];
   ASSERT(!CORBA::is_nil(myIteration));
   SALOMEDS::SObject_var aIterSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myIteration)));
   ASSERT(!CORBA::is_nil(aIterSO));
@@ -878,7 +878,7 @@ void HOMARD_Gen_i::AssociateIterHypo(const char* nomIter, const char* nomHypo)
 
   // On stocke les noms des champ a interpoler pour le futur controle de la donnée des pas de temps
   myIteration->SupprFieldInterps() ;
-  HOMARD::listeFieldInterpsHypo* ListField = myHypo->GetFieldInterps();
+  ADAPT::listeFieldInterpsHypo* ListField = myHypo->GetFieldInterps();
   int numberOfFieldsx2 = ListField->length();
   for (int iaux = 0; iaux< numberOfFieldsx2; iaux++)
   {
@@ -895,16 +895,16 @@ void HOMARD_Gen_i::AssociateIterHypo(const char* nomIter, const char* nomHypo)
 // Dissociation de lien entre des structures identifiees par leurs noms
 //=============================================================================
 //=============================================================================
-void HOMARD_Gen_i::DissociateHypoZone(const char* nomHypothesis, const char* ZoneName)
+void ADAPT_Gen_i::DissociateHypoZone(const char* nomHypothesis, const char* ZoneName)
 {
   MESSAGE ( "DissociateHypoZone : ZoneName= " << ZoneName << ", nomHypo = " << nomHypothesis);
 
-  HOMARD::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypothesis];
+  ADAPT::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypothesis];
   ASSERT(!CORBA::is_nil(myHypo));
   SALOMEDS::SObject_var aHypoSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myHypo)));
   ASSERT(!CORBA::is_nil(aHypoSO));
 
-  HOMARD::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
+  ADAPT::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
   ASSERT(!CORBA::is_nil(myZone));
   SALOMEDS::SObject_var aZoneSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myZone)));
   ASSERT(!CORBA::is_nil(aZoneSO));
@@ -940,14 +940,14 @@ void HOMARD_Gen_i::DissociateHypoZone(const char* nomHypothesis, const char* Zon
 // Recuperation des listes
 //=============================================================================
 //=============================================================================
-HOMARD::listeBoundarys* HOMARD_Gen_i::GetAllBoundarysName()
+ADAPT::listeBoundarys* ADAPT_Gen_i::GetAllBoundarysName()
 {
   MESSAGE("GetAllBoundarysName");
   IsValidStudy () ;
 
-  HOMARD::listeBoundarys_var ret = new HOMARD::listeBoundarys;
+  ADAPT::listeBoundarys_var ret = new ADAPT::listeBoundarys;
   ret->length(myStudyContext._mesBoundarys.size());
-  std::map<std::string, HOMARD::HOMARD_Boundary_var>::const_iterator it;
+  std::map<std::string, ADAPT::HOMARD_Boundary_var>::const_iterator it;
   int i = 0;
   for (it = myStudyContext._mesBoundarys.begin();
   it != myStudyContext._mesBoundarys.end(); it++)
@@ -958,14 +958,14 @@ HOMARD::listeBoundarys* HOMARD_Gen_i::GetAllBoundarysName()
   return ret._retn();
 }
 //=============================================================================
-HOMARD::listeCases* HOMARD_Gen_i::GetAllCasesName()
+ADAPT::listeCases* ADAPT_Gen_i::GetAllCasesName()
 {
   MESSAGE("GetAllCasesName");
   IsValidStudy () ;
 
-  HOMARD::listeCases_var ret = new HOMARD::listeCases;
+  ADAPT::listeCases_var ret = new ADAPT::listeCases;
   ret->length(myStudyContext._mesCas.size());
-  std::map<std::string, HOMARD::HOMARD_Cas_var>::const_iterator it;
+  std::map<std::string, ADAPT::HOMARD_Cas_var>::const_iterator it;
   int i = 0;
   for (it = myStudyContext._mesCas.begin();
   it != myStudyContext._mesCas.end(); it++)
@@ -976,14 +976,14 @@ HOMARD::listeCases* HOMARD_Gen_i::GetAllCasesName()
   return ret._retn();
 }
 //=============================================================================
-HOMARD::listeHypotheses* HOMARD_Gen_i::GetAllHypothesesName()
+ADAPT::listeHypotheses* ADAPT_Gen_i::GetAllHypothesesName()
 {
   MESSAGE("GetAllHypothesesName");
   IsValidStudy () ;
 
-  HOMARD::listeHypotheses_var ret = new HOMARD::listeHypotheses;
+  ADAPT::listeHypotheses_var ret = new ADAPT::listeHypotheses;
   ret->length(myStudyContext._mesHypotheses.size());
-  std::map<std::string, HOMARD::HOMARD_Hypothesis_var>::const_iterator it;
+  std::map<std::string, ADAPT::HOMARD_Hypothesis_var>::const_iterator it;
   int i = 0;
   for (it = myStudyContext._mesHypotheses.begin();
   it != myStudyContext._mesHypotheses.end(); it++)
@@ -994,14 +994,14 @@ HOMARD::listeHypotheses* HOMARD_Gen_i::GetAllHypothesesName()
   return ret._retn();
 }
 //=============================================================================
-HOMARD::listeIterations* HOMARD_Gen_i::GetAllIterationsName()
+ADAPT::listeIterations* ADAPT_Gen_i::GetAllIterationsName()
 {
   MESSAGE("GetAllIterationsName");
   IsValidStudy () ;
 
-  HOMARD::listeIterations_var ret = new HOMARD::listeIterations;
+  ADAPT::listeIterations_var ret = new ADAPT::listeIterations;
   ret->length(myStudyContext._mesIterations.size());
-  std::map<std::string, HOMARD::HOMARD_Iteration_var>::const_iterator it;
+  std::map<std::string, ADAPT::HOMARD_Iteration_var>::const_iterator it;
   int i = 0;
   for (it = myStudyContext._mesIterations.begin();
   it != myStudyContext._mesIterations.end(); it++)
@@ -1012,14 +1012,14 @@ HOMARD::listeIterations* HOMARD_Gen_i::GetAllIterationsName()
   return ret._retn();
 }
 //=============================================================================
-HOMARD::listeYACSs* HOMARD_Gen_i::GetAllYACSsName()
+ADAPT::listeYACSs* ADAPT_Gen_i::GetAllYACSsName()
 {
   MESSAGE("GetAllYACSsName");
   IsValidStudy () ;
 
-  HOMARD::listeYACSs_var ret = new HOMARD::listeYACSs;
+  ADAPT::listeYACSs_var ret = new ADAPT::listeYACSs;
   ret->length(myStudyContext._mesYACSs.size());
-  std::map<std::string, HOMARD::HOMARD_YACS_var>::const_iterator it;
+  std::map<std::string, ADAPT::HOMARD_YACS_var>::const_iterator it;
   int i = 0;
   for (it = myStudyContext._mesYACSs.begin();
   it != myStudyContext._mesYACSs.end(); it++)
@@ -1030,14 +1030,14 @@ HOMARD::listeYACSs* HOMARD_Gen_i::GetAllYACSsName()
   return ret._retn();
 }
 //=============================================================================
-HOMARD::listeZones* HOMARD_Gen_i::GetAllZonesName()
+ADAPT::listeZones* ADAPT_Gen_i::GetAllZonesName()
 {
   MESSAGE("GetAllZonesName");
   IsValidStudy () ;
 
-  HOMARD::listeZones_var ret = new HOMARD::listeZones;
+  ADAPT::listeZones_var ret = new ADAPT::listeZones;
   ret->length(myStudyContext._mesZones.size());
-  std::map<std::string, HOMARD::HOMARD_Zone_var>::const_iterator it;
+  std::map<std::string, ADAPT::HOMARD_Zone_var>::const_iterator it;
   int i = 0;
   for (it = myStudyContext._mesZones.begin();
   it != myStudyContext._mesZones.end(); it++)
@@ -1055,46 +1055,46 @@ HOMARD::listeZones* HOMARD_Gen_i::GetAllZonesName()
 // Recuperation des structures identifiees par leurs noms
 //=============================================================================
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::GetBoundary(const char* nomBoundary)
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::GetBoundary(const char* nomBoundary)
 {
-  HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[nomBoundary];
+  ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[nomBoundary];
   ASSERT(!CORBA::is_nil(myBoundary));
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary);
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary);
 }
 //=============================================================================
-HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::GetCase(const char* nomCas)
+ADAPT::HOMARD_Cas_ptr ADAPT_Gen_i::GetCase(const char* nomCas)
 {
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
   ASSERT(!CORBA::is_nil(myCase));
-  return HOMARD::HOMARD_Cas::_duplicate(myCase);
+  return ADAPT::HOMARD_Cas::_duplicate(myCase);
 }
 //=============================================================================
-HOMARD::HOMARD_Hypothesis_ptr HOMARD_Gen_i::GetHypothesis(const char* nomHypothesis)
+ADAPT::HOMARD_Hypothesis_ptr ADAPT_Gen_i::GetHypothesis(const char* nomHypothesis)
 {
-  HOMARD::HOMARD_Hypothesis_var myHypothesis = myStudyContext._mesHypotheses[nomHypothesis];
+  ADAPT::HOMARD_Hypothesis_var myHypothesis = myStudyContext._mesHypotheses[nomHypothesis];
   ASSERT(!CORBA::is_nil(myHypothesis));
-  return HOMARD::HOMARD_Hypothesis::_duplicate(myHypothesis);
+  return ADAPT::HOMARD_Hypothesis::_duplicate(myHypothesis);
 }
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr  HOMARD_Gen_i::GetIteration(const char* NomIterationation)
+ADAPT::HOMARD_Iteration_ptr  ADAPT_Gen_i::GetIteration(const char* NomIterationation)
 {
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[NomIterationation];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[NomIterationation];
   ASSERT(!CORBA::is_nil(myIteration));
-  return HOMARD::HOMARD_Iteration::_duplicate(myIteration);
+  return ADAPT::HOMARD_Iteration::_duplicate(myIteration);
 }
 //=============================================================================
-HOMARD::HOMARD_YACS_ptr HOMARD_Gen_i::GetYACS(const char* nomYACS)
+ADAPT::HOMARD_YACS_ptr ADAPT_Gen_i::GetYACS(const char* nomYACS)
 {
-  HOMARD::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
+  ADAPT::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
   ASSERT(!CORBA::is_nil(myYACS));
-  return HOMARD::HOMARD_YACS::_duplicate(myYACS);
+  return ADAPT::HOMARD_YACS::_duplicate(myYACS);
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::GetZone(const char* ZoneName)
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::GetZone(const char* ZoneName)
 {
-  HOMARD::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
+  ADAPT::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
   ASSERT(!CORBA::is_nil(myZone));
-  return HOMARD::HOMARD_Zone::_duplicate(myZone);
+  return ADAPT::HOMARD_Zone::_duplicate(myZone);
 }
 //=============================================================================
 //=============================================================================
@@ -1104,7 +1104,7 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::GetZone(const char* ZoneName)
 // Informations
 //=============================================================================
 //=============================================================================
-void HOMARD_Gen_i::MeshInfo(const char* nomCas, const char* MeshName, const char* MeshFile, const char* DirName, CORBA::Long Qual, CORBA::Long Diam, CORBA::Long Conn, CORBA::Long Tail, CORBA::Long Inte)
+void ADAPT_Gen_i::MeshInfo(const char* nomCas, const char* MeshName, const char* MeshFile, const char* DirName, CORBA::Long Qual, CORBA::Long Diam, CORBA::Long Conn, CORBA::Long Tail, CORBA::Long Inte)
 {
   INFOS ( "MeshInfo : nomCas = " << nomCas << ", MeshName = " << MeshName << ", MeshFile = " << MeshFile  );
   INFOS ( "Qual = " << Qual << ", Diam = " << Diam << ", Conn = " << Conn << ", Tail = " << Tail << ", Inte = " << Inte  );
@@ -1113,7 +1113,7 @@ void HOMARD_Gen_i::MeshInfo(const char* nomCas, const char* MeshName, const char
 // Creation du cas
   int option = 1 ;
   if ( _PublisMeshIN != 0 ) option = 2 ;
-  HOMARD::HOMARD_Cas_ptr myCase = CreateCase0(nomCas, MeshName, MeshFile, 1, 0, option) ;
+  ADAPT::HOMARD_Cas_ptr myCase = CreateCase0(nomCas, MeshName, MeshFile, 1, 0, option) ;
   myCase->SetDirName(DirName) ;
 // Analyse
   myCase->MeshInfo(Qual, Diam, Conn, Tail, Inte) ;
@@ -1128,15 +1128,15 @@ void HOMARD_Gen_i::MeshInfo(const char* nomCas, const char* MeshName, const char
 // Recuperation des structures par le contexte
 //=============================================================================
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr HOMARD_Gen_i::LastIteration(const char* nomCas)
+ADAPT::HOMARD_Iteration_ptr ADAPT_Gen_i::LastIteration(const char* nomCas)
 {
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
   ASSERT(!CORBA::is_nil(myCase));
 //
-  HOMARD::HOMARD_Iteration_var myIteration = myCase->LastIteration();
+  ADAPT::HOMARD_Iteration_var myIteration = myCase->LastIteration();
   ASSERT(!CORBA::is_nil(myIteration));
 //
-  return HOMARD::HOMARD_Iteration::_duplicate(myIteration);
+  return ADAPT::HOMARD_Iteration::_duplicate(myIteration);
 }
 //=============================================================================
 //=============================================================================
@@ -1146,51 +1146,51 @@ HOMARD::HOMARD_Iteration_ptr HOMARD_Gen_i::LastIteration(const char* nomCas)
 // Nouvelles structures
 //=============================================================================
 //=============================================================================
-HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::newCase()
+ADAPT::HOMARD_Cas_ptr ADAPT_Gen_i::newCase()
 {
-  HOMARD::HOMARD_Gen_var engine = POA_HOMARD::HOMARD_Gen::_this();
+  ADAPT::ADAPT_Gen_var engine = POA_ADAPT::ADAPT_Gen::_this();
   HOMARD_Cas_i* aServant = new HOMARD_Cas_i(_orb, engine);
-  HOMARD::HOMARD_Cas_var aCase = HOMARD::HOMARD_Cas::_narrow(aServant->_this());
+  ADAPT::HOMARD_Cas_var aCase = ADAPT::HOMARD_Cas::_narrow(aServant->_this());
   return aCase._retn();
 }
 //=============================================================================
-HOMARD::HOMARD_Hypothesis_ptr HOMARD_Gen_i::newHypothesis()
+ADAPT::HOMARD_Hypothesis_ptr ADAPT_Gen_i::newHypothesis()
 {
-  HOMARD::HOMARD_Gen_var engine = POA_HOMARD::HOMARD_Gen::_this();
+  ADAPT::ADAPT_Gen_var engine = POA_ADAPT::ADAPT_Gen::_this();
   HOMARD_Hypothesis_i* aServant = new HOMARD_Hypothesis_i(_orb, engine);
-  HOMARD::HOMARD_Hypothesis_var aHypo = HOMARD::HOMARD_Hypothesis::_narrow(aServant->_this());
+  ADAPT::HOMARD_Hypothesis_var aHypo = ADAPT::HOMARD_Hypothesis::_narrow(aServant->_this());
   return aHypo._retn();
 }
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr HOMARD_Gen_i::newIteration()
+ADAPT::HOMARD_Iteration_ptr ADAPT_Gen_i::newIteration()
 {
-  HOMARD::HOMARD_Gen_var engine = POA_HOMARD::HOMARD_Gen::_this();
+  ADAPT::ADAPT_Gen_var engine = POA_ADAPT::ADAPT_Gen::_this();
   HOMARD_Iteration_i* aServant = new HOMARD_Iteration_i(_orb, engine);
-  HOMARD::HOMARD_Iteration_var aIter = HOMARD::HOMARD_Iteration::_narrow(aServant->_this());
+  ADAPT::HOMARD_Iteration_var aIter = ADAPT::HOMARD_Iteration::_narrow(aServant->_this());
   return aIter._retn();
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::newBoundary()
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::newBoundary()
 {
-  HOMARD::HOMARD_Gen_var engine = POA_HOMARD::HOMARD_Gen::_this();
+  ADAPT::ADAPT_Gen_var engine = POA_ADAPT::ADAPT_Gen::_this();
   HOMARD_Boundary_i* aServant = new HOMARD_Boundary_i(_orb, engine);
-  HOMARD::HOMARD_Boundary_var aBoundary = HOMARD::HOMARD_Boundary::_narrow(aServant->_this());
+  ADAPT::HOMARD_Boundary_var aBoundary = ADAPT::HOMARD_Boundary::_narrow(aServant->_this());
   return aBoundary._retn();
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::newZone()
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::newZone()
 {
-  HOMARD::HOMARD_Gen_var engine = POA_HOMARD::HOMARD_Gen::_this();
+  ADAPT::ADAPT_Gen_var engine = POA_ADAPT::ADAPT_Gen::_this();
   HOMARD_Zone_i* aServant = new HOMARD_Zone_i(_orb, engine);
-  HOMARD::HOMARD_Zone_var aZone = HOMARD::HOMARD_Zone::_narrow(aServant->_this());
+  ADAPT::HOMARD_Zone_var aZone = ADAPT::HOMARD_Zone::_narrow(aServant->_this());
   return aZone._retn();
 }
 //=============================================================================
-HOMARD::HOMARD_YACS_ptr HOMARD_Gen_i::newYACS()
+ADAPT::HOMARD_YACS_ptr ADAPT_Gen_i::newYACS()
 {
-  HOMARD::HOMARD_Gen_var engine = POA_HOMARD::HOMARD_Gen::_this();
+  ADAPT::ADAPT_Gen_var engine = POA_ADAPT::ADAPT_Gen::_this();
   HOMARD_YACS_i* aServant = new HOMARD_YACS_i(_orb, engine);
-  HOMARD::HOMARD_YACS_var aYACS = HOMARD::HOMARD_YACS::_narrow(aServant->_this());
+  ADAPT::HOMARD_YACS_var aYACS = ADAPT::HOMARD_YACS::_narrow(aServant->_this());
   return aYACS._retn();
 }
 //=============================================================================
@@ -1201,7 +1201,7 @@ HOMARD::HOMARD_YACS_ptr HOMARD_Gen_i::newYACS()
 // Creation des structures identifiees par leurs noms
 //=============================================================================
 //=============================================================================
-HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCase(const char* nomCas, const char* MeshName, const char* MeshFile)
+ADAPT::HOMARD_Cas_ptr ADAPT_Gen_i::CreateCase(const char* nomCas, const char* MeshName, const char* MeshFile)
 //
 // Creation d'un cas initial
 // nomCas : nom du cas a creer
@@ -1212,15 +1212,15 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCase(const char* nomCas, const char* 
 
   int option = 1 ;
   if ( _PublisMeshIN != 0 ) option = 2 ;
-  HOMARD::HOMARD_Cas_ptr myCase = CreateCase0(nomCas, MeshName, MeshFile, 0, 0, option) ;
+  ADAPT::HOMARD_Cas_ptr myCase = CreateCase0(nomCas, MeshName, MeshFile, 0, 0, option) ;
 
 // Valeurs par defaut des filtrages
   myCase->SetPyram(0);
 
-  return HOMARD::HOMARD_Cas::_duplicate(myCase);
+  return ADAPT::HOMARD_Cas::_duplicate(myCase);
 }
 //=============================================================================
-HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCaseFromIteration(const char* nomCas, const char* DirNameStart)
+ADAPT::HOMARD_Cas_ptr ADAPT_Gen_i::CreateCaseFromIteration(const char* nomCas, const char* DirNameStart)
 //
 // nomCas : nom du cas a creer
 // DirNameStart : nom du répertoire contenant l'iteration de reprise
@@ -1385,7 +1385,7 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCaseFromIteration(const char* nomCas,
 
   int option = 1 ;
   if ( _PublisMeshIN != 0 ) option = 2 ;
-  HOMARD::HOMARD_Cas_ptr myCase = CreateCase0(nomCas, MeshName, MeshFile, 1, NumeIter, option) ;
+  ADAPT::HOMARD_Cas_ptr myCase = CreateCase0(nomCas, MeshName, MeshFile, 1, NumeIter, option) ;
 
   // D. Parametrages lus dans le fichier de configuration
 
@@ -1399,7 +1399,7 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCaseFromIteration(const char* nomCas,
   // E.2. Répertoire associe a l'iteration de ce cas
   char* IterName ;
   IterName = myCase->GetIter0Name() ;
-  HOMARD::HOMARD_Iteration_var Iter = GetIteration(IterName) ;
+  ADAPT::HOMARD_Iteration_var Iter = GetIteration(IterName) ;
   char* nomDirIter = CreateDirNameIter(nomDirCase, 0 );
   Iter->SetDirNameLoc(nomDirIter);
   std::string nomDirIterTotal ;
@@ -1438,10 +1438,10 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCaseFromIteration(const char* nomCas,
   delete[] MeshFile ;
 
   CHDIR(nomDirWork.c_str());
-  return HOMARD::HOMARD_Cas::_duplicate(myCase);
+  return ADAPT::HOMARD_Cas::_duplicate(myCase);
 }
 //=============================================================================
-HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCaseFromCaseLastIteration(const char* nomCas, const char* DirNameStart)
+ADAPT::HOMARD_Cas_ptr ADAPT_Gen_i::CreateCaseFromCaseLastIteration(const char* nomCas, const char* DirNameStart)
 //
 // nomCas : nom du cas a creer
 // DirNameStart : nom du répertoire du cas contenant l'iteration de reprise
@@ -1452,12 +1452,12 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCaseFromCaseLastIteration(const char*
   std::string DirNameStartIter = CreateCase1(DirNameStart, -1) ;
 
   DirNameStartIter = string(DirNameStart) + "/" + DirNameStartIter ;
-  HOMARD::HOMARD_Cas_ptr myCase = CreateCaseFromIteration(nomCas, DirNameStartIter.c_str()) ;
+  ADAPT::HOMARD_Cas_ptr myCase = CreateCaseFromIteration(nomCas, DirNameStartIter.c_str()) ;
 
-  return HOMARD::HOMARD_Cas::_duplicate(myCase);
+  return ADAPT::HOMARD_Cas::_duplicate(myCase);
 }
 //=============================================================================
-HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCaseFromCaseIteration(const char* nomCas, const char* DirNameStart, CORBA::Long Number)
+ADAPT::HOMARD_Cas_ptr ADAPT_Gen_i::CreateCaseFromCaseIteration(const char* nomCas, const char* DirNameStart, CORBA::Long Number)
 //
 // nomCas : nom du cas a creer
 // DirNameStart : nom du répertoire du cas contenant l'iteration de reprise
@@ -1477,12 +1477,12 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCaseFromCaseIteration(const char* nom
   std::string DirNameStartIter = CreateCase1(DirNameStart, Number) ;
 
   DirNameStartIter = string(DirNameStart) + "/" + DirNameStartIter ;
-  HOMARD::HOMARD_Cas_ptr myCase = CreateCaseFromIteration(nomCas, DirNameStartIter.c_str()) ;
+  ADAPT::HOMARD_Cas_ptr myCase = CreateCaseFromIteration(nomCas, DirNameStartIter.c_str()) ;
 
-  return HOMARD::HOMARD_Cas::_duplicate(myCase);
+  return ADAPT::HOMARD_Cas::_duplicate(myCase);
 }
 //=============================================================================
-std::string HOMARD_Gen_i::CreateCase1(const char* DirNameStart, CORBA::Long Number)
+std::string ADAPT_Gen_i::CreateCase1(const char* DirNameStart, CORBA::Long Number)
 //
 // Retourne le nom du répertoire ou se trouve l'iteration voulue.
 // DirNameStart : nom du répertoire du cas contenant l'iteration de reprise
@@ -1629,7 +1629,7 @@ std::string HOMARD_Gen_i::CreateCase1(const char* DirNameStart, CORBA::Long Numb
   return DirNameStartIter ;
 }
 //=============================================================================
-HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCase0(const char* nomCas, const char* MeshName, const char* MeshFile, CORBA::Long MeshOption, CORBA::Long NumeIter, CORBA::Long Option)
+ADAPT::HOMARD_Cas_ptr ADAPT_Gen_i::CreateCase0(const char* nomCas, const char* MeshName, const char* MeshFile, CORBA::Long MeshOption, CORBA::Long NumeIter, CORBA::Long Option)
 //
 // nomCas : nom du cas a creer
 // MeshName, MeshFile : nom et fichier du maillage correspondant
@@ -1678,7 +1678,7 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCase0(const char* nomCas, const char*
 
   // B. Creation de l'objet cas et publication
 //   MESSAGE ( "CreateCase0 : Creation de l'objet" );
-  HOMARD::HOMARD_Cas_var myCase = newCase();
+  ADAPT::HOMARD_Cas_var myCase = newCase();
   myCase->SetName(nomCas);
   SALOMEDS::SObject_var aSO;
   SALOMEDS::SObject_var aResultSO=PublishInStudy(aSO, myCase, nomCas);
@@ -1690,7 +1690,7 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCase0(const char* nomCas, const char*
   // Les valeurs extremes des coordonnées
 //     MESSAGE ( "CreateCase0 : Les valeurs extremes des coordonnées" );
     std::vector<double> LesExtremes =GetBoundingBoxInMedFile(MeshFile) ;
-    HOMARD::extrema_var aSeq = new HOMARD::extrema() ;
+    ADAPT::extrema_var aSeq = new ADAPT::extrema() ;
     if (LesExtremes.size()!=10) { return 0; }
     aSeq->length(10) ;
     for (int i =0 ; i< LesExtremes.size() ; i++)
@@ -1699,7 +1699,7 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCase0(const char* nomCas, const char*
   // Les groupes
 //     MESSAGE ( "CreateCase0 : Les groupes" );
     std::set<std::string> LesGroupes  =GetListeGroupesInMedFile(MeshFile) ;
-    HOMARD::ListGroupType_var aSeqGroupe = new HOMARD::ListGroupType ;
+    ADAPT::ListGroupType_var aSeqGroupe = new ADAPT::ListGroupType ;
     aSeqGroupe->length(LesGroupes.size());
     std::set<std::string>::const_iterator it ;
     int i = 0 ;
@@ -1724,7 +1724,7 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCase0(const char* nomCas, const char*
   MESSAGE ( "CreateCas0 : ==> NomIteration = " << NomIteration );
 
   // D.2. Creation de l'iteration
-  HOMARD::HOMARD_Iteration_var anIter = newIteration();
+  ADAPT::HOMARD_Iteration_var anIter = newIteration();
   myStudyContext._mesIterations[NomIteration] = anIter;
   anIter->SetName(NomIteration.c_str());
   AssociateCaseIter (nomCas, NomIteration.c_str(), "IterationHomard");
@@ -1744,10 +1744,10 @@ HOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::CreateCase0(const char* nomCas, const char*
   SetEtatIter(NomIteration.c_str(), -NumeIter);
 //
 
-  return HOMARD::HOMARD_Cas::_duplicate(myCase);
+  return ADAPT::HOMARD_Cas::_duplicate(myCase);
 }
 //=============================================================================
-HOMARD::HOMARD_Hypothesis_ptr HOMARD_Gen_i::CreateHypothesis(const char* nomHypothesis)
+ADAPT::HOMARD_Hypothesis_ptr ADAPT_Gen_i::CreateHypothesis(const char* nomHypothesis)
 {
   INFOS ( "CreateHypothesis : nomHypothesis = " << nomHypothesis );
   IsValidStudy () ;
@@ -1763,7 +1763,7 @@ HOMARD::HOMARD_Hypothesis_ptr HOMARD_Gen_i::CreateHypothesis(const char* nomHypo
   }
 
   // B. Creation de l'objet
-  HOMARD::HOMARD_Hypothesis_var myHypothesis = newHypothesis();
+  ADAPT::HOMARD_Hypothesis_var myHypothesis = newHypothesis();
   if (CORBA::is_nil(myHypothesis))
   {
     SALOME::ExceptionStruct es;
@@ -1786,17 +1786,17 @@ HOMARD::HOMARD_Hypothesis_ptr HOMARD_Gen_i::CreateHypothesis(const char* nomHypo
   myHypothesis->SetAdapInit(0);
   myHypothesis->SetExtraOutput(1);
 
-  return HOMARD::HOMARD_Hypothesis::_duplicate(myHypothesis);
+  return ADAPT::HOMARD_Hypothesis::_duplicate(myHypothesis);
 }
 
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr HOMARD_Gen_i::CreateIteration(const char* NomIteration, const char* nomIterParent)
+ADAPT::HOMARD_Iteration_ptr ADAPT_Gen_i::CreateIteration(const char* NomIteration, const char* nomIterParent)
 //=============================================================================
 {
   INFOS ("CreateIteration : NomIteration  = " << NomIteration << ", nomIterParent = " << nomIterParent);
   IsValidStudy () ;
 
-  HOMARD::HOMARD_Iteration_var myIterationParent = myStudyContext._mesIterations[nomIterParent];
+  ADAPT::HOMARD_Iteration_var myIterationParent = myStudyContext._mesIterations[nomIterParent];
   if (CORBA::is_nil(myIterationParent))
   {
     SALOME::ExceptionStruct es;
@@ -1808,7 +1808,7 @@ HOMARD::HOMARD_Iteration_ptr HOMARD_Gen_i::CreateIteration(const char* NomIterat
 
   const char* nomCas = myIterationParent->GetCaseName();
   MESSAGE ("CreateIteration : nomCas = " << nomCas);
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
   if (CORBA::is_nil(myCase))
   {
     SALOME::ExceptionStruct es;
@@ -1829,7 +1829,7 @@ HOMARD::HOMARD_Iteration_ptr HOMARD_Gen_i::CreateIteration(const char* NomIterat
     return 0;
   };
 
-   HOMARD::HOMARD_Iteration_var myIteration = newIteration();
+   ADAPT::HOMARD_Iteration_var myIteration = newIteration();
    if (CORBA::is_nil(myIteration))
   {
     SALOME::ExceptionStruct es;
@@ -1886,10 +1886,10 @@ HOMARD::HOMARD_Iteration_ptr HOMARD_Gen_i::CreateIteration(const char* NomIterat
   aStudyBuilder->Addreference(aSubSO, aIterSOParent);
   aStudyBuilder->CommitCommand();
 
-  return HOMARD::HOMARD_Iteration::_duplicate(myIteration);
+  return ADAPT::HOMARD_Iteration::_duplicate(myIteration);
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundary(const char* BoundaryName, CORBA::Long BoundaryType)
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::CreateBoundary(const char* BoundaryName, CORBA::Long BoundaryType)
 {
   MESSAGE ("CreateBoundary : BoundaryName  = " << BoundaryName << ", BoundaryType = " << BoundaryType);
   IsValidStudy () ;
@@ -1905,7 +1905,7 @@ HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundary(const char* BoundaryNam
     return 0;
   };
 
-  HOMARD::HOMARD_Boundary_var myBoundary = newBoundary();
+  ADAPT::HOMARD_Boundary_var myBoundary = newBoundary();
   myBoundary->SetName(BoundaryName);
   myBoundary->SetType(BoundaryType);
 
@@ -1914,29 +1914,29 @@ HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundary(const char* BoundaryNam
   SALOMEDS::SObject_var aSO;
   SALOMEDS::SObject_var aResultSO=PublishInStudy(aSO, myBoundary, BoundaryName);
 
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary);
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary);
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryCAO(const char* BoundaryName, const char* CAOFile)
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::CreateBoundaryCAO(const char* BoundaryName, const char* CAOFile)
 {
   INFOS ("CreateBoundaryCAO : BoundaryName  = " << BoundaryName << ", CAOFile = " << CAOFile );
-  HOMARD::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, -1);
+  ADAPT::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, -1);
   myBoundary->SetDataFile( CAOFile ) ;
 
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary);
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary);
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryDi(const char* BoundaryName, const char* MeshName, const char* MeshFile)
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::CreateBoundaryDi(const char* BoundaryName, const char* MeshName, const char* MeshFile)
 {
   INFOS ("CreateBoundaryDi : BoundaryName  = " << BoundaryName << ", MeshName = " << MeshName << ", MeshFile = " << MeshFile );
-  HOMARD::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 0);
+  ADAPT::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 0);
   myBoundary->SetDataFile( MeshFile ) ;
   myBoundary->SetMeshName( MeshName ) ;
 
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary);
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary);
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryCylinder(const char* BoundaryName,
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::CreateBoundaryCylinder(const char* BoundaryName,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Xaxe, CORBA::Double Yaxe, CORBA::Double Zaxe,
                                       CORBA::Double Rayon)
@@ -1959,13 +1959,13 @@ HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryCylinder(const char* Bou
     return 0;
   };
 //
-  HOMARD::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 1) ;
+  ADAPT::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 1) ;
   myBoundary->SetCylinder( Xcentre, Ycentre, Zcentre, Xaxe, Yaxe, Zaxe, Rayon ) ;
 
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary) ;
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundarySphere(const char* BoundaryName,
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::CreateBoundarySphere(const char* BoundaryName,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Rayon)
 {
@@ -1983,13 +1983,13 @@ HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundarySphere(const char* Bound
     return 0;
   };
 //
-  HOMARD::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 2) ;
+  ADAPT::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 2) ;
   myBoundary->SetSphere( Xcentre, Ycentre, Zcentre, Rayon ) ;
 
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary) ;
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryConeA(const char* BoundaryName,
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::CreateBoundaryConeA(const char* BoundaryName,
                                       CORBA::Double Xaxe, CORBA::Double Yaxe, CORBA::Double Zaxe, CORBA::Double Angle,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre)
 {
@@ -2011,13 +2011,13 @@ HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryConeA(const char* Bounda
     return 0;
   };
 //
-  HOMARD::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 3) ;
+  ADAPT::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 3) ;
   myBoundary->SetConeA( Xaxe, Yaxe, Zaxe, Angle, Xcentre, Ycentre, Zcentre ) ;
 
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary) ;
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryConeR(const char* BoundaryName,
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::CreateBoundaryConeR(const char* BoundaryName,
                                       CORBA::Double Xcentre1, CORBA::Double Ycentre1, CORBA::Double Zcentre1, CORBA::Double Rayon1,
                                       CORBA::Double Xcentre2, CORBA::Double Ycentre2, CORBA::Double Zcentre2, CORBA::Double Rayon2)
 {
@@ -2043,13 +2043,13 @@ HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryConeR(const char* Bounda
     return 0;
   };
 //
-  HOMARD::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 4) ;
+  ADAPT::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 4) ;
   myBoundary->SetConeR( Xcentre1, Ycentre1, Zcentre1, Rayon1, Xcentre2, Ycentre2, Zcentre2, Rayon2 ) ;
 
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary) ;
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryTorus(const char* BoundaryName,
+ADAPT::HOMARD_Boundary_ptr ADAPT_Gen_i::CreateBoundaryTorus(const char* BoundaryName,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Xaxe, CORBA::Double Yaxe, CORBA::Double Zaxe,
                                       CORBA::Double RayonRev, CORBA::Double RayonPri)
@@ -2072,13 +2072,13 @@ HOMARD::HOMARD_Boundary_ptr HOMARD_Gen_i::CreateBoundaryTorus(const char* Bounda
     return 0;
   };
 //
-  HOMARD::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 5) ;
+  ADAPT::HOMARD_Boundary_var myBoundary = CreateBoundary(BoundaryName, 5) ;
   myBoundary->SetTorus( Xcentre, Ycentre, Zcentre, Xaxe, Yaxe, Zaxe, RayonRev, RayonPri ) ;
 
-  return HOMARD::HOMARD_Boundary::_duplicate(myBoundary) ;
+  return ADAPT::HOMARD_Boundary::_duplicate(myBoundary) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZone(const char* ZoneName, CORBA::Long ZoneType)
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::CreateZone(const char* ZoneName, CORBA::Long ZoneType)
 {
   MESSAGE ("CreateZone : ZoneName  = " << ZoneName << ", ZoneType = " << ZoneType);
   IsValidStudy () ;
@@ -2093,7 +2093,7 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZone(const char* ZoneName, CORBA::Lo
     return 0;
   };
 
-  HOMARD::HOMARD_Zone_var myZone = newZone();
+  ADAPT::HOMARD_Zone_var myZone = newZone();
   myZone->SetName(ZoneName);
   myZone->SetType(ZoneType);
 
@@ -2102,10 +2102,10 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZone(const char* ZoneName, CORBA::Lo
   SALOMEDS::SObject_var aSO;
   SALOMEDS::SObject_var aResultSO=PublishInStudy(aSO, myZone, ZoneName);
 
-  return HOMARD::HOMARD_Zone::_duplicate(myZone);
+  return ADAPT::HOMARD_Zone::_duplicate(myZone);
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneBox(const char* ZoneName,
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::CreateZoneBox(const char* ZoneName,
                                       CORBA::Double Xmini, CORBA::Double Xmaxi,
                                       CORBA::Double Ymini, CORBA::Double Ymaxi,
                                       CORBA::Double Zmini, CORBA::Double Zmaxi)
@@ -2130,13 +2130,13 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneBox(const char* ZoneName,
     return 0;
   };
 //
-  HOMARD::HOMARD_Zone_var myZone = CreateZone(ZoneName, 2) ;
+  ADAPT::HOMARD_Zone_var myZone = CreateZone(ZoneName, 2) ;
   myZone->SetBox ( Xmini, Xmaxi, Ymini, Ymaxi, Zmini, Zmaxi) ;
 
-  return HOMARD::HOMARD_Zone::_duplicate(myZone) ;
+  return ADAPT::HOMARD_Zone::_duplicate(myZone) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneSphere(const char* ZoneName,
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::CreateZoneSphere(const char* ZoneName,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre, CORBA::Double Rayon)
 {
   INFOS ("CreateZoneSphere : ZoneName  = " << ZoneName ) ;
@@ -2153,13 +2153,13 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneSphere(const char* ZoneName,
     return 0;
   };
 //
-  HOMARD::HOMARD_Zone_var myZone = CreateZone(ZoneName, 4) ;
+  ADAPT::HOMARD_Zone_var myZone = CreateZone(ZoneName, 4) ;
   myZone->SetSphere( Xcentre, Ycentre, Zcentre, Rayon ) ;
 
-  return HOMARD::HOMARD_Zone::_duplicate(myZone) ;
+  return ADAPT::HOMARD_Zone::_duplicate(myZone) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneCylinder(const char* ZoneName,
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::CreateZoneCylinder(const char* ZoneName,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Xaxe, CORBA::Double Yaxe, CORBA::Double Zaxe,
                                       CORBA::Double Rayon, CORBA::Double Haut)
@@ -2185,13 +2185,13 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneCylinder(const char* ZoneName,
     return 0;
   };
 //
-  HOMARD::HOMARD_Zone_var myZone = CreateZone(ZoneName, 5) ;
+  ADAPT::HOMARD_Zone_var myZone = CreateZone(ZoneName, 5) ;
   myZone->SetCylinder( Xcentre, Ycentre, Zcentre, Xaxe, Yaxe, Zaxe, Rayon, Haut ) ;
 
-  return HOMARD::HOMARD_Zone::_duplicate(myZone) ;
+  return ADAPT::HOMARD_Zone::_duplicate(myZone) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZonePipe(const char* ZoneName,
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::CreateZonePipe(const char* ZoneName,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Xaxe, CORBA::Double Yaxe, CORBA::Double Zaxe,
                                       CORBA::Double Rayon, CORBA::Double Haut, CORBA::Double Rayonint)
@@ -2220,13 +2220,13 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZonePipe(const char* ZoneName,
     return 0;
   };
 //
-  HOMARD::HOMARD_Zone_var myZone = CreateZone(ZoneName, 7) ;
+  ADAPT::HOMARD_Zone_var myZone = CreateZone(ZoneName, 7) ;
   myZone->SetPipe( Xcentre, Ycentre, Zcentre, Xaxe, Yaxe, Zaxe, Rayon, Haut, Rayonint ) ;
 
-  return HOMARD::HOMARD_Zone::_duplicate(myZone) ;
+  return ADAPT::HOMARD_Zone::_duplicate(myZone) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneBox2D(const char* ZoneName,
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::CreateZoneBox2D(const char* ZoneName,
                                       CORBA::Double Umini, CORBA::Double Umaxi,
                                       CORBA::Double Vmini, CORBA::Double Vmaxi,
                                       CORBA::Long Orient)
@@ -2280,13 +2280,13 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneBox2D(const char* ZoneName,
     Zmaxi = Umaxi ; }
   else { VERIFICATION( (Orient>=1) && (Orient<=3) ) ; }
 
-  HOMARD::HOMARD_Zone_var myZone = CreateZone(ZoneName, 10+Orient) ;
+  ADAPT::HOMARD_Zone_var myZone = CreateZone(ZoneName, 10+Orient) ;
   myZone->SetBox ( Xmini, Xmaxi, Ymini, Ymaxi, Zmini, Zmaxi) ;
 
-  return HOMARD::HOMARD_Zone::_duplicate(myZone) ;
+  return ADAPT::HOMARD_Zone::_duplicate(myZone) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneDisk(const char* ZoneName,
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::CreateZoneDisk(const char* ZoneName,
                                       CORBA::Double Ucentre, CORBA::Double Vcentre,
                                       CORBA::Double Rayon,
                                       CORBA::Long Orient)
@@ -2325,13 +2325,13 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneDisk(const char* ZoneName,
     Zcentre = Ucentre ; }
   else { VERIFICATION( (Orient>=1) && (Orient<=3) ) ; }
 
-  HOMARD::HOMARD_Zone_var myZone = CreateZone(ZoneName, 30+Orient) ;
+  ADAPT::HOMARD_Zone_var myZone = CreateZone(ZoneName, 30+Orient) ;
   myZone->SetCylinder( Xcentre, Ycentre, Zcentre, 0., 0., 1., Rayon, 1. ) ;
 
-  return HOMARD::HOMARD_Zone::_duplicate(myZone) ;
+  return ADAPT::HOMARD_Zone::_duplicate(myZone) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneDiskWithHole(const char* ZoneName,
+ADAPT::HOMARD_Zone_ptr ADAPT_Gen_i::CreateZoneDiskWithHole(const char* ZoneName,
                                       CORBA::Double Ucentre, CORBA::Double Vcentre,
                                       CORBA::Double Rayon, CORBA::Double Rayonint,
                                       CORBA::Long Orient)
@@ -2373,10 +2373,10 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneDiskWithHole(const char* ZoneNam
     Zcentre = Ucentre ; }
   else { VERIFICATION( (Orient>=1) && (Orient<=3) ) ; }
 
-  HOMARD::HOMARD_Zone_var myZone = CreateZone(ZoneName, 60+Orient) ;
+  ADAPT::HOMARD_Zone_var myZone = CreateZone(ZoneName, 60+Orient) ;
   myZone->SetPipe( Xcentre, Ycentre, Zcentre, 0., 0., 1., Rayon, 1., Rayonint ) ;
 
-  return HOMARD::HOMARD_Zone::_duplicate(myZone) ;
+  return ADAPT::HOMARD_Zone::_duplicate(myZone) ;
 }
 //=============================================================================
 //=============================================================================
@@ -2396,7 +2396,7 @@ HOMARD::HOMARD_Zone_ptr HOMARD_Gen_i::CreateZoneDiskWithHole(const char* ZoneNam
 //         1 : aucune option
 //        x2 : publication du maillage dans SMESH
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::Compute(const char* NomIteration, CORBA::Long etatMenage, CORBA::Long modeHOMARD, CORBA::Long Option1, CORBA::Long Option2)
+CORBA::Long ADAPT_Gen_i::Compute(const char* NomIteration, CORBA::Long etatMenage, CORBA::Long modeHOMARD, CORBA::Long Option1, CORBA::Long Option2)
 {
   INFOS ( "Compute : traitement de " << NomIteration << ", avec modeHOMARD = " << modeHOMARD << ", Option1 = " << Option1 << ", Option2 = " << Option2 );
 
@@ -2404,7 +2404,7 @@ CORBA::Long HOMARD_Gen_i::Compute(const char* NomIteration, CORBA::Long etatMena
   int codret = 0;
 
   // A.1. L'objet iteration
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[NomIteration];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[NomIteration];
   ASSERT(!CORBA::is_nil(myIteration));
 
   // A.2. Controle de la possibilite d'agir
@@ -2471,7 +2471,7 @@ CORBA::Long HOMARD_Gen_i::Compute(const char* NomIteration, CORBA::Long etatMena
 
   // A.4. Le cas
   const char* nomCas = myIteration->GetCaseName();
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
   ASSERT(!CORBA::is_nil(myCase));
 
   // B. Les répertoires
@@ -2653,7 +2653,7 @@ CORBA::Long HOMARD_Gen_i::Compute(const char* NomIteration, CORBA::Long etatMena
 //=============================================================================
 // Calcul d'une iteration : partie spécifique à l'adaptation
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::ComputeAdap(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMARD_Iteration_var myIteration, CORBA::Long etatMenage, HomardDriver* myDriver, CORBA::Long Option1, CORBA::Long Option2)
+CORBA::Long ADAPT_Gen_i::ComputeAdap(ADAPT::HOMARD_Cas_var myCase, ADAPT::HOMARD_Iteration_var myIteration, CORBA::Long etatMenage, HomardDriver* myDriver, CORBA::Long Option1, CORBA::Long Option2)
 {
   MESSAGE ( "ComputeAdap avec Option1 = " << Option1 << ", Option2 = " << Option2 );
 
@@ -2677,12 +2677,12 @@ CORBA::Long HOMARD_Gen_i::ComputeAdap(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOM
       throw SALOME::SALOME_Exception(es);
       return 2;
   };
-  HOMARD::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
+  ADAPT::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
   ASSERT(!CORBA::is_nil(myHypo));
 
   // B. L'iteration parent
   const char* nomIterationParent = myIteration->GetIterParentName();
-  HOMARD::HOMARD_Iteration_var myIterationParent = myStudyContext._mesIterations[nomIterationParent];
+  ADAPT::HOMARD_Iteration_var myIterationParent = myStudyContext._mesIterations[nomIterationParent];
   ASSERT(!CORBA::is_nil(myIterationParent));
   // Si l'iteration parent n'est pas calculee, on le fait (recursivite amont)
   if ( myIterationParent->GetState() == 1 )
@@ -2748,7 +2748,7 @@ CORBA::Long HOMARD_Gen_i::ComputeAdap(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOM
 
   // D.5. Les types de raffinement et de deraffinement
   // Les appels corba sont lourds, il vaut mieux les grouper
-  HOMARD::listeTypes* ListTypes = myHypo->GetAdapRefinUnRef();
+  ADAPT::listeTypes* ListTypes = myHypo->GetAdapRefinUnRef();
   ASSERT(ListTypes->length() == 3);
   int TypeAdap = (*ListTypes)[0];
   int TypeRaff = (*ListTypes)[1];
@@ -2772,7 +2772,7 @@ CORBA::Long HOMARD_Gen_i::ComputeAdap(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOM
   { DriverTexteField(myIteration, myHypo, myDriver) ; }
 
   // E.4. Ajout des informations liees au filtrage eventuel par les groupes
-  HOMARD::ListGroupType* listeGroupes = myHypo->GetGroups();
+  ADAPT::ListGroupType* listeGroupes = myHypo->GetGroups();
   int numberOfGroups = listeGroupes->length();
   MESSAGE( ". Filtrage par " << numberOfGroups << " groupes");
   if (numberOfGroups > 0)
@@ -2811,7 +2811,7 @@ CORBA::Long HOMARD_Gen_i::ComputeAdap(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOM
 //=============================================================================
 // Calcul d'une iteration : partie spécifique au suivi de frontière CAO
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::ComputeCAO(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMARD_Iteration_var myIteration, CORBA::Long Option1, CORBA::Long Option2)
+CORBA::Long ADAPT_Gen_i::ComputeCAO(ADAPT::HOMARD_Cas_var myCase, ADAPT::HOMARD_Iteration_var myIteration, CORBA::Long Option1, CORBA::Long Option2)
 {
   MESSAGE ( "ComputeCAO avec Option1 = " << Option1 << ", Option2 = " << Option2 );
 
@@ -2876,10 +2876,10 @@ CORBA::Long HOMARD_Gen_i::ComputeCAO(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMA
   { MESSAGE ( ". theInputNodeFiles["<< i << "] = " << theInputNodeFiles[i] ); }
 
   // B.4. Le fichier de la CAO
-  HOMARD::ListBoundaryGroupType* ListBoundaryGroupType = myCase->GetBoundaryGroup();
+  ADAPT::ListBoundaryGroupType* ListBoundaryGroupType = myCase->GetBoundaryGroup();
   std::string BoundaryName = std::string((*ListBoundaryGroupType)[0]);
   MESSAGE ( ". BoundaryName = " << BoundaryName );
-  HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
+  ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
   const std::string theXaoFileName = myBoundary->GetDataFile();
   MESSAGE ( ". theXaoFileName = " << theXaoFileName );
 
@@ -2907,7 +2907,7 @@ CORBA::Long HOMARD_Gen_i::ComputeCAO(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMA
 //         1 : aucune option
 //        x2 : publication du maillage dans SMESH
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::ComputeCAObis(HOMARD::HOMARD_Iteration_var myIteration, CORBA::Long Option1, CORBA::Long Option2)
+CORBA::Long ADAPT_Gen_i::ComputeCAObis(ADAPT::HOMARD_Iteration_var myIteration, CORBA::Long Option1, CORBA::Long Option2)
 {
   MESSAGE ( "ComputeCAObis, avec Option1 = " << Option1 << ", Option2 = " << Option2 );
 
@@ -2939,7 +2939,7 @@ CORBA::Long HOMARD_Gen_i::ComputeCAObis(HOMARD::HOMARD_Iteration_var myIteration
 
   // A.3. Le cas
   const char* CaseName = myIteration->GetCaseName();
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[CaseName];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[CaseName];
   ASSERT(!CORBA::is_nil(myCase));
 
   // A.4. Le sous-répertoire de l'iteration a traiter
@@ -3020,7 +3020,7 @@ CORBA::Long HOMARD_Gen_i::ComputeCAObis(HOMARD::HOMARD_Iteration_var myIteration
 //  nomrep : nom du répertoire parent
 //  num : le nom du sous-répertoire est sous la forme 'In', n est >= num
 //=============================================================================
-char* HOMARD_Gen_i::CreateDirNameIter(const char* nomrep, CORBA::Long num )
+char* ADAPT_Gen_i::CreateDirNameIter(const char* nomrep, CORBA::Long num )
 {
   MESSAGE ( "CreateDirNameIter : nomrep ="<< nomrep << ", num = "<<num);
   // On verifie que le répertoire parent existe
@@ -3103,7 +3103,7 @@ char* HOMARD_Gen_i::CreateDirNameIter(const char* nomrep, CORBA::Long num )
 //         etatMenage =  1 : on fait le menage du répertoire
 //         etatMenage = -1 : on ne fait rien
 //=============================================================================
-char* HOMARD_Gen_i::ComputeDirManagement(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMARD_Iteration_var myIteration, CORBA::Long etatMenage)
+char* ADAPT_Gen_i::ComputeDirManagement(ADAPT::HOMARD_Cas_var myCase, ADAPT::HOMARD_Iteration_var myIteration, CORBA::Long etatMenage)
 {
   MESSAGE ( "ComputeDirManagement : répertoires pour le calcul" );
   // B.2. Le répertoire du cas
@@ -3197,7 +3197,7 @@ char* HOMARD_Gen_i::ComputeDirManagement(HOMARD::HOMARD_Cas_var myCase, HOMARD::
 //=============================================================================
 // Calcul d'une iteration : gestion du répertoire de calcul de l'iteration parent
 //=============================================================================
-char* HOMARD_Gen_i::ComputeDirPaManagement(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMARD_Iteration_var myIteration)
+char* ADAPT_Gen_i::ComputeDirPaManagement(ADAPT::HOMARD_Cas_var myCase, ADAPT::HOMARD_Iteration_var myIteration)
 {
   MESSAGE ( "ComputeDirPaManagement : répertoires pour le calcul" );
   // Le répertoire du cas
@@ -3207,7 +3207,7 @@ char* HOMARD_Gen_i::ComputeDirPaManagement(HOMARD::HOMARD_Cas_var myCase, HOMARD
   // Le sous-répertoire de l'iteration precedente
 
   const char* nomIterationParent = myIteration->GetIterParentName();
-  HOMARD::HOMARD_Iteration_var myIterationParent = myStudyContext._mesIterations[nomIterationParent];
+  ADAPT::HOMARD_Iteration_var myIterationParent = myStudyContext._mesIterations[nomIterationParent];
   const char* nomDirItPa = myIterationParent->GetDirNameLoc();
   std::stringstream DirComputePa ;
   DirComputePa << nomDirCase << "/" << nomDirItPa;
@@ -3219,10 +3219,10 @@ char* HOMARD_Gen_i::ComputeDirPaManagement(HOMARD::HOMARD_Cas_var myCase, HOMARD
 //=============================================================================
 // Calcul d'une iteration : ecriture des zones dans le fichier de configuration
 //=============================================================================
-void HOMARD_Gen_i::DriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver)
+void ADAPT_Gen_i::DriverTexteZone(ADAPT::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver)
 {
   MESSAGE ( "... DriverTexteZone" );
-  HOMARD::listeZonesHypo* ListZone = myHypo->GetZones();
+  ADAPT::listeZonesHypo* ListZone = myHypo->GetZones();
   int numberOfZonesx2 = ListZone->length();
   int NumZone ;
 
@@ -3230,7 +3230,7 @@ void HOMARD_Gen_i::DriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHypo, HomardD
   {
     std::string ZoneName = std::string((*ListZone)[iaux]);
     MESSAGE ( "... ZoneName = " << ZoneName);
-    HOMARD::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
+    ADAPT::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
     ASSERT(!CORBA::is_nil(myZone));
 
     int ZoneType = myZone->GetType();
@@ -3238,7 +3238,7 @@ void HOMARD_Gen_i::DriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHypo, HomardD
     int TypeUse = atoi( TypeUsestr.c_str() );
     MESSAGE ( "... ZoneType = " << ZoneType << ", TypeUse = "<<TypeUse);
     NumZone = iaux/2 + 1 ;
-    HOMARD::double_array* zone = myZone->GetCoords();
+    ADAPT::double_array* zone = myZone->GetCoords();
     if ( ZoneType == 2 || ( ZoneType>=11 && ZoneType <=13 ) ) // Cas d un parallelepipede ou d'un rectangle
     { myDriver->TexteZone(NumZone, ZoneType, TypeUse, (*zone)[0], (*zone)[1], (*zone)[2], (*zone)[3], (*zone)[4], (*zone)[5], 0., 0., 0.); }
     else if ( ZoneType == 4 ) // Cas d une sphere
@@ -3255,7 +3255,7 @@ void HOMARD_Gen_i::DriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHypo, HomardD
 //=============================================================================
 // Calcul d'une iteration : ecriture des champs dans le fichier de configuration
 //=============================================================================
-void HOMARD_Gen_i::DriverTexteField(HOMARD::HOMARD_Iteration_var myIteration, HOMARD::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver)
+void ADAPT_Gen_i::DriverTexteField(ADAPT::HOMARD_Iteration_var myIteration, ADAPT::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver)
 {
   MESSAGE ( "... DriverTexteField" );
 //  Le fichier du champ
@@ -3273,7 +3273,7 @@ void HOMARD_Gen_i::DriverTexteField(HOMARD::HOMARD_Iteration_var myIteration, HO
   int Rank = myIteration->GetRank();
   MESSAGE( ". Rank = " << Rank );
 //  Les informations sur les champs
-  HOMARD::InfosHypo* aInfosHypo = myHypo->GetField();
+  ADAPT::InfosHypo* aInfosHypo = myHypo->GetField();
 //  Le nom
   const char* FieldName = aInfosHypo->FieldName;
 //  Les seuils
@@ -3291,7 +3291,7 @@ void HOMARD_Gen_i::DriverTexteField(HOMARD::HOMARD_Iteration_var myIteration, HO
   myDriver->TexteField(FieldName, FieldFile, TimeStep, Rank, TypeThR, ThreshR, TypeThC, ThreshC, UsField, UsCmpI);
 //
 //  Les composantes
-  HOMARD::listeComposantsHypo* mescompo = myHypo->GetComps();
+  ADAPT::listeComposantsHypo* mescompo = myHypo->GetComps();
   int numberOfCompos = mescompo->length();
   MESSAGE( ". numberOfCompos = " << numberOfCompos );
   for (int NumeComp = 0; NumeComp< numberOfCompos; NumeComp++)
@@ -3309,12 +3309,12 @@ void HOMARD_Gen_i::DriverTexteField(HOMARD::HOMARD_Iteration_var myIteration, HO
 //    2. les liens avec les groupes
 //    3. un entier resumant le type de comportement pour les frontieres
 //=============================================================================
-int HOMARD_Gen_i::DriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase, HomardDriver* myDriver)
+int ADAPT_Gen_i::DriverTexteBoundary(ADAPT::HOMARD_Cas_var myCase, HomardDriver* myDriver)
 {
   MESSAGE ( "... DriverTexteBoundary" );
   // 1. Recuperation des frontieres
   std::list<std::string>  ListeBoundaryTraitees ;
-  HOMARD::ListBoundaryGroupType* ListBoundaryGroupType = myCase->GetBoundaryGroup();
+  ADAPT::ListBoundaryGroupType* ListBoundaryGroupType = myCase->GetBoundaryGroup();
   int numberOfitems = ListBoundaryGroupType->length();
   MESSAGE ( "... number of string for Boundary+Group = " << numberOfitems);
   int BoundaryOption = 1 ;
@@ -3338,7 +3338,7 @@ int HOMARD_Gen_i::DriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase, HomardDrive
     if ( A_faire == 1 )
     {
       // 2.2.1. Caracteristiques de la frontiere
-      HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
+      ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
       ASSERT(!CORBA::is_nil(myBoundary));
       int BoundaryType = myBoundary->GetType();
       MESSAGE ( "... BoundaryType = " << BoundaryType );
@@ -3364,7 +3364,7 @@ int HOMARD_Gen_i::DriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase, HomardDrive
       else
       {
         NumBoundaryAnalytical++ ;
-        HOMARD::double_array* coor = myBoundary->GetCoords();
+        ADAPT::double_array* coor = myBoundary->GetCoords();
         if (BoundaryType == 1) // Cas d un cylindre
         {
           myDriver->TexteBoundaryAn(BoundaryName, NumBoundaryAnalytical, BoundaryType, (*coor)[0], (*coor)[1], (*coor)[2], (*coor)[3], (*coor)[4], (*coor)[5], (*coor)[6], 0.);
@@ -3401,7 +3401,7 @@ int HOMARD_Gen_i::DriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase, HomardDrive
   {
     std::string BoundaryName = std::string((*ListBoundaryGroupType)[NumBoundary]);
     MESSAGE ( "... BoundaryName = " << BoundaryName);
-    HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
+    ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
     ASSERT(!CORBA::is_nil(myBoundary));
     int BoundaryType = myBoundary->GetType();
     MESSAGE ( "... BoundaryType = " << BoundaryType );
@@ -3433,7 +3433,7 @@ int HOMARD_Gen_i::DriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase, HomardDrive
 //=============================================================================
 // Calcul d'une iteration : ecriture des interpolations dans le fichier de configuration
 //=============================================================================
-void HOMARD_Gen_i::DriverTexteFieldInterp(HOMARD::HOMARD_Iteration_var myIteration, HOMARD::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver)
+void ADAPT_Gen_i::DriverTexteFieldInterp(ADAPT::HOMARD_Iteration_var myIteration, ADAPT::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver)
 {
   MESSAGE ( "... DriverTexteFieldInterp" );
   int TypeFieldInterp = myHypo->GetTypeFieldInterp();
@@ -3462,11 +3462,11 @@ void HOMARD_Gen_i::DriverTexteFieldInterp(HOMARD::HOMARD_Iteration_var myIterati
     else if (TypeFieldInterp == 2)
     {
       // Les champs et leurs instants pour l'iteration
-      HOMARD::listeFieldInterpTSRsIter* ListFieldTSR = myIteration->GetFieldInterpsTimeStepRank();
+      ADAPT::listeFieldInterpTSRsIter* ListFieldTSR = myIteration->GetFieldInterpsTimeStepRank();
       int numberOfFieldsx3 = ListFieldTSR->length();
       MESSAGE( ". pour iteration, numberOfFields = " << numberOfFieldsx3/3 );
       // Les champs pour l'hypothese
-      HOMARD::listeFieldInterpsHypo* ListField = myHypo->GetFieldInterps();
+      ADAPT::listeFieldInterpsHypo* ListField = myHypo->GetFieldInterps();
       int numberOfFieldsx2 = ListField->length();
       MESSAGE( ". pour hypothese, numberOfFields = " << numberOfFieldsx2/2 );
       // On parcourt tous les champs de  l'hypothese
@@ -3522,7 +3522,7 @@ void HOMARD_Gen_i::DriverTexteFieldInterp(HOMARD::HOMARD_Iteration_var myIterati
 // Publications
 //===========================================================================
 //===========================================================================
-SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr theSObject,
+SALOMEDS::SObject_ptr ADAPT_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr theSObject,
                                                    CORBA::Object_ptr theObject,
                                                    const char* theName)
 {
@@ -3539,11 +3539,11 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr theSObj
 
 // Recuperation de l'objet correspondant, en essayant chacun des types possibles
 // Rq : Iteration est publiee ailleurs
-  HOMARD::HOMARD_Boundary_var   aBoundary = HOMARD::HOMARD_Boundary::_narrow(theObject);
-  HOMARD::HOMARD_Cas_var        aCase  = HOMARD::HOMARD_Cas::_narrow(theObject);
-  HOMARD::HOMARD_Hypothesis_var aHypo = HOMARD::HOMARD_Hypothesis::_narrow(theObject);
-  HOMARD::HOMARD_YACS_var       aYACS = HOMARD::HOMARD_YACS::_narrow(theObject);
-  HOMARD::HOMARD_Zone_var       aZone = HOMARD::HOMARD_Zone::_narrow(theObject);
+  ADAPT::HOMARD_Boundary_var   aBoundary = ADAPT::HOMARD_Boundary::_narrow(theObject);
+  ADAPT::HOMARD_Cas_var        aCase  = ADAPT::HOMARD_Cas::_narrow(theObject);
+  ADAPT::HOMARD_Hypothesis_var aHypo = ADAPT::HOMARD_Hypothesis::_narrow(theObject);
+  ADAPT::HOMARD_YACS_var       aYACS = ADAPT::HOMARD_YACS::_narrow(theObject);
+  ADAPT::HOMARD_Zone_var       aZone = ADAPT::HOMARD_Zone::_narrow(theObject);
 
   UpdateStudy();
 
@@ -3578,14 +3578,14 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr theSObj
   return aResultSO._retn();
 };
 //=============================================================================
-SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishBoundaryInStudy( SALOMEDS::StudyBuilder_var aStudyBuilder,
-                   HOMARD::HOMARD_Boundary_ptr theObject, const char* theName)
+SALOMEDS::SObject_ptr ADAPT_Gen_i::PublishBoundaryInStudy( SALOMEDS::StudyBuilder_var aStudyBuilder,
+                   ADAPT::HOMARD_Boundary_ptr theObject, const char* theName)
 {
   MESSAGE("PublishBoundaryStudy pour "<<theName);
   SALOMEDS::SObject_var aResultSO;
 
   // Caracteristique de la Boundary
-  HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[theName];
+  ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[theName];
 
   // On recupere le module pere dans l etude
   SALOMEDS::SComponent_var       theFatherHomard = myStudy->FindComponent(ComponentDataType());
@@ -3658,18 +3658,18 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishBoundaryInStudy( SALOMEDS::StudyBuild
   return aResultSO._retn();
 }
 //=============================================================================
-SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishCaseInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                                                       HOMARD::HOMARD_Cas_ptr theObject, const char* theName)
+SALOMEDS::SObject_ptr ADAPT_Gen_i::PublishCaseInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
+                                                       ADAPT::HOMARD_Cas_ptr theObject, const char* theName)
 {
   MESSAGE("PublishCaseInStudy pour "<<theName);
   SALOMEDS::SObject_var aResultSO;
 
   if (CORBA::is_nil(theObject)) {
-    MESSAGE("HOMARD_Gen_i::theObject->_is_nil()");
+    MESSAGE("ADAPT_Gen_i::theObject->_is_nil()");
     return aResultSO._retn();
   }
   if (myStudy->_is_nil()) {
-    MESSAGE("HOMARD_Gen_i::myStudy->_is_nil()");
+    MESSAGE("ADAPT_Gen_i::myStudy->_is_nil()");
     return aResultSO._retn();
   }
 
@@ -3690,8 +3690,8 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishCaseInStudy(SALOMEDS::StudyBuilder_va
   return aResultSO._retn();
 }
 //=============================================================================
-SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishHypotheseInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                   HOMARD::HOMARD_Hypothesis_ptr theObject, const char* theName)
+SALOMEDS::SObject_ptr ADAPT_Gen_i::PublishHypotheseInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
+                   ADAPT::HOMARD_Hypothesis_ptr theObject, const char* theName)
 {
   MESSAGE("PublishHypotheseInStudy pour "<<theName);
   SALOMEDS::SObject_var aResultSO;
@@ -3728,8 +3728,8 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishHypotheseInStudy(SALOMEDS::StudyBuild
   return aResultSO._retn();
 }
 //=============================================================================
-SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishYACSInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                   HOMARD::HOMARD_YACS_ptr theObject, const char* theName)
+SALOMEDS::SObject_ptr ADAPT_Gen_i::PublishYACSInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
+                   ADAPT::HOMARD_YACS_ptr theObject, const char* theName)
 {
   MESSAGE("PublishYACSInStudy pour "<<theName);
   SALOMEDS::SObject_var aResultSO;
@@ -3766,8 +3766,8 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishYACSInStudy(SALOMEDS::StudyBuilder_va
 }
 
 //=============================================================================
-SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishZoneInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                   HOMARD::HOMARD_Zone_ptr theObject, const char* theName)
+SALOMEDS::SObject_ptr ADAPT_Gen_i::PublishZoneInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
+                   ADAPT::HOMARD_Zone_ptr theObject, const char* theName)
 {
   MESSAGE("PublishZoneStudy pour "<<theName);
   SALOMEDS::SObject_var aResultSO;
@@ -3789,7 +3789,7 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishZoneInStudy(SALOMEDS::StudyBuilder_va
   }
 
   // Caracteristique de la zone
-  HOMARD::HOMARD_Zone_var myZone = myStudyContext._mesZones[theName];
+  ADAPT::HOMARD_Zone_var myZone = myStudyContext._mesZones[theName];
   CORBA::Long ZoneType = myZone->GetType();
 
   // On ajoute la categorie des zones dans l etude si necessaire
@@ -3858,7 +3858,7 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PublishZoneInStudy(SALOMEDS::StudyBuilder_va
   return aResultSO._retn();
 }
 //===========================================================================
-void HOMARD_Gen_i::PublishInStudyAttr(SALOMEDS::StudyBuilder_var aStudyBuilder,
+void ADAPT_Gen_i::PublishInStudyAttr(SALOMEDS::StudyBuilder_var aStudyBuilder,
                                       SALOMEDS::SObject_var aResultSO,
                                       const char* name, const char* comment, const char* icone, const char* ior)
 {
@@ -3900,16 +3900,16 @@ void HOMARD_Gen_i::PublishInStudyAttr(SALOMEDS::StudyBuilder_var aStudyBuilder,
 };
 
 //=====================================================================================
-void HOMARD_Gen_i::PublishBoundaryUnderCase(const char* CaseName, const char* BoundaryName)
+void ADAPT_Gen_i::PublishBoundaryUnderCase(const char* CaseName, const char* BoundaryName)
 {
   MESSAGE ( "PublishBoundaryUnderCase : CaseName = " << CaseName << ", BoundaryName= " << BoundaryName );
 
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[CaseName];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[CaseName];
   ASSERT(!CORBA::is_nil(myCase));
   SALOMEDS::SObject_var aCaseSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myCase)));
   ASSERT(!CORBA::is_nil(aCaseSO));
 
-  HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
+  ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
   ASSERT(!CORBA::is_nil(myBoundary));
   SALOMEDS::SObject_var aBoundarySO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myBoundary)));
   ASSERT(!CORBA::is_nil(aBoundarySO));
@@ -3926,16 +3926,16 @@ void HOMARD_Gen_i::PublishBoundaryUnderCase(const char* CaseName, const char* Bo
 
 };
 //=====================================================================================
-void HOMARD_Gen_i::PublishCaseUnderYACS(const char* nomYACS, const char* CaseName)
+void ADAPT_Gen_i::PublishCaseUnderYACS(const char* nomYACS, const char* CaseName)
 {
   MESSAGE ( "PublishCaseUnderYACS : nomYACS = " << nomYACS << ", CaseName= " << CaseName );
 
-  HOMARD::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
+  ADAPT::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
   ASSERT(!CORBA::is_nil(myYACS));
   SALOMEDS::SObject_var aYACSSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myYACS)));
   ASSERT(!CORBA::is_nil(aYACSSO));
 
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[CaseName];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[CaseName];
   ASSERT(!CORBA::is_nil(myCase));
   SALOMEDS::SObject_var aCaseSO = SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myCase)));
   ASSERT(!CORBA::is_nil(aCaseSO));
@@ -3951,7 +3951,7 @@ void HOMARD_Gen_i::PublishCaseUnderYACS(const char* nomYACS, const char* CaseNam
 
 };
 //=============================================================================
-void HOMARD_Gen_i::PublishResultInSmesh(const char* NomFich, CORBA::Long Option)
+void ADAPT_Gen_i::PublishResultInSmesh(const char* NomFich, CORBA::Long Option)
 //  Option = 0 : fichier issu d'une importation
 //  Option = 1 : fichier issu d'une execution HOMARD
 {
@@ -4030,7 +4030,7 @@ void HOMARD_Gen_i::PublishResultInSmesh(const char* NomFich, CORBA::Long Option)
 
 }
 //=============================================================================
-void HOMARD_Gen_i::DeleteResultInSmesh(std::string NomFich, std::string MeshName)
+void ADAPT_Gen_i::DeleteResultInSmesh(std::string NomFich, std::string MeshName)
 {
   MESSAGE ("DeleteResultInSmesh pour le maillage " << MeshName << " dans le fichier " << NomFich );
   if (CORBA::is_nil(myStudy))
@@ -4077,10 +4077,10 @@ void HOMARD_Gen_i::DeleteResultInSmesh(std::string NomFich, std::string MeshName
   return ;
 }
 //=============================================================================
-void HOMARD_Gen_i::PublishMeshIterInSmesh(const char* NomIter)
+void ADAPT_Gen_i::PublishMeshIterInSmesh(const char* NomIter)
 {
   MESSAGE( "PublishMeshIterInSmesh " << NomIter);
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[NomIter];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[NomIter];
 
   SALOMEDS::SObject_var aIterSO=SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myIteration)));
   if (CORBA::is_nil(myIteration))
@@ -4108,10 +4108,10 @@ void HOMARD_Gen_i::PublishMeshIterInSmesh(const char* NomIter)
 
 }
 //=============================================================================
-void HOMARD_Gen_i::PublishFileUnderIteration(const char* NomIter, const char* NomFich, const char* Commentaire)
+void ADAPT_Gen_i::PublishFileUnderIteration(const char* NomIter, const char* NomFich, const char* Commentaire)
 {
 //   MESSAGE ("PublishFileUnderIteration pour l'iteration " << NomIter << " du fichier " << NomFich << " avec le commentaire " << Commentaire );
-  HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[NomIter];
+  ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[NomIter];
 
   SALOMEDS::SObject_var aIterSO=SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myIteration)));
   if (CORBA::is_nil(myIteration))
@@ -4143,10 +4143,10 @@ void HOMARD_Gen_i::PublishFileUnderIteration(const char* NomIter, const char* No
 }
 //
 //=============================================================================
-void HOMARD_Gen_i::PublishFileUnderYACS(const char* nomYACS, const char* NomFich, const char* Commentaire)
+void ADAPT_Gen_i::PublishFileUnderYACS(const char* nomYACS, const char* NomFich, const char* Commentaire)
 {
 //   MESSAGE ("PublishFileUnderYACS pour le schema " << nomYACS << " du fichier " << NomFich << " avec le commentaire " << Commentaire );
-  HOMARD::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
+  ADAPT::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
 
   SALOMEDS::SObject_var aYACSSO=SALOMEDS::SObject::_narrow(myStudy->FindObjectIOR(_orb->object_to_string(myYACS)));
   if (CORBA::is_nil(myYACS))
@@ -4181,7 +4181,7 @@ void HOMARD_Gen_i::PublishFileUnderYACS(const char* nomYACS, const char* NomFich
 // FileName : nom du fichier contenant le script de lancement du calcul
 // DirName : le répertoire de lancement des calculs du schéma
 //=============================================================================
-HOMARD::HOMARD_YACS_ptr HOMARD_Gen_i::CreateYACSSchema (const char* nomYACS, const char* nomCas, const char* ScriptFile, const char* DirName, const char* MeshFile)
+ADAPT::HOMARD_YACS_ptr ADAPT_Gen_i::CreateYACSSchema (const char* nomYACS, const char* nomCas, const char* ScriptFile, const char* DirName, const char* MeshFile)
 {
   INFOS ( "CreateYACSSchema : Schema YACS " << nomYACS );
   INFOS ( ". nomCas     : " << nomCas);
@@ -4200,7 +4200,7 @@ HOMARD::HOMARD_YACS_ptr HOMARD_Gen_i::CreateYACSSchema (const char* nomYACS, con
   }
 
   // B. Creation de l'objet
-  HOMARD::HOMARD_YACS_var myYACS = newYACS();
+  ADAPT::HOMARD_YACS_var myYACS = newYACS();
   if (CORBA::is_nil(myYACS))
   {
     SALOME::ExceptionStruct es;
@@ -4237,22 +4237,22 @@ HOMARD::HOMARD_YACS_ptr HOMARD_Gen_i::CreateYACSSchema (const char* nomYACS, con
   defaut_i = GetYACSMaxElem() ;
   myYACS->SetMaxElem( defaut_i ) ;
   // D.3. Fichier de sauvegarde dans le répertoire du cas
-  HOMARD::HOMARD_Cas_ptr caseyacs = GetCase(nomCas) ;
+  ADAPT::HOMARD_Cas_ptr caseyacs = GetCase(nomCas) ;
   std::string dirnamecase = caseyacs->GetDirName() ;
   std::string XMLFile ;
   XMLFile = dirnamecase + "/schema.xml" ;
   myYACS->SetXMLFile( XMLFile.c_str() ) ;
 
-  return HOMARD::HOMARD_YACS::_duplicate(myYACS);
+  return ADAPT::HOMARD_YACS::_duplicate(myYACS);
 }
 //=============================================================================
 // Ecriture d'un schema YACS
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::YACSWrite(const char* nomYACS)
+CORBA::Long ADAPT_Gen_i::YACSWrite(const char* nomYACS)
 {
   INFOS ( "YACSWrite : Ecriture de " << nomYACS );
 // Le répertoire du cas
-  HOMARD::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
+  ADAPT::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
   ASSERT(!CORBA::is_nil(myYACS));
 // Le nom du fichier du schema
   std::string XMLFile ;
@@ -4265,7 +4265,7 @@ CORBA::Long HOMARD_Gen_i::YACSWrite(const char* nomYACS)
 //=============================================================================
 // Ecriture d'un schema YACS sur un fichier donne
 //=============================================================================
-CORBA::Long HOMARD_Gen_i::YACSWriteOnFile(const char* nomYACS, const char* XMLFile)
+CORBA::Long ADAPT_Gen_i::YACSWriteOnFile(const char* nomYACS, const char* XMLFile)
 {
   INFOS ( "YACSWriteOnFile : Ecriture de " << nomYACS << " sur " << XMLFile );
 
@@ -4274,7 +4274,7 @@ CORBA::Long HOMARD_Gen_i::YACSWriteOnFile(const char* nomYACS, const char* XMLFi
 
   // B. L'objet YACS
   // B.1. L'objet
-  HOMARD::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
+  ADAPT::HOMARD_YACS_var myYACS = myStudyContext._mesYACSs[nomYACS];
   ASSERT(!CORBA::is_nil(myYACS));
   // B.2. Les caracteristiques
   std::string DirName = myYACS->GetDirName() ;
@@ -4288,7 +4288,7 @@ CORBA::Long HOMARD_Gen_i::YACSWriteOnFile(const char* nomYACS, const char* XMLFi
   // C. Le cas
   // C.1. L'objet cas
   const char* nomCas = myYACS->GetCaseName();
-  HOMARD::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
+  ADAPT::HOMARD_Cas_var myCase = myStudyContext._mesCas[nomCas];
   ASSERT(!CORBA::is_nil(myCase));
   // C.2. Les instructions python associees au cas
   CORBA::String_var dumpCorbaCase = myCase->GetDumpPython();
@@ -4297,13 +4297,13 @@ CORBA::Long HOMARD_Gen_i::YACSWriteOnFile(const char* nomYACS, const char* XMLFi
 
   // D. Les iterations
   // D.1. L'iteration initiale
-  HOMARD::HOMARD_Iteration_var Iter0 = myCase->GetIter0() ;
+  ADAPT::HOMARD_Iteration_var Iter0 = myCase->GetIter0() ;
   std::string Iter0Name = myCase->GetIter0Name() ;
   MESSAGE (". Iter0Name = " << Iter0Name);
   std::string MeshName = Iter0->GetMeshName();
   MESSAGE (". MeshName = " << MeshName);
   // D.2. L'iteration numero 1
-  HOMARD::listeIterFilles* maListe = Iter0->GetIterations();
+  ADAPT::listeIterFilles* maListe = Iter0->GetIterations();
   int numberOfIter = maListe->length();
   if ( numberOfIter > 1 )
   {
@@ -4317,7 +4317,7 @@ CORBA::Long HOMARD_Gen_i::YACSWriteOnFile(const char* nomYACS, const char* XMLFi
   }
   std::string Iter1Name = std::string((*maListe)[0]);
   MESSAGE ("... Iter1Name = " << Iter1Name);
-  HOMARD::HOMARD_Iteration_var Iter1 = GetIteration(Iter1Name.c_str()) ;
+  ADAPT::HOMARD_Iteration_var Iter1 = GetIteration(Iter1Name.c_str()) ;
   // D.3. Les instructions python associees a l'iteration
   CORBA::String_var dumpCorbaIter = Iter1->GetDumpPython();
   std::string pythonIter = dumpCorbaIter.in();
@@ -4327,10 +4327,10 @@ CORBA::Long HOMARD_Gen_i::YACSWriteOnFile(const char* nomYACS, const char* XMLFi
   // E.1. La structure
   std::string nomHypo = Iter1->GetHypoName();
   MESSAGE (". nomHypo = " << nomHypo);
-  HOMARD::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
+  ADAPT::HOMARD_Hypothesis_var myHypo = myStudyContext._mesHypotheses[nomHypo];
   ASSERT(!CORBA::is_nil(myHypo));
   // E.2. Les caracteristiques de l'adaptation
-  HOMARD::listeTypes* ListTypes = myHypo->GetAdapRefinUnRef();
+  ADAPT::listeTypes* ListTypes = myHypo->GetAdapRefinUnRef();
   ASSERT(ListTypes->length() == 3);
   int TypeAdap = (*ListTypes)[0];
 //   int TypeRaff = (*ListTypes)[1];
@@ -4442,11 +4442,11 @@ CORBA::Long HOMARD_Gen_i::YACSWriteOnFile(const char* nomYACS, const char* XMLFi
 //=============================================================================
 // Ecriture d'un schema YACS : ecriture des zones associees a une hypothese
 //=============================================================================
-std::string HOMARD_Gen_i::YACSDriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHypo, YACSDriver* myDriver)
+std::string ADAPT_Gen_i::YACSDriverTexteZone(ADAPT::HOMARD_Hypothesis_var myHypo, YACSDriver* myDriver)
 {
   MESSAGE ( "YACSDriverTexteZone" );
   // A. Les zones associees a cette hypothese
-  HOMARD::listeZonesHypo* ListZone = myHypo->GetZones();
+  ADAPT::listeZonesHypo* ListZone = myHypo->GetZones();
   int numberOfZonesx2 = ListZone->length();
 
   // B. Parcours des zones
@@ -4456,7 +4456,7 @@ std::string HOMARD_Gen_i::YACSDriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHy
     // 1. Reperage de la zone
     std::string ZoneName = std::string((*ListZone)[iaux]);
     MESSAGE ( "\n. ZoneName = " << ZoneName << " - " <<iaux);
-    HOMARD::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
+    ADAPT::HOMARD_Zone_var myZone = myStudyContext._mesZones[ZoneName];
     ASSERT(!CORBA::is_nil(myZone));
     // 2. Les instructions python associees a la zone
     //    La premiere ligne est un commentaire a eliminer
@@ -4488,11 +4488,11 @@ std::string HOMARD_Gen_i::YACSDriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHy
 //=============================================================================
 // Ecriture d'un schema YACS : ecriture des frontieres associees au cas
 //=============================================================================
-std::string HOMARD_Gen_i::YACSDriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase, YACSDriver* myDriver)
+std::string ADAPT_Gen_i::YACSDriverTexteBoundary(ADAPT::HOMARD_Cas_var myCase, YACSDriver* myDriver)
 {
   MESSAGE ( "YACSDriverTexteBoundary" );
   // A. Les frontieres associees au cas
-  HOMARD::ListBoundaryGroupType* ListBoundaryGroupType = myCase->GetBoundaryGroup();
+  ADAPT::ListBoundaryGroupType* ListBoundaryGroupType = myCase->GetBoundaryGroup();
   int numberOfitems = ListBoundaryGroupType->length();
 
   // B. Parcours des frontieres
@@ -4515,7 +4515,7 @@ std::string HOMARD_Gen_i::YACSDriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase,
     if ( A_faire == 1 )
     {
     // 1. Caracteristiques de la frontiere
-      HOMARD::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
+      ADAPT::HOMARD_Boundary_var myBoundary = myStudyContext._mesBoundarys[BoundaryName];
       ASSERT(!CORBA::is_nil(myBoundary));
       // 2. Les instructions python associees a la frontiere
       //    La premiere ligne est un commentaire a eliminer
@@ -4565,7 +4565,7 @@ std::string HOMARD_Gen_i::YACSDriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase,
 // Next functions are inherited from SALOMEDS::Driver interface
 //=============================================================================
 //=============================================================================
-SALOMEDS::TMPFile* HOMARD_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
+SALOMEDS::TMPFile* ADAPT_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
                                       const char* theURL,
                                       CORBA::Boolean isMultiFile)
 {
@@ -4601,57 +4601,57 @@ SALOMEDS::TMPFile* HOMARD_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
   int id = 1;
 
   // -> save cases
-  std::map<std::string, HOMARD::HOMARD_Cas_var>::const_iterator it_case;
+  std::map<std::string, ADAPT::HOMARD_Cas_var>::const_iterator it_case;
   for (it_case = context._mesCas.begin(); it_case != context._mesCas.end(); ++it_case) {
-    HOMARD::HOMARD_Cas_var aCas = it_case->second;
+    ADAPT::HOMARD_Cas_var aCas = it_case->second;
     PortableServer::ServantBase_var aServant = GetServant(aCas);
     HOMARD_Cas_i* aCasServant = dynamic_cast<HOMARD_Cas_i*>(aServant.in());
     if (aCasServant) {
-      f << HOMARD::GetSignature(HOMARD::Case) << aCasServant->Dump() << std::endl;
+      f << ADAPT::GetSignature(ADAPT::Case) << aCasServant->Dump() << std::endl;
       context._idmap[id++] = dynamic_cast<PortableServer::ServantBase*>(aCasServant);
     }
   }
   // -> save zones
-  std::map<std::string, HOMARD::HOMARD_Zone_var>::const_iterator it_zone;
+  std::map<std::string, ADAPT::HOMARD_Zone_var>::const_iterator it_zone;
   for (it_zone = context._mesZones.begin(); it_zone != context._mesZones.end(); ++it_zone) {
-    HOMARD::HOMARD_Zone_var aZone = it_zone->second;
+    ADAPT::HOMARD_Zone_var aZone = it_zone->second;
     PortableServer::ServantBase_var aServant = GetServant(aZone);
     HOMARD_Zone_i* aZoneServant = dynamic_cast<HOMARD_Zone_i*>(aServant.in());
     if (aZoneServant) {
-      f << HOMARD::GetSignature(HOMARD::Zone) << aZoneServant->Dump() << std::endl;
+      f << ADAPT::GetSignature(ADAPT::Zone) << aZoneServant->Dump() << std::endl;
       context._idmap[id++] = dynamic_cast<PortableServer::ServantBase*>(aZoneServant);
     }
   }
   // -> save hypotheses
-  std::map<std::string, HOMARD::HOMARD_Hypothesis_var>::const_iterator it_hypo;
+  std::map<std::string, ADAPT::HOMARD_Hypothesis_var>::const_iterator it_hypo;
   for (it_hypo = context._mesHypotheses.begin(); it_hypo != context._mesHypotheses.end(); ++it_hypo) {
-    HOMARD::HOMARD_Hypothesis_var aHypo = it_hypo->second;
+    ADAPT::HOMARD_Hypothesis_var aHypo = it_hypo->second;
     PortableServer::ServantBase_var aServant = GetServant(aHypo);
     HOMARD_Hypothesis_i* aHypoServant = dynamic_cast<HOMARD_Hypothesis_i*>(aServant.in());
     if (aHypoServant) {
-      f << HOMARD::GetSignature(HOMARD::Hypothesis) << aHypoServant->Dump() << std::endl;
+      f << ADAPT::GetSignature(ADAPT::Hypothesis) << aHypoServant->Dump() << std::endl;
       context._idmap[id++] = dynamic_cast<PortableServer::ServantBase*>(aHypoServant);
     }
   }
   // -> save iterations
-  std::map<std::string, HOMARD::HOMARD_Iteration_var>::const_iterator it_iter;
+  std::map<std::string, ADAPT::HOMARD_Iteration_var>::const_iterator it_iter;
   for (it_iter = context._mesIterations.begin(); it_iter != context._mesIterations.end(); ++it_iter) {
-    HOMARD::HOMARD_Iteration_var aIter = it_iter->second;
+    ADAPT::HOMARD_Iteration_var aIter = it_iter->second;
     PortableServer::ServantBase_var aServant = GetServant(aIter);
     HOMARD_Iteration_i* aIterServant = dynamic_cast<HOMARD_Iteration_i*>(aServant.in());
     if (aIterServant) {
-      f << HOMARD::GetSignature(HOMARD::Iteration) << aIterServant->Dump() << std::endl;
+      f << ADAPT::GetSignature(ADAPT::Iteration) << aIterServant->Dump() << std::endl;
       context._idmap[id++] = dynamic_cast<PortableServer::ServantBase*>(aIterServant);
     }
   }
   // -> save boundaries
-  std::map<std::string, HOMARD::HOMARD_Boundary_var>::const_iterator it_boundary;
+  std::map<std::string, ADAPT::HOMARD_Boundary_var>::const_iterator it_boundary;
   for (it_boundary = context._mesBoundarys.begin(); it_boundary != context._mesBoundarys.end(); ++it_boundary) {
-    HOMARD::HOMARD_Boundary_var aBoundary = it_boundary->second;
+    ADAPT::HOMARD_Boundary_var aBoundary = it_boundary->second;
     PortableServer::ServantBase_var aServant = GetServant(aBoundary);
     HOMARD_Boundary_i* aBoundaryServant = dynamic_cast<HOMARD_Boundary_i*>(aServant.in());
     if (aBoundaryServant) {
-      f << HOMARD::GetSignature(HOMARD::Boundary) << aBoundaryServant->Dump() << std::endl;
+      f << ADAPT::GetSignature(ADAPT::Boundary) << aBoundaryServant->Dump() << std::endl;
       context._idmap[id++] = dynamic_cast<PortableServer::ServantBase*>(aBoundaryServant);
     }
   }
@@ -4673,7 +4673,7 @@ SALOMEDS::TMPFile* HOMARD_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
 };
 
 //===========================================================================
-SALOMEDS::TMPFile* HOMARD_Gen_i::SaveASCII(SALOMEDS::SComponent_ptr theComponent,
+SALOMEDS::TMPFile* ADAPT_Gen_i::SaveASCII(SALOMEDS::SComponent_ptr theComponent,
                                            const char* theURL,
                                            CORBA::Boolean isMultiFile)
 {
@@ -4683,7 +4683,7 @@ SALOMEDS::TMPFile* HOMARD_Gen_i::SaveASCII(SALOMEDS::SComponent_ptr theComponent
 };
 
 //===========================================================================
-CORBA::Boolean HOMARD_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
+CORBA::Boolean ADAPT_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
 				   const SALOMEDS::TMPFile& theStream,
 				   const char* theURL,
 				   CORBA::Boolean isMultiFile)
@@ -4726,16 +4726,16 @@ CORBA::Boolean HOMARD_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
 
   while (f) {
     std::getline(f, line);
-    std::string bounSignature = HOMARD::GetSignature(HOMARD::Boundary);
-    std::string caseSignature = HOMARD::GetSignature(HOMARD::Case);
-    std::string hypoSignature = HOMARD::GetSignature(HOMARD::Hypothesis);
-    std::string iterSignature = HOMARD::GetSignature(HOMARD::Iteration);
-    std::string zoneSignature = HOMARD::GetSignature(HOMARD::Zone);
-    std::string yacsSignature = HOMARD::GetSignature(HOMARD::YACS);
+    std::string bounSignature = ADAPT::GetSignature(ADAPT::Boundary);
+    std::string caseSignature = ADAPT::GetSignature(ADAPT::Case);
+    std::string hypoSignature = ADAPT::GetSignature(ADAPT::Hypothesis);
+    std::string iterSignature = ADAPT::GetSignature(ADAPT::Iteration);
+    std::string zoneSignature = ADAPT::GetSignature(ADAPT::Zone);
+    std::string yacsSignature = ADAPT::GetSignature(ADAPT::YACS);
     if (line.substr(0, bounSignature.size()) == bounSignature) {
       // re-create boundary
       MESSAGE ("Recreation de la frontiere" );
-      HOMARD::HOMARD_Boundary_var aBoundary = newBoundary();
+      ADAPT::HOMARD_Boundary_var aBoundary = newBoundary();
       PortableServer::ServantBase_var aServant = GetServant(aBoundary);
       HOMARD_Boundary_i* aBoundaryServant = dynamic_cast<HOMARD_Boundary_i*>(aServant.in());
       if (aBoundaryServant && aBoundaryServant->Restore(line.substr(bounSignature.size()))) {
@@ -4746,7 +4746,7 @@ CORBA::Boolean HOMARD_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
     else if (line.substr(0, caseSignature.size()) == caseSignature) {
       // re-create case
       MESSAGE ("Recreation du cas" );
-      HOMARD::HOMARD_Cas_var aCase = newCase();
+      ADAPT::HOMARD_Cas_var aCase = newCase();
       PortableServer::ServantBase_var aServant = GetServant(aCase);
       HOMARD_Cas_i* aCaseServant = dynamic_cast<HOMARD_Cas_i*>(aServant.in());
       if (aCaseServant && aCaseServant->Restore(line.substr(caseSignature.size()))) {
@@ -4757,7 +4757,7 @@ CORBA::Boolean HOMARD_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
     else if (line.substr(0, hypoSignature.size()) == hypoSignature) {
       // re-create hypothesis
       MESSAGE ("Recreation de l hypothese" );
-      HOMARD::HOMARD_Hypothesis_var aHypo = newHypothesis();
+      ADAPT::HOMARD_Hypothesis_var aHypo = newHypothesis();
       PortableServer::ServantBase_var aServant = GetServant(aHypo);
       HOMARD_Hypothesis_i* aHypoServant = dynamic_cast<HOMARD_Hypothesis_i*>(aServant.in());
       if (aHypoServant && aHypoServant->Restore(line.substr(hypoSignature.size()))) {
@@ -4768,7 +4768,7 @@ CORBA::Boolean HOMARD_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
     else if (line.substr(0, iterSignature.size()) == iterSignature) {
       // re-create iteration
       MESSAGE ("Recreation de l'iteration" );
-      HOMARD::HOMARD_Iteration_var aIter = newIteration();
+      ADAPT::HOMARD_Iteration_var aIter = newIteration();
       PortableServer::ServantBase_var aServant = GetServant(aIter);
       HOMARD_Iteration_i* aIterServant = dynamic_cast<HOMARD_Iteration_i*>(aServant.in());
       if (aIterServant && aIterServant->Restore(line.substr(iterSignature.size()))) {
@@ -4779,7 +4779,7 @@ CORBA::Boolean HOMARD_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
     else if (line.substr(0, zoneSignature.size()) == zoneSignature) {
       MESSAGE ("Recreation de la zone" );
       // re-create zone
-      HOMARD::HOMARD_Zone_var aZone = newZone();
+      ADAPT::HOMARD_Zone_var aZone = newZone();
       PortableServer::ServantBase_var aServant = GetServant(aZone);
       HOMARD_Zone_i* aZoneServant = dynamic_cast<HOMARD_Zone_i*>(aServant.in());
       if (aZoneServant && aZoneServant->Restore(line.substr(zoneSignature.size()))) {
@@ -4790,7 +4790,7 @@ CORBA::Boolean HOMARD_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
     else if (line.substr(0, zoneSignature.size()) == yacsSignature) {
       MESSAGE ("Recreation du schema YACS" );
       // re-create YACS
-      HOMARD::HOMARD_YACS_var aYACS = newYACS();
+      ADAPT::HOMARD_YACS_var aYACS = newYACS();
       PortableServer::ServantBase_var aServant = GetServant(aYACS);
       HOMARD_YACS_i* aYACSServant = dynamic_cast<HOMARD_YACS_i*>(aServant.in());
       if (aYACSServant && aYACSServant->Restore(line.substr(yacsSignature.size()))) {
@@ -4812,7 +4812,7 @@ CORBA::Boolean HOMARD_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
 };
 
 //===========================================================================
-CORBA::Boolean HOMARD_Gen_i::LoadASCII(SALOMEDS::SComponent_ptr theComponent,
+CORBA::Boolean ADAPT_Gen_i::LoadASCII(SALOMEDS::SComponent_ptr theComponent,
 					const SALOMEDS::TMPFile& theStream,
 					const char* theURL,
 					CORBA::Boolean isMultiFile)
@@ -4822,18 +4822,18 @@ CORBA::Boolean HOMARD_Gen_i::LoadASCII(SALOMEDS::SComponent_ptr theComponent,
 };
 
 //===========================================================================
-void HOMARD_Gen_i::Close(SALOMEDS::SComponent_ptr theComponent)
+void ADAPT_Gen_i::Close(SALOMEDS::SComponent_ptr theComponent)
 {
 };
 
 //===========================================================================
-char* HOMARD_Gen_i::ComponentDataType()
+char* ADAPT_Gen_i::ComponentDataType()
 {
   return CORBA::string_dup("HOMARD");
 };
 
 //===========================================================================
-char* HOMARD_Gen_i::IORToLocalPersistentID(SALOMEDS::SObject_ptr theSObject,
+char* ADAPT_Gen_i::IORToLocalPersistentID(SALOMEDS::SObject_ptr theSObject,
 					    const char* IORString,
 					    CORBA::Boolean isMultiFile,
 					    CORBA::Boolean isASCII)
@@ -4861,7 +4861,7 @@ char* HOMARD_Gen_i::IORToLocalPersistentID(SALOMEDS::SObject_ptr theSObject,
 };
 
 //===========================================================================
-char* HOMARD_Gen_i::LocalPersistentIDToIOR(SALOMEDS::SObject_ptr theSObject,
+char* ADAPT_Gen_i::LocalPersistentIDToIOR(SALOMEDS::SObject_ptr theSObject,
 					    const char* aLocalPersistentID,
 					    CORBA::Boolean isMultiFile,
 					    CORBA::Boolean isASCII)
@@ -4881,29 +4881,29 @@ char* HOMARD_Gen_i::LocalPersistentIDToIOR(SALOMEDS::SObject_ptr theSObject,
 };
 
 //===========================================================================
-CORBA::Boolean HOMARD_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
+CORBA::Boolean ADAPT_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 {
   if(CORBA::is_nil(myStudy))
     return false;
 
-  HOMARD::HOMARD_Cas_var aCas = HOMARD::HOMARD_Cas::_narrow(theIOR);
+  ADAPT::HOMARD_Cas_var aCas = ADAPT::HOMARD_Cas::_narrow(theIOR);
   if(!aCas->_is_nil())
     return true;
 
-  HOMARD::HOMARD_Hypothesis_var aHypo = HOMARD::HOMARD_Hypothesis::_narrow(theIOR);
+  ADAPT::HOMARD_Hypothesis_var aHypo = ADAPT::HOMARD_Hypothesis::_narrow(theIOR);
   if(!aHypo->_is_nil())
     return true;
 
-  HOMARD::HOMARD_Zone_var aZone = HOMARD::HOMARD_Zone::_narrow(theIOR);
+  ADAPT::HOMARD_Zone_var aZone = ADAPT::HOMARD_Zone::_narrow(theIOR);
   if(!aZone->_is_nil())
     return true;
 
-  HOMARD::HOMARD_Boundary_var aBoundary = HOMARD::HOMARD_Boundary::_narrow(theIOR);
+  ADAPT::HOMARD_Boundary_var aBoundary = ADAPT::HOMARD_Boundary::_narrow(theIOR);
   if(!aBoundary->_is_nil())
     return true;
 
   /* Iteration is not published directly
-  HOMARD::HOMARD_Iteration_var aIter = HOMARD::HOMARD_Iteration::_narrow(theIOR);
+  ADAPT::HOMARD_Iteration_var aIter = ADAPT::HOMARD_Iteration::_narrow(theIOR);
   if(!aIter->_is_nil())
     return true;
   */
@@ -4911,14 +4911,14 @@ CORBA::Boolean HOMARD_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 };
 
 //===========================================================================
-CORBA::Boolean HOMARD_Gen_i::CanCopy(SALOMEDS::SObject_ptr theObject)
+CORBA::Boolean ADAPT_Gen_i::CanCopy(SALOMEDS::SObject_ptr theObject)
 {
   // No Copy/Paste support
   return false;
 };
 
 //===========================================================================
-SALOMEDS::TMPFile* HOMARD_Gen_i::CopyFrom(SALOMEDS::SObject_ptr theObject,
+SALOMEDS::TMPFile* ADAPT_Gen_i::CopyFrom(SALOMEDS::SObject_ptr theObject,
 					   CORBA::Long& theObjectID)
 {
   // No Copy/Paste support
@@ -4927,7 +4927,7 @@ SALOMEDS::TMPFile* HOMARD_Gen_i::CopyFrom(SALOMEDS::SObject_ptr theObject,
 };
 
 //===========================================================================
-CORBA::Boolean  HOMARD_Gen_i::CanPaste(const char *theComponentName,
+CORBA::Boolean  ADAPT_Gen_i::CanPaste(const char *theComponentName,
 					CORBA::Long theObjectID)
 {
   // No Copy/Paste support
@@ -4935,7 +4935,7 @@ CORBA::Boolean  HOMARD_Gen_i::CanPaste(const char *theComponentName,
 };
 
 //===========================================================================
-SALOMEDS::SObject_ptr HOMARD_Gen_i::PasteInto(const SALOMEDS::TMPFile& theStream,
+SALOMEDS::SObject_ptr ADAPT_Gen_i::PasteInto(const SALOMEDS::TMPFile& theStream,
 					       CORBA::Long theObjectID,
 					       SALOMEDS::SObject_ptr theSObject)
 {
@@ -4945,7 +4945,7 @@ SALOMEDS::SObject_ptr HOMARD_Gen_i::PasteInto(const SALOMEDS::TMPFile& theStream
 };
 
 //===========================================================================
-PortableServer::ServantBase_var HOMARD_Gen_i::GetServant(CORBA::Object_ptr theObject)
+PortableServer::ServantBase_var ADAPT_Gen_i::GetServant(CORBA::Object_ptr theObject)
 {
   PortableServer::Servant aServant = 0;
   if (!CORBA::is_nil(theObject)) {
@@ -4959,7 +4959,7 @@ PortableServer::ServantBase_var HOMARD_Gen_i::GetServant(CORBA::Object_ptr theOb
 }
 
 //==========================================================================
-Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
+Engines::TMPFile* ADAPT_Gen_i::DumpPython(CORBA::Boolean isPublished,
                                            CORBA::Boolean isMultiFile,
                                            CORBA::Boolean& isValidScript)
 {
@@ -4989,11 +4989,11 @@ Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
     aScript += "#\n# Creation of the boundaries";
     aScript +=  "\n# ==========================";
    }
-   std::map<std::string, HOMARD::HOMARD_Boundary_var>::const_iterator it_boundary;
+   std::map<std::string, ADAPT::HOMARD_Boundary_var>::const_iterator it_boundary;
    for (it_boundary  = myStudyContext._mesBoundarys.begin();
         it_boundary != myStudyContext._mesBoundarys.end(); ++it_boundary)
    {
-    HOMARD::HOMARD_Boundary_var maBoundary = (*it_boundary).second;
+    ADAPT::HOMARD_Boundary_var maBoundary = (*it_boundary).second;
     CORBA::String_var dumpCorbaBoundary = maBoundary->GetDumpPython();
     std::string dumpBoundary = dumpCorbaBoundary.in();
     MESSAGE (dumpBoundary<<"\n");
@@ -5007,11 +5007,11 @@ Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
     aScript += "#\n# Creation of the zones";
     aScript +=  "\n# =====================";
    }
-   std::map<std::string, HOMARD::HOMARD_Zone_var>::const_iterator it_zone;
+   std::map<std::string, ADAPT::HOMARD_Zone_var>::const_iterator it_zone;
    for ( it_zone  = myStudyContext._mesZones.begin();
          it_zone != myStudyContext._mesZones.end(); ++it_zone)
    {
-    HOMARD::HOMARD_Zone_var myZone = (*it_zone).second;
+    ADAPT::HOMARD_Zone_var myZone = (*it_zone).second;
     CORBA::String_var dumpCorbaZone = myZone->GetDumpPython();
     std::string dumpZone = dumpCorbaZone.in();
     MESSAGE (dumpZone<<"\n");
@@ -5025,11 +5025,11 @@ Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
     aScript += "#\n# Creation of the hypotheses";
     aScript +=  "\n# ==========================";
    }
-   std::map<std::string, HOMARD::HOMARD_Hypothesis_var>::const_iterator it_hypo;
+   std::map<std::string, ADAPT::HOMARD_Hypothesis_var>::const_iterator it_hypo;
    for ( it_hypo  = myStudyContext._mesHypotheses.begin();
          it_hypo != myStudyContext._mesHypotheses.end(); it_hypo++)
    {
-    HOMARD::HOMARD_Hypothesis_var monHypo = (*it_hypo).second;
+    ADAPT::HOMARD_Hypothesis_var monHypo = (*it_hypo).second;
     CORBA::String_var dumpCorbaHypo = monHypo->GetDumpPython();
     std::string dumpHypo = dumpCorbaHypo.in();
     MESSAGE (dumpHypo<<"\n");
@@ -5043,7 +5043,7 @@ Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
     aScript += "#\n# Creation of the cases";
     aScript += "\n# =====================";
    }
-   std::map<std::string, HOMARD::HOMARD_Cas_var>::const_iterator it_cas;
+   std::map<std::string, ADAPT::HOMARD_Cas_var>::const_iterator it_cas;
    for (it_cas  = myStudyContext._mesCas.begin();
         it_cas != myStudyContext._mesCas.end(); it_cas++)
         {
@@ -5053,11 +5053,11 @@ Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
            dumpCas += std::string("\t") + nomCas;
            dumpCas += std::string(" = homard.CreateCase(\"") + nomCas + std::string("\", \"");
 
-           HOMARD::HOMARD_Cas_var myCase = (*it_cas).second;
+           ADAPT::HOMARD_Cas_var myCase = (*it_cas).second;
            CORBA::String_var cIter0= myCase->GetIter0Name();
            std::string iter0 = cIter0.in();
 
-           HOMARD::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[iter0];
+           ADAPT::HOMARD_Iteration_var myIteration = myStudyContext._mesIterations[iter0];
            CORBA::String_var cMesh0= myIteration->GetMeshFile();
            std::string mesh0 = cMesh0.in();
            CORBA::String_var cMeshName0= myIteration->GetMeshName();
@@ -5077,11 +5077,11 @@ Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
     aScript += "#\n# Creation of the iterations" ;
     aScript += "\n# ==========================";
    }
-   std::map<std::string, HOMARD::HOMARD_Iteration_var>::const_iterator it_iter;
+   std::map<std::string, ADAPT::HOMARD_Iteration_var>::const_iterator it_iter;
    for (it_iter  = myStudyContext._mesIterations.begin();
         it_iter != myStudyContext._mesIterations.end(); ++it_iter)
    {
-    HOMARD::HOMARD_Iteration_var aIter = (*it_iter).second;
+    ADAPT::HOMARD_Iteration_var aIter = (*it_iter).second;
     CORBA::String_var dumpCorbaIter = aIter->GetDumpPython();
     std::string dumpIter = dumpCorbaIter.in();
     MESSAGE (dumpIter<<"\n");
@@ -5095,11 +5095,11 @@ Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
     aScript += "#\n# Creation of the schemas YACS";
     aScript +=  "\n# ============================";
    }
-   std::map<std::string, HOMARD::HOMARD_YACS_var>::const_iterator it_yacs;
+   std::map<std::string, ADAPT::HOMARD_YACS_var>::const_iterator it_yacs;
    for ( it_yacs  = myStudyContext._mesYACSs.begin();
          it_yacs != myStudyContext._mesYACSs.end(); ++it_yacs)
    {
-    HOMARD::HOMARD_YACS_var myYACS = (*it_yacs).second;
+    ADAPT::HOMARD_YACS_var myYACS = (*it_yacs).second;
     CORBA::String_var dumpCorbaYACS = myYACS->GetDumpPython();
     std::string dumpYACS = dumpCorbaYACS.in();
     MESSAGE (dumpYACS<<"\n");
@@ -5132,7 +5132,7 @@ Engines::TMPFile* HOMARD_Gen_i::DumpPython(CORBA::Boolean isPublished,
 // Utilitaires
 //=============================================================================
 //=============================================================================
-void HOMARD_Gen_i::IsValidStudy( )
+void ADAPT_Gen_i::IsValidStudy( )
 {
 //   MESSAGE( "IsValidStudy" );
   if (CORBA::is_nil(SMESH_Gen_i::getStudyServant()))
@@ -5146,10 +5146,10 @@ void HOMARD_Gen_i::IsValidStudy( )
 }
 
 //=============================================================================
-char* HOMARD_Gen_i::VerifieDir(const char* nomDir)
+char* ADAPT_Gen_i::VerifieDir(const char* nomDir)
 {
   std::string casename = std::string("") ;
-  std::map<std::string, HOMARD::HOMARD_Cas_var>::const_iterator it;
+  std::map<std::string, ADAPT::HOMARD_Cas_var>::const_iterator it;
   for (it = myStudyContext._mesCas.begin();
   it != myStudyContext._mesCas.end(); it++)
   {
@@ -5171,7 +5171,7 @@ void SALOMEException( std::string message )
   return ;
 }*/
 //=============================================================================
-char* HOMARD_Gen_i::getVersion()
+char* ADAPT_Gen_i::getVersion()
 {
 #if HOMARD_DEVELOPMENT
   return CORBA::string_dup(SMESH_VERSION_STR"dev");
@@ -5189,7 +5189,7 @@ char* HOMARD_Gen_i::getVersion()
 //          3 : la chaine apres la derniere apparition du caractere
 // Si le caractere est absent, on retourne la chaine totale
 //===============================================================================
-std::string HOMARD_Gen_i::GetStringInTexte( const std::string ligne, const std::string caractere, int option )
+std::string ADAPT_Gen_i::GetStringInTexte( const std::string ligne, const std::string caractere, int option )
 {
 //   MESSAGE("GetStringInTexte, recherche de '"<<caractere<<"' dans '"<<ligne<<"'"<<", option = "<<option);
 //
@@ -5216,7 +5216,7 @@ std::string HOMARD_Gen_i::GetStringInTexte( const std::string ligne, const std::
 //=============================================================================
 // Decodage du fichier d'arcihvage des preferences
 //
-void HOMARD_Gen_i::SetPreferences( )
+void ADAPT_Gen_i::SetPreferences( )
 {
   MESSAGE ( "SetPreferences" );
 
@@ -5353,7 +5353,7 @@ void HOMARD_Gen_i::SetPreferences( )
 //===============================================================================
 // Langue de SALOME
 //===============================================================================
-void HOMARD_Gen_i::SetLanguageShort(const char* LanguageShort)
+void ADAPT_Gen_i::SetLanguageShort(const char* LanguageShort)
 {
 //   MESSAGE ("SetLanguageShort pour LanguageShort = " << LanguageShort );
   _LangueShort = LanguageShort ;
@@ -5361,7 +5361,7 @@ void HOMARD_Gen_i::SetLanguageShort(const char* LanguageShort)
   else                        { _Langue = "English" ; }
   return ;
 }
-char* HOMARD_Gen_i::GetLanguageShort()
+char* ADAPT_Gen_i::GetLanguageShort()
 {
 //   MESSAGE ("GetLanguageShort");
   return CORBA::string_dup( _LangueShort.c_str() );
@@ -5369,48 +5369,48 @@ char* HOMARD_Gen_i::GetLanguageShort()
 //===============================================================================
 // Options de publications
 //===============================================================================
-void HOMARD_Gen_i::SetPublisMesh(CORBA::Long PublisMeshIN, CORBA::Long PublisMeshOUT)
+void ADAPT_Gen_i::SetPublisMesh(CORBA::Long PublisMeshIN, CORBA::Long PublisMeshOUT)
 {
   _PublisMeshIN  = PublisMeshIN  ;
   _PublisMeshOUT = PublisMeshOUT ;
   return ;
 }
-CORBA::Long HOMARD_Gen_i::GetPublisMeshIN()
+CORBA::Long ADAPT_Gen_i::GetPublisMeshIN()
 {
   return _PublisMeshIN ;
 }
-CORBA::Long HOMARD_Gen_i::GetPublisMeshOUT()
+CORBA::Long ADAPT_Gen_i::GetPublisMeshOUT()
 {
   return _PublisMeshOUT ;
 }
 //===============================================================================
 // YACS - test de convergence
 //===============================================================================
-void HOMARD_Gen_i::SetYACSMaximum(CORBA::Long YACSMaxIter, CORBA::Long YACSMaxNode, CORBA::Long YACSMaxElem)
+void ADAPT_Gen_i::SetYACSMaximum(CORBA::Long YACSMaxIter, CORBA::Long YACSMaxNode, CORBA::Long YACSMaxElem)
 {
   _YACSMaxIter = YACSMaxIter ;
   _YACSMaxNode = YACSMaxNode ;
   _YACSMaxElem = YACSMaxElem ;
   return ;
 }
-CORBA::Long HOMARD_Gen_i::GetYACSMaxIter()
+CORBA::Long ADAPT_Gen_i::GetYACSMaxIter()
 {
   return _YACSMaxIter ;
 }
-CORBA::Long HOMARD_Gen_i::GetYACSMaxNode()
+CORBA::Long ADAPT_Gen_i::GetYACSMaxNode()
 {
   return _YACSMaxNode ;
 }
-CORBA::Long HOMARD_Gen_i::GetYACSMaxElem()
+CORBA::Long ADAPT_Gen_i::GetYACSMaxElem()
 {
   return _YACSMaxElem ;
 }
-void HOMARD_Gen_i::SetYACSConvergenceType(CORBA::Long YACSTypeTest)
+void ADAPT_Gen_i::SetYACSConvergenceType(CORBA::Long YACSTypeTest)
 {
   _YACSTypeTest = YACSTypeTest ;
   return ;
 }
-CORBA::Long HOMARD_Gen_i::GetYACSConvergenceType()
+CORBA::Long ADAPT_Gen_i::GetYACSConvergenceType()
 {
   return _YACSTypeTest ;
 }
@@ -5426,7 +5426,7 @@ extern "C"
 						  const char* interfaceName)
   {
     MESSAGE("PortableServer::ObjectId* ADAPTEngine_factory()");
-    HOMARD_Gen_i* myHOMARD_Gen = new HOMARD_Gen_i(orb, poa, contId, instanceName, interfaceName);
-    return myHOMARD_Gen->getId();
+    ADAPT_Gen_i* myADAPT_Gen = new ADAPT_Gen_i(orb, poa, contId, instanceName, interfaceName);
+    return myADAPT_Gen->getId();
   }
 }

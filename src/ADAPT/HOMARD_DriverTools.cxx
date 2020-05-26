@@ -32,7 +32,7 @@
 #include <cstdlib>
 #include "utilities.h"
 
-namespace HOMARD
+namespace ADAPT
 {
 
   std::string SEPARATOR = "|" ;
@@ -837,4 +837,4 @@ namespace HOMARD
     return true;
   }
 
-} // namespace HOMARD /end/
+} // namespace ADAPT /end/

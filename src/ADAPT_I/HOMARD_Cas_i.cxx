@@ -28,7 +28,7 @@
 //
 
 #include "HOMARD_Cas_i.hxx"
-#include "HOMARD_Gen_i.hxx"
+#include "ADAPT_Gen_i.hxx"
 #include "HOMARD_Cas.hxx"
 #include "HOMARD_DriverTools.hxx"
 #include "HOMARD.hxx"
@@ -58,7 +58,7 @@ HOMARD_Cas_i::HOMARD_Cas_i()
  */
 //=============================================================================
 HOMARD_Cas_i::HOMARD_Cas_i( CORBA::ORB_ptr orb,
-                            HOMARD::HOMARD_Gen_var engine )
+                            ADAPT::ADAPT_Gen_var engine )
 {
   MESSAGE( "HOMARD_Cas_i" );
   _gen_i = engine;
@@ -108,12 +108,12 @@ char* HOMARD_Cas_i::GetDumpPython()
 //=============================================================================
 std::string HOMARD_Cas_i::Dump() const
 {
-  return HOMARD::Dump( *myHomardCas );
+  return ADAPT::Dump( *myHomardCas );
 }
 //=============================================================================
 bool HOMARD_Cas_i::Restore( const std::string& stream )
 {
-  return HOMARD::Restore( *myHomardCas, stream );
+  return ADAPT::Restore( *myHomardCas, stream );
 }
 //=============================================================================
 //=============================================================================
@@ -161,7 +161,7 @@ void HOMARD_Cas_i::SetDirName( const char* NomDir )
   {
     MESSAGE ( "etat : " << GetState() ) ;
     // D.1. Nom local du repertoire de l'iteration de depart dans le repertoire actuel du cas
-    HOMARD::HOMARD_Iteration_ptr Iter = GetIter0() ;
+    ADAPT::HOMARD_Iteration_ptr Iter = GetIter0() ;
     char* DirNameIter = Iter->GetDirNameLoc() ;
     MESSAGE ( "SetDirName : nom actuel pour le repertoire de l iteration, DirNameIter = "<< DirNameIter);
     // D.2. Recherche d'un nom local pour l'iteration de depart dans le futur repertoire du cas
@@ -223,7 +223,7 @@ CORBA::Long HOMARD_Cas_i::GetState()
   ASSERT( myHomardCas );
 // Nom de l'iteration initiale
   char* Iter0Name = GetIter0Name() ;
-  HOMARD::HOMARD_Iteration_ptr Iter = _gen_i->GetIteration(Iter0Name) ;
+  ADAPT::HOMARD_Iteration_ptr Iter = _gen_i->GetIteration(Iter0Name) ;
   int state = Iter->GetNumber() ;
   return state ;
 }
@@ -260,7 +260,7 @@ CORBA::Long HOMARD_Cas_i::GetExtType()
   return myHomardCas->GetExtType();
 }
 //=============================================================================
-void HOMARD_Cas_i::SetBoundingBox( const HOMARD::extrema& LesExtrema )
+void HOMARD_Cas_i::SetBoundingBox( const ADAPT::extrema& LesExtrema )
 {
   ASSERT( myHomardCas );
   std::vector<double> VExtrema;
@@ -273,10 +273,10 @@ void HOMARD_Cas_i::SetBoundingBox( const HOMARD::extrema& LesExtrema )
   myHomardCas->SetBoundingBox( VExtrema );
 }
 //=============================================================================
-HOMARD::extrema* HOMARD_Cas_i::GetBoundingBox()
+ADAPT::extrema* HOMARD_Cas_i::GetBoundingBox()
 {
   ASSERT(myHomardCas );
-  HOMARD::extrema_var aResult = new HOMARD::extrema();
+  ADAPT::extrema_var aResult = new ADAPT::extrema();
   std::vector<double> LesExtremes = myHomardCas->GetBoundingBox();
   ASSERT( LesExtremes.size() == 10 );
   aResult->length( 10 );
@@ -293,7 +293,7 @@ void HOMARD_Cas_i::AddGroup( const char* Group)
   myHomardCas->AddGroup( Group );
 }
 //=============================================================================
-void HOMARD_Cas_i::SetGroups( const HOMARD::ListGroupType& ListGroup )
+void HOMARD_Cas_i::SetGroups( const ADAPT::ListGroupType& ListGroup )
 {
   ASSERT( myHomardCas );
   std::list<std::string> ListString ;
@@ -304,11 +304,11 @@ void HOMARD_Cas_i::SetGroups( const HOMARD::ListGroupType& ListGroup )
   myHomardCas->SetGroups( ListString );
 }
 //=============================================================================
-HOMARD::ListGroupType* HOMARD_Cas_i::GetGroups()
+ADAPT::ListGroupType* HOMARD_Cas_i::GetGroups()
 {
   ASSERT(myHomardCas );
   const std::list<std::string>& ListString = myHomardCas->GetGroups();
-  HOMARD::ListGroupType_var aResult = new HOMARD::ListGroupType();
+  ADAPT::ListGroupType_var aResult = new ADAPT::ListGroupType();
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -332,7 +332,7 @@ void HOMARD_Cas_i::AddBoundaryGroup( const char* BoundaryName, const char* Group
   ASSERT( myHomardCas );
   // A. Préalables
   // A.1. Caractéristiques de la frontière à ajouter
-  HOMARD::HOMARD_Boundary_ptr myBoundary = _gen_i->GetBoundary(BoundaryName) ;
+  ADAPT::HOMARD_Boundary_ptr myBoundary = _gen_i->GetBoundary(BoundaryName) ;
   ASSERT(!CORBA::is_nil(myBoundary));
   int BoundaryType = myBoundary->GetType();
   MESSAGE ( ". BoundaryType = " << BoundaryType );
@@ -366,7 +366,7 @@ void HOMARD_Cas_i::AddBoundaryGroup( const char* BoundaryName, const char* Group
       {
         boun = (*it).c_str() ;
         MESSAGE ("..  Frontiere enregistrée : "<< boun );
-        HOMARD::HOMARD_Boundary_ptr myBoundary_0 = _gen_i->GetBoundary(boun) ;
+        ADAPT::HOMARD_Boundary_ptr myBoundary_0 = _gen_i->GetBoundary(boun) ;
         int BoundaryType_0 = myBoundary_0->GetType();
         MESSAGE ( ".. BoundaryType_0 = " << BoundaryType_0 );
         if ( BoundaryType_0 == -1 )
@@ -386,7 +386,7 @@ void HOMARD_Cas_i::AddBoundaryGroup( const char* BoundaryName, const char* Group
         MESSAGE ("..  Frontiere enregistrée : "<< boun );
         if ( boun != BoundaryName )
         {
-          HOMARD::HOMARD_Boundary_ptr myBoundary_0 = _gen_i->GetBoundary(boun) ;
+          ADAPT::HOMARD_Boundary_ptr myBoundary_0 = _gen_i->GetBoundary(boun) ;
           int BoundaryType_0 = myBoundary_0->GetType();
           MESSAGE ( ".. BoundaryType_0 = " << BoundaryType_0 );
           if ( BoundaryType_0 == 0 )
@@ -455,12 +455,12 @@ void HOMARD_Cas_i::AddBoundaryGroup( const char* BoundaryName, const char* Group
   }
 }
 //=============================================================================
-HOMARD::ListBoundaryGroupType* HOMARD_Cas_i::GetBoundaryGroup()
+ADAPT::ListBoundaryGroupType* HOMARD_Cas_i::GetBoundaryGroup()
 {
   MESSAGE ("GetBoundaryGroup");
   ASSERT(myHomardCas );
   const std::list<std::string>& ListBoundaryGroup = myHomardCas->GetBoundaryGroup();
-  HOMARD::ListBoundaryGroupType_var aResult = new HOMARD::ListBoundaryGroupType();
+  ADAPT::ListBoundaryGroupType_var aResult = new ADAPT::ListBoundaryGroupType();
   aResult->length( ListBoundaryGroup.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -523,7 +523,7 @@ char* HOMARD_Cas_i::GetIter0Name()
   return CORBA::string_dup( myHomardCas->GetIter0Name().c_str() );
 }
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr HOMARD_Cas_i::GetIter0()
+ADAPT::HOMARD_Iteration_ptr HOMARD_Cas_i::GetIter0()
 {
 // Nom de l'iteration initiale
   char* Iter0Name = GetIter0Name() ;
@@ -531,7 +531,7 @@ HOMARD::HOMARD_Iteration_ptr HOMARD_Cas_i::GetIter0()
   return _gen_i->GetIteration(Iter0Name) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr HOMARD_Cas_i::NextIteration( const char* IterName )
+ADAPT::HOMARD_Iteration_ptr HOMARD_Cas_i::NextIteration( const char* IterName )
 {
 // Nom de l'iteration parent
   char* NomIterParent = GetIter0Name() ;
@@ -540,10 +540,10 @@ HOMARD::HOMARD_Iteration_ptr HOMARD_Cas_i::NextIteration( const char* IterName )
   return _gen_i->CreateIteration(IterName, NomIterParent) ;
 }
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr HOMARD_Cas_i::LastIteration( )
+ADAPT::HOMARD_Iteration_ptr HOMARD_Cas_i::LastIteration( )
 {
-  HOMARD::HOMARD_Iteration_ptr Iter ;
-  HOMARD::listeIterFilles_var ListeIterFilles ;
+  ADAPT::HOMARD_Iteration_ptr Iter ;
+  ADAPT::listeIterFilles_var ListeIterFilles ;
   char* IterName ;
 // Iteration initiale du cas
   IterName = GetIter0Name() ;
@@ -586,7 +586,7 @@ void HOMARD_Cas_i::AddIteration( const char* NomIteration )
 // DirName : le repertoire de lancement des calculs du sch?ma
 // MeshFile : nom du fichier contenant le maillage pour le premier calcul
 //=============================================================================
-HOMARD::HOMARD_YACS_ptr HOMARD_Cas_i::CreateYACSSchema( const char* YACSName, const char* ScriptFile, const char* DirName, const char* MeshFile )
+ADAPT::HOMARD_YACS_ptr HOMARD_Cas_i::CreateYACSSchema( const char* YACSName, const char* ScriptFile, const char* DirName, const char* MeshFile )
 {
 // Nom du cas
   const char* CaseName = GetName() ;

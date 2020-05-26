@@ -27,7 +27,7 @@ using namespace std;
 
 // ------------------------------------------------------------------------
 MonEditBoundaryAn::MonEditBoundaryAn( MonCreateCase* parent, bool modal,
-                          HOMARD::HOMARD_Gen_var myHomardGen,
+                          ADAPT::ADAPT_Gen_var myHomardGen,
                           QString caseName, QString Name ):
 // ------------------------------------------------------------------------
 /* Constructs a MonEditBoundaryAn
@@ -95,7 +95,7 @@ void MonEditBoundaryAn::InitValEdit()
 void MonEditBoundaryAn::InitValBoundaryAnLimit()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordLimits = aBoundaryAn->GetLimit();
+  ADAPT::double_array_var  mesCoordLimits = aBoundaryAn->GetLimit();
   ASSERT(mesCoordLimits->length() == 3 );
   _Xincr=mesCoordLimits[0];
   _Yincr=mesCoordLimits[1];
@@ -105,7 +105,7 @@ void MonEditBoundaryAn::InitValBoundaryAnLimit()
 void MonEditBoundaryAn::InitValBoundaryAnCylindre()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
+  ADAPT::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
   ASSERT(mesCoordBoundary->length() == 7 );
   _BoundaryAnXcentre=mesCoordBoundary[0];
   _BoundaryAnYcentre=mesCoordBoundary[1];
@@ -119,7 +119,7 @@ void MonEditBoundaryAn::InitValBoundaryAnCylindre()
 void MonEditBoundaryAn::InitValBoundaryAnSphere()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
+  ADAPT::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
   ASSERT(mesCoordBoundary->length() == 4 );
   _BoundaryAnXcentre=mesCoordBoundary[0];
   _BoundaryAnYcentre=mesCoordBoundary[1];
@@ -130,7 +130,7 @@ void MonEditBoundaryAn::InitValBoundaryAnSphere()
 void MonEditBoundaryAn::InitValBoundaryAnConeA()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
+  ADAPT::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
   ASSERT(mesCoordBoundary->length() == 7 );
   _BoundaryAnXaxisCone=mesCoordBoundary[0];
   _BoundaryAnYaxisCone=mesCoordBoundary[1];
@@ -145,7 +145,7 @@ void MonEditBoundaryAn::InitValBoundaryAnConeA()
 void MonEditBoundaryAn::InitValBoundaryAnConeR()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
+  ADAPT::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
   ASSERT(mesCoordBoundary->length() == 8 );
   _BoundaryAnXcone1=mesCoordBoundary[0];
   _BoundaryAnYcone1=mesCoordBoundary[1];
@@ -161,7 +161,7 @@ void MonEditBoundaryAn::InitValBoundaryAnConeR()
 void MonEditBoundaryAn::InitValBoundaryAnTore()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
+  ADAPT::double_array_var  mesCoordBoundary = aBoundaryAn->GetCoords();
   ASSERT(mesCoordBoundary->length() == 8 );
   _BoundaryAnXcentre=mesCoordBoundary[0];
   _BoundaryAnYcentre=mesCoordBoundary[1];

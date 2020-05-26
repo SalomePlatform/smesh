@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 
 #include "ui_CreateZone.h"
 #include <QDialog>
@@ -38,13 +38,13 @@ class HOMARD_EXPORT MonCreateZone : public QDialog, public Ui_CreateZone
 
 public:
     MonCreateZone( MonCreateHypothesis* parent, bool modal,
-                   HOMARD::HOMARD_Gen_var myHomardGen,
+                   ADAPT::ADAPT_Gen_var myHomardGen,
                    QString caseName);
     virtual ~MonCreateZone();
 
 protected :
     MonCreateZone( MonCreateHypothesis* parent,
-                   HOMARD::HOMARD_Gen_var myHomardGen,
+                   ADAPT::ADAPT_Gen_var myHomardGen,
                    QString caseName);
 
     MonCreateHypothesis * _parent;
@@ -64,8 +64,8 @@ protected :
 
     bool Chgt;
 
-    HOMARD::HOMARD_Zone_var aZone ;
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::HOMARD_Zone_var aZone ;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
     virtual void InitConnect();
     virtual void InitValZone();

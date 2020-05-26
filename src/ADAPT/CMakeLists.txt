@@ -43,7 +43,7 @@ SET(ADAPTImpl_HEADERS
   HOMARD_Hypothesis.hxx
   HOMARD_Iteration.hxx
   HOMARD_Zone.hxx
-  HOMARD_Gen.hxx
+  ADAPT_Gen.hxx
   HOMARD_DriverTools.hxx
   HOMARD_YACS.hxx
   HomardDriver.hxx
@@ -59,7 +59,7 @@ SET(ADAPTImpl_SOURCES
   HOMARD_Hypothesis.cxx
   HOMARD_Iteration.cxx
   HOMARD_Zone.cxx
-  HOMARD_Gen.cxx
+  ADAPT_Gen.cxx
   HOMARD_DriverTools.cxx
   HOMARD_YACS.cxx
   HomardDriver.cxx

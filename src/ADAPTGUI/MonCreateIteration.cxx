@@ -33,7 +33,7 @@ using namespace std;
 
 // -----------------------------------------------------------------------------------------------------
 MonCreateIteration::MonCreateIteration(QWidget* parent, bool modal,
-                                       HOMARD::HOMARD_Gen_var myHomardGen0, QString IterParentName ):
+                                       ADAPT::ADAPT_Gen_var myHomardGen0, QString IterParentName ):
 // -----------------------------------------------------------------------------------------------------
 /* Constructs a MonCreateIteration
  * Inherits from CasHomard
@@ -46,7 +46,7 @@ MonCreateIteration::MonCreateIteration(QWidget* parent, bool modal,
     _CaseName("")
     {
       MESSAGE("Constructeur");
-      myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen0);
+      myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
       setupUi(this);
       if ( modal ) { setWindowModality(Qt::WindowModal); }
       else         { setWindowModality(Qt::NonModal); }
@@ -87,7 +87,7 @@ void MonCreateIteration::InitConnect()
 void MonCreateIteration::GetHypotheses()
 // ------------------------------------------------------------------------
 {
-     HOMARD::listeHypotheses_var  mesHypotheses = myHomardGen->GetAllHypothesesName();
+     ADAPT::listeHypotheses_var  mesHypotheses = myHomardGen->GetAllHypothesesName();
      for (int i=0; i<mesHypotheses->length(); i++)
      {
          CBHypothese->addItem(QString(mesHypotheses[i]));
@@ -128,8 +128,8 @@ bool MonCreateIteration::PushOnApply()
                               QObject::tr("HOM_ITER_HYPO") );
     return false;
   }
-  HOMARD::HOMARD_Hypothesis_var _myHypothesis = myHomardGen->GetHypothesis(monHypoName.toStdString().c_str());
-  HOMARD::listeTypes_var ListTypes (_myHypothesis->GetAdapRefinUnRef());
+  ADAPT::HOMARD_Hypothesis_var _myHypothesis = myHomardGen->GetHypothesis(monHypoName.toStdString().c_str());
+  ADAPT::listeTypes_var ListTypes (_myHypothesis->GetAdapRefinUnRef());
   int TypeAdap = ListTypes[0];
   if ( TypeAdap == 1 && LEFieldFile->text().trimmed() == QString("") )
   {
@@ -202,7 +202,7 @@ void MonCreateIteration::SetIterParentName()
     if (_IterParentName == QString("")) { raise();return;};
   }
   _CaseName=HOMARD_QT_COMMUN::SelectionCasEtude();
-  HOMARD::HOMARD_Iteration_var aIterParent = myHomardGen->GetIteration(_IterParentName.toStdString().c_str()) ;
+  ADAPT::HOMARD_Iteration_var aIterParent = myHomardGen->GetIteration(_IterParentName.toStdString().c_str()) ;
   QString MeshName = aIterParent->GetMeshName();
 
   LEMeshName_n->setText(MeshName);
@@ -217,7 +217,7 @@ void MonCreateIteration::SetNewName()
 {
 // Recherche d'un nom par defaut qui n'existe pas encore
 
-  HOMARD::listeIterations_var  MyObjects=myHomardGen->GetAllIterationsName();
+  ADAPT::listeIterations_var  MyObjects=myHomardGen->GetAllIterationsName();
   int num = 0;//
   QString aName="";
   while (aName=="" )
@@ -249,7 +249,7 @@ void MonCreateIteration::PushHypoEdit()
     return;
   }
   QString aFieldFile=LEFieldFile->text().trimmed();
-  MonEditHypothesis *HypoDlg = new MonEditHypothesis(this, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen),CBHypothese->currentText(), _CaseName, aFieldFile) ;
+  MonEditHypothesis *HypoDlg = new MonEditHypothesis(this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),CBHypothese->currentText(), _CaseName, aFieldFile) ;
   HypoDlg->show();
 }
 
@@ -273,11 +273,11 @@ void MonCreateIteration::PushHypoNew()
   }
   if ( _CaseName == QString(""))
   {
-    HOMARD::HOMARD_Iteration_var aIterParent = myHomardGen->GetIteration(_IterParentName.toStdString().c_str()) ;
+    ADAPT::HOMARD_Iteration_var aIterParent = myHomardGen->GetIteration(_IterParentName.toStdString().c_str()) ;
     _CaseName = aIterParent->GetCaseName();
   }
   QString aFieldFile=LEFieldFile->text().trimmed();
-  MonCreateHypothesis *HypoDlg = new MonCreateHypothesis(this, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen), QString(""), _CaseName, aFieldFile) ;
+  MonCreateHypothesis *HypoDlg = new MonCreateHypothesis(this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen), QString(""), _CaseName, aFieldFile) ;
   HypoDlg->show();
 }
 // ------------------------------------------------------------------------

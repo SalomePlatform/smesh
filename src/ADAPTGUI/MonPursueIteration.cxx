@@ -39,13 +39,13 @@ using namespace std;
  * Sets attributes to default values
  */
 // -----------------------------------------------------------------------------------------
-MonPursueIteration::MonPursueIteration ( bool modal, HOMARD::HOMARD_Gen_var myHomardGen0 )
+MonPursueIteration::MonPursueIteration ( bool modal, ADAPT::ADAPT_Gen_var myHomardGen0 )
     :
     Ui_PursueIteration(),
     _aCaseName(""), _aDirName(""), _aDirNameStart("")
 {
   MESSAGE("Debut du constructeur de MonPursueIteration");
-  myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen0);
+  myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
   setupUi(this);
   setModal(modal);
 
@@ -221,7 +221,7 @@ void MonPursueIteration::PushOnHelp()
 void MonPursueIteration::SetNewCaseName()
 // ------------------------------
 {
-  HOMARD::listeCases_var  MyCases = myHomardGen->GetAllCasesName();
+  ADAPT::listeCases_var  MyCases = myHomardGen->GetAllCasesName();
   int num = 0; QString aCaseName="";
   while (aCaseName=="" )
   {

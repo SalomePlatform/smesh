@@ -28,7 +28,7 @@
 //
 
 #include "HOMARD_Zone_i.hxx"
-#include "HOMARD_Gen_i.hxx"
+#include "ADAPT_Gen_i.hxx"
 #include "HOMARD_Zone.hxx"
 #include "HOMARD_DriverTools.hxx"
 
@@ -51,7 +51,7 @@ HOMARD_Zone_i::HOMARD_Zone_i()
  */
 //=============================================================================
 HOMARD_Zone_i::HOMARD_Zone_i( CORBA::ORB_ptr orb,
-			      HOMARD::HOMARD_Gen_var engine )
+			      ADAPT::ADAPT_Gen_var engine )
 {
   MESSAGE( "HOMARD_Zone_i" );
   _gen_i = engine;
@@ -101,12 +101,12 @@ char* HOMARD_Zone_i::GetDumpPython()
 //=============================================================================
 std::string HOMARD_Zone_i::Dump() const
 {
-  return HOMARD::Dump( *myHomardZone );
+  return ADAPT::Dump( *myHomardZone );
 }
 //=============================================================================
 bool HOMARD_Zone_i::Restore( const std::string& stream )
 {
-  return HOMARD::Restore( *myHomardZone, stream );
+  return ADAPT::Restore( *myHomardZone, stream );
 }
 //=============================================================================
 //=============================================================================
@@ -153,10 +153,10 @@ void HOMARD_Zone_i::SetSphere( double Xcentre, double Ycentre, double Zcentre, d
   myHomardZone->SetSphere( Xcentre, Ycentre, Zcentre, Rayon );
 }
 //=============================================================================
-HOMARD::double_array* HOMARD_Zone_i::GetCoords()
+ADAPT::double_array* HOMARD_Zone_i::GetCoords()
 {
   ASSERT( myHomardZone );
-  HOMARD::double_array_var aResult = new HOMARD::double_array();
+  ADAPT::double_array_var aResult = new ADAPT::double_array();
   std::vector<double> mesCoor = myHomardZone->GetCoords();
   aResult->length( mesCoor .size() );
   std::vector<double>::const_iterator it;
@@ -173,10 +173,10 @@ void HOMARD_Zone_i::SetLimit( double Xincr, double Yincr, double Zincr )
   myHomardZone->SetLimit( Xincr, Yincr, Zincr );
 }
 //=============================================================================
-HOMARD::double_array* HOMARD_Zone_i::GetLimit()
+ADAPT::double_array* HOMARD_Zone_i::GetLimit()
 {
   ASSERT( myHomardZone );
-  HOMARD::double_array_var aResult = new HOMARD::double_array();
+  ADAPT::double_array_var aResult = new ADAPT::double_array();
   std::vector<double> mesCoor = myHomardZone->GetLimit();
   aResult->length( mesCoor .size() );
   std::vector<double>::const_iterator it;
@@ -197,11 +197,11 @@ void HOMARD_Zone_i::AddHypo( const char* NomHypo )
   myHomardZone->AddHypo( NomHypo );
 }
 //=============================================================================
-HOMARD::listeHypo* HOMARD_Zone_i::GetHypo()
+ADAPT::listeHypo* HOMARD_Zone_i::GetHypo()
 {
   ASSERT( myHomardZone );
   const std::list<std::string>& maListe = myHomardZone->GetHypo();
-  HOMARD::listeHypo_var aResult = new HOMARD::listeHypo;
+  ADAPT::listeHypo_var aResult = new ADAPT::listeHypo;
   aResult->length( maListe.size() );
   std:: list<std::string>::const_iterator it;
   int i = 0;

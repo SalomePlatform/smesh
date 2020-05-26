@@ -17,11 +17,11 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef _HOMARD_GEN_I_HXX_
-#define _HOMARD_GEN_I_HXX_
+#ifndef _ADAPT_GEN_I_HXX_
+#define _ADAPT_GEN_I_HXX_
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(HOMARD_Gen)
+#include CORBA_SERVER_HEADER(ADAPT_Gen)
 #include CORBA_SERVER_HEADER(HOMARD_Cas)
 #include CORBA_SERVER_HEADER(HOMARD_Hypothesis)
 #include CORBA_SERVER_HEADER(HOMARD_Iteration)
@@ -32,7 +32,7 @@
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 
 #include "HOMARD_i.hxx"
-#include "HOMARD_Gen.hxx"
+#include "ADAPT_Gen.hxx"
 #include "HomardDriver.hxx"
 #include "YACSDriver.hxx"
 #include "FrontTrack.hxx"
@@ -43,104 +43,104 @@
 #include <string>
 #include <map>
 
-class HOMARDENGINE_EXPORT HOMARD_Gen_i:
+class HOMARDENGINE_EXPORT ADAPT_Gen_i:
   public virtual Engines_Component_i,
-  public virtual POA_HOMARD::HOMARD_Gen
+  public virtual POA_ADAPT::ADAPT_Gen
 {
 public:
-  HOMARD_Gen_i( CORBA::ORB_ptr orb,
+  ADAPT_Gen_i( CORBA::ORB_ptr orb,
                 PortableServer::POA_ptr poa,
                 PortableServer::ObjectId* contId,
                 const char* instanceName,
                 const char* interfaceName );
-  virtual ~HOMARD_Gen_i();
+  virtual ~ADAPT_Gen_i();
 
 
 // Generalites
 
 // Les creations
-  HOMARD::HOMARD_Boundary_ptr     CreateBoundary (const char* nomBoundary, CORBA::Long typeBoundary);
-  HOMARD::HOMARD_Boundary_ptr     CreateBoundaryCAO(const char* nomBoundary,
+  ADAPT::HOMARD_Boundary_ptr     CreateBoundary (const char* nomBoundary, CORBA::Long typeBoundary);
+  ADAPT::HOMARD_Boundary_ptr     CreateBoundaryCAO(const char* nomBoundary,
                                                     const char* DataFile);
-  HOMARD::HOMARD_Boundary_ptr     CreateBoundaryDi (const char* nomBoundary,
+  ADAPT::HOMARD_Boundary_ptr     CreateBoundaryDi (const char* nomBoundary,
                                                     const char* MeshName, const char* DataFile);
-  HOMARD::HOMARD_Boundary_ptr     CreateBoundaryCylinder (const char* nomBoundary,
+  ADAPT::HOMARD_Boundary_ptr     CreateBoundaryCylinder (const char* nomBoundary,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Xaxis, CORBA::Double Yaxis, CORBA::Double Zaxis,
                                       CORBA::Double Rayon);
-  HOMARD::HOMARD_Boundary_ptr     CreateBoundarySphere (const char* nomBoundary,
+  ADAPT::HOMARD_Boundary_ptr     CreateBoundarySphere (const char* nomBoundary,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Rayon);
-  HOMARD::HOMARD_Boundary_ptr     CreateBoundaryConeR (const char* nomBoundary,
+  ADAPT::HOMARD_Boundary_ptr     CreateBoundaryConeR (const char* nomBoundary,
                                       CORBA::Double Xcentre1, CORBA::Double Ycentre1, CORBA::Double Zcentre1, CORBA::Double Rayon1,
                                       CORBA::Double Xcentre2, CORBA::Double Ycentre2, CORBA::Double Zcentre2, CORBA::Double Rayon2);
-  HOMARD::HOMARD_Boundary_ptr     CreateBoundaryConeA (const char* nomBoundary,
+  ADAPT::HOMARD_Boundary_ptr     CreateBoundaryConeA (const char* nomBoundary,
                                       CORBA::Double Xaxis, CORBA::Double Yaxis, CORBA::Double Zaxis, CORBA::Double Angle,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre);
-  HOMARD::HOMARD_Boundary_ptr     CreateBoundaryTorus (const char* nomBoundary,
+  ADAPT::HOMARD_Boundary_ptr     CreateBoundaryTorus (const char* nomBoundary,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Xaxis, CORBA::Double Yaxis, CORBA::Double Zaxis,
                                       CORBA::Double RayonRev, CORBA::Double RayonPri);
 
-  HOMARD::HOMARD_Cas_ptr          CreateCase (const char* nomCas, const char* MeshName, const char* FileName);
-  HOMARD::HOMARD_Cas_ptr          CreateCaseFromIteration (const char* nomCas, const char* DirNameStart);
-  HOMARD::HOMARD_Cas_ptr          CreateCaseFromCaseLastIteration (const char* nomCas, const char* DirNameStart);
-  HOMARD::HOMARD_Cas_ptr          CreateCaseFromCaseIteration (const char* nomCas, const char* DirNameStart, CORBA::Long Number);
-  HOMARD::HOMARD_Cas_ptr          CreateCase0 (const char* nomCas, const char* MeshName, const char* FileName, CORBA::Long MeshOption, CORBA::Long NumeIter, CORBA::Long Option);
+  ADAPT::HOMARD_Cas_ptr          CreateCase (const char* nomCas, const char* MeshName, const char* FileName);
+  ADAPT::HOMARD_Cas_ptr          CreateCaseFromIteration (const char* nomCas, const char* DirNameStart);
+  ADAPT::HOMARD_Cas_ptr          CreateCaseFromCaseLastIteration (const char* nomCas, const char* DirNameStart);
+  ADAPT::HOMARD_Cas_ptr          CreateCaseFromCaseIteration (const char* nomCas, const char* DirNameStart, CORBA::Long Number);
+  ADAPT::HOMARD_Cas_ptr          CreateCase0 (const char* nomCas, const char* MeshName, const char* FileName, CORBA::Long MeshOption, CORBA::Long NumeIter, CORBA::Long Option);
   std::string                     CreateCase1 (const char* DirNameStart, CORBA::Long Number);
 
-  HOMARD::HOMARD_Hypothesis_ptr   CreateHypothesis(const char* nomHypothesis);
+  ADAPT::HOMARD_Hypothesis_ptr   CreateHypothesis(const char* nomHypothesis);
 
-  HOMARD::HOMARD_Iteration_ptr    CreateIteration (const char* nomIter, const char* nomIterParent);
+  ADAPT::HOMARD_Iteration_ptr    CreateIteration (const char* nomIter, const char* nomIterParent);
 
-  HOMARD::HOMARD_Zone_ptr         CreateZone (const char* nomZone, CORBA::Long typeZone);
-  HOMARD::HOMARD_Zone_ptr         CreateZoneBox (const char* nomZone,
+  ADAPT::HOMARD_Zone_ptr         CreateZone (const char* nomZone, CORBA::Long typeZone);
+  ADAPT::HOMARD_Zone_ptr         CreateZoneBox (const char* nomZone,
                                       CORBA::Double Xmini, CORBA::Double Xmaxi,
                                       CORBA::Double Ymini, CORBA::Double Ymaxi,
                                       CORBA::Double Zmini, CORBA::Double Zmaxi);
-  HOMARD::HOMARD_Zone_ptr         CreateZoneBox2D (const char* nomZone,
+  ADAPT::HOMARD_Zone_ptr         CreateZoneBox2D (const char* nomZone,
                                       CORBA::Double Umini, CORBA::Double Umaxi,
                                       CORBA::Double Vmini, CORBA::Double Vmaxi,
                                       CORBA::Long Orient);
-  HOMARD::HOMARD_Zone_ptr         CreateZoneCylinder (const char* nomZone,
+  ADAPT::HOMARD_Zone_ptr         CreateZoneCylinder (const char* nomZone,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Xaxe, CORBA::Double Yaxe, CORBA::Double Zaxe,
                                       CORBA::Double Rayon, CORBA::Double Haut);
-  HOMARD::HOMARD_Zone_ptr         CreateZoneDisk (const char* nomZone,
+  ADAPT::HOMARD_Zone_ptr         CreateZoneDisk (const char* nomZone,
                                       CORBA::Double Ucentre, CORBA::Double Vcentre,
                                       CORBA::Double Rayon,
                                       CORBA::Long Orient);
-  HOMARD::HOMARD_Zone_ptr         CreateZoneDiskWithHole (const char* nomZone,
+  ADAPT::HOMARD_Zone_ptr         CreateZoneDiskWithHole (const char* nomZone,
                                       CORBA::Double Ucentre, CORBA::Double Vcentre,
                                       CORBA::Double Rayon, CORBA::Double Rayonint,
                                       CORBA::Long Orient);
-  HOMARD::HOMARD_Zone_ptr         CreateZonePipe (const char* nomZone,
+  ADAPT::HOMARD_Zone_ptr         CreateZonePipe (const char* nomZone,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre,
                                       CORBA::Double Xaxe, CORBA::Double Yaxe, CORBA::Double Zaxe,
                                       CORBA::Double Rayon, CORBA::Double Haut, CORBA::Double Rayonint);
-  HOMARD::HOMARD_Zone_ptr         CreateZoneSphere (const char* nomZone,
+  ADAPT::HOMARD_Zone_ptr         CreateZoneSphere (const char* nomZone,
                                       CORBA::Double Xcentre, CORBA::Double Ycentre, CORBA::Double Zcentre, CORBA::Double Rayon);
 
 // Les informations
-  HOMARD::HOMARD_Boundary_ptr     GetBoundary   (const char* nomBoundary);
-  HOMARD::HOMARD_Cas_ptr          GetCase       (const char* nomCas);
-  HOMARD::HOMARD_Hypothesis_ptr   GetHypothesis (const char* nomHypothesis);
-  HOMARD::HOMARD_Iteration_ptr    GetIteration  (const char* nomIteration);
-  HOMARD::HOMARD_YACS_ptr         GetYACS       (const char* nomYACS);
-  HOMARD::HOMARD_Zone_ptr         GetZone       (const char* nomZone);
+  ADAPT::HOMARD_Boundary_ptr     GetBoundary   (const char* nomBoundary);
+  ADAPT::HOMARD_Cas_ptr          GetCase       (const char* nomCas);
+  ADAPT::HOMARD_Hypothesis_ptr   GetHypothesis (const char* nomHypothesis);
+  ADAPT::HOMARD_Iteration_ptr    GetIteration  (const char* nomIteration);
+  ADAPT::HOMARD_YACS_ptr         GetYACS       (const char* nomYACS);
+  ADAPT::HOMARD_Zone_ptr         GetZone       (const char* nomZone);
 
-  HOMARD::listeBoundarys*         GetAllBoundarysName();
-  HOMARD::listeCases*             GetAllCasesName();
-  HOMARD::listeHypotheses*        GetAllHypothesesName();
-  HOMARD::listeIterations*        GetAllIterationsName();
-  HOMARD::listeYACSs*             GetAllYACSsName();
-  HOMARD::listeZones*             GetAllZonesName();
+  ADAPT::listeBoundarys*         GetAllBoundarysName();
+  ADAPT::listeCases*             GetAllCasesName();
+  ADAPT::listeHypotheses*        GetAllHypothesesName();
+  ADAPT::listeIterations*        GetAllIterationsName();
+  ADAPT::listeYACSs*             GetAllYACSsName();
+  ADAPT::listeZones*             GetAllZonesName();
 
   void                            MeshInfo      (const char* nomCas,
                                                  const char* MeshName, const char* FileName, const char* DirName,
                                                  CORBA::Long Qual, CORBA::Long Diam, CORBA::Long Conn, CORBA::Long Tail, CORBA::Long Inte);
 
-  HOMARD::HOMARD_Iteration_ptr    LastIteration  (const char* nomCas);
+  ADAPT::HOMARD_Iteration_ptr    LastIteration  (const char* nomCas);
 
 // L'etude
   void                            UpdateStudy();
@@ -176,15 +176,15 @@ public:
   char*                           CreateDirNameIter(const char* nomrep, CORBA::Long num );
 
   CORBA::Long                     Compute(const char* nomIteration, CORBA::Long etatMenage, CORBA::Long modeHOMARD, CORBA::Long Option1, CORBA::Long Option2);
-  CORBA::Long                     ComputeAdap(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMARD_Iteration_var myIteration, CORBA::Long etatMenage, HomardDriver* myDriver, CORBA::Long Option1, CORBA::Long Option2);
-  CORBA::Long                     ComputeCAO(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMARD_Iteration_var myIteration, CORBA::Long Option1, CORBA::Long Option2);
-  CORBA::Long                     ComputeCAObis(HOMARD::HOMARD_Iteration_var myIteration, CORBA::Long Option1, CORBA::Long Option2);
-  char*                           ComputeDirManagement(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMARD_Iteration_var myIteration, CORBA::Long etatMenage);
-  char*                           ComputeDirPaManagement(HOMARD::HOMARD_Cas_var myCase, HOMARD::HOMARD_Iteration_var myIteration);
-  void                            DriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver);
-  void                            DriverTexteField(HOMARD::HOMARD_Iteration_var myIteration, HOMARD::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver);
-  int                             DriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase, HomardDriver* myDriver);
-  void                            DriverTexteFieldInterp(HOMARD::HOMARD_Iteration_var myIteration, HOMARD::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver);
+  CORBA::Long                     ComputeAdap(ADAPT::HOMARD_Cas_var myCase, ADAPT::HOMARD_Iteration_var myIteration, CORBA::Long etatMenage, HomardDriver* myDriver, CORBA::Long Option1, CORBA::Long Option2);
+  CORBA::Long                     ComputeCAO(ADAPT::HOMARD_Cas_var myCase, ADAPT::HOMARD_Iteration_var myIteration, CORBA::Long Option1, CORBA::Long Option2);
+  CORBA::Long                     ComputeCAObis(ADAPT::HOMARD_Iteration_var myIteration, CORBA::Long Option1, CORBA::Long Option2);
+  char*                           ComputeDirManagement(ADAPT::HOMARD_Cas_var myCase, ADAPT::HOMARD_Iteration_var myIteration, CORBA::Long etatMenage);
+  char*                           ComputeDirPaManagement(ADAPT::HOMARD_Cas_var myCase, ADAPT::HOMARD_Iteration_var myIteration);
+  void                            DriverTexteZone(ADAPT::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver);
+  void                            DriverTexteField(ADAPT::HOMARD_Iteration_var myIteration, ADAPT::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver);
+  int                             DriverTexteBoundary(ADAPT::HOMARD_Cas_var myCase, HomardDriver* myDriver);
+  void                            DriverTexteFieldInterp(ADAPT::HOMARD_Iteration_var myIteration, ADAPT::HOMARD_Hypothesis_var myHypo, HomardDriver* myDriver);
 
   char*                           VerifieDir(const char* nomDir);
 
@@ -197,11 +197,11 @@ public:
   void                            PublishMeshIterInSmesh(const char* NomIter);
 
 // YACS
-  HOMARD::HOMARD_YACS_ptr         CreateYACSSchema (const char* YACSName, const char* nomCas, const char* ScriptFile, const char* DirName, const char* MeshFile);
+  ADAPT::HOMARD_YACS_ptr         CreateYACSSchema (const char* YACSName, const char* nomCas, const char* ScriptFile, const char* DirName, const char* MeshFile);
   CORBA::Long                     YACSWrite(const char* nomYACS);
   CORBA::Long                     YACSWriteOnFile(const char* nomYACS, const char* XMLFile);
-  std::string                     YACSDriverTexteZone(HOMARD::HOMARD_Hypothesis_var myHypo, YACSDriver* myDriver);
-  std::string                     YACSDriverTexteBoundary(HOMARD::HOMARD_Cas_var myCase, YACSDriver* myDriver);
+  std::string                     YACSDriverTexteZone(ADAPT::HOMARD_Hypothesis_var myHypo, YACSDriver* myDriver);
+  std::string                     YACSDriverTexteBoundary(ADAPT::HOMARD_Cas_var myCase, YACSDriver* myDriver);
 
 // Preferences
   void                            SetPreferences() ;
@@ -278,27 +278,27 @@ public:
 
 private:
   SALOMEDS::SObject_ptr           PublishBoundaryInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                                                     HOMARD::HOMARD_Boundary_ptr theObject, const char* theName);
+                                                     ADAPT::HOMARD_Boundary_ptr theObject, const char* theName);
   SALOMEDS::SObject_ptr           PublishCaseInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                                                     HOMARD::HOMARD_Cas_ptr theObject, const char* theName);
+                                                     ADAPT::HOMARD_Cas_ptr theObject, const char* theName);
   SALOMEDS::SObject_ptr           PublishHypotheseInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                                                     HOMARD::HOMARD_Hypothesis_ptr theObject, const char* theName);
+                                                     ADAPT::HOMARD_Hypothesis_ptr theObject, const char* theName);
   SALOMEDS::SObject_ptr           PublishYACSInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                                                     HOMARD::HOMARD_YACS_ptr theObject, const char* theName);
+                                                     ADAPT::HOMARD_YACS_ptr theObject, const char* theName);
   SALOMEDS::SObject_ptr           PublishZoneInStudy(SALOMEDS::StudyBuilder_var aStudyBuilder,
-                                                     HOMARD::HOMARD_Zone_ptr theObject, const char* theName);
+                                                     ADAPT::HOMARD_Zone_ptr theObject, const char* theName);
   virtual void                    PublishInStudyAttr(SALOMEDS::StudyBuilder_var aStudyBuilder,
                                                      SALOMEDS::SObject_var aResultSO,
                                                      const char* theName, const char* comment, const char* icone, const char* ior);
 
   PortableServer::ServantBase_var GetServant(CORBA::Object_ptr theObject);
 
-  HOMARD::HOMARD_Boundary_ptr     newBoundary();
-  HOMARD::HOMARD_Cas_ptr          newCase();
-  HOMARD::HOMARD_Hypothesis_ptr   newHypothesis();
-  HOMARD::HOMARD_Iteration_ptr    newIteration();
-  HOMARD::HOMARD_YACS_ptr         newYACS();
-  HOMARD::HOMARD_Zone_ptr         newZone();
+  ADAPT::HOMARD_Boundary_ptr     newBoundary();
+  ADAPT::HOMARD_Cas_ptr          newCase();
+  ADAPT::HOMARD_Hypothesis_ptr   newHypothesis();
+  ADAPT::HOMARD_Iteration_ptr    newIteration();
+  ADAPT::HOMARD_YACS_ptr         newYACS();
+  ADAPT::HOMARD_Zone_ptr         newZone();
 
 
   virtual Engines::TMPFile*       DumpPython(CORBA::Boolean isPublished,
@@ -311,16 +311,16 @@ private:
 private:
   struct StudyContext
   {
-    std::map<std::string, HOMARD::HOMARD_Boundary_var>   _mesBoundarys;
-    std::map<std::string, HOMARD::HOMARD_Cas_var>        _mesCas;
-    std::map<std::string, HOMARD::HOMARD_Hypothesis_var> _mesHypotheses;
-    std::map<std::string, HOMARD::HOMARD_Iteration_var>  _mesIterations;
-    std::map<std::string, HOMARD::HOMARD_YACS_var>       _mesYACSs;
-    std::map<std::string, HOMARD::HOMARD_Zone_var>       _mesZones;
+    std::map<std::string, ADAPT::HOMARD_Boundary_var>   _mesBoundarys;
+    std::map<std::string, ADAPT::HOMARD_Cas_var>        _mesCas;
+    std::map<std::string, ADAPT::HOMARD_Hypothesis_var> _mesHypotheses;
+    std::map<std::string, ADAPT::HOMARD_Iteration_var>  _mesIterations;
+    std::map<std::string, ADAPT::HOMARD_YACS_var>       _mesYACSs;
+    std::map<std::string, ADAPT::HOMARD_Zone_var>       _mesZones;
     std::map<int, PortableServer::ServantBase*>          _idmap;
   };
 
-  ::HOMARD_Gen*                 myHomard;
+  ::ADAPT_Gen*                 myHomard;
   SALOMEDS::Study_var           myStudy;
   StudyContext                  myStudyContext;
   SALOME_NamingService*         _NS;

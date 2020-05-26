@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Boundary)
 
 #include "ui_CreateBoundaryCAO.h"
@@ -39,7 +39,7 @@ class HOMARD_EXPORT MonCreateBoundaryCAO : public QDialog, public Ui_CreateBound
 
 public:
     MonCreateBoundaryCAO( MonCreateCase* parent, bool modal,
-                         HOMARD::HOMARD_Gen_var myHomardGen,
+                         ADAPT::ADAPT_Gen_var myHomardGen,
                          QString caseName, QString BoundaryName );
     ~MonCreateBoundaryCAO();
     virtual void setGroups (QStringList listGroup);
@@ -52,8 +52,8 @@ protected :
     QString _aCaseName;
 
 
-    HOMARD::HOMARD_Boundary_var aBoundary;
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::HOMARD_Boundary_var aBoundary;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
     QStringList  _listeGroupesBoundary;
 

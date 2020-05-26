@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Cas)
 
 #include "ui_CreateCase.h"
@@ -37,7 +37,7 @@ class HOMARD_EXPORT MonCreateCase : public QDialog, public Ui_CreateCase
     Q_OBJECT
 
 public:
-    MonCreateCase( bool modal, HOMARD::HOMARD_Gen_var myHomardGen );
+    MonCreateCase( bool modal, ADAPT::ADAPT_Gen_var myHomardGen );
     ~MonCreateCase();
 
     void AddBoundaryCAO(QString newBoundary);
@@ -53,8 +53,8 @@ protected :
 
     int _Pyram;
 
-    HOMARD::HOMARD_Cas_var aCase ;
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::HOMARD_Cas_var aCase ;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
     virtual void InitConnect();
     virtual void InitBoundarys();

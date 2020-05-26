@@ -31,7 +31,7 @@
 #define _HOMARD_Boundary_I_HXX_
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(HOMARD_Gen)
+#include CORBA_SERVER_HEADER(ADAPT_Gen)
 #include CORBA_SERVER_HEADER(HOMARD_Boundary)
 
 #include "HOMARD_i.hxx"
@@ -45,11 +45,11 @@ class HOMARD_Boundary;
 
 class HOMARDENGINE_EXPORT HOMARD_Boundary_i:
   public virtual Engines_Component_i,
-  public virtual POA_HOMARD::HOMARD_Boundary,
+  public virtual POA_ADAPT::HOMARD_Boundary,
   public virtual PortableServer::ServantBase
 {
 public:
-  HOMARD_Boundary_i( CORBA::ORB_ptr orb, HOMARD::HOMARD_Gen_var gen_i );
+  HOMARD_Boundary_i( CORBA::ORB_ptr orb, ADAPT::ADAPT_Gen_var gen_i );
   HOMARD_Boundary_i();
 
   virtual ~HOMARD_Boundary_i();
@@ -88,14 +88,14 @@ public:
                                       double Xaxe, double Yaxe, double Zaxe,
                                       double rayonRev, double rayonPri );
 
-  HOMARD::double_array*  GetCoords();
+  ADAPT::double_array*  GetCoords();
 
   void                   SetLimit( double Xincr, double Yincr, double Zincr);
-  HOMARD::double_array*  GetLimit();
+  ADAPT::double_array*  GetLimit();
 
   void                   AddGroup( const char* Group);
-  void                   SetGroups(const HOMARD::ListGroupType& ListGroup);
-  HOMARD::ListGroupType* GetGroups();
+  void                   SetGroups(const ADAPT::ListGroupType& ListGroup);
+  ADAPT::ListGroupType* GetGroups();
 
 // Liens avec les autres structures
   void                   SetCaseCreation( const char* NomCaseCreation );
@@ -106,7 +106,7 @@ private:
   ::HOMARD_Boundary*     myHomardBoundary;
 
   CORBA::ORB_ptr         _orb;
-  HOMARD::HOMARD_Gen_var _gen_i;
+  ADAPT::ADAPT_Gen_var _gen_i;
 };
 
 #endif

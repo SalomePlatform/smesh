@@ -35,7 +35,7 @@ class HOMARD_Hypothesis;
 class HOMARD_Zone;
 class HOMARD_YACS;
 
-namespace HOMARD
+namespace ADAPT
 {
   //! persistence entity type
   typedef enum { Case, Zone, Hypothesis, Iteration, Boundary, YACS } SignatureType;

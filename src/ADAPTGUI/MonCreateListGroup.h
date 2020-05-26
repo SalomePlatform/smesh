@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 
 #include "ui_CreateListGroup.h"
 #include <QDialog>
@@ -38,13 +38,13 @@ class HOMARD_EXPORT MonCreateListGroup : public QDialog, public Ui_CreateListGro
     Q_OBJECT
 
 public:
-    MonCreateListGroup( MonCreateHypothesis* parentHyp, MonCreateBoundaryDi* parentBound, bool modal, HOMARD::HOMARD_Gen_var myHomardGen, QString aCaseName,  QStringList listeGroupesHypo);
-    MonCreateListGroup( MonCreateHypothesis* parentHyp, MonCreateBoundaryDi* parentBound, HOMARD::HOMARD_Gen_var myHomardGen, QString aCaseName, QStringList listeGroupesHypo);
+    MonCreateListGroup( MonCreateHypothesis* parentHyp, MonCreateBoundaryDi* parentBound, bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString aCaseName,  QStringList listeGroupesHypo);
+    MonCreateListGroup( MonCreateHypothesis* parentHyp, MonCreateBoundaryDi* parentBound, ADAPT::ADAPT_Gen_var myHomardGen, QString aCaseName, QStringList listeGroupesHypo);
     virtual ~MonCreateListGroup();
 
 protected :
 
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
     MonCreateHypothesis * _parentHyp;
     MonCreateBoundaryDi * _parentBound;

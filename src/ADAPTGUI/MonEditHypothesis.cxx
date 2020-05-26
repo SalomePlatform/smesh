@@ -30,7 +30,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------------
 MonEditHypothesis::MonEditHypothesis( MonCreateIteration* parent, bool modal,
-                                      HOMARD::HOMARD_Gen_var myHomardGen,
+                                      ADAPT::ADAPT_Gen_var myHomardGen,
                                       QString Name,
                                       QString caseName,  QString aFieldFile ):
 // ----------------------------------------------------------------------------
@@ -55,7 +55,7 @@ MonEditHypothesis::~MonEditHypothesis()
 void MonEditHypothesis::InitGroupes()
 // ------------------------------
 {
-    HOMARD::ListGroupType_var maListe = aHypothesis->GetGroups();
+    ADAPT::ListGroupType_var maListe = aHypothesis->GetGroups();
     for ( int i = 0; i < maListe->length(); i++ )
        _aListeGroupes << QString(maListe[i]);
 
@@ -69,7 +69,7 @@ void MonEditHypothesis::InitValEdit()
   MESSAGE("Debut de InitValEdit");
   LEName->setText(_Name);
   LEName->setReadOnly(true);
-  HOMARD::listeTypes_var ListTypes (aHypothesis->GetAdapRefinUnRef());
+  ADAPT::listeTypes_var ListTypes (aHypothesis->GetAdapRefinUnRef());
   ASSERT( ListTypes->length()==3) ;
   _aTypeAdap = ListTypes[0];
   _aTypeRaff = ListTypes[1];
@@ -214,7 +214,7 @@ void MonEditHypothesis::InitAdaptZone()
 
 //  Recuperation de toutes les zones decrites et notation de celles retenues
   GetAllZones();
-  HOMARD::listeZonesHypo_var mesZonesAvant = aHypothesis->GetZones();
+  ADAPT::listeZonesHypo_var mesZonesAvant = aHypothesis->GetZones();
   for (int i=0; i<mesZonesAvant->length(); i++)
   {
     MESSAGE ("i"<<i<<", zone :"<<string(mesZonesAvant[i])<<", type :"<<string(mesZonesAvant[i+1]));
@@ -270,7 +270,7 @@ void MonEditHypothesis::InitAdaptChamps()
     RBChamp->setEnabled(false);
     RBZone->setEnabled(false);
 
-    HOMARD::InfosHypo_var  aInfosHypo = aHypothesis->GetField();
+    ADAPT::InfosHypo_var  aInfosHypo = aHypothesis->GetField();
     _aFieldName =  aInfosHypo->FieldName;
     _TypeThR = aInfosHypo->TypeThR;
     _ThreshR = aInfosHypo->ThreshR;
@@ -284,7 +284,7 @@ void MonEditHypothesis::InitAdaptChamps()
     CBFieldName->setEnabled(false);
     //SetFieldName(Qt::Unchecked);
 
-    HOMARD::listeComposantsHypo_var mesComposantsAvant = aHypothesis->GetComps();
+    ADAPT::listeComposantsHypo_var mesComposantsAvant = aHypothesis->GetComps();
     TWCMP->clear();
     TWCMP->setRowCount(0);
     TWCMP->resizeRowsToContents();
@@ -397,7 +397,7 @@ void MonEditHypothesis::InitFieldInterp()
       RBFieldChosen->setChecked(true);
 //
       TWField->setVisible(1);
-      HOMARD::listeFieldInterpsHypo_var mesChampsAvant = aHypothesis->GetFieldInterps();
+      ADAPT::listeFieldInterpsHypo_var mesChampsAvant = aHypothesis->GetFieldInterps();
       TWField->clear();
       TWField->setRowCount(0);
       TWField->resizeRowsToContents();
@@ -456,7 +456,7 @@ void MonEditHypothesis::SetFiltrage()
 {
   if (CBGroupe->isChecked())
   {
-    MonEditListGroup *aDlg = new MonEditListGroup(this, NULL, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen),_aCaseName, _aListeGroupes) ;
+    MonEditListGroup *aDlg = new MonEditListGroup(this, NULL, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),_aCaseName, _aListeGroupes) ;
     aDlg->show();
   }
 }

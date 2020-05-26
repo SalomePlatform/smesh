@@ -18,20 +18,20 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  File   : HOMARD_Gen.hxx
+//  File   : ADAPT_Gen.hxx
 //  Author : Gerald NICOLAS, EDF
 //  Module : HOMARD
 
-#ifndef _HOMARD_GEN_HXX_
-#define _HOMARD_GEN_HXX_
+#ifndef _ADAPT_GEN_HXX_
+#define _ADAPT_GEN_HXX_
 
 #include "HOMARD.hxx"
 
-class HOMARDIMPL_EXPORT HOMARD_Gen
+class HOMARDIMPL_EXPORT ADAPT_Gen
 {
 public :
-  HOMARD_Gen();
-  ~HOMARD_Gen();
+  ADAPT_Gen();
+  ~ADAPT_Gen();
 };
 
 #endif

@@ -31,7 +31,7 @@
 #define _HOMARD_YACS_I_HXX_
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(HOMARD_Gen)
+#include CORBA_SERVER_HEADER(ADAPT_Gen)
 #include CORBA_SERVER_HEADER(HOMARD_YACS)
 
 #include "HOMARD_i.hxx"
@@ -45,12 +45,12 @@ class HOMARD_YACS;
 
 class HOMARDENGINE_EXPORT HOMARD_YACS_i:
   public virtual Engines_Component_i,
-  public virtual POA_HOMARD::HOMARD_YACS,
+  public virtual POA_ADAPT::HOMARD_YACS,
   public virtual PortableServer::ServantBase
 {
 public:
   HOMARD_YACS_i( CORBA::ORB_ptr orb,
-                      HOMARD::HOMARD_Gen_var gen_i );
+                      ADAPT::ADAPT_Gen_var gen_i );
   HOMARD_YACS_i();
 
   virtual ~HOMARD_YACS_i();
@@ -106,7 +106,7 @@ private:
   ::HOMARD_YACS*    myHomardYACS;
 
   CORBA::ORB_ptr         _orb;
-  HOMARD::HOMARD_Gen_var _gen_i;
+  ADAPT::ADAPT_Gen_var _gen_i;
 };
 
 #endif

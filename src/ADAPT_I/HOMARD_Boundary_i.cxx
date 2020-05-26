@@ -27,7 +27,7 @@
 // Quand les 2 fonctions Setxxx et Getxxx sont presentes, Setxxx est decrit en premier
 //
 #include "HOMARD_Boundary_i.hxx"
-#include "HOMARD_Gen_i.hxx"
+#include "ADAPT_Gen_i.hxx"
 #include "HOMARD_Boundary.hxx"
 #include "HOMARD_DriverTools.hxx"
 
@@ -49,7 +49,7 @@ HOMARD_Boundary_i::HOMARD_Boundary_i()
  */
 //=============================================================================
 HOMARD_Boundary_i::HOMARD_Boundary_i( CORBA::ORB_ptr orb,
-			      HOMARD::HOMARD_Gen_var engine )
+			      ADAPT::ADAPT_Gen_var engine )
 {
   MESSAGE( "HOMARD_Boundary_i" );
   _gen_i = engine;
@@ -98,12 +98,12 @@ char* HOMARD_Boundary_i::GetDumpPython()
 //=============================================================================
 std::string HOMARD_Boundary_i::Dump() const
 {
-  return HOMARD::Dump( *myHomardBoundary );
+  return ADAPT::Dump( *myHomardBoundary );
 }
 //=============================================================================
 bool HOMARD_Boundary_i::Restore( const std::string& stream )
 {
-  return HOMARD::Restore( *myHomardBoundary, stream );
+  return ADAPT::Restore( *myHomardBoundary, stream );
 }
 //=============================================================================
 //=============================================================================
@@ -178,10 +178,10 @@ void HOMARD_Boundary_i::SetTorus( double X0, double X1, double X2, double X3, do
   myHomardBoundary->SetTorus( X0, X1, X2, X3, X4, X5, X6, X7 );
 }
 //=============================================================================
-HOMARD::double_array* HOMARD_Boundary_i::GetCoords()
+ADAPT::double_array* HOMARD_Boundary_i::GetCoords()
 {
   ASSERT( myHomardBoundary );
-  HOMARD::double_array_var aResult = new HOMARD::double_array();
+  ADAPT::double_array_var aResult = new ADAPT::double_array();
   std::vector<double> mesCoor = myHomardBoundary->GetCoords();
   aResult->length( mesCoor .size() );
   std::vector<double>::const_iterator it;
@@ -197,10 +197,10 @@ void HOMARD_Boundary_i::SetLimit( double Xincr, double Yincr, double Zincr )
   myHomardBoundary->SetLimit( Xincr, Yincr, Zincr );
 }
 //=============================================================================
-HOMARD::double_array* HOMARD_Boundary_i::GetLimit()
+ADAPT::double_array* HOMARD_Boundary_i::GetLimit()
 {
   ASSERT( myHomardBoundary );
-  HOMARD::double_array_var aResult = new HOMARD::double_array();
+  ADAPT::double_array_var aResult = new ADAPT::double_array();
   std::vector<double> mesCoor = myHomardBoundary->GetLimit();
   aResult->length( mesCoor .size() );
   std::vector<double>::const_iterator it;
@@ -216,7 +216,7 @@ void HOMARD_Boundary_i::AddGroup( const char* Group)
   myHomardBoundary->AddGroup( Group );
 }
 //=============================================================================
-void HOMARD_Boundary_i::SetGroups(const HOMARD::ListGroupType& ListGroup)
+void HOMARD_Boundary_i::SetGroups(const ADAPT::ListGroupType& ListGroup)
 {
   ASSERT( myHomardBoundary );
   std::list<std::string> ListString;
@@ -227,11 +227,11 @@ void HOMARD_Boundary_i::SetGroups(const HOMARD::ListGroupType& ListGroup)
   myHomardBoundary->SetGroups( ListString );
 }
 //=============================================================================
-HOMARD::ListGroupType*  HOMARD_Boundary_i::GetGroups()
+ADAPT::ListGroupType*  HOMARD_Boundary_i::GetGroups()
 {
   ASSERT( myHomardBoundary );
   const std::list<std::string>& ListString = myHomardBoundary->GetGroups();
-  HOMARD::ListGroupType_var aResult = new HOMARD::ListGroupType;
+  ADAPT::ListGroupType_var aResult = new ADAPT::ListGroupType;
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;

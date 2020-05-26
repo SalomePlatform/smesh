@@ -28,7 +28,7 @@
 //
 
 #include "HOMARD_Iteration_i.hxx"
-#include "HOMARD_Gen_i.hxx"
+#include "ADAPT_Gen_i.hxx"
 #include "HOMARD_Iteration.hxx"
 #include "HOMARD_DriverTools.hxx"
 
@@ -52,7 +52,7 @@ HOMARD_Iteration_i::HOMARD_Iteration_i()
  */
 //=============================================================================
 HOMARD_Iteration_i::HOMARD_Iteration_i( CORBA::ORB_ptr orb,
-                                        HOMARD::HOMARD_Gen_var engine )
+                                        ADAPT::ADAPT_Gen_var engine )
 {
   MESSAGE("constructor");
   _gen_i = engine;
@@ -101,12 +101,12 @@ char* HOMARD_Iteration_i::GetDumpPython()
 //=============================================================================
 std::string HOMARD_Iteration_i::Dump() const
 {
-  return HOMARD::Dump( *myHomardIteration );
+  return ADAPT::Dump( *myHomardIteration );
 }
 //=============================================================================
 bool HOMARD_Iteration_i::Restore( const std::string& stream )
 {
-  return HOMARD::Restore( *myHomardIteration, stream );
+  return ADAPT::Restore( *myHomardIteration, stream );
 }
 //=============================================================================
 //=============================================================================
@@ -129,7 +129,7 @@ char* HOMARD_Iteration_i::GetDirName()
 {
   ASSERT( myHomardIteration );
   std::string casename = myHomardIteration->GetCaseName() ;
-  HOMARD::HOMARD_Cas_ptr caseiter = _gen_i->GetCase(casename.c_str()) ;
+  ADAPT::HOMARD_Cas_ptr caseiter = _gen_i->GetCase(casename.c_str()) ;
   std::string dirnamecase = caseiter->GetDirName() ;
   std::string dirname = dirnamecase + "/" +  GetDirNameLoc() ;
   return CORBA::string_dup( dirname.c_str() );
@@ -240,11 +240,11 @@ void HOMARD_Iteration_i::SetFieldInterpTimeStepRank( const char* FieldInterp, CO
   myHomardIteration->SetFieldInterpTimeStepRank( FieldInterp, TimeStep, Rank );
 }
 //=============================================================================
-HOMARD::listeFieldInterpTSRsIter* HOMARD_Iteration_i::GetFieldInterpsTimeStepRank()
+ADAPT::listeFieldInterpTSRsIter* HOMARD_Iteration_i::GetFieldInterpsTimeStepRank()
 {
   ASSERT( myHomardIteration );
   const std::list<std::string>& ListString = myHomardIteration->GetFieldInterpsTimeStepRank();
-  HOMARD::listeFieldInterpTSRsIter_var aResult = new HOMARD::listeFieldInterpTSRsIter;
+  ADAPT::listeFieldInterpTSRsIter_var aResult = new ADAPT::listeFieldInterpTSRsIter;
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -260,11 +260,11 @@ void HOMARD_Iteration_i::SetFieldInterp( const char* FieldInterp )
   myHomardIteration->SetFieldInterp( FieldInterp );
 }
 //=============================================================================
-HOMARD::listeFieldInterpsIter* HOMARD_Iteration_i::GetFieldInterps()
+ADAPT::listeFieldInterpsIter* HOMARD_Iteration_i::GetFieldInterps()
 {
   ASSERT( myHomardIteration );
   const std::list<std::string>& ListString = myHomardIteration->GetFieldInterps();
-  HOMARD::listeFieldInterpsIter_var aResult = new HOMARD::listeFieldInterpsIter;
+  ADAPT::listeFieldInterpsIter_var aResult = new ADAPT::listeFieldInterpsIter;
   aResult->length( ListString.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -355,7 +355,7 @@ char* HOMARD_Iteration_i::GetFileInfo()
 // Liens avec les autres iterations
 //=============================================================================
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr HOMARD_Iteration_i::NextIteration( const char* IterName )
+ADAPT::HOMARD_Iteration_ptr HOMARD_Iteration_i::NextIteration( const char* IterName )
 {
 // Nom de l'iteration parent
   char* NomIterParent = GetName() ;
@@ -375,11 +375,11 @@ void HOMARD_Iteration_i::UnLinkNextIteration( const char* NomIteration )
   myHomardIteration->UnLinkNextIteration( NomIteration );
 }
 //=============================================================================
-HOMARD::listeIterFilles* HOMARD_Iteration_i::GetIterations()
+ADAPT::listeIterFilles* HOMARD_Iteration_i::GetIterations()
 {
   ASSERT( myHomardIteration );
   const std::list<std::string>& maListe = myHomardIteration->GetIterations();
-  HOMARD::listeIterFilles_var aResult = new HOMARD::listeIterFilles;
+  ADAPT::listeIterFilles_var aResult = new ADAPT::listeIterFilles;
   aResult->length( maListe.size() );
   std::list<std::string>::const_iterator it;
   int i = 0;
@@ -402,7 +402,7 @@ char* HOMARD_Iteration_i::GetIterParentName()
   return CORBA::string_dup( myHomardIteration->GetIterParentName().c_str() );
 }
 //=============================================================================
-HOMARD::HOMARD_Iteration_ptr HOMARD_Iteration_i::GetIterParent()
+ADAPT::HOMARD_Iteration_ptr HOMARD_Iteration_i::GetIterParent()
 {
 // Nom de l'iteration parent
   char* NomIterParent = GetIterParentName() ;

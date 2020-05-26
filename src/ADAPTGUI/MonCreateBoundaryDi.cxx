@@ -33,14 +33,14 @@ using namespace std;
 
 // -------------------------------------------------------------------------------
 MonCreateBoundaryDi::MonCreateBoundaryDi(MonCreateCase* parent, bool modal,
-                                         HOMARD::HOMARD_Gen_var myHomardGen0,
+                                         ADAPT::ADAPT_Gen_var myHomardGen0,
                                          QString caseName, QString aName)
 // ---------------------------------------------------------------------------------
 /* Constructs a MonCreateBoundaryDi */
     :
     QDialog(0), Ui_CreateBoundaryDi(),
     _parent(parent), _aName(aName),
-    myHomardGen(HOMARD::HOMARD_Gen::_duplicate(myHomardGen0)),
+    myHomardGen(ADAPT::ADAPT_Gen::_duplicate(myHomardGen0)),
     _aCaseName(caseName)
     {
       MESSAGE("Constructeur") ;
@@ -146,7 +146,7 @@ void MonCreateBoundaryDi::PushOnHelp()
 void MonCreateBoundaryDi::AssocieLesGroupes()
 // ------------------------------------------------------------------------
 {
-  HOMARD::ListGroupType_var aSeqGroupe = new HOMARD::ListGroupType;
+  ADAPT::ListGroupType_var aSeqGroupe = new ADAPT::ListGroupType;
   aSeqGroupe->length(_listeGroupesBoundary.size());
   QStringList::const_iterator it;
   int i=0;
@@ -161,7 +161,7 @@ void MonCreateBoundaryDi::SetNewName()
 // --------------------------------------------------
 {
 
-  HOMARD::listeBoundarys_var  MyObjects = myHomardGen->GetAllBoundarysName();
+  ADAPT::listeBoundarys_var  MyObjects = myHomardGen->GetAllBoundarysName();
   int num = 0; QString aName="";
   while (aName == QString("") )
   {
@@ -204,7 +204,7 @@ void MonCreateBoundaryDi::SetFiltrage()
     return;
   }
 
-  MonCreateListGroup *aDlg = new MonCreateListGroup(NULL, this, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen),
+  MonCreateListGroup *aDlg = new MonCreateListGroup(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),
                             _aCaseName, _listeGroupesBoundary) ;
   aDlg->show();
 }

@@ -30,7 +30,7 @@
 
 #include <SALOMEconfig.h>
 #include <SALOME_LifeCycleCORBA.hxx>
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Cas)
 #include CORBA_CLIENT_HEADER(HOMARD_Hypothesis)
 
@@ -53,7 +53,7 @@ public:
   QString engineIOR() const;
   void    windows( QMap<int, int>& ) const;
 
-  static HOMARD::HOMARD_Gen_var InitHOMARDGen(SalomeApp_Application* );
+  static ADAPT::ADAPT_Gen_var InitHOMARDGen(SalomeApp_Application* );
 
 
 public slots:
@@ -89,7 +89,7 @@ private:
    _PTR(SObject)  chercheMonObjet();
 
    virtual void createPreferences();
-   HOMARD::HOMARD_Gen_var myComponentHomard;
+   ADAPT::ADAPT_Gen_var myComponentHomard;
 
    int anId;
    QString _ObjectName;

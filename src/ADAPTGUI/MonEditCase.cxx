@@ -32,7 +32,7 @@ using namespace std;
 */
 // -------------------------------------------------------------
 MonEditCase::MonEditCase ( bool modal,
-                           HOMARD::HOMARD_Gen_var myHomardGen,
+                           ADAPT::ADAPT_Gen_var myHomardGen,
                            QString CaseName ):
    MonCreateCase(modal, myHomardGen)
 {
@@ -61,7 +61,7 @@ void MonEditCase::InitValEdit()
   PushDir->setVisible(0);
 
   QString _aitername=aCase->GetIter0Name();
-  HOMARD::HOMARD_Iteration_var aIter = myHomardGen->GetIteration(_aitername.toStdString().c_str());
+  ADAPT::HOMARD_Iteration_var aIter = myHomardGen->GetIteration(_aitername.toStdString().c_str());
   QString aFileName = aIter->GetMeshFile();
   LEFileName->setText(aFileName);
   LEFileName->setReadOnly(true);
@@ -84,7 +84,7 @@ void MonEditCase::InitValEdit()
   GBBoundaryD->setVisible(0);
   GBBoundaryA->setVisible(0);
 //    On passe en revue tous les couples (frontiere,groupe) du cas
-  HOMARD::ListBoundaryGroupType_var mesBoundarys = aCase->GetBoundaryGroup();
+  ADAPT::ListBoundaryGroupType_var mesBoundarys = aCase->GetBoundaryGroup();
   if (mesBoundarys->length()>0)
   {
     QStringList ListeFron ;
@@ -98,7 +98,7 @@ void MonEditCase::InitValEdit()
       NomFron = mesBoundarys[i++];
       MESSAGE("NomFron "<<NomFron.toStdString().c_str());
 //    L'objet associe pour en deduire le type
-      HOMARD::HOMARD_Boundary_var myBoundary = myHomardGen->GetBoundary(NomFron.toStdString().c_str());
+      ADAPT::HOMARD_Boundary_var myBoundary = myHomardGen->GetBoundary(NomFron.toStdString().c_str());
       int type_obj = myBoundary->GetType() ;
       MESSAGE("type_obj "<<type_obj);
 //        C'est une frontiere CAO

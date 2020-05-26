@@ -33,14 +33,14 @@ using namespace std;
 
 // -------------------------------------------------------------------------------
 MonCreateBoundaryCAO::MonCreateBoundaryCAO(MonCreateCase* parent, bool modal,
-                                         HOMARD::HOMARD_Gen_var myHomardGen0,
+                                         ADAPT::ADAPT_Gen_var myHomardGen0,
                                          QString caseName, QString aName)
 // ---------------------------------------------------------------------------------
 /* Constructs a MonCreateBoundaryCAO */
     :
     QDialog(0), Ui_CreateBoundaryCAO(),
     _parent(parent), _aName(aName),
-    myHomardGen(HOMARD::HOMARD_Gen::_duplicate(myHomardGen0)),
+    myHomardGen(ADAPT::ADAPT_Gen::_duplicate(myHomardGen0)),
     _aCaseName(caseName)
     {
       MESSAGE("Constructeur") ;
@@ -137,7 +137,7 @@ void MonCreateBoundaryCAO::PushOnHelp()
 void MonCreateBoundaryCAO::AssocieLesGroupes()
 // ------------------------------------------------------------------------
 {
-  HOMARD::ListGroupType_var aSeqGroupe = new HOMARD::ListGroupType;
+  ADAPT::ListGroupType_var aSeqGroupe = new ADAPT::ListGroupType;
   aSeqGroupe->length(_listeGroupesBoundary.size());
   QStringList::const_iterator it;
   int i=0;
@@ -152,7 +152,7 @@ void MonCreateBoundaryCAO::SetNewName()
 // --------------------------------------------------
 {
 
-  HOMARD::listeBoundarys_var  MyObjects = myHomardGen->GetAllBoundarysName();
+  ADAPT::listeBoundarys_var  MyObjects = myHomardGen->GetAllBoundarysName();
   int num = 0; QString aName="";
   while (aName == QString("") )
   {
@@ -195,7 +195,7 @@ void MonCreateBoundaryCAO::SetFiltrage()
     return;
   }
 
-  MonCreateListGroupCAO *aDlg = new MonCreateListGroupCAO(NULL, this, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen),
+  MonCreateListGroupCAO *aDlg = new MonCreateListGroupCAO(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),
                             _aCaseName, _listeGroupesBoundary) ;
   aDlg->show();
 }

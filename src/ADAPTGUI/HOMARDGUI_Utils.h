@@ -26,7 +26,7 @@
 
 #include <omniORB4/CORBA.h>
 #include CORBA_CLIENT_HEADER(HOMARD_Cas)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 
 #include "SALOMEDSClient_definitions.hxx"
 #include "SALOME_InteractiveObject.hxx"

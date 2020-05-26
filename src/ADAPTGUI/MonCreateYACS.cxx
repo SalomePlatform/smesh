@@ -34,7 +34,7 @@
 using namespace std;
 
 // ----------------------------------------------------------------------
-MonCreateYACS::MonCreateYACS (bool modal, HOMARD::HOMARD_Gen_var myHomardGen0, QString CaseName ):
+MonCreateYACS::MonCreateYACS (bool modal, ADAPT::ADAPT_Gen_var myHomardGen0, QString CaseName ):
 // ----------------------------------------------------------------------
 /* Constructs a MonCreateYACS
  * Sets attributes to default values
@@ -46,11 +46,11 @@ MonCreateYACS::MonCreateYACS (bool modal, HOMARD::HOMARD_Gen_var myHomardGen0, Q
   _aDirName(""),
   _aMeshFile(""),
   _Type(1)
-  // Les valeurs de _Type, _MaxIter, _MaxNode, _MaxElem doivent etre les memes que celles dans HOMARD_Gen_i::CreateYACSSchema
+  // Les valeurs de _Type, _MaxIter, _MaxNode, _MaxElem doivent etre les memes que celles dans ADAPT_Gen_i::CreateYACSSchema
   // et doivent correspondre aux defauts des boutons
   {
 //     MESSAGE("Debut du constructeur de MonCreateYACS");
-    myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen0);
+    myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
     setupUi(this);
     if ( modal ) { setWindowModality(Qt::WindowModal); }
     else         { setWindowModality(Qt::NonModal); }
@@ -75,7 +75,7 @@ MonCreateYACS::MonCreateYACS (bool modal, HOMARD::HOMARD_Gen_var myHomardGen0, Q
   }
 
 // ----------------------------------------------------------------------
-MonCreateYACS::MonCreateYACS(HOMARD::HOMARD_Gen_var myHomardGen0,
+MonCreateYACS::MonCreateYACS(ADAPT::ADAPT_Gen_var myHomardGen0,
                              QString caseName):
 // ----------------------------------------------------------------------
 // Constructeur appele par MonEditYACS
@@ -273,7 +273,7 @@ void MonCreateYACS::SetNewName()
 // --------------------------------------------------
 {
 
-  HOMARD::listeYACSs_var MyObjects = myHomardGen->GetAllYACSsName();
+  ADAPT::listeYACSs_var MyObjects = myHomardGen->GetAllYACSsName();
   int num = 0; QString aName="";
   while (aName == QString("") )
   {

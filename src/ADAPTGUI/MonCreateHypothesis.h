@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Hypothesis)
 
 #include "ui_CreateHypothesis.h"
@@ -38,7 +38,7 @@ class HOMARD_EXPORT MonCreateHypothesis : public QScrollArea, public Ui_CreateHy
     Q_OBJECT
 
 public:
-    MonCreateHypothesis( MonCreateIteration* parent, bool modal, HOMARD::HOMARD_Gen_var myHomardGen,
+    MonCreateHypothesis( MonCreateIteration* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen,
                          QString aHypotheseName, QString caseName, QString aFieldFile);
     ~MonCreateHypothesis();
 
@@ -46,7 +46,7 @@ public:
     virtual void setGroups(QStringList listGroup);
 
 protected :
-   // MonCreateHypothesis( MonCreateIteration* parent, HOMARD::HOMARD_Gen_var myHomardGen,
+   // MonCreateHypothesis( MonCreateIteration* parent, ADAPT::ADAPT_Gen_var myHomardGen,
    //                      QString caseName, QString aFieldFile);
 
     MonCreateIteration *_parent;
@@ -74,8 +74,8 @@ protected :
     int _AdapInit;
     int _ExtraOutput;
 
-    HOMARD::HOMARD_Hypothesis_var aHypothesis;
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::HOMARD_Hypothesis_var aHypothesis;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
     QStringList _aListeZone;
     QStringList _aListeComposant;

@@ -68,7 +68,7 @@ SET(ADAPTEngine_HEADERS
   HOMARD_Hypothesis_i.hxx
   HOMARD_Iteration_i.hxx
   HOMARD_Zone_i.hxx
-  HOMARD_Gen_i.hxx
+  ADAPT_Gen_i.hxx
   HOMARD_Boundary_i.hxx
   HOMARD_YACS_i.hxx
   HomardMedCommun.h
@@ -82,7 +82,7 @@ SET(ADAPTEngine_SOURCES
   HOMARD_Cas_i.cxx
   HOMARD_Hypothesis_i.cxx
   HOMARD_Iteration_i.cxx
-  HOMARD_Gen_i.cxx
+  ADAPT_Gen_i.cxx
   HOMARD_Zone_i.cxx
   HOMARD_Boundary_i.cxx
   HOMARD_YACS_i.cxx

@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 
 #include <MonCreateBoundaryCAO.h>
 
@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditBoundaryCAO : public MonCreateBoundaryCAO
     Q_OBJECT
 public:
     MonEditBoundaryCAO( MonCreateCase* parent, bool modal,
-                       HOMARD::HOMARD_Gen_var myHomardGen,
+                       ADAPT::ADAPT_Gen_var myHomardGen,
                        QString caseName, QString Name );
     virtual ~MonEditBoundaryCAO();
 

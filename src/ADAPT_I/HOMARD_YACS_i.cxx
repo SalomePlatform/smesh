@@ -28,7 +28,7 @@
 //
 
 #include "HOMARD_YACS_i.hxx"
-#include "HOMARD_Gen_i.hxx"
+#include "ADAPT_Gen_i.hxx"
 #include "HOMARD_YACS.hxx"
 #include "HOMARD_DriverTools.hxx"
 
@@ -52,7 +52,7 @@ HOMARD_YACS_i::HOMARD_YACS_i()
  */
 //=============================================================================
 HOMARD_YACS_i::HOMARD_YACS_i( CORBA::ORB_ptr orb,
-                                        HOMARD::HOMARD_Gen_var engine )
+                                        ADAPT::ADAPT_Gen_var engine )
 {
   MESSAGE("constructor");
   _gen_i = engine;
@@ -101,12 +101,12 @@ char* HOMARD_YACS_i::GetDumpPython()
 //=============================================================================
 std::string HOMARD_YACS_i::Dump() const
 {
-  return HOMARD::Dump( *myHomardYACS );
+  return ADAPT::Dump( *myHomardYACS );
 }
 //=============================================================================
 bool HOMARD_YACS_i::Restore( const std::string& stream )
 {
-  return HOMARD::Restore( *myHomardYACS, stream );
+  return ADAPT::Restore( *myHomardYACS, stream );
 }
 //=============================================================================
 //=============================================================================

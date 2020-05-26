@@ -38,7 +38,7 @@ SET(SalomeIDLSMESH_IDLSOURCES
   SMESH_Measurements.idl
   HOMARD_Boundary.idl
   HOMARD_Cas.idl
-  HOMARD_Gen.idl
+  ADAPT_Gen.idl
   HOMARD_Hypothesis.idl
   HOMARD_Iteration.idl
   HOMARD_YACS.idl

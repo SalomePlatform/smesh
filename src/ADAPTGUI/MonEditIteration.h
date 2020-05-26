@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 
 #include <MonCreateIteration.h>
 
@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditIteration : public MonCreateIteration
     Q_OBJECT
 public:
     MonEditIteration( QWidget* parent, bool modal,
-                      HOMARD::HOMARD_Gen_var myHomardGen,
+                      ADAPT::ADAPT_Gen_var myHomardGen,
                       QString IterParentName, QString Name );
     virtual ~MonEditIteration();
 

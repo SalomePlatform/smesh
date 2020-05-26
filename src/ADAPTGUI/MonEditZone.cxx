@@ -32,7 +32,7 @@ using namespace std;
 
 // ------------------------------------------------------------------------
 MonEditZone::MonEditZone( MonCreateHypothesis* parent, bool modal,
-                          HOMARD::HOMARD_Gen_var myHomardGen,
+                          ADAPT::ADAPT_Gen_var myHomardGen,
                           QString caseName, QString Name ):
 // ------------------------------------------------------------------------
 /* Constructs a MonEditZone
@@ -113,7 +113,7 @@ void MonEditZone::InitValEdit()
 void MonEditZone::InitValZoneLimit()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordLimits = aZone->GetLimit();
+  ADAPT::double_array_var  mesCoordLimits = aZone->GetLimit();
   ASSERT(mesCoordLimits->length() == 3 );
   _Xincr=mesCoordLimits[0];
   _Yincr=mesCoordLimits[1];
@@ -123,7 +123,7 @@ void MonEditZone::InitValZoneLimit()
 void MonEditZone::InitValZoneBox()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordZones = aZone->GetCoords();
+  ADAPT::double_array_var  mesCoordZones = aZone->GetCoords();
   ASSERT(mesCoordZones->length() == 6 );
   _ZoneXmin=mesCoordZones[0];
   _ZoneXmax=mesCoordZones[1];
@@ -136,7 +136,7 @@ void MonEditZone::InitValZoneBox()
 void MonEditZone::InitValZoneSphere()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordZones = aZone->GetCoords();
+  ADAPT::double_array_var  mesCoordZones = aZone->GetCoords();
   ASSERT(mesCoordZones->length() == 4 );
   _ZoneXcentre=mesCoordZones[0];
   _ZoneYcentre=mesCoordZones[1];
@@ -148,7 +148,7 @@ void MonEditZone::InitValZoneSphere()
 void MonEditZone::InitValZoneCylinder()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordZones = aZone->GetCoords();
+  ADAPT::double_array_var  mesCoordZones = aZone->GetCoords();
   ASSERT(mesCoordZones->length() == 8 );
   _ZoneXcentre=mesCoordZones[0];
   _ZoneYcentre=mesCoordZones[1];
@@ -163,7 +163,7 @@ void MonEditZone::InitValZoneCylinder()
 void MonEditZone::InitValZonePipe()
 // ------------------------------------------------------------------------
 {
-  HOMARD::double_array_var  mesCoordZones = aZone->GetCoords();
+  ADAPT::double_array_var  mesCoordZones = aZone->GetCoords();
   ASSERT(mesCoordZones->length() == 9 );
   _ZoneXcentre=mesCoordZones[0];
   _ZoneYcentre=mesCoordZones[1];

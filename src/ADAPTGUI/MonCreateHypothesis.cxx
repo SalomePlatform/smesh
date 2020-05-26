@@ -35,7 +35,7 @@ using namespace std;
 
 // -------------------------------------------------------------------------------
 MonCreateHypothesis::MonCreateHypothesis(MonCreateIteration* parent, bool modal,
-                                         HOMARD::HOMARD_Gen_var myHomardGen0,
+                                         ADAPT::ADAPT_Gen_var myHomardGen0,
                                          QString Name,
                                          QString caseName, QString aFieldFile)
 // ---------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ MonCreateHypothesis::MonCreateHypothesis(MonCreateIteration* parent, bool modal,
 
 {
       MESSAGE("Constructeur") ;
-      myHomardGen=HOMARD::HOMARD_Gen::_duplicate(myHomardGen0);
+      myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
       setupUi(this);
       if ( modal ) { setWindowModality(Qt::WindowModal); }
       else         { setWindowModality(Qt::NonModal); }
@@ -231,7 +231,7 @@ void MonCreateHypothesis::SetNewName()
 // --------------------------------------------------
 {
 
-  HOMARD::listeHypotheses_var  MyObjects = myHomardGen->GetAllHypothesesName();
+  ADAPT::listeHypotheses_var  MyObjects = myHomardGen->GetAllHypothesesName();
   int num = 0;//
   QString aName="";
   while (aName=="" )
@@ -318,7 +318,7 @@ void MonCreateHypothesis::PushZoneNew()
 // ------------------------------------------------------------------------
 {
   MESSAGE("Debut de MonCreateHypothesis::PushZoneNew")
-  MonCreateZone *aDlg = new MonCreateZone(this, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen), _aCaseName) ;
+  MonCreateZone *aDlg = new MonCreateZone(this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName) ;
   aDlg->show();
 }
 
@@ -336,7 +336,7 @@ void MonCreateHypothesis::PushZoneEdit()
     return;
   }
   QString zoneName = monItem->text().trimmed();
-  MonEditZone *aDlg = new MonEditZone(this, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen), _aCaseName, zoneName) ;
+  MonEditZone *aDlg = new MonEditZone(this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName, zoneName) ;
   aDlg->show();
 }
 // ------------------------------------------------------------------------
@@ -357,7 +357,7 @@ void MonCreateHypothesis::GetAllZones()
 // Par defaut, aucune n'est selectionnee
 {
   MESSAGE("Debut de GetAllZones") ;
-  HOMARD::listeZones_var mesZones = myHomardGen->GetAllZonesName();
+  ADAPT::listeZones_var mesZones = myHomardGen->GetAllZonesName();
   int nbrow=TWZone->rowCount();
   for ( int row=0; row< nbrow; row++)
   {
@@ -711,7 +711,7 @@ void MonCreateHypothesis::SetFiltrage()
 // ------------------------------------------------------------------------
 {
   if (!CBGroupe->isChecked()) return;
-  MonCreateListGroup *aDlg = new MonCreateListGroup(this, NULL, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen),_aCaseName, _aListeGroupes) ;
+  MonCreateListGroup *aDlg = new MonCreateListGroup(this, NULL, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),_aCaseName, _aListeGroupes) ;
   aDlg->show();
 }
 
@@ -805,7 +805,7 @@ void MonCreateHypothesis::AssocieComposants()
 void MonCreateHypothesis::AssocieLesGroupes()
 // ------------------------------------------------------------------------
 {
-  HOMARD::ListGroupType_var aSeqGroupe = new HOMARD::ListGroupType;
+  ADAPT::ListGroupType_var aSeqGroupe = new ADAPT::ListGroupType;
   aSeqGroupe->length(_aListeGroupes.size());
   QStringList::const_iterator it;
   int i=0;

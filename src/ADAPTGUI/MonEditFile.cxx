@@ -43,7 +43,7 @@ using namespace std;
  * ---------------------------------------------------------
  */
 MonEditFile::MonEditFile( QWidget* parent,  bool modal,
-                          HOMARD::HOMARD_Gen_var myHomardGen,
+                          ADAPT::ADAPT_Gen_var myHomardGen,
                           QString aFileName, int option):
 //    QWidget(0),
     Ui_EditFile(),

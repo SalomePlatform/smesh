@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Boundary)
 
 #include "ui_CreateBoundaryAn.h"
@@ -39,13 +39,13 @@ class HOMARD_EXPORT MonCreateBoundaryAn : public QDialog, public Ui_CreateBounda
 
 public:
     MonCreateBoundaryAn( MonCreateCase* parent, bool modal,
-                   HOMARD::HOMARD_Gen_var myHomardGen,
+                   ADAPT::ADAPT_Gen_var myHomardGen,
                    QString caseName);
     virtual ~MonCreateBoundaryAn();
 
 protected :
     MonCreateBoundaryAn( MonCreateCase* parent,
-                   HOMARD::HOMARD_Gen_var myHomardGen,
+                   ADAPT::ADAPT_Gen_var myHomardGen,
                    QString caseName);
 
     MonCreateCase * _parent;
@@ -70,8 +70,8 @@ protected :
 
     bool Chgt;
 
-    HOMARD::HOMARD_Boundary_var aBoundaryAn ;
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::HOMARD_Boundary_var aBoundaryAn ;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
     virtual void InitConnect();
     virtual void InitValBoundaryAn();

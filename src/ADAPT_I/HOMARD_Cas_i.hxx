@@ -31,7 +31,7 @@
 #define _HOMARD_CAS_I_HXX_
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(HOMARD_Gen)
+#include CORBA_SERVER_HEADER(ADAPT_Gen)
 #include CORBA_SERVER_HEADER(HOMARD_Cas)
 
 #include "HOMARD_i.hxx"
@@ -45,11 +45,11 @@ class HOMARD_Cas;
 
 class HOMARDENGINE_EXPORT HOMARD_Cas_i:
   public virtual Engines_Component_i,
-  public virtual POA_HOMARD::HOMARD_Cas,
+  public virtual POA_ADAPT::HOMARD_Cas,
   public virtual PortableServer::ServantBase
 {
 public:
-  HOMARD_Cas_i( CORBA::ORB_ptr orb, HOMARD::HOMARD_Gen_var gen_i );
+  HOMARD_Cas_i( CORBA::ORB_ptr orb, ADAPT::ADAPT_Gen_var gen_i );
   HOMARD_Cas_i();
 
   virtual ~HOMARD_Cas_i();
@@ -79,16 +79,16 @@ public:
   void                   SetExtType( CORBA::Long ExtType );
   CORBA::Long            GetExtType();
 
-  void                   SetBoundingBox( const HOMARD::extrema& LesExtremes );
-  HOMARD::extrema*       GetBoundingBox();
+  void                   SetBoundingBox( const ADAPT::extrema& LesExtremes );
+  ADAPT::extrema*       GetBoundingBox();
 
   void                   AddGroup( const char* Group);
-  void                   SetGroups(const HOMARD::ListGroupType& ListGroup);
-  HOMARD::ListGroupType* GetGroups();
+  void                   SetGroups(const ADAPT::ListGroupType& ListGroup);
+  ADAPT::ListGroupType* GetGroups();
 
   void                   AddBoundary(const char* Boundary);
   void                   AddBoundaryGroup(const char* Boundary, const char* Group);
-  HOMARD::ListBoundaryGroupType*  GetBoundaryGroup();
+  ADAPT::ListBoundaryGroupType*  GetBoundaryGroup();
   void                   SupprBoundaryGroup( );
 
   void                   SetPyram( CORBA::Long Pyram );
@@ -98,22 +98,22 @@ public:
 
 // Liens avec les autres structures
   char*                  GetIter0Name();
-  HOMARD::HOMARD_Iteration_ptr GetIter0() ;
+  ADAPT::HOMARD_Iteration_ptr GetIter0() ;
 
-  HOMARD::HOMARD_Iteration_ptr  NextIteration( const char* Name ) ;
+  ADAPT::HOMARD_Iteration_ptr  NextIteration( const char* Name ) ;
 
-  HOMARD::HOMARD_Iteration_ptr  LastIteration() ;
+  ADAPT::HOMARD_Iteration_ptr  LastIteration() ;
 
   void                   AddIteration( const char* NomIteration );
 
 // YACS
-  HOMARD::HOMARD_YACS_ptr CreateYACSSchema( const char* YACSName, const char* ScriptFile, const char* DirName, const char* MeshFile );
+  ADAPT::HOMARD_YACS_ptr CreateYACSSchema( const char* YACSName, const char* ScriptFile, const char* DirName, const char* MeshFile );
 
 private:
   ::HOMARD_Cas*          myHomardCas;
 
   CORBA::ORB_ptr         _orb;
-  HOMARD::HOMARD_Gen_var _gen_i;
+  ADAPT::ADAPT_Gen_var _gen_i;
 };
 
 #endif

@@ -31,7 +31,7 @@
 #define _HOMARD_Zone_I_HXX_
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(HOMARD_Gen)
+#include CORBA_SERVER_HEADER(ADAPT_Gen)
 #include CORBA_SERVER_HEADER(HOMARD_Zone)
 
 #include "HOMARD_i.hxx"
@@ -45,11 +45,11 @@ class HOMARD_Zone;
 
 class HOMARDENGINE_EXPORT HOMARD_Zone_i:
   public virtual Engines_Component_i,
-  public virtual POA_HOMARD::HOMARD_Zone,
+  public virtual POA_ADAPT::HOMARD_Zone,
   public virtual PortableServer::ServantBase
 {
 public:
-  HOMARD_Zone_i( CORBA::ORB_ptr orb, HOMARD::HOMARD_Gen_var gen_i );
+  HOMARD_Zone_i( CORBA::ORB_ptr orb, ADAPT::ADAPT_Gen_var gen_i );
   HOMARD_Zone_i();
 
   virtual ~HOMARD_Zone_i();
@@ -84,21 +84,21 @@ public:
   void                   SetSphere( double Xcentre, double Ycentre, double ZCentre,
                                     double Rayon );
 
-  HOMARD::double_array*  GetCoords();
+  ADAPT::double_array*  GetCoords();
 
   void                   SetLimit( double Xincr, double Yincr, double Zincr);
-  HOMARD::double_array*  GetLimit();
+  ADAPT::double_array*  GetLimit();
 
 // Liens avec les autres structures
   void                   AddHypo( const char *NomHypo );
-  HOMARD::listeHypo*     GetHypo();
+  ADAPT::listeHypo*     GetHypo();
   void                   SupprHypo( const char *NomHypo );
 
 private:
   ::HOMARD_Zone*         myHomardZone;
 
   CORBA::ORB_ptr         _orb;
-  HOMARD::HOMARD_Gen_var _gen_i;
+  ADAPT::ADAPT_Gen_var _gen_i;
 };
 
 #endif

@@ -31,7 +31,7 @@ using namespace std;
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 MonEditBoundaryDi::MonEditBoundaryDi( MonCreateCase* parent, bool modal,
-                                      HOMARD::HOMARD_Gen_var myHomardGen,
+                                      ADAPT::ADAPT_Gen_var myHomardGen,
                                       QString caseName, QString Name):
 // -------------------------------------------------------------------------------------------------------------------------------------
 /* Constructs a MonEditBoundaryDi
@@ -54,7 +54,7 @@ MonEditBoundaryDi::MonEditBoundaryDi( MonCreateCase* parent, bool modal,
       return;
     }
 
-    HOMARD::ListGroupType_var maListe = aBoundary->GetGroups();
+    ADAPT::ListGroupType_var maListe = aBoundary->GetGroups();
     for ( int i = 0; i < maListe->length(); i++ )
        _listeGroupesBoundary << QString(maListe[i]);
 
@@ -95,10 +95,10 @@ void MonEditBoundaryDi::SetFiltrage()
                               QObject::tr("HOM_BOUN_CASE") );
     return;
   }
-  HOMARD::HOMARD_Cas_var monCas= myHomardGen->GetCase(_aCaseName.toStdString().c_str());
-  HOMARD::ListGroupType_var _listeGroupesCas = monCas->GetGroups();
+  ADAPT::HOMARD_Cas_var monCas= myHomardGen->GetCase(_aCaseName.toStdString().c_str());
+  ADAPT::ListGroupType_var _listeGroupesCas = monCas->GetGroups();
 
-  MonEditListGroup *aDlg = new MonEditListGroup(NULL, this, true, HOMARD::HOMARD_Gen::_duplicate(myHomardGen),
+  MonEditListGroup *aDlg = new MonEditListGroup(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),
                             _aCaseName, _listeGroupesBoundary) ;
   aDlg->show();
 }

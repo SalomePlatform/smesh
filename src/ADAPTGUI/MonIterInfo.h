@@ -26,7 +26,7 @@
 #include <SalomeApp_Module.h>
 
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_CLIENT_HEADER(HOMARD_Gen)
+#include CORBA_CLIENT_HEADER(ADAPT_Gen)
 #include CORBA_CLIENT_HEADER(HOMARD_Cas)
 
 #include "ui_IterInfo.h"
@@ -40,11 +40,11 @@ class HOMARD_EXPORT MonIterInfo : public QDialog, public Ui_IterInfo
     Q_OBJECT
 
 public:
-    MonIterInfo( QWidget* parent, bool modal, HOMARD::HOMARD_Gen_var myHomardGen, QString IterName);
+    MonIterInfo( QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString IterName);
     ~MonIterInfo();
 
 protected :
-    MonIterInfo( QWidget* parent, HOMARD::HOMARD_Gen_var myHomardGen, QString IterName );
+    MonIterInfo( QWidget* parent, ADAPT::ADAPT_Gen_var myHomardGen, QString IterName );
 
     QString _IterName;
     QString _aCaseName;
@@ -56,8 +56,8 @@ protected :
     int _Quality;
     int _Option;
 
-    HOMARD::HOMARD_Iteration_var aIter ;
-    HOMARD::HOMARD_Gen_var myHomardGen;
+    ADAPT::HOMARD_Iteration_var aIter ;
+    ADAPT::ADAPT_Gen_var myHomardGen;
 
     virtual void InitConnect();
 

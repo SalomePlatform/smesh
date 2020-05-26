@@ -32,7 +32,7 @@ using namespace std;
 */
 // -------------------------------------------------------------
 MonEditYACS::MonEditYACS ( bool modal,
-                           HOMARD::HOMARD_Gen_var myHomardGen,
+                           ADAPT::ADAPT_Gen_var myHomardGen,
                            QString Name ):
    MonCreateYACS(myHomardGen, Name)
 {

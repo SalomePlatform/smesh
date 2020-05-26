@@ -28,7 +28,7 @@ using namespace std;
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 MonEditIteration::MonEditIteration ( QWidget* parent, bool modal,
-                                     HOMARD::HOMARD_Gen_var myHomardGen,
+                                     ADAPT::ADAPT_Gen_var myHomardGen,
                                      QString IterParentName, QString IterName ):
 // -------------------------------------------------------------------------------------------------------------------------------------
 /* Constructs a MonEditIteration
@@ -118,7 +118,7 @@ void MonEditIteration::InitValEdit()
   PBHypoNew->setVisible(0);
 
   //    Pour une adaptation selon un champ
-  HOMARD::HOMARD_Hypothesis_var myHypo = myHomardGen->GetHypothesis(HypoName.toStdString().c_str()) ;
+  ADAPT::HOMARD_Hypothesis_var myHypo = myHomardGen->GetHypothesis(HypoName.toStdString().c_str()) ;
   _aTypeAdap = myHypo->GetAdapType() ;
   if ( _aTypeAdap == 1 )
   {

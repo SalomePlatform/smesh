@@ -17,8 +17,8 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __HOMARD_GEN__
-#define __HOMARD_GEN__
+#ifndef __ADAPT_GEN__
+#define __ADAPT_GEN__
 
 #include "SALOME_Component.idl"
 #include "SALOME_Exception.idl"
@@ -40,7 +40,7 @@ module ADAPT
   typedef sequence<string> listeBoundarys;
   typedef sequence<string> listeYACSs;
 
-  interface HOMARD_Gen : Engines::EngineComponent, SALOMEDS::Driver
+  interface ADAPT_Gen : Engines::EngineComponent, SALOMEDS::Driver
   {
 //
 // A. Les methodes qui suivent sont celles que l'on retrouvera dans
