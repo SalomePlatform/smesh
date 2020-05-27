@@ -1970,12 +1970,12 @@ void SMESHGUI::OnEditDelete()
   int objectCount = 0;
   QString aNameList;
   QString aParentComponent = QString::null;
-  
+
   for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
   {
     Handle(SALOME_InteractiveObject) anIO = anIt.Value();
     if ( anIO.IsNull() ) continue;
-    
+
     QString father = "unknown", name;
 
     _PTR(SObject) aSO = aStudy->FindObjectID( anIO->getEntry() );
@@ -3048,7 +3048,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
       SMESHGUI_AdaptDlg *aDlg = new SMESHGUI_AdaptDlg( this, theCommandID, aMesh);
-      aDlg->show();
+//       aDlg->show();
     }
   // Adaptation - end
 
@@ -5368,7 +5368,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( dispgroup, "columns", 2 );
 
   addPreference( tr( "PREF_FITALL_ON_DISPLAYONLY" ), dispgroup, LightApp_Preferences::Bool, "SMESH", "fitall_on_displayonly" );
-  
+
   int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
   QStringList modes;
   modes.append( tr("MEN_WIRE") );

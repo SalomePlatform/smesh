@@ -134,16 +134,20 @@ SMESHGUI_AdaptDlg::SMESHGUI_AdaptDlg( SMESHGUI* theModule,
     myIsApplyAndClose( false )
 {
   std::cout  << "SMESHGUI_AdaptDlg avec theCommandID : " << theCommandID << std::endl;
-  initDialog( true );
-  if ( !theMesh->_is_nil() )
-    init( theMesh );
-  else
+  if ( ! OnGUIEvent (theCommandID) )
   {
-    mySelectSubMesh->setEnabled( false );
-    mySelectGroup->setEnabled( false );
-    myGeomGroupBtn->setEnabled( false );
-    myGeomGroupLine->setEnabled( false );
+    INFOS("Erreur");
   }
+//   initDialog( true );
+//   if ( !theMesh->_is_nil() )
+//     init( theMesh );
+//   else
+//   {
+//     mySelectSubMesh->setEnabled( false );
+//     mySelectGroup->setEnabled( false );
+//     myGeomGroupBtn->setEnabled( false );
+//     myGeomGroupLine->setEnabled( false );
+//   }
 }
 //=======================================================================
 // OnGUIEvent for the adaptations
@@ -152,24 +156,25 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 {
   std::cout  << "OnGUIEvent avec theCommandID : " << theCommandID << std::endl;
 // A. Controles
-//   SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( application() );
-//   if ( !app ) return false;
-//
-//   SalomeApp_Study* stud = dynamic_cast<SalomeApp_Study*> ( app->activeStudy() );
-//   if ( !stud )
-//   {
-//     MESSAGE ( "FAILED to cast active study to SalomeApp_Study" );
-//     return false;
-//   }
-//
-//   SUIT_Desktop* parent = application()->desktop();
-//
+  SalomeApp_Application* app =
+      dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
+  if ( !app ) return false;
+
+  SalomeApp_Study* stud = dynamic_cast<SalomeApp_Study*> ( app->activeStudy() );
+  if ( !stud )
+  {
+    MESSAGE ( "FAILED to cast active study to SalomeApp_Study" );
+    return false;
+  }
+
+  SUIT_Desktop* parent = SUIT_Session::session()->activeApplication()->desktop();
+
 //   ADAPT::ADAPT_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
 //
 //   if (!CORBA::is_nil(homardGen))
 //     homardGen->UpdateStudy();
 //
-//   getApp()->updateObjectBrowser();
+  SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
 //
 // B. Choix selon les commandes
   SCRUTE(theCommandID);
@@ -177,7 +182,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
   {
     case 8011: // Creation d un Cas
     {
-      MESSAGE("command " << theCommandID << " activated");
+      INFOS("Creation d'un Cas");
 //       MonCreateCase *aDlg = new MonCreateCase( true,
 //                             ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
 //       aDlg->show();
