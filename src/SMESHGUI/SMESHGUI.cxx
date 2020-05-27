@@ -4758,6 +4758,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   //popupMgr()->insert( separator(), -1, 0 );
 
   //popupMgr()->insert( separator(), -1, 0 );
+
 //   createPopupItem( SMESHOp::OpUniformRefinement, OB, mesh );
 //   createPopupItem( SMESHOp::OpHOMARDRefinement,  OB, mesh );
 //   createPopupItem( SMESHOp::OpMGAdapt,           OB, mesh );
