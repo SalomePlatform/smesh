@@ -20,11 +20,10 @@
 //  SMESH SMESHGUI : GUI for the adaptation in the SMESH component
 //  File   : SMESHGUI_AdaptDlg.cxx
 //  Author : Gerald NICOLAS, EDF
-//  ADAPTGUI includes
-//
-#include "SMESHGUI_AdaptDlg.h"
 
+//  SMESH includes
 #include "SMESHGUI.h"
+#include "SMESHGUI_AdaptDlg.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_GroupUtils.h"
@@ -44,35 +43,19 @@
 #include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
+#include <LightApp_SelectionMgr.h>
 #include <QtxColorButton.h>
-
+#include <SALOME_ListIO.hxx>
 #include <SUIT_Desktop.h>
-#include <SUIT_ResourceMgr.h>
-#include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>
-
-#include <SalomeApp_Tools.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SVTK_ViewWindow.h>
 #include <SalomeApp_Application.h>
 #include <SalomeApp_Study.h>
-#include <LightApp_SelectionMgr.h>
-
-#include <SALOME_ListIO.hxx>
-
-#include <SVTK_ViewWindow.h>
-
+#include <SalomeApp_Tools.h>
 #include <VTKViewer_Algorithm.h>
-
-// SALOME KERNEL includes
-#include <SALOMEDSClient_Study.hxx>
-#include <utilities.h>
-
-// VTK Includes
-#include <vtkRenderer.h>
-#include <vtkActorCollection.h>
-
-// OCCT includes
-#include <TColStd_MapOfInteger.hxx>
 
 // Qt includes
 #include <QButtonGroup>
@@ -98,6 +81,23 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+
+// VTK includes
+#include <vtkRenderer.h>
+#include <vtkActorCollection.h>
+
+// SALOME KERNEL includes
+#include <SALOMEDSClient_ClientFactory.hxx>
+#include <SALOMEDSClient_IParameters.hxx>
+#include <SALOMEDSClient_SComponent.hxx>
+#include <SALOMEDSClient_StudyBuilder.hxx>
+#include <SALOMEDS_Study.hxx>
+#include <SALOMEDS_SObject.hxx>
+#include "utilities.h"
+#include <SALOME_LifeCycleCORBA.hxx>
+
+// OCCT includes
+#include <TColStd_MapOfInteger.hxx>
 
 #define SPACING 6
 #define MARGIN  11
@@ -149,9 +149,11 @@ SMESHGUI_AdaptDlg::SMESHGUI_AdaptDlg( SMESHGUI* theModule,
 //     myGeomGroupLine->setEnabled( false );
 //   }
 }
-//=======================================================================
-// OnGUIEvent for the adaptations
-//=======================================================================
+/*!
+  * \brief Launches the GUI for the adaptation
+  * \param theCommandID - the integer taht references the operation
+  * \return Graphical object
+*/
 bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 {
   std::cout  << "OnGUIEvent avec theCommandID : " << theCommandID << std::endl;
@@ -160,8 +162,8 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
       dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
   if ( !app ) return false;
 
-  SalomeApp_Study* stud = dynamic_cast<SalomeApp_Study*> ( app->activeStudy() );
-  if ( !stud )
+  SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*> ( app->activeStudy() );
+  if ( !aStudy )
   {
     MESSAGE ( "FAILED to cast active study to SalomeApp_Study" );
     return false;
@@ -169,11 +171,13 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 
   SUIT_Desktop* parent = SUIT_Session::session()->activeApplication()->desktop();
 
-//   ADAPT::ADAPT_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
-//
-//   if (!CORBA::is_nil(homardGen))
-//     homardGen->UpdateStudy();
-//
+  SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
+  Engines::EngineComponent_var comp =
+    ls->FindOrLoad_Component("FactoryServer", "SMESH");
+  ADAPT::ADAPT_Gen_var homardGen = ADAPT::ADAPT_Gen::_narrow(comp);
+  if (!CORBA::is_nil(homardGen))
+    homardGen->UpdateStudy();
+
   SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
 //
 // B. Choix selon les commandes

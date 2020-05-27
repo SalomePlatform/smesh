@@ -75,6 +75,7 @@ SET(_link_LIBRARIES
   SMESHControls
   SMESHObject
   ADAPTGUI
+  ADAPTImpl
 )
 
 # --- headers ---
@@ -277,7 +278,7 @@ SET(_ts_RESOURCES
   SMESH_msg_en.ts
   SMESH_msg_fr.ts
   SMESH_msg_ja.ts
-) 
+)
 
 # --- rules ---
 

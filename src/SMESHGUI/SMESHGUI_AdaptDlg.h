@@ -73,11 +73,11 @@ public:
                      int theCommandID,
                      SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
   ~SMESHGUI_AdaptDlg();
-  
+
   virtual bool OnGUIEvent (int theCommandID);
 
   static QString                GetDefaultName( const QString& );
-  
+
 public slots:
   void onAdd();
   void onRemove();
@@ -89,31 +89,31 @@ private slots:
   void                          onTypeChanged( int );
   void                          onGrpTypeChanged( int );
   void                          onColorChanged( QColor );
-  
+
   void                          onOK();
   bool                          onApply();
   void                          onHelp();
   void                          onDeactivate();
   void                          onVisibilityChanged();
-  
+
   void                          onListSelectionChanged();
   void                          onObjectSelectionChanged();
-  
+
   void                          onSelectAll();
   void                          onSelectSubMesh( bool );
   void                          onSelectGroup( bool );
   void                          onSelectGeomGroup( bool );
   void                          setCurrentSelection();
-  
+
   void                          setFilters();
   void                          onSort();
-  
+
   void                          onNameChanged( const QString& );
   void                          onFilterAccepted();
-  
+
   void                          onGeomPopup( QAction* );
   void                          onGeomSelectionButton( bool );
-  
+
   void                          onPublishShapeByMeshDlg( SUIT_Operation* );
   void                          onCloseShapeByMeshDlg( SUIT_Operation* );
 
@@ -134,10 +134,10 @@ private:
   void                          restoreShowEntityMode();
 
   bool                          IsActorVisible( SMESH_Actor* );
-  
+
   void                          setGroupColor( const SALOMEDS::Color& );
   SALOMEDS::Color               getGroupColor() const;
-  
+
   void                          setGroupQColor( const QColor& );
   QColor                        getGroupQColor() const;
   void                          setDefaultName() const;
@@ -155,16 +155,16 @@ private:
   int                           myStoredShownEntity;     /* Store ShowEntity mode of myMesh */
   QLineEdit*                    myCurrentLineEdit;       /* Current  LineEdit */
   SVTK_Selector*                mySelector;
-  
+
   QPushButton*                  myMeshGroupBtn;
   QLineEdit*                    myMeshGroupLine;
-  
+
   QButtonGroup*                 myTypeGroup;
   QLineEdit*                    myName;
   QString                       myOldName;
-  
+
   QButtonGroup*                 myGrpTypeGroup;
-  
+
   QStackedWidget*               myWGStack;
   QCheckBox*                    mySelectAll;
   QCheckBox*                    myAllowElemsModif;
@@ -174,7 +174,7 @@ private:
   QPushButton*                  myAddBtn;
   QPushButton*                  myRemoveBtn;
   QPushButton*                  mySortBtn;
-  
+
   QGroupBox*                    mySelectBox;
   QCheckBox*                    mySelectSubMesh;
   QPushButton*                  mySubMeshBtn;
@@ -182,9 +182,9 @@ private:
   QCheckBox*                    mySelectGroup;
   QPushButton*                  myGroupBtn;
   QLineEdit*                    myGroupLine;
-  
+
   QtxColorButton*               myColorBtn;
-  
+
   QCheckBox*                    mySelectGeomGroup;
   QToolButton*                  myGeomGroupBtn;
   QLineEdit*                    myGeomGroupLine;
@@ -194,9 +194,9 @@ private:
   QPushButton*                  myApplyBtn;
   QPushButton*                  myCloseBtn;
   QPushButton*                  myHelpBtn;
-  
+
   SMESHGUI_ShapeByMeshOp*       myShapeByMeshOp;
-  
+
   SMESH::SMESH_Mesh_var         myMesh;
   QList<SMESH_Actor*>           myActorsList;
   SMESH::SMESH_Group_var        myGroup;
@@ -205,7 +205,7 @@ private:
   SMESH::Filter_var             myFilter;
   QList<int>                    myIdList;
   GEOM::ListOfGO_var            myGeomObjects;
-  
+
   int                           mySelectionMode;
   //Handle(SMESH_TypeFilter)      myMeshFilter;
   //Handle(SMESH_TypeFilter)      mySubMeshFilter;
@@ -214,13 +214,13 @@ private:
   SMESH_LogicalFilter*          mySubMeshFilter;
   SMESH_LogicalFilter*          myGroupFilter;
   SUIT_SelectionFilter*         myGeomFilter;
-  
+
   SMESHGUI_FilterDlg*           myFilterDlg;
-  
+
   bool                          myCreate, myIsBusy;
-  
+
   QString                       myHelpFileName;
-  
+
   QMap<QAction*, int>           myActions;
 
   bool                          myNameChanged; //added by skl for IPAL19574
