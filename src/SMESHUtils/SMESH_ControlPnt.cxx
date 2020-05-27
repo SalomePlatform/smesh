@@ -58,9 +58,10 @@ namespace SMESHUtils
                           const double& theSize,
                           std::vector<ControlPnt>& thePoints );
 
-  std::vector<gp_Pnt> computePointsForSplitting( const gp_Pnt& p1,
-                                                 const gp_Pnt& p2,
-                                                 const gp_Pnt& p3 );
+  void computePointsForSplitting( const gp_Pnt& p1,
+                                  const gp_Pnt& p2,
+                                  const gp_Pnt& p3,
+                                  gp_Pnt midPoints[3]);
   gp_Pnt tangencyPoint(const gp_Pnt& p1,
                        const gp_Pnt& p2,
                        const gp_Pnt& Center);
@@ -164,8 +165,7 @@ void SMESHUtils::createPointsSampleFromFace( const TopoDS_Face&       theFace,
 
   // Get triangles
   int nbTriangles = aTri->NbTriangles();
-  Poly_Array1OfTriangle triangles(1,nbTriangles);
-  triangles=aTri->Triangles();
+  const Poly_Array1OfTriangle& triangles = aTri->Triangles();
 
   // GetNodes
   int nbNodes = aTri->NbNodes();
@@ -173,9 +173,10 @@ void SMESHUtils::createPointsSampleFromFace( const TopoDS_Face&       theFace,
   nodes = aTri->Nodes();
 
   // Iterate on triangles and subdivide them
-  for(int i=1; i<=nbTriangles; i++)
+  thePoints.reserve( thePoints.size() + nbTriangles );
+  for ( int i = 1; i <= nbTriangles; i++ )
   {
-    Poly_Triangle aTriangle = triangles.Value(i);
+    const Poly_Triangle& aTriangle = triangles.Value(i);
     gp_Pnt p1 = nodes.Value(aTriangle.Value(1));
     gp_Pnt p2 = nodes.Value(aTriangle.Value(2));
     gp_Pnt p3 = nodes.Value(aTriangle.Value(3));
@@ -184,7 +185,7 @@ void SMESHUtils::createPointsSampleFromFace( const TopoDS_Face&       theFace,
     p2.Transform(aTrsf);
     p3.Transform(aTrsf);
 
-    subdivideTriangle(p1, p2, p3, theSize, thePoints);
+    subdivideTriangle( p1, p2, p3, theSize, thePoints );
   }
 }
 
@@ -221,10 +222,8 @@ void SMESHUtils::createPointsSampleFromSolid( const TopoDS_Solid&      theSolid,
 
       // Step2 : for each face of theSolid:
       std::set<double> intersections;
-      std::set<double>::iterator it = intersections.begin();
 
-      TopExp_Explorer Ex;
-      for (Ex.Init(theSolid,TopAbs_FACE); Ex.More(); Ex.Next())
+      for ( TopExp_Explorer Ex( theSolid, TopAbs_FACE ); Ex.More(); Ex.Next() )
       {
         // check if there is an intersection
         IntCurvesFace_Intersector anIntersector(TopoDS::Face(Ex.Current()), Precision::Confusion());
@@ -232,13 +231,13 @@ void SMESHUtils::createPointsSampleFromSolid( const TopoDS_Solid&      theSolid,
 
         // get the intersection's parameter and store it
         int nbPoints = anIntersector.NbPnt();
-        for(int i = 0 ; i < nbPoints ; i++ )
+        for ( int i = 0 ; i < nbPoints; i++ )
         {
-          it = intersections.insert( it, anIntersector.WParameter(i+1) );
+          intersections.insert( anIntersector.WParameter(i+1) );
         }
       }
       // Step3 : go through the line chunk by chunk
-      if ( intersections.begin() != intersections.end() )
+      if ( intersections.size() > 1 )
       {
         std::set<double>::iterator intersectionsIterator=intersections.begin();
         double first = *intersectionsIterator;
@@ -254,9 +253,9 @@ void SMESHUtils::createPointsSampleFromSolid( const TopoDS_Solid&      theSolid,
             double localStep = (second -first) / ceil( (second - first) / step );
             for ( double z = Zmin + first; z < Zmin + second; z = z + localStep )
             {
-              thePoints.push_back(ControlPnt( x, y, z, theSize ));
+              thePoints.emplace_back( x, y, z, theSize );
             }
-            thePoints.push_back(ControlPnt( x, y, Zmin + second, theSize ));
+            thePoints.emplace_back( x, y, Zmin + second, theSize );
           }
           first = second;
           innerPoints = !innerPoints;
@@ -288,45 +287,45 @@ void SMESHUtils::subdivideTriangle( const gp_Pnt& p1,
   // and the distance between two mass centers of two neighbouring triangles
   // sharing an edge is < 2 * 1/2 * S = S
   // If the traingles share a Vertex and no Edge the distance of the mass centers
-  // to the Vertices is 2*D < S so the mass centers are distant of less than 2*S 
+  // to the Vertices is 2*D < S so the mass centers are distant of less than 2*S
 
   double threshold = sqrt( 3. ) * theSize;
 
-  if ( (p1.Distance(p2) > threshold ||
-        p2.Distance(p3) > threshold ||
-        p3.Distance(p1) > threshold))
-  {
-    std::vector<gp_Pnt> midPoints = computePointsForSplitting(p1, p2, p3);
+  if ( p1.Distance(p2) > threshold ||
+       p2.Distance(p3) > threshold ||
+       p3.Distance(p1) > threshold )
+    try
+    {
+      gp_Pnt midPoints[3];
+      computePointsForSplitting( p1, p2, p3, midPoints );
 
-    subdivideTriangle( midPoints[0], midPoints[1], midPoints[2], theSize, thePoints );
-    subdivideTriangle( midPoints[0], p2, midPoints[1], theSize, thePoints );
-    subdivideTriangle( midPoints[2], midPoints[1], p3, theSize, thePoints );
-    subdivideTriangle( p1, midPoints[0], midPoints[2], theSize, thePoints );
-  }
-  else
-  {
-    double x = (p1.X() + p2.X() + p3.X()) / 3 ;
-    double y = (p1.Y() + p2.Y() + p3.Y()) / 3 ;
-    double z = (p1.Z() + p2.Z() + p3.Z()) / 3 ;
+      subdivideTriangle( midPoints[0], midPoints[1], midPoints[2], theSize, thePoints );
+      subdivideTriangle( midPoints[0], p2, midPoints[1], theSize, thePoints );
+      subdivideTriangle( midPoints[2], midPoints[1], p3, theSize, thePoints );
+      subdivideTriangle( p1, midPoints[0], midPoints[2], theSize, thePoints );
+      return;
+    }
+    catch (...)
+    {
+    }
 
-    ControlPnt massCenter( x ,y ,z, theSize );
-    thePoints.push_back( massCenter );
-  }
+  gp_Pnt massCenter = ( p1.XYZ() + p2.XYZ() + p3.XYZ() ) / 3.;
+  thePoints.emplace_back( massCenter, theSize );
 }
 
 //================================================================================
 /*!
  * \brief Returns the appropriate points for splitting a triangle
- * \brief the tangency points of the incircle are used in order to have mostly
- * \brief well-shaped sub-triangles
+ * the tangency points of the incircle are used in order to have mostly
+ * well-shaped sub-triangles
  */
 //================================================================================
 
-std::vector<gp_Pnt> SMESHUtils::computePointsForSplitting( const gp_Pnt& p1,
-                                                           const gp_Pnt& p2,
-                                                           const gp_Pnt& p3 )
+void SMESHUtils::computePointsForSplitting( const gp_Pnt& p1,
+                                            const gp_Pnt& p2,
+                                            const gp_Pnt& p3,
+                                            gp_Pnt midPoints[3])
 {
-  std::vector<gp_Pnt> midPoints;
   //Change coordinates
   gp_Trsf Trsf_1;            // Identity transformation
   gp_Ax3 reference_system(gp::Origin(), gp::DZ(), gp::DX());   // OXY
@@ -359,15 +358,11 @@ std::vector<gp_Pnt> SMESHUtils::computePointsForSplitting( const gp_Pnt& p1,
   gp_Pnt T2 = tangencyPoint( B, C, Center);
   gp_Pnt T3 = tangencyPoint( C, A, Center);
 
-  gp_Pnt p1_2 = T1.Transformed(Trsf_1.Inverted());
-  gp_Pnt p2_3 = T2.Transformed(Trsf_1.Inverted());
-  gp_Pnt p3_1 = T3.Transformed(Trsf_1.Inverted());
+  midPoints[0] = T1.Transformed(Trsf_1.Inverted());
+  midPoints[1] = T2.Transformed(Trsf_1.Inverted());
+  midPoints[2] = T3.Transformed(Trsf_1.Inverted());
 
-  midPoints.push_back(p1_2);
-  midPoints.push_back(p2_3);
-  midPoints.push_back(p3_1);
-
-  return midPoints;
+  return;
 }
 
 //================================================================================
