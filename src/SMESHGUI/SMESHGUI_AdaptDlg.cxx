@@ -65,6 +65,7 @@
 
 // SALOME KERNEL includes
 #include <SALOMEDSClient_Study.hxx>
+#include <utilities.h>
 
 // VTK Includes
 #include <vtkRenderer.h>
@@ -89,6 +90,9 @@
 #include <QStackedWidget>
 #include <QKeyEvent>
 #include <QMenu>
+
+// HOMARD includes
+#include "MonCreateCase.h"
 
 // STL includes
 #include <vector>
@@ -129,7 +133,7 @@ SMESHGUI_AdaptDlg::SMESHGUI_AdaptDlg( SMESHGUI* theModule,
     myNbChangesOfContents(0),
     myIsApplyAndClose( false )
 {
-  std::cout  << "theCommandID : " << theCommandID << std::endl;
+  std::cout  << "SMESHGUI_AdaptDlg avec theCommandID : " << theCommandID << std::endl;
   initDialog( true );
   if ( !theMesh->_is_nil() )
     init( theMesh );
@@ -141,6 +145,313 @@ SMESHGUI_AdaptDlg::SMESHGUI_AdaptDlg( SMESHGUI* theModule,
     myGeomGroupLine->setEnabled( false );
   }
 }
+//=======================================================================
+// OnGUIEvent for the adaptations
+//=======================================================================
+bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
+{
+  std::cout  << "OnGUIEvent avec theCommandID : " << theCommandID << std::endl;
+// A. Controles
+//   SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( application() );
+//   if ( !app ) return false;
+//
+//   SalomeApp_Study* stud = dynamic_cast<SalomeApp_Study*> ( app->activeStudy() );
+//   if ( !stud )
+//   {
+//     MESSAGE ( "FAILED to cast active study to SalomeApp_Study" );
+//     return false;
+//   }
+//
+//   SUIT_Desktop* parent = application()->desktop();
+//
+//   ADAPT::ADAPT_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
+//
+//   if (!CORBA::is_nil(homardGen))
+//     homardGen->UpdateStudy();
+//
+//   getApp()->updateObjectBrowser();
+//
+// B. Choix selon les commandes
+  SCRUTE(theCommandID);
+  switch (theCommandID)
+  {
+    case 8011: // Creation d un Cas
+    {
+      MESSAGE("command " << theCommandID << " activated");
+//       MonCreateCase *aDlg = new MonCreateCase( true,
+//                             ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
+//       aDlg->show();
+      break;
+    }
+
+//     case 8012: // Poursuite d une iteration
+//     {
+//       MESSAGE("command " << theCommandID << " activated");
+//       MonPursueIteration *aDlg = new MonPursueIteration( true,
+//                                 ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
+//       aDlg->show();
+//       break;
+//     }
+
+//     case 8013: // Creation d une Iteration
+//     {
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       MonCreateIteration *IterDlg = new MonCreateIteration( parent, true,
+//                                      ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
+//       IterDlg->show();
+//       break;
+//     }
+
+//     case 8014: // Compute une iteration
+//     {
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       try { homardGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 1); }
+//       catch( SALOME::SALOME_Exception& S_ex )
+//       {
+//         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                   QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//         getApp()->updateObjectBrowser();
+//         return false;
+//       }
+//       break;
+//     }
+
+//     case 8015: // Compute une iteration et publication
+//     {
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       try { homardGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 2); }
+//       catch( SALOME::SALOME_Exception& S_ex )
+//       {
+//         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                   QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//         getApp()->updateObjectBrowser();
+//         return false;
+//       }
+//       break;
+//     }
+
+//     case 1121: // Information sur le maillage de l'iteration
+//     {
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       MonIterInfo *IterDlg = new MonIterInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
+//       IterDlg->show();
+//       break;
+//     }
+//
+//     case 1131: // Publication du maillage de l'iteration
+//     {
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       homardGen->PublishMeshIterInSmesh(_ObjectName.toStdString().c_str());
+//       break;
+//     }
+//
+//     case 1132: // Publication du maillage de l'iteration a partir du fichier
+//     {
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       homardGen->PublishResultInSmesh(_ObjectName.toStdString().c_str(), 1);
+//       break;
+//     }
+//
+//     case 1201: // Edition d'un objet
+//     {
+//       MESSAGE("command " << theCommandID << " activated");
+//       QString nomObjet = HOMARD_QT_COMMUN::SelectionArbreEtude(QString(""), 1);
+//       if (nomObjet == QString("")) break;
+//       _PTR(SObject) obj = chercheMonObjet();
+//       if (obj)
+//       {
+//         // Edition d'une frontiere CAO
+//         if (HOMARD_UTILS::isBoundaryCAO(obj))
+//         {
+//           MonEditBoundaryCAO *aDlg = new MonEditBoundaryCAO(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           aDlg->show();
+//         }
+//         // Edition d'une frontiere discrete
+//         else if (HOMARD_UTILS::isBoundaryDi(obj))
+//         {
+//           MonEditBoundaryDi *aDlg = new MonEditBoundaryDi(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           aDlg->show();
+//         }
+//         // Edition d'une frontiere analytique
+//         else if (HOMARD_UTILS::isBoundaryAn(obj))
+//         {
+//           MonEditBoundaryAn *aDlg = new MonEditBoundaryAn(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           aDlg->show();
+//         }
+//         // Edition d'un cas
+//         else if (HOMARD_UTILS::isCase(obj))
+//         {
+//           MonEditCase *aDlg = new MonEditCase(true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
+//           aDlg->show();
+//         }
+//         // Edition d'une hypothese
+//         else if (HOMARD_UTILS::isHypo(obj))
+//         {
+//           MonEditHypothesis *aDlg = new MonEditHypothesis(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen),  _ObjectName, QString(""), QString("")) ;
+//           aDlg->show();
+//         }
+//         // Edition d'une iteration
+//         else if (HOMARD_UTILS::isIter(obj))
+//         {
+//           MonEditIteration *aDlg = new MonEditIteration(parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           aDlg->show();
+//         }
+//         // Edition d'un schema YACS
+//         else if (HOMARD_UTILS::isYACS(obj))
+//         {
+//           MESSAGE("appel de MonEditYACS");
+//           MonEditYACS *aDlg = new MonEditYACS(true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName) ;
+//           aDlg->show();
+//         }
+//         // Edition d'une zone
+//         else if (HOMARD_UTILS::isZone(obj))
+//         {
+//           MonEditZone *aDlg = new MonEditZone(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           aDlg->show();
+//         }
+//       }
+//       break;
+//     }
+//
+//     case 1211: // Suppression d'un objet
+//     {
+//       MESSAGE("command " << theCommandID << " activated");
+//       QString nomObjet = HOMARD_QT_COMMUN::SelectionArbreEtude(QString(""), 1);
+//       if (nomObjet == QString("")) break;
+//       _PTR(SObject) obj = chercheMonObjet();
+//       if (obj)
+//       {
+//         // Suppression d'une frontiere
+//         if ( HOMARD_UTILS::isBoundaryCAO(obj) || HOMARD_UTILS::isBoundaryDi(obj) || HOMARD_UTILS::isBoundaryAn(obj) )
+//         {
+//           try
+//           { homardGen->DeleteBoundary(_ObjectName.toStdString().c_str()); }
+//           catch( SALOME::SALOME_Exception& S_ex )
+//           {
+//             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//             getApp()->updateObjectBrowser();
+//             return false;
+//           }
+//         }
+//         // Suppression d'un cas
+//         else if (HOMARD_UTILS::isCase(obj))
+//         {
+//           try
+//           { homardGen->DeleteCase(_ObjectName.toStdString().c_str(), 1); }
+//           catch( SALOME::SALOME_Exception& S_ex )
+//           {
+//             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//             getApp()->updateObjectBrowser();
+//             return false;
+//           }
+//         }
+//         // Suppression d'une hypothese
+//         else if (HOMARD_UTILS::isHypo(obj))
+//         {
+//           try
+//           { homardGen->DeleteHypo(_ObjectName.toStdString().c_str()); }
+//           catch( SALOME::SALOME_Exception& S_ex )
+//           {
+//             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//             getApp()->updateObjectBrowser();
+//             return false;
+//           }
+//         }
+//         // Suppression d'une iteration
+//         else if (HOMARD_UTILS::isIter(obj))
+//         {
+//           try
+//           { homardGen->DeleteIteration(_ObjectName.toStdString().c_str(), 1); }
+//           catch( SALOME::SALOME_Exception& S_ex )
+//           {
+//             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//             getApp()->updateObjectBrowser();
+//             return false;
+//           }
+//         }
+//         // Suppression d'un schema YACS
+//         else if (HOMARD_UTILS::isYACS(obj))
+//         {
+//           try
+//           { homardGen->DeleteYACS(_ObjectName.toStdString().c_str(), 1); }
+//           catch( SALOME::SALOME_Exception& S_ex )
+//           {
+//             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//             getApp()->updateObjectBrowser();
+//             return false;
+//           }
+//         }
+//         // Suppression d'une zone
+//         else if (HOMARD_UTILS::isZone(obj))
+//         {
+//           try
+//           { homardGen->DeleteZone(_ObjectName.toStdString().c_str()); }
+//           catch( SALOME::SALOME_Exception& S_ex )
+//           {
+//             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//             getApp()->updateObjectBrowser();
+//             return false;
+//           }
+//         }
+//       }
+//       break;
+//     }
+//
+//     case 1301: // Information sur un maillage
+//     {
+//       MESSAGE("etape 1301")
+//       MESSAGE("command " << theCommandID << " activated");
+//       MonMeshInfo *aDlg = new MonMeshInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
+//       aDlg->show();
+//       break;
+//     }
+//
+//     case 1302: // Affichage de fichier texte
+//     {
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       _PTR(SObject) obj = chercheMonObjet();
+//       if ( (obj) && ( HOMARD_UTILS::isFileType(obj,QString("log")) || HOMARD_UTILS::isFileType(obj,QString("Summary")) || HOMARD_UTILS::isFileType(obj,QString("xml")) ) )
+//       {
+//           MonEditFile *aDlg = new MonEditFile( 0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName, 0 ) ;
+//           if ( aDlg->_codret == 0 ) { aDlg->show(); }
+//       }
+//       break;
+//     }
+//
+//     case 1401: // Création d'un schema YACS
+//     {
+//       MESSAGE("etape 1401")
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       MonCreateYACS *aDlg = new MonCreateYACS( true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
+//       aDlg->show();
+//       break;
+//     }
+//
+//     case 1402: // Ecriture d'un schéma YACS
+//     {
+//       MESSAGE("etape 1402")
+//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       try { homardGen->YACSWrite(_ObjectName.toStdString().c_str()); }
+//       catch( SALOME::SALOME_Exception& S_ex )
+//       {
+//         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
+//                                   QObject::tr(CORBA::string_dup(S_ex.details.text)) );
+//         getApp()->updateObjectBrowser();
+//         return false;
+//       }
+//       break;
+//     }
+
+  }
+//   getApp()->updateObjectBrowser();
+  return true;
+}
 
 //=================================================================================
 // function : SMESHGUI_AdaptDlg()
@@ -148,6 +459,7 @@ SMESHGUI_AdaptDlg::SMESHGUI_AdaptDlg( SMESHGUI* theModule,
 //=================================================================================
 void SMESHGUI_AdaptDlg::initDialog( bool create)
 {
+  std::cout  << "passage par initDialog" << std::endl;
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
 
@@ -340,7 +652,7 @@ void SMESHGUI_AdaptDlg::initDialog( bool create)
 
   QLabel* aColorLab = new QLabel(tr( "SMESH_CHECK_COLOR" ), aColorBox );
   myColorBtn = new QtxColorButton(aColorBox);
-  myColorBtn->setSizePolicy( QSizePolicy::MinimumExpanding, 
+  myColorBtn->setSizePolicy( QSizePolicy::MinimumExpanding,
                              myColorBtn->sizePolicy().verticalPolicy() );
 
   aColorBoxLayout->addWidget(aColorLab);
@@ -466,6 +778,7 @@ SMESHGUI_AdaptDlg::~SMESHGUI_AdaptDlg()
 //=================================================================================
 QString SMESHGUI_AdaptDlg::GetDefaultName(const QString& theOperation)
 {
+  std::cout  << "passage par GetDefaultName" << std::endl;
   QString aName = "";
 
   // collect all object names of SMESH component
@@ -495,6 +808,7 @@ QString SMESHGUI_AdaptDlg::GetDefaultName(const QString& theOperation)
 
 void  SMESHGUI_AdaptDlg::setDefaultName() const
 {
+  std::cout  << "passage par setDefaultName" << std::endl;
   QString aResName;
   int i=1;
   QString aPrefix ="Group_";
@@ -505,7 +819,7 @@ void  SMESHGUI_AdaptDlg::setDefaultName() const
     anObj = SMESH::getStudy()->FindObject( aResName.toUtf8().constData() );
   }
   while ( anObj );
-  myName->setText(aResName); 
+  myName->setText(aResName);
 }
 
 //=================================================================================
@@ -514,6 +828,7 @@ void  SMESHGUI_AdaptDlg::setDefaultName() const
 //=================================================================================
 void SMESHGUI_AdaptDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
 {
+  std::cout  << "passage par init (SMESH::SMESH_Mesh_ptr theMesh)" << std::endl;
   mySelectionMgr->installFilter(myMeshFilter);
 
   /* init data from current selection */
@@ -554,6 +869,7 @@ void SMESHGUI_AdaptDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
 //=================================================================================
 void SMESHGUI_AdaptDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
 {
+  std::cout  << "passage par init (SMESH::SMESH_GroupBase_ptr theGroup)" << std::endl;
   restoreShowEntityMode();
   myMesh = theGroup->GetMesh();
   setShowEntityMode();
@@ -666,6 +982,7 @@ void SMESHGUI_AdaptDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
 //=================================================================================
 void SMESHGUI_AdaptDlg::updateButtons()
 {
+  std::cout  << "passage par updateButtons" << std::endl;
   bool enable = !myName->text().trimmed().isEmpty();
   if ( enable )
   {
@@ -718,6 +1035,7 @@ void SMESHGUI_AdaptDlg::updateButtons()
 //=================================================================================
 void SMESHGUI_AdaptDlg::onNameChanged (const QString& text)
 {
+  std::cout  << "passage par onNameChanged" << std::endl;
   myOldName = myName->text();
   updateButtons();
   myNameChanged = !myName->text().trimmed().isEmpty();
@@ -901,7 +1219,7 @@ bool SMESHGUI_AdaptDlg::onApply()
 
   SMESH::SMESH_GroupBase_var resultGroup;
   bool isCreation = false, isConversion = false;
-    
+
   SUIT_OverrideCursor wc;
 
   if (myGrpTypeId == 0)  // standalone
@@ -973,7 +1291,7 @@ bool SMESHGUI_AdaptDlg::onApply()
       }
       else {
         QList<int> aAddList;
-        
+
         int i, total = myElements->count();
         for (i = 0; i < total; i++) {
           int anId = myElements->item(i)->text().toInt();
@@ -1153,14 +1471,14 @@ bool SMESHGUI_AdaptDlg::onApply()
           case grp0DSelection:     anActor->Set0DColor  ( aColor.R, aColor.G, aColor.B ); break;
           case grpBallSelection:   anActor->SetBallColor( aColor.R, aColor.G, aColor.B ); break;
           case grpEdgeSelection:   anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
-          case grpVolumeSelection: 
+          case grpVolumeSelection:
             SMESH::GetColor("SMESH", "volume_color", c , delta, "255,0,170|-100");
-            anActor->SetVolumeColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+            anActor->SetVolumeColor( aColor.R, aColor.G, aColor.B, delta ); break;
             break;
-          case grpFaceSelection:   
+          case grpFaceSelection:
           default:
             SMESH::GetColor("SMESH", "fill_color", c , delta, "0,170,255|-100");
-            anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+            anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;
             break;
           }
           // update a visible group according to a changed contents
@@ -1527,7 +1845,7 @@ void SMESHGUI_AdaptDlg::onObjectSelectionChanged()
       }
     }
   }
-  
+
   if (myActorsList.count() == 0) {
     if (!myGroup->_is_nil()) {
       SMESH_Actor* anActor = SMESH::FindActorByObject(myGroup);
@@ -2090,7 +2408,7 @@ void SMESHGUI_AdaptDlg::onRemove()
                 SMESH::long_array_var anElements = aSubMesh->GetNodesId();
                 int k = anElements->length();
                 for (int i = 0; i < k; i++) {
-                  QList<QListWidgetItem*> found = 
+                  QList<QListWidgetItem*> found =
                     myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
                   QListWidgetItem* anItem;
                   foreach(anItem, found) delete anItem;
@@ -2105,7 +2423,7 @@ void SMESHGUI_AdaptDlg::onRemove()
                 SMESH::long_array_var anElements = aSubMesh->GetElementsId();
                 int k = anElements->length();
                 for (int i = 0; i < k; i++) {
-                  QList<QListWidgetItem*> found = 
+                  QList<QListWidgetItem*> found =
                     myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
                   QListWidgetItem* anItem;
                   foreach(anItem, found) delete anItem;
@@ -2132,7 +2450,7 @@ void SMESHGUI_AdaptDlg::onRemove()
             SMESH::long_array_var anElements = aGroup->GetListOfID();
             int k = anElements->length();
             for (int i = 0; i < k; i++) {
-              QList<QListWidgetItem*> found = 
+              QList<QListWidgetItem*> found =
                 myElements->findItems(QString::number(anElements[i]), Qt::MatchExactly);
               QListWidgetItem* anItem;
               foreach(anItem, found) delete anItem;

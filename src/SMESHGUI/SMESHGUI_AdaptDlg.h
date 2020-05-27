@@ -74,6 +74,8 @@ public:
                      SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
   ~SMESHGUI_AdaptDlg();
   
+  virtual bool OnGUIEvent (int theCommandID);
+
   static QString                GetDefaultName( const QString& );
   
 public slots:
