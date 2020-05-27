@@ -58,6 +58,8 @@ public:
   virtual int             numberOfNodes( int ) const;
   virtual int             dim( int ) const;
   virtual bool            isComputable( int ) const;
+  virtual bool            hasAlgo( int ) const;
+  virtual bool            hasErrors( int ) const;
   virtual bool            isPreComputable( int ) const;
   virtual bool            hasGeomReference( int ) const;
   virtual bool            isEditableHyp( int ) const;

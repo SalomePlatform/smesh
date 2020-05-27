@@ -2871,7 +2871,23 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpComputeSubMesh:
   case SMESHOp::OpPreCompute:
   case SMESHOp::OpEvaluate:
+  case SMESHOp::OpShowErrors:
     startOperation( theCommandID );
+    break;
+  case SMESHOp::OpRecompute:
+    {
+      if ( isStudyLocked() )
+        break;
+      SALOME_ListIO selected;
+      if ( LightApp_SelectionMgr *sel = selectionMgr() )
+        sel->selectedObjects( selected );
+      if ( selected.Extent() == 1 ) {
+        SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO( selected.First() );
+        if ( !aMesh->_is_nil() )
+          aMesh->Clear();
+        startOperation( SMESHOp::OpCompute );
+      }
+    }
     break;
   case SMESHOp::OpCopyMesh:
     {
@@ -4017,7 +4033,7 @@ void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QStr
   if ( !icon_id.isEmpty() )
     pix = resMgr->loadPixmap( "SMESH", tr( icon_id.toLatin1().data() ) );
   else
-    pix = resMgr->loadPixmap( "SMESH", tr( QString( "ICO_%1" ).arg( po_id ).toLatin1().data() ), false );
+    pix = resMgr->loadPixmap( "SMESH", tr( QString( "ICON_%1" ).arg( po_id ).toLatin1().data() ), false );
   if ( !pix.isNull() )
     icon = QIcon( pix );
 
@@ -4124,7 +4140,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpCopyMesh,             "COPY_MESH",               "ICON_COPY_MESH" );
   createSMESHAction( SMESHOp::OpCompute,              "COMPUTE",                 "ICON_COMPUTE" );
   createSMESHAction( SMESHOp::OpComputeSubMesh,       "COMPUTE_SUBMESH",         "ICON_COMPUTE" );
+  createSMESHAction( SMESHOp::OpRecompute,            "RE_COMPUTE",              "ICON_COMPUTE" );
   createSMESHAction( SMESHOp::OpPreCompute,           "PRECOMPUTE",              "ICON_PRECOMPUTE" );
+  createSMESHAction( SMESHOp::OpShowErrors,           "SHOW_ERRORS",             "ICON_SHOW_ERRORS" );
   createSMESHAction( SMESHOp::OpEvaluate,             "EVALUATE",                "ICON_EVALUATE" );
   createSMESHAction( SMESHOp::OpMeshOrder,            "MESH_ORDER",              "ICON_MESH_ORDER");
   createSMESHAction( SMESHOp::OpCreateGroup,          "CREATE_GROUP",            "ICON_CREATE_GROUP" );
@@ -4708,20 +4726,22 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasVolumes("({'Volume'} in elemTypes)"),
     hasFacesOrVolumes("(({'Face'} in elemTypes) || ({'Volume'} in elemTypes)) ");
 
-  createPopupItem( SMESHOp::OpFileInformation,   OB, mesh, "&& selcount=1 && isImported" );
-  createPopupItem( SMESHOp::OpCreateSubMesh,     OB, mesh, "&& hasGeomReference");
   createPopupItem( SMESHOp::OpEditMesh,          OB, mesh, "&& selcount=1" );
+  createPopupItem( SMESHOp::OpCreateSubMesh,     OB, mesh, "&& hasGeomReference");
+  createPopupItem( SMESHOp::OpMeshOrder,         OB, mesh, "&& selcount=1 && hasAlgo && hasGeomReference" );
   createPopupItem( SMESHOp::OpEditSubMesh,       OB, subMesh, "&& selcount=1 && hasGeomReference" );
   createPopupItem( SMESHOp::OpEditGroup,         OB, group );
   createPopupItem( SMESHOp::OpEditGeomGroupAsGroup, OB, group, "&& groupType != 'Group'" );
 
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpCompute,           OB, mesh, "&& selcount=1 && isComputable" );
-  createPopupItem( SMESHOp::OpComputeSubMesh,    OB, subMesh, "&& selcount=1 && isComputable" );
-  createPopupItem( SMESHOp::OpPreCompute,        OB, mesh, "&& selcount=1 && isPreComputable" );
-  createPopupItem( SMESHOp::OpEvaluate,          OB, mesh, "&& selcount=1 && isComputable" );
-  createPopupItem( SMESHOp::OpMeshOrder,         OB, mesh, "&& selcount=1 && isComputable && hasGeomReference" );
-  createPopupItem( SMESHOp::OpUpdate,            OB, mesh_part );
+  createPopupItem( SMESHOp::OpCompute,           OB, mesh, "&& selcount=1 && hasAlgo && isComputable" );
+  createPopupItem( SMESHOp::OpRecompute,         OB, mesh, "&& selcount=1 && hasAlgo && " + isNotEmpty );
+  createPopupItem( SMESHOp::OpShowErrors,        OB, mesh, "&& selcount=1 && hasErrors" );
+  createPopupItem( SMESHOp::OpComputeSubMesh,    OB, subMesh, "&& selcount=1 && hasAlgo && isComputable" );
+  createPopupItem( SMESHOp::OpPreCompute,        OB, mesh, "&& selcount=1 && hasAlgo && isPreComputable" );
+  createPopupItem( SMESHOp::OpEvaluate,          OB, mesh, "&& selcount=1 && hasAlgo && isComputable" );
+  popupMgr()->insert( separator(), -1, 0 );
+  createPopupItem( SMESHOp::OpFileInformation,   OB, mesh, "&& selcount=1 && isImported" );
   createPopupItem( SMESHOp::OpMeshInformation,   OB, mesh_part );
   createPopupItem( SMESHOp::OpFindElementByPoint,OB, mesh_group, "&& selcount=1" );
   createPopupItem( SMESHOp::OpOverallMeshQuality,OB, mesh_part );
@@ -4735,8 +4755,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh_submesh );
   createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh_group, "&& selcount=1 && dim>=2");
-  popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpClearMesh,              OB, mesh );
+  //popupMgr()->insert( separator(), -1, 0 );
+
   //popupMgr()->insert( separator(), -1, 0 );
 //   createPopupItem( SMESHOp::OpUniformRefinement, OB, mesh );
 //   createPopupItem( SMESHOp::OpHOMARDRefinement,  OB, mesh );
@@ -4747,6 +4767,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString only_one_2D        = only_one_non_empty + " && dim>1";
 
   int anId = popupMgr()->insert( tr( "MEN_EXPORT" ), -1, -1 );        // EXPORT submenu
+  popupMgr()->findMenu( anId )->menuAction()->setIcon( resourceMgr()->loadPixmap( "SMESH", tr( "ICON_EXPORT" )));
   createPopupItem( SMESHOp::OpPopupExportMED,  OB, mesh_group, multiple_non_empty, anId );
   createPopupItem( SMESHOp::OpPopupExportUNV,  OB, mesh_group, only_one_non_empty, anId );
   createPopupItem( SMESHOp::OpPopupExportSTL,  OB, mesh_group, only_one_2D, anId );
@@ -4756,8 +4777,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( SMESHOp::OpPopupExportSAUV, OB, mesh_group, only_one_non_empty, anId );
   createPopupItem( SMESHOp::OpPopupExportGMF,  OB, mesh_group, only_one_non_empty, anId );
   createPopupItem( SMESHOp::OpPopupExportDAT,  OB, mesh_group, only_one_non_empty, anId );
-  createPopupItem( SMESHOp::OpDelete,          OB, mesh_part + " " + hyp_alg );
-  createPopupItem( SMESHOp::OpDeleteGroup,     OB, group );
 
   anId = popupMgr()->insert( tr( "MEN_IMPORT" ), -1, -1 );        // IMPORT submenu
   createPopupItem( SMESHOp::OpPopupImportMED,  OB, smesh, "", anId );
@@ -4771,18 +4790,22 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( SMESHOp::OpPopupImportDAT,  OB, smesh, "", anId );
   popupMgr()->insert( separator(), -1, 0 );
 
+  createPopupItem( SMESHOp::OpClearMesh,         OB, mesh );
+  createPopupItem( SMESHOp::OpDelete,            OB, mesh_part + " " + hyp_alg );
+  createPopupItem( SMESHOp::OpDeleteGroup,       OB, group );
+
   // popup for viewer
   createPopupItem( SMESHOp::OpEditGroup,            View, group );
   createPopupItem( SMESHOp::OpAddElemGroupPopup,    View, elems, "&& guiState = 800" );
   createPopupItem( SMESHOp::OpRemoveElemGroupPopup, View, elems, "&& guiState = 800" );
 
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpUpdate,             View, mesh_part );
   createPopupItem( SMESHOp::OpMeshInformation,    View, mesh_part );
   createPopupItem( SMESHOp::OpOverallMeshQuality, View, mesh_part );
   createPopupItem( SMESHOp::OpFindElementByPoint, View, mesh );
   popupMgr()->insert( separator(), -1, 0 );
 
+  createPopupItem( SMESHOp::OpUpdate,           OB + " " + View, mesh_part );
   createPopupItem( SMESHOp::OpAutoColor,        OB + " " + View, mesh, "&& (not isAutoColor)" );
   createPopupItem( SMESHOp::OpDisableAutoColor, OB + " " + View, mesh, "&& isAutoColor" );
   popupMgr()->insert( separator(), -1, 0 );
@@ -5131,7 +5154,7 @@ bool SMESHGUI::isSelectionCompatible()
 bool SMESHGUI::reusableOperation( const int id )
 {
   // compute, evaluate and precompute are not reusable operations
-  return ( id == SMESHOp::OpCompute || id == SMESHOp::OpPreCompute || id == SMESHOp::OpEvaluate ) ? false : SalomeApp_Module::reusableOperation( id );
+  return ( id == SMESHOp::OpCompute || id == SMESHOp::OpPreCompute || id == SMESHOp::OpEvaluate || id == SMESHOp::OpRecompute ) ? false : SalomeApp_Module::reusableOperation( id );
 }
 
 bool SMESHGUI::activateModule( SUIT_Study* study )
@@ -5915,65 +5938,65 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   // to do : create operation here
   switch( id )
   {
-    case SMESHOp::OpUniformRefinement:
-    case SMESHOp::OpHONewCase:
-    case SMESHOp::OpHOCaseFollow:
-    case SMESHOp::OpHONewIter:
-    case SMESHOp::OpHOIterCompute:
-    case SMESHOp::OpHOIterComputePublish:
-    case SMESHOp::OpHOEdit:
-    case SMESHOp::OpHODelete:
-    case SMESHOp::OpMGAdapt:
+  case SMESHOp::OpSplitBiQuadratic:
+    op = new SMESHGUI_SplitBiQuadOp();
     break;
-    case SMESHOp::OpSplitBiQuadratic:
-      op = new SMESHGUI_SplitBiQuadOp();
+  case SMESHOp::OpConvertMeshToQuadratic:
+    op = new SMESHGUI_ConvToQuadOp();
     break;
-    case SMESHOp::OpConvertMeshToQuadratic:
-      op = new SMESHGUI_ConvToQuadOp();
+  case SMESHOp::OpCreateBoundaryElements: // create 2D mesh as boundary on 3D
+    op = new SMESHGUI_Make2DFrom3DOp();
     break;
-    case SMESHOp::OpCreateBoundaryElements: // create 2D mesh as boundary on 3D
-      op = new SMESHGUI_Make2DFrom3DOp();
+  case SMESHOp::OpReorientFaces:
+    op = new SMESHGUI_ReorientFacesOp();
     break;
-    case SMESHOp::OpReorientFaces:
-      op = new SMESHGUI_ReorientFacesOp();
-      break;
-    case SMESHOp::OpCreateMesh:
-      op = new SMESHGUI_MeshOp( true, true );
+  case SMESHOp::OpCreateMesh:
+    op = new SMESHGUI_MeshOp( true, true );
     break;
-    case SMESHOp::OpCreateSubMesh:
-      op = new SMESHGUI_MeshOp( true, false );
+  case SMESHOp::OpCreateSubMesh:
+    op = new SMESHGUI_MeshOp( true, false );
     break;
-    case SMESHOp::OpEditMeshOrSubMesh:
-    case SMESHOp::OpEditMesh:
-    case SMESHOp::OpEditSubMesh:
-      op = new SMESHGUI_MeshOp( false );
+  case SMESHOp::OpEditMeshOrSubMesh:
+  case SMESHOp::OpEditMesh:
+  case SMESHOp::OpEditSubMesh:
+    op = new SMESHGUI_MeshOp( false );
     break;
-    case SMESHOp::OpCompute:
-    case SMESHOp::OpComputeSubMesh:
-      op = new SMESHGUI_ComputeOp();
+  case SMESHOp::OpCompute:
+  case SMESHOp::OpComputeSubMesh:
+    op = new SMESHGUI_ComputeOp();
     break;
-    case SMESHOp::OpPreCompute:
-      op = new SMESHGUI_PrecomputeOp();
+  case SMESHOp::OpPreCompute:
+    op = new SMESHGUI_PrecomputeOp();
     break;
-    case SMESHOp::OpEvaluate:
-      op = new SMESHGUI_EvaluateOp();
+  case SMESHOp::OpEvaluate:
+    op = new SMESHGUI_EvaluateOp();
     break;
-    case SMESHOp::OpMeshOrder:
-      op = new SMESHGUI_MeshOrderOp();
+  case SMESHOp::OpMeshOrder:
+    op = new SMESHGUI_MeshOrderOp();
     break;
-    case SMESHOp::OpCreateGeometryGroup:
-      op = new SMESHGUI_GroupOnShapeOp();
-      break;
-    case SMESHOp::OpFindElementByPoint:
-      op = new SMESHGUI_FindElemByPointOp();
-      break;
-    case SMESHOp::OpMoveNode: // Make mesh pass through point
-      op = new SMESHGUI_MakeNodeAtPointOp();
-      break;
-    case SMESHOp::OpElem0DOnElemNodes: // Create 0D elements on all nodes
-      op = new SMESHGUI_Add0DElemsOnAllNodesOp();
-      break;
-    default:
+  case SMESHOp::OpCreateGeometryGroup:
+    op = new SMESHGUI_GroupOnShapeOp();
+    break;
+  case SMESHOp::OpFindElementByPoint:
+    op = new SMESHGUI_FindElemByPointOp();
+    break;
+  case SMESHOp::OpMoveNode: // Make mesh pass through point
+    op = new SMESHGUI_MakeNodeAtPointOp();
+    break;
+  case SMESHOp::OpElem0DOnElemNodes: // Create 0D elements on all nodes
+    op = new SMESHGUI_Add0DElemsOnAllNodesOp();
+    break;
+  case SMESHOp::OpUniformRefinement:
+  case SMESHOp::OpHONewCase:
+  case SMESHOp::OpHOCaseFollow:
+  case SMESHOp::OpHONewIter:
+  case SMESHOp::OpHOIterCompute:
+  case SMESHOp::OpHOIterComputePublish:
+  case SMESHOp::OpHOEdit:
+  case SMESHOp::OpHODelete:
+  case SMESHOp::OpMGAdapt:
+    break;
+  default:
     break;
   }
 

@@ -77,6 +77,8 @@ namespace SMESHOp {
     OpPreCompute             = 2042,   // MENU MESH  - PREVIEW
     OpEvaluate               = 2043,   // MENU MESH  - EVALUATE
     OpMeshOrder              = 2044,   // MENU MESH  - CHANGE SUBMESH PRIORITY
+    OpRecompute              = 2045,   // MENU MESH  - Clear + COMPUTE
+    OpShowErrors             = 2046,   // MENU MESH  - Show compute errors
     OpCreateGroup            = 2050,   // MENU MESH  - CREATE GROUP
     OpCreateGeometryGroup    = 2051,   // MENU MESH  - CREATE GROUPS FROM GEOMETRY
     OpConstructGroup         = 2052,   // MENU MESH  - CONSTRUCT GROUP

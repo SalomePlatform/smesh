@@ -72,6 +72,7 @@ public:
   virtual ~SMESHGUI_BaseComputeOp();
 
   SMESH::SMESH_Mesh_ptr          getMesh();
+  virtual LightApp_Dialog*       dlg() const;
 
 protected:
   virtual void                   startOperation();
@@ -205,6 +206,20 @@ protected slots:
 };
 
 /*!
+ * \brief Operation to show meshing errors
+ */
+class SMESHGUI_EXPORT SMESHGUI_ShowErrorsOp: public SMESHGUI_BaseComputeOp
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_ShowErrorsOp();
+
+protected:
+  virtual void                   startOperation();
+};
+
+/*!
  * \brief Dialog to compute a mesh and show computation errors
  */
 
@@ -236,6 +251,7 @@ protected:
 
   friend class SMESHGUI_BaseComputeOp;
   friend class SMESHGUI_PrecomputeOp;
+  friend class SMESHGUI_ShowErrorsOp;
 };
 
 class SMESHGUI_MeshOrderBox;

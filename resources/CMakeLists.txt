@@ -49,6 +49,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_area.png
   mesh_aspect.png
   mesh_aspect_3d.png
+  mesh_auto_colors.png
   mesh_ball.png
   mesh_biquad_quadrangle.png
   mesh_biquad_triangle.png
@@ -58,6 +59,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_choose_all.png
   mesh_clear.png
   mesh_compute.png
+  mesh_compute_error.png
   mesh_conv_to_quad.png
   mesh_cutGroups.png
   mesh_cutquad.png
@@ -76,6 +78,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_equal_node.png
   mesh_equal_volume.png
   mesh_evaluate.png
+  mesh_export.png
   mesh_extmeth_face_offset.png
   mesh_extmeth_node_offset.png
   mesh_extmeth_surf_offset_smooth.png

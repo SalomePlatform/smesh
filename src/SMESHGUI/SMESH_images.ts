@@ -44,6 +44,10 @@
             <translation>mesh_compute.png</translation>
         </message>
         <message>
+            <source>ICON_SHOW_ERRORS</source>
+            <translation>mesh_compute_error.png</translation>
+        </message>
+        <message>
             <source>ICON_OVL_MESH_QUALITY</source>
             <translation>mesh_quality.png</translation>
         </message>
@@ -118,6 +122,18 @@
         <message>
             <source>ICON_CUTQUAD</source>
             <translation>mesh_cutquad.png</translation>
+        </message>
+        <message>
+            <source>ICON_EXPORT</source>
+            <translation>mesh_export.png</translation>
+        </message>
+        <message>
+            <source>ICON_AUTO_COLOR</source>
+            <translation>mesh_auto_colors.png</translation>
+        </message>
+        <message>
+            <source>ICON_DISABLE_AUTO_COLOR</source>
+            <translation>mesh_auto_colors.png</translation>
         </message>
         <message>
             <source>ICON_DELETE</source>
