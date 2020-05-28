@@ -76,6 +76,7 @@ SET(_link_LIBRARIES
   SMESHObject
   ADAPTGUI
   ADAPTImpl
+  ADAPTEngine
 )
 
 # --- headers ---
