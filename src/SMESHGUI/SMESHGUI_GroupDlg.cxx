@@ -1402,9 +1402,11 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       SALOME_ListIteratorOfListIO anIt (aList);
       for (; anIt.More(); anIt.Next())
       {
-        aGeomGroup = GEOMBase::ConvertIOinGEOMObject(anIt.Value());
-
+        CORBA::Object_var aGroupObj = SMESH::IObjectToObject(anIt.Value());
+        if (CORBA::is_nil(aGroupObj))
+          continue;
         // Check if the object is a geometry group
+        aGeomGroup = GEOM::GEOM_Object::_narrow(aGroupObj);
         if (CORBA::is_nil(aGeomGroup))
           continue;
 
