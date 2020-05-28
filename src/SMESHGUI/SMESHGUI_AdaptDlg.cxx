@@ -174,9 +174,9 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
   SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
   Engines::EngineComponent_var comp =
     ls->FindOrLoad_Component("FactoryServer", "SMESH");
-  ADAPT::ADAPT_Gen_var homardGen = ADAPT::ADAPT_Gen::_narrow(comp);
-  if (!CORBA::is_nil(homardGen))
-    homardGen->UpdateStudy();
+  ADAPT::ADAPT_Gen_var adaptGen = ADAPT::ADAPT_Gen::_narrow(comp);
+  if (!CORBA::is_nil(adaptGen))
+    adaptGen->UpdateStudy();
 
   SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
 //
@@ -188,7 +188,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
     {
       INFOS("Creation d'un Cas");
       MonCreateCase *aDlg = new MonCreateCase( true,
-                            ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
+                            ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
       aDlg->show();
       break;
     }
@@ -197,7 +197,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     {
 //       MESSAGE("command " << theCommandID << " activated");
 //       MonPursueIteration *aDlg = new MonPursueIteration( true,
-//                                 ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
+//                                 ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
 //       aDlg->show();
 //       break;
 //     }
@@ -206,7 +206,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     {
 //       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       MonCreateIteration *IterDlg = new MonCreateIteration( parent, true,
-//                                      ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
+//                                      ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName ) ;
 //       IterDlg->show();
 //       break;
 //     }
@@ -214,7 +214,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     case 8014: // Compute une iteration
 //     {
 //       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-//       try { homardGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 1); }
+//       try { adaptGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 1); }
 //       catch( SALOME::SALOME_Exception& S_ex )
 //       {
 //         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -228,7 +228,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     case 8015: // Compute une iteration et publication
 //     {
 //       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-//       try { homardGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 2); }
+//       try { adaptGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 2); }
 //       catch( SALOME::SALOME_Exception& S_ex )
 //       {
 //         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -242,7 +242,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     case 1121: // Information sur le maillage de l'iteration
 //     {
 //       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-//       MonIterInfo *IterDlg = new MonIterInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
+//       MonIterInfo *IterDlg = new MonIterInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName ) ;
 //       IterDlg->show();
 //       break;
 //     }
@@ -250,14 +250,14 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     case 1131: // Publication du maillage de l'iteration
 //     {
 //       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-//       homardGen->PublishMeshIterInSmesh(_ObjectName.toStdString().c_str());
+//       adaptGen->PublishMeshIterInSmesh(_ObjectName.toStdString().c_str());
 //       break;
 //     }
 //
 //     case 1132: // Publication du maillage de l'iteration a partir du fichier
 //     {
 //       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-//       homardGen->PublishResultInSmesh(_ObjectName.toStdString().c_str(), 1);
+//       adaptGen->PublishResultInSmesh(_ObjectName.toStdString().c_str(), 1);
 //       break;
 //     }
 //
@@ -272,50 +272,50 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //         // Edition d'une frontiere CAO
 //         if (HOMARD_UTILS::isBoundaryCAO(obj))
 //         {
-//           MonEditBoundaryCAO *aDlg = new MonEditBoundaryCAO(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           MonEditBoundaryCAO *aDlg = new MonEditBoundaryCAO(0, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), QString(""), _ObjectName ) ;
 //           aDlg->show();
 //         }
 //         // Edition d'une frontiere discrete
 //         else if (HOMARD_UTILS::isBoundaryDi(obj))
 //         {
-//           MonEditBoundaryDi *aDlg = new MonEditBoundaryDi(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           MonEditBoundaryDi *aDlg = new MonEditBoundaryDi(0, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), QString(""), _ObjectName ) ;
 //           aDlg->show();
 //         }
 //         // Edition d'une frontiere analytique
 //         else if (HOMARD_UTILS::isBoundaryAn(obj))
 //         {
-//           MonEditBoundaryAn *aDlg = new MonEditBoundaryAn(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           MonEditBoundaryAn *aDlg = new MonEditBoundaryAn(0, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), QString(""), _ObjectName ) ;
 //           aDlg->show();
 //         }
 //         // Edition d'un cas
 //         else if (HOMARD_UTILS::isCase(obj))
 //         {
-//           MonEditCase *aDlg = new MonEditCase(true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
+//           MonEditCase *aDlg = new MonEditCase(true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName ) ;
 //           aDlg->show();
 //         }
 //         // Edition d'une hypothese
 //         else if (HOMARD_UTILS::isHypo(obj))
 //         {
-//           MonEditHypothesis *aDlg = new MonEditHypothesis(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen),  _ObjectName, QString(""), QString("")) ;
+//           MonEditHypothesis *aDlg = new MonEditHypothesis(0, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen),  _ObjectName, QString(""), QString("")) ;
 //           aDlg->show();
 //         }
 //         // Edition d'une iteration
 //         else if (HOMARD_UTILS::isIter(obj))
 //         {
-//           MonEditIteration *aDlg = new MonEditIteration(parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           MonEditIteration *aDlg = new MonEditIteration(parent, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), QString(""), _ObjectName ) ;
 //           aDlg->show();
 //         }
 //         // Edition d'un schema YACS
 //         else if (HOMARD_UTILS::isYACS(obj))
 //         {
 //           MESSAGE("appel de MonEditYACS");
-//           MonEditYACS *aDlg = new MonEditYACS(true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName) ;
+//           MonEditYACS *aDlg = new MonEditYACS(true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName) ;
 //           aDlg->show();
 //         }
 //         // Edition d'une zone
 //         else if (HOMARD_UTILS::isZone(obj))
 //         {
-//           MonEditZone *aDlg = new MonEditZone(0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), QString(""), _ObjectName ) ;
+//           MonEditZone *aDlg = new MonEditZone(0, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), QString(""), _ObjectName ) ;
 //           aDlg->show();
 //         }
 //       }
@@ -334,7 +334,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //         if ( HOMARD_UTILS::isBoundaryCAO(obj) || HOMARD_UTILS::isBoundaryDi(obj) || HOMARD_UTILS::isBoundaryAn(obj) )
 //         {
 //           try
-//           { homardGen->DeleteBoundary(_ObjectName.toStdString().c_str()); }
+//           { adaptGen->DeleteBoundary(_ObjectName.toStdString().c_str()); }
 //           catch( SALOME::SALOME_Exception& S_ex )
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -347,7 +347,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //         else if (HOMARD_UTILS::isCase(obj))
 //         {
 //           try
-//           { homardGen->DeleteCase(_ObjectName.toStdString().c_str(), 1); }
+//           { adaptGen->DeleteCase(_ObjectName.toStdString().c_str(), 1); }
 //           catch( SALOME::SALOME_Exception& S_ex )
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -360,7 +360,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //         else if (HOMARD_UTILS::isHypo(obj))
 //         {
 //           try
-//           { homardGen->DeleteHypo(_ObjectName.toStdString().c_str()); }
+//           { adaptGen->DeleteHypo(_ObjectName.toStdString().c_str()); }
 //           catch( SALOME::SALOME_Exception& S_ex )
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -373,7 +373,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //         else if (HOMARD_UTILS::isIter(obj))
 //         {
 //           try
-//           { homardGen->DeleteIteration(_ObjectName.toStdString().c_str(), 1); }
+//           { adaptGen->DeleteIteration(_ObjectName.toStdString().c_str(), 1); }
 //           catch( SALOME::SALOME_Exception& S_ex )
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -386,7 +386,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //         else if (HOMARD_UTILS::isYACS(obj))
 //         {
 //           try
-//           { homardGen->DeleteYACS(_ObjectName.toStdString().c_str(), 1); }
+//           { adaptGen->DeleteYACS(_ObjectName.toStdString().c_str(), 1); }
 //           catch( SALOME::SALOME_Exception& S_ex )
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -399,7 +399,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //         else if (HOMARD_UTILS::isZone(obj))
 //         {
 //           try
-//           { homardGen->DeleteZone(_ObjectName.toStdString().c_str()); }
+//           { adaptGen->DeleteZone(_ObjectName.toStdString().c_str()); }
 //           catch( SALOME::SALOME_Exception& S_ex )
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -416,7 +416,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     {
 //       MESSAGE("etape 1301")
 //       MESSAGE("command " << theCommandID << " activated");
-//       MonMeshInfo *aDlg = new MonMeshInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
+//       MonMeshInfo *aDlg = new MonMeshInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
 //       aDlg->show();
 //       break;
 //     }
@@ -427,7 +427,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //       _PTR(SObject) obj = chercheMonObjet();
 //       if ( (obj) && ( HOMARD_UTILS::isFileType(obj,QString("log")) || HOMARD_UTILS::isFileType(obj,QString("Summary")) || HOMARD_UTILS::isFileType(obj,QString("xml")) ) )
 //       {
-//           MonEditFile *aDlg = new MonEditFile( 0, true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName, 0 ) ;
+//           MonEditFile *aDlg = new MonEditFile( 0, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName, 0 ) ;
 //           if ( aDlg->_codret == 0 ) { aDlg->show(); }
 //       }
 //       break;
@@ -437,7 +437,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     {
 //       MESSAGE("etape 1401")
 //       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-//       MonCreateYACS *aDlg = new MonCreateYACS( true, ADAPT::ADAPT_Gen::_duplicate(homardGen), _ObjectName ) ;
+//       MonCreateYACS *aDlg = new MonCreateYACS( true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName ) ;
 //       aDlg->show();
 //       break;
 //     }
@@ -446,7 +446,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //     {
 //       MESSAGE("etape 1402")
 //       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
-//       try { homardGen->YACSWrite(_ObjectName.toStdString().c_str()); }
+//       try { adaptGen->YACSWrite(_ObjectName.toStdString().c_str()); }
 //       catch( SALOME::SALOME_Exception& S_ex )
 //       {
 //         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
