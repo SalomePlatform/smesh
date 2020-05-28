@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditBoundaryCAO : public MonCreateBoundaryCAO
     Q_OBJECT
 public:
     MonEditBoundaryCAO( MonCreateCase* parent, bool modal,
-                       ADAPT::ADAPT_Gen_var myHomardGen,
+                       ADAPT::ADAPT_Gen_var myAdaptGen,
                        QString caseName, QString Name );
     virtual ~MonEditBoundaryCAO();
 

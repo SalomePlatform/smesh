@@ -38,7 +38,7 @@ class HOMARD_EXPORT MonCreateHypothesis : public QScrollArea, public Ui_CreateHy
     Q_OBJECT
 
 public:
-    MonCreateHypothesis( MonCreateIteration* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen,
+    MonCreateHypothesis( MonCreateIteration* parent, bool modal, ADAPT::ADAPT_Gen_var myAdaptGen,
                          QString aHypotheseName, QString caseName, QString aFieldFile);
     ~MonCreateHypothesis();
 
@@ -46,7 +46,7 @@ public:
     virtual void setGroups(QStringList listGroup);
 
 protected :
-   // MonCreateHypothesis( MonCreateIteration* parent, ADAPT::ADAPT_Gen_var myHomardGen,
+   // MonCreateHypothesis( MonCreateIteration* parent, ADAPT::ADAPT_Gen_var myAdaptGen,
    //                      QString caseName, QString aFieldFile);
 
     MonCreateIteration *_parent;
@@ -75,7 +75,7 @@ protected :
     int _ExtraOutput;
 
     ADAPT::HOMARD_Hypothesis_var aHypothesis;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     QStringList _aListeZone;
     QStringList _aListeComposant;

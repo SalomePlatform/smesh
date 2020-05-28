@@ -40,11 +40,11 @@ class HOMARD_EXPORT MonIterInfo : public QDialog, public Ui_IterInfo
     Q_OBJECT
 
 public:
-    MonIterInfo( QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString IterName);
+    MonIterInfo( QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myAdaptGen, QString IterName);
     ~MonIterInfo();
 
 protected :
-    MonIterInfo( QWidget* parent, ADAPT::ADAPT_Gen_var myHomardGen, QString IterName );
+    MonIterInfo( QWidget* parent, ADAPT::ADAPT_Gen_var myAdaptGen, QString IterName );
 
     QString _IterName;
     QString _aCaseName;
@@ -57,7 +57,7 @@ protected :
     int _Option;
 
     ADAPT::HOMARD_Iteration_var aIter ;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     virtual void InitConnect();
 

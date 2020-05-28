@@ -32,14 +32,14 @@ using namespace std;
 */
 // -------------------------------------------------------------
 MonEditCase::MonEditCase ( bool modal,
-                           ADAPT::ADAPT_Gen_var myHomardGen,
+                           ADAPT::ADAPT_Gen_var myAdaptGen,
                            QString CaseName ):
-   MonCreateCase(modal, myHomardGen)
+   MonCreateCase(modal, myAdaptGen)
 {
     MESSAGE("Debut de MonEditCase" << CaseName.toStdString().c_str());
     setWindowTitle(QObject::tr("HOM_CASE_EDIT_WINDOW_TITLE"));
     _aCaseName = CaseName;
-    aCase = myHomardGen->GetCase(_aCaseName.toStdString().c_str());
+    aCase = myAdaptGen->GetCase(_aCaseName.toStdString().c_str());
     InitValEdit();
 }
 // ------------------------------
@@ -61,7 +61,7 @@ void MonEditCase::InitValEdit()
   PushDir->setVisible(0);
 
   QString _aitername=aCase->GetIter0Name();
-  ADAPT::HOMARD_Iteration_var aIter = myHomardGen->GetIteration(_aitername.toStdString().c_str());
+  ADAPT::HOMARD_Iteration_var aIter = myAdaptGen->GetIteration(_aitername.toStdString().c_str());
   QString aFileName = aIter->GetMeshFile();
   LEFileName->setText(aFileName);
   LEFileName->setReadOnly(true);
@@ -98,7 +98,7 @@ void MonEditCase::InitValEdit()
       NomFron = mesBoundarys[i++];
       MESSAGE("NomFron "<<NomFron.toStdString().c_str());
 //    L'objet associe pour en deduire le type
-      ADAPT::HOMARD_Boundary_var myBoundary = myHomardGen->GetBoundary(NomFron.toStdString().c_str());
+      ADAPT::HOMARD_Boundary_var myBoundary = myAdaptGen->GetBoundary(NomFron.toStdString().c_str());
       int type_obj = myBoundary->GetType() ;
       MESSAGE("type_obj "<<type_obj);
 //        C'est une frontiere CAO

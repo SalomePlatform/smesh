@@ -33,14 +33,14 @@ using namespace std;
 
 // -------------------------------------------------------------------------------
 MonCreateBoundaryCAO::MonCreateBoundaryCAO(MonCreateCase* parent, bool modal,
-                                         ADAPT::ADAPT_Gen_var myHomardGen0,
+                                         ADAPT::ADAPT_Gen_var myAdaptGen0,
                                          QString caseName, QString aName)
 // ---------------------------------------------------------------------------------
 /* Constructs a MonCreateBoundaryCAO */
     :
     QDialog(0), Ui_CreateBoundaryCAO(),
     _parent(parent), _aName(aName),
-    myHomardGen(ADAPT::ADAPT_Gen::_duplicate(myHomardGen0)),
+    myAdaptGen(ADAPT::ADAPT_Gen::_duplicate(myAdaptGen0)),
     _aCaseName(caseName)
     {
       MESSAGE("Constructeur") ;
@@ -99,7 +99,7 @@ bool MonCreateBoundaryCAO::PushOnApply()
    try
    {
      _aName=aName;
-     aBoundary=myHomardGen->CreateBoundaryCAO(CORBA::string_dup(_aName.toStdString().c_str()), aCAOFile.toStdString().c_str());
+     aBoundary=myAdaptGen->CreateBoundaryCAO(CORBA::string_dup(_aName.toStdString().c_str()), aCAOFile.toStdString().c_str());
      _parent->AddBoundaryCAO(_aName);
      aBoundary->SetCaseCreation(_aCaseName.toStdString().c_str());
    }
@@ -130,7 +130,7 @@ void MonCreateBoundaryCAO::PushOnOK()
 void MonCreateBoundaryCAO::PushOnHelp()
 // ------------------------------------------------------------------------
 {
-  std::string LanguageShort = myHomardGen->GetLanguageShort();
+  std::string LanguageShort = myAdaptGen->GetLanguageShort();
   HOMARD_UTILS::PushOnHelp(QString("gui_create_boundary.html"), QString("CAO"), QString(LanguageShort.c_str()));
 }
 // ------------------------------------------------------------------------
@@ -152,7 +152,7 @@ void MonCreateBoundaryCAO::SetNewName()
 // --------------------------------------------------
 {
 
-  ADAPT::listeBoundarys_var  MyObjects = myHomardGen->GetAllBoundarysName();
+  ADAPT::listeBoundarys_var  MyObjects = myAdaptGen->GetAllBoundarysName();
   int num = 0; QString aName="";
   while (aName == QString("") )
   {
@@ -195,7 +195,7 @@ void MonCreateBoundaryCAO::SetFiltrage()
     return;
   }
 
-  MonCreateListGroupCAO *aDlg = new MonCreateListGroupCAO(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),
+  MonCreateListGroupCAO *aDlg = new MonCreateListGroupCAO(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen),
                             _aCaseName, _listeGroupesBoundary) ;
   aDlg->show();
 }

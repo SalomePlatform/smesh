@@ -35,7 +35,7 @@ using namespace std;
 
 // -------------------------------------------------------------------------------
 MonCreateHypothesis::MonCreateHypothesis(MonCreateIteration* parent, bool modal,
-                                         ADAPT::ADAPT_Gen_var myHomardGen0,
+                                         ADAPT::ADAPT_Gen_var myAdaptGen0,
                                          QString Name,
                                          QString caseName, QString aFieldFile)
 // ---------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ MonCreateHypothesis::MonCreateHypothesis(MonCreateIteration* parent, bool modal,
 
 {
       MESSAGE("Constructeur") ;
-      myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
+      myAdaptGen=ADAPT::ADAPT_Gen::_duplicate(myAdaptGen0);
       setupUi(this);
       if ( modal ) { setWindowModality(Qt::WindowModal); }
       else         { setWindowModality(Qt::NonModal); }
@@ -158,7 +158,7 @@ bool MonCreateHypothesis::PushOnApply()
     _Name=LEName->text().trimmed();
     try
     {
-     aHypothesis=myHomardGen->CreateHypothesis(CORBA::string_dup(_Name.toStdString().c_str()) );
+     aHypothesis=myAdaptGen->CreateHypothesis(CORBA::string_dup(_Name.toStdString().c_str()) );
      _parent->addHypothese(_Name);
     }
     catch( SALOME::SALOME_Exception& S_ex )
@@ -223,7 +223,7 @@ void MonCreateHypothesis::PushOnOK()
 void MonCreateHypothesis::PushOnHelp()
 // ------------------------------------------------------------------------
 {
-  std::string LanguageShort = myHomardGen->GetLanguageShort();
+  std::string LanguageShort = myAdaptGen->GetLanguageShort();
   HOMARD_UTILS::PushOnHelp(QString("gui_create_hypothese.html"), QString(""), QString(LanguageShort.c_str()));
 }
 // -------------------------------------------------
@@ -231,7 +231,7 @@ void MonCreateHypothesis::SetNewName()
 // --------------------------------------------------
 {
 
-  ADAPT::listeHypotheses_var  MyObjects = myHomardGen->GetAllHypothesesName();
+  ADAPT::listeHypotheses_var  MyObjects = myAdaptGen->GetAllHypothesesName();
   int num = 0;//
   QString aName="";
   while (aName=="" )
@@ -318,7 +318,7 @@ void MonCreateHypothesis::PushZoneNew()
 // ------------------------------------------------------------------------
 {
   MESSAGE("Debut de MonCreateHypothesis::PushZoneNew")
-  MonCreateZone *aDlg = new MonCreateZone(this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName) ;
+  MonCreateZone *aDlg = new MonCreateZone(this, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen), _aCaseName) ;
   aDlg->show();
 }
 
@@ -336,7 +336,7 @@ void MonCreateHypothesis::PushZoneEdit()
     return;
   }
   QString zoneName = monItem->text().trimmed();
-  MonEditZone *aDlg = new MonEditZone(this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen), _aCaseName, zoneName) ;
+  MonEditZone *aDlg = new MonEditZone(this, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen), _aCaseName, zoneName) ;
   aDlg->show();
 }
 // ------------------------------------------------------------------------
@@ -357,7 +357,7 @@ void MonCreateHypothesis::GetAllZones()
 // Par defaut, aucune n'est selectionnee
 {
   MESSAGE("Debut de GetAllZones") ;
-  ADAPT::listeZones_var mesZones = myHomardGen->GetAllZonesName();
+  ADAPT::listeZones_var mesZones = myAdaptGen->GetAllZonesName();
   int nbrow=TWZone->rowCount();
   for ( int row=0; row< nbrow; row++)
   {
@@ -711,7 +711,7 @@ void MonCreateHypothesis::SetFiltrage()
 // ------------------------------------------------------------------------
 {
   if (!CBGroupe->isChecked()) return;
-  MonCreateListGroup *aDlg = new MonCreateListGroup(this, NULL, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),_aCaseName, _aListeGroupes) ;
+  MonCreateListGroup *aDlg = new MonCreateListGroup(this, NULL, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen),_aCaseName, _aListeGroupes) ;
   aDlg->show();
 }
 

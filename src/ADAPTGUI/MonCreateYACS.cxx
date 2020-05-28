@@ -34,7 +34,7 @@
 using namespace std;
 
 // ----------------------------------------------------------------------
-MonCreateYACS::MonCreateYACS (bool modal, ADAPT::ADAPT_Gen_var myHomardGen0, QString CaseName ):
+MonCreateYACS::MonCreateYACS (bool modal, ADAPT::ADAPT_Gen_var myAdaptGen0, QString CaseName ):
 // ----------------------------------------------------------------------
 /* Constructs a MonCreateYACS
  * Sets attributes to default values
@@ -50,7 +50,7 @@ MonCreateYACS::MonCreateYACS (bool modal, ADAPT::ADAPT_Gen_var myHomardGen0, QSt
   // et doivent correspondre aux defauts des boutons
   {
 //     MESSAGE("Debut du constructeur de MonCreateYACS");
-    myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
+    myAdaptGen=ADAPT::ADAPT_Gen::_duplicate(myAdaptGen0);
     setupUi(this);
     if ( modal ) { setWindowModality(Qt::WindowModal); }
     else         { setWindowModality(Qt::NonModal); }
@@ -63,9 +63,9 @@ MonCreateYACS::MonCreateYACS (bool modal, ADAPT::ADAPT_Gen_var myHomardGen0, QSt
     else                           { setWindowModality(Qt::NonModal); /* permet selection du cas dans l arbre d etude */}
 //
 //  Les valeurs definies dans les preferences
-    _MaxIter = myHomardGen->GetYACSMaxIter();
-    _MaxNode = myHomardGen->GetYACSMaxNode();
-    _MaxElem = myHomardGen->GetYACSMaxElem();
+    _MaxIter = myAdaptGen->GetYACSMaxIter();
+    _MaxNode = myAdaptGen->GetYACSMaxNode();
+    _MaxElem = myAdaptGen->GetYACSMaxElem();
     MESSAGE ("Valeur par defaut de MaxIter = " << _MaxIter<<", MaxNode = "<< _MaxNode<<", MaxElem = "<< _MaxElem);
     SpinBoxMaxIter->setValue(_MaxIter) ;
     SpinBoxMaxNode->setValue(_MaxNode) ;
@@ -75,12 +75,12 @@ MonCreateYACS::MonCreateYACS (bool modal, ADAPT::ADAPT_Gen_var myHomardGen0, QSt
   }
 
 // ----------------------------------------------------------------------
-MonCreateYACS::MonCreateYACS(ADAPT::ADAPT_Gen_var myHomardGen0,
+MonCreateYACS::MonCreateYACS(ADAPT::ADAPT_Gen_var myAdaptGen0,
                              QString caseName):
 // ----------------------------------------------------------------------
 // Constructeur appele par MonEditYACS
 //
-myHomardGen(myHomardGen0),
+myAdaptGen(myAdaptGen0),
 _Name (""),
 Chgt (false)
 {
@@ -139,7 +139,7 @@ bool MonCreateYACS::PushOnApply()
     return false;
   }
   if ( aDirName != _aDirName)
-  { QString CaseNameDir = myHomardGen->VerifieDir( aDirName.toStdString().c_str()) ;
+  { QString CaseNameDir = myAdaptGen->VerifieDir( aDirName.toStdString().c_str()) ;
     if ( CaseNameDir != "" )
     {
       QString texte ;
@@ -218,7 +218,7 @@ bool MonCreateYACS:: CreateOrUpdate()
   try
   {
     _Name=LEName->text().trimmed();
-    aYACS=myHomardGen->CreateYACSSchema(CORBA::string_dup(_Name.toStdString().c_str()), CORBA::string_dup(_aCaseName.toStdString().c_str()), CORBA::string_dup(_aScriptFile.toStdString().c_str()), CORBA::string_dup(_aDirName.toStdString().c_str()), CORBA::string_dup(_aMeshFile.toStdString().c_str()));
+    aYACS=myAdaptGen->CreateYACSSchema(CORBA::string_dup(_Name.toStdString().c_str()), CORBA::string_dup(_aCaseName.toStdString().c_str()), CORBA::string_dup(_aScriptFile.toStdString().c_str()), CORBA::string_dup(_aDirName.toStdString().c_str()), CORBA::string_dup(_aMeshFile.toStdString().c_str()));
   }
   catch( SALOME::SALOME_Exception& S_ex )
   {
@@ -265,7 +265,7 @@ void MonCreateYACS::PushOnOK()
 void MonCreateYACS::PushOnHelp()
 //-------------------------------
 {
-  std::string LanguageShort = myHomardGen->GetLanguageShort();
+  std::string LanguageShort = myAdaptGen->GetLanguageShort();
   HOMARD_UTILS::PushOnHelp(QString("yacs.html"), QString(""), QString(LanguageShort.c_str()));
 }
 // -------------------------------------------------
@@ -273,7 +273,7 @@ void MonCreateYACS::SetNewName()
 // --------------------------------------------------
 {
 
-  ADAPT::listeYACSs_var MyObjects = myHomardGen->GetAllYACSsName();
+  ADAPT::listeYACSs_var MyObjects = myAdaptGen->GetAllYACSsName();
   int num = 0; QString aName="";
   while (aName == QString("") )
   {

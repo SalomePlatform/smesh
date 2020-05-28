@@ -30,18 +30,18 @@ using namespace std;
 
 // ----------------------------------------------------------------------------
 MonEditHypothesis::MonEditHypothesis( MonCreateIteration* parent, bool modal,
-                                      ADAPT::ADAPT_Gen_var myHomardGen,
+                                      ADAPT::ADAPT_Gen_var myAdaptGen,
                                       QString Name,
                                       QString caseName,  QString aFieldFile ):
 // ----------------------------------------------------------------------------
 /* Constructs a MonEditHypothesis
     herite de MonCreateHypothesis
 */
-    MonCreateHypothesis(parent, modal,myHomardGen, Name, caseName, aFieldFile)
+    MonCreateHypothesis(parent, modal,myAdaptGen, Name, caseName, aFieldFile)
 {
     MESSAGE("Hypothese " << Name.toStdString().c_str());
     setWindowTitle(QObject::tr("HOM_HYPO_EDIT_WINDOW_TITLE"));
-    aHypothesis    = myHomardGen->GetHypothesis(_Name.toStdString().c_str());
+    aHypothesis    = myAdaptGen->GetHypothesis(_Name.toStdString().c_str());
     if (caseName == QString("") ){ _aCaseName = aHypothesis->GetCaseCreation();}
     InitValEdit();
     InitGroupes();
@@ -445,7 +445,7 @@ bool MonEditHypothesis::PushOnApply()
       aHypothesis->SetUnRefThr(_TypeThC, _ThreshC) ;
     }
 
-    myHomardGen->InvalideHypo(_Name.toStdString().c_str());
+    myAdaptGen->InvalideHypo(_Name.toStdString().c_str());
     HOMARD_UTILS::updateObjBrowser();
   }
   return true;
@@ -456,7 +456,7 @@ void MonEditHypothesis::SetFiltrage()
 {
   if (CBGroupe->isChecked())
   {
-    MonEditListGroup *aDlg = new MonEditListGroup(this, NULL, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),_aCaseName, _aListeGroupes) ;
+    MonEditListGroup *aDlg = new MonEditListGroup(this, NULL, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen),_aCaseName, _aListeGroupes) ;
     aDlg->show();
   }
 }

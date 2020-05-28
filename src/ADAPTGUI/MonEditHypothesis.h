@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditHypothesis : public MonCreateHypothesis
     Q_OBJECT
 public:
     MonEditHypothesis( MonCreateIteration* parent, bool modal,
-                       ADAPT::ADAPT_Gen_var myHomardGen,
+                       ADAPT::ADAPT_Gen_var myAdaptGen,
                        QString caseName, QString Name, QString aFieldFile );
     virtual ~MonEditHypothesis();
 

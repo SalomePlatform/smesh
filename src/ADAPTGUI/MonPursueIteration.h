@@ -37,7 +37,7 @@ class HOMARD_EXPORT MonPursueIteration : public QDialog, public Ui_PursueIterati
     Q_OBJECT
 
   public:
-    MonPursueIteration( bool modal, ADAPT::ADAPT_Gen_var myHomardGen );
+    MonPursueIteration( bool modal, ADAPT::ADAPT_Gen_var myAdaptGen );
     virtual ~MonPursueIteration();
 
   protected :
@@ -48,7 +48,7 @@ class HOMARD_EXPORT MonPursueIteration : public QDialog, public Ui_PursueIterati
     int _Type ;
 
     ADAPT::HOMARD_Cas_var aCase ;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     virtual void InitConnect();
     virtual void SetNewCaseName();

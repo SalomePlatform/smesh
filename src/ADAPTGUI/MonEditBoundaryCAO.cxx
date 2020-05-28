@@ -31,19 +31,19 @@ using namespace std;
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 MonEditBoundaryCAO::MonEditBoundaryCAO( MonCreateCase* parent, bool modal,
-                                      ADAPT::ADAPT_Gen_var myHomardGen,
+                                      ADAPT::ADAPT_Gen_var myAdaptGen,
                                       QString caseName, QString Name):
 // -------------------------------------------------------------------------------------------------------------------------------------
 /* Constructs a MonEditBoundaryCAO
     herite de MonCreateBoundaryCAO
 */
-    MonCreateBoundaryCAO(parent, modal, myHomardGen, caseName, Name)
+    MonCreateBoundaryCAO(parent, modal, myAdaptGen, caseName, Name)
 {
     MESSAGE("Debut de Boundary pour " << Name.toStdString().c_str());
     setWindowTitle(QObject::tr("HOM_BOUN_C_EDIT_WINDOW_TITLE"));
     try
     {
-     aBoundary=myHomardGen->GetBoundary(CORBA::string_dup(_aName.toStdString().c_str()));
+     aBoundary=myAdaptGen->GetBoundary(CORBA::string_dup(_aName.toStdString().c_str()));
      if (caseName==QString("")) { _aCaseName=aBoundary->GetCaseCreation();}
      InitValEdit();
     }
@@ -95,10 +95,10 @@ void MonEditBoundaryCAO::SetFiltrage()
                               QObject::tr("HOM_BOUN_CASE") );
     return;
   }
-  ADAPT::HOMARD_Cas_var monCas= myHomardGen->GetCase(_aCaseName.toStdString().c_str());
+  ADAPT::HOMARD_Cas_var monCas= myAdaptGen->GetCase(_aCaseName.toStdString().c_str());
   ADAPT::ListGroupType_var _listeGroupesCas = monCas->GetGroups();
 
-  MonEditListGroupCAO *aDlg = new MonEditListGroupCAO(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),
+  MonEditListGroupCAO *aDlg = new MonEditListGroupCAO(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen),
                             _aCaseName, _listeGroupesBoundary) ;
   aDlg->show();
 }

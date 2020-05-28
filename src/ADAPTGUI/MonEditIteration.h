@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditIteration : public MonCreateIteration
     Q_OBJECT
 public:
     MonEditIteration( QWidget* parent, bool modal,
-                      ADAPT::ADAPT_Gen_var myHomardGen,
+                      ADAPT::ADAPT_Gen_var myAdaptGen,
                       QString IterParentName, QString Name );
     virtual ~MonEditIteration();
 

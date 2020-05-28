@@ -187,9 +187,9 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
     case 8011: // Creation d un Cas
     {
       INFOS("Creation d'un Cas");
-//       MonCreateCase *aDlg = new MonCreateCase( true,
-//                             ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
-//       aDlg->show();
+      MonCreateCase *aDlg = new MonCreateCase( true,
+                            ADAPT::ADAPT_Gen::_duplicate(homardGen) ) ;
+      aDlg->show();
       break;
     }
 

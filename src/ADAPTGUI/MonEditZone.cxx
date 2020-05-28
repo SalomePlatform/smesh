@@ -32,18 +32,18 @@ using namespace std;
 
 // ------------------------------------------------------------------------
 MonEditZone::MonEditZone( MonCreateHypothesis* parent, bool modal,
-                          ADAPT::ADAPT_Gen_var myHomardGen,
+                          ADAPT::ADAPT_Gen_var myAdaptGen,
                           QString caseName, QString Name ):
 // ------------------------------------------------------------------------
 /* Constructs a MonEditZone
     herite de MonCreateZone
 */
-    MonCreateZone(parent, myHomardGen, caseName)
+    MonCreateZone(parent, myAdaptGen, caseName)
 {
     MESSAGE("Debut de MonEditZone pour " << Name.toStdString().c_str());
     setWindowTitle(QObject::tr("HOM_ZONE_EDIT_WINDOW_TITLE"));
     _Name=Name;
-    aZone = myHomardGen->GetZone(_Name.toStdString().c_str());
+    aZone = myAdaptGen->GetZone(_Name.toStdString().c_str());
     InitValEdit();
 }
 // ------------------------------------------------------------------------
@@ -420,7 +420,7 @@ bool MonEditZone::CreateOrUpdateZone()
         break;
       }
     }
-    if (Chgt) myHomardGen->InvalideZone(_Name.toStdString().c_str());
+    if (Chgt) myAdaptGen->InvalideZone(_Name.toStdString().c_str());
     HOMARD_UTILS::updateObjBrowser();
   }
   catch( const SALOME::SALOME_Exception& S_ex ) {

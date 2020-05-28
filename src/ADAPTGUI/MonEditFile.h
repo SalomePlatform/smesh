@@ -42,14 +42,14 @@ class HOMARD_EXPORT MonEditFile : public QWidget, public Ui_EditFile
 
 public:
     MonEditFile( QWidget* parent,  bool modal,
-                 ADAPT::ADAPT_Gen_var myHomardGen,
+                 ADAPT::ADAPT_Gen_var myAdaptGen,
                  QString FileName, int option );
     ~MonEditFile();
     int _codret ;
 
 protected :
 
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
     QString _aFileName ;
     int _option ;
 

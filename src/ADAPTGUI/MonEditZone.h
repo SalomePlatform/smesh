@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditZone : public MonCreateZone
     Q_OBJECT
 public:
     MonEditZone( MonCreateHypothesis* parent, bool modal,
-                 ADAPT::ADAPT_Gen_var myHomardGen,
+                 ADAPT::ADAPT_Gen_var myAdaptGen,
                  QString caseName, QString Name);
     virtual ~MonEditZone();
 

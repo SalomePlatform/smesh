@@ -39,7 +39,7 @@ class HOMARD_EXPORT MonCreateBoundaryDi : public QDialog, public Ui_CreateBounda
 
 public:
     MonCreateBoundaryDi( MonCreateCase* parent, bool modal,
-                         ADAPT::ADAPT_Gen_var myHomardGen,
+                         ADAPT::ADAPT_Gen_var myAdaptGen,
                          QString caseName, QString BoundaryName );
     ~MonCreateBoundaryDi();
     virtual void setGroups (QStringList listGroup);
@@ -53,7 +53,7 @@ protected :
 
 
     ADAPT::HOMARD_Boundary_var aBoundary;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     QStringList  _listeGroupesBoundary;
 

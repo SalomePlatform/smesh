@@ -37,7 +37,7 @@ class HOMARD_EXPORT MonMeshInfo : public QDialog, public Ui_MeshInfo
     Q_OBJECT
 
 public:
-    MonMeshInfo( QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen);
+    MonMeshInfo( QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myAdaptGen);
     ~MonMeshInfo();
 
 protected :
@@ -51,7 +51,7 @@ protected :
     int _Quality;
 
     ADAPT::HOMARD_Cas_var aCase ;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     virtual void InitConnect();
     virtual void SetNewCaseName();

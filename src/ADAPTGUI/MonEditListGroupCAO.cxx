@@ -25,11 +25,11 @@ using namespace std;
 MonEditListGroupCAO::MonEditListGroupCAO( MonCreateHypothesis* parentHyp,
                                     MonCreateBoundaryCAO* parentBound,
                                     bool modal,
-                                    ADAPT::ADAPT_Gen_var myHomardGen,
+                                    ADAPT::ADAPT_Gen_var myAdaptGen,
                                     QString aCaseName,
                                     QStringList listeGroupesHypo):
 //---------------------------------------------------------------------
-MonCreateListGroupCAO(parentHyp,parentBound,myHomardGen,aCaseName,listeGroupesHypo)
+MonCreateListGroupCAO(parentHyp,parentBound,myAdaptGen,aCaseName,listeGroupesHypo)
 {
   MESSAGE("Debut de MonEditListGroupCAO");
     setWindowTitle(QObject::tr("HOM_GROU_EDIT_WINDOW_TITLE"));

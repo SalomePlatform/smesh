@@ -39,13 +39,13 @@ using namespace std;
  * Sets attributes to default values
  */
 // -----------------------------------------------------------------------------------------
-MonPursueIteration::MonPursueIteration ( bool modal, ADAPT::ADAPT_Gen_var myHomardGen0 )
+MonPursueIteration::MonPursueIteration ( bool modal, ADAPT::ADAPT_Gen_var myAdaptGen0 )
     :
     Ui_PursueIteration(),
     _aCaseName(""), _aDirName(""), _aDirNameStart("")
 {
   MESSAGE("Debut du constructeur de MonPursueIteration");
-  myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
+  myAdaptGen=ADAPT::ADAPT_Gen::_duplicate(myAdaptGen0);
   setupUi(this);
   setModal(modal);
 
@@ -98,7 +98,7 @@ bool MonPursueIteration::PushOnApply()
     return false;
   }
   if ( aDirName != _aDirName)
-  { QString CaseNameDir = myHomardGen->VerifieDir( aDirName.toStdString().c_str()) ;
+  { QString CaseNameDir = myAdaptGen->VerifieDir( aDirName.toStdString().c_str()) ;
     if ( CaseNameDir != "" )
     {
       QString texte ;
@@ -147,7 +147,7 @@ bool MonPursueIteration::PushOnApply()
       try
       {
         MESSAGE("Poursuite a partir d'une iteration");
-        aCase = myHomardGen->CreateCaseFromIteration( \
+        aCase = myAdaptGen->CreateCaseFromIteration( \
                   CORBA::string_dup(_aCaseName.toStdString().c_str()),  \
                   CORBA::string_dup(_aDirNameStart.toStdString().c_str()) );
       }
@@ -164,7 +164,7 @@ bool MonPursueIteration::PushOnApply()
       try
       {
         MESSAGE("Poursuite a partir de la derniere iteration dans un cas");
-        aCase = myHomardGen->CreateCaseFromCaseLastIteration( \
+        aCase = myAdaptGen->CreateCaseFromCaseLastIteration( \
                   CORBA::string_dup(_aCaseName.toStdString().c_str()),  \
                   CORBA::string_dup(_aDirNameStart.toStdString().c_str()) );
       }
@@ -181,7 +181,7 @@ bool MonPursueIteration::PushOnApply()
       try
       {
         MESSAGE("Poursuite a partir d'une iteration dans un cas");
-        aCase = myHomardGen->CreateCaseFromCaseIteration( \
+        aCase = myAdaptGen->CreateCaseFromCaseIteration( \
                   CORBA::string_dup(_aCaseName.toStdString().c_str()),  \
                   CORBA::string_dup(_aDirNameStart.toStdString().c_str()),  \
                   Number );
@@ -214,14 +214,14 @@ void MonPursueIteration::PushOnOK()
 void MonPursueIteration::PushOnHelp()
 //-------------------------------
 {
-  std::string LanguageShort = myHomardGen->GetLanguageShort();
+  std::string LanguageShort = myAdaptGen->GetLanguageShort();
   HOMARD_UTILS::PushOnHelp(QString("gui_create_case.html"), QString(""), QString(LanguageShort.c_str()));
 }
 // ---------------------------------
 void MonPursueIteration::SetNewCaseName()
 // ------------------------------
 {
-  ADAPT::listeCases_var  MyCases = myHomardGen->GetAllCasesName();
+  ADAPT::listeCases_var  MyCases = myAdaptGen->GetAllCasesName();
   int num = 0; QString aCaseName="";
   while (aCaseName=="" )
   {

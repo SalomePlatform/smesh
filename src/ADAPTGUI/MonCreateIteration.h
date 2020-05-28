@@ -37,14 +37,14 @@ class HOMARD_EXPORT MonCreateIteration : public QScrollArea, public Ui_CreateIte
     Q_OBJECT
 
 public:
-    MonCreateIteration( QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString IterParentName );
+    MonCreateIteration( QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myAdaptGen, QString IterParentName );
     ~MonCreateIteration();
 
     void addHypothese(QString newHypothese);
 
 
 protected :
-    MonCreateIteration( QWidget* parent, ADAPT::ADAPT_Gen_var myHomardGen, QString IterParentName );
+    MonCreateIteration( QWidget* parent, ADAPT::ADAPT_Gen_var myAdaptGen, QString IterParentName );
 
     QString _Name;
     QString _IterParentName;
@@ -54,7 +54,7 @@ protected :
     ADAPT::HOMARD_Iteration_var aIter ;
     ADAPT::HOMARD_Iteration_var aIterParent ;
     ADAPT::HOMARD_Cas_var aCas ;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
 
     virtual void InitConnect();

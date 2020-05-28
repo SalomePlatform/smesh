@@ -33,14 +33,14 @@ using namespace std;
 
 // -------------------------------------------------------------------------------
 MonCreateBoundaryDi::MonCreateBoundaryDi(MonCreateCase* parent, bool modal,
-                                         ADAPT::ADAPT_Gen_var myHomardGen0,
+                                         ADAPT::ADAPT_Gen_var myAdaptGen0,
                                          QString caseName, QString aName)
 // ---------------------------------------------------------------------------------
 /* Constructs a MonCreateBoundaryDi */
     :
     QDialog(0), Ui_CreateBoundaryDi(),
     _parent(parent), _aName(aName),
-    myHomardGen(ADAPT::ADAPT_Gen::_duplicate(myHomardGen0)),
+    myAdaptGen(ADAPT::ADAPT_Gen::_duplicate(myAdaptGen0)),
     _aCaseName(caseName)
     {
       MESSAGE("Constructeur") ;
@@ -108,7 +108,7 @@ bool MonCreateBoundaryDi::PushOnApply()
    try
    {
      _aName=aName;
-     aBoundary=myHomardGen->CreateBoundaryDi(CORBA::string_dup(_aName.toStdString().c_str()), aMeshName.toStdString().c_str(), aMeshFile.toStdString().c_str());
+     aBoundary=myAdaptGen->CreateBoundaryDi(CORBA::string_dup(_aName.toStdString().c_str()), aMeshName.toStdString().c_str(), aMeshFile.toStdString().c_str());
      _parent->AddBoundaryDi(_aName);
      aBoundary->SetCaseCreation(_aCaseName.toStdString().c_str());
    }
@@ -139,7 +139,7 @@ void MonCreateBoundaryDi::PushOnOK()
 void MonCreateBoundaryDi::PushOnHelp()
 // ------------------------------------------------------------------------
 {
-  std::string LanguageShort = myHomardGen->GetLanguageShort();
+  std::string LanguageShort = myAdaptGen->GetLanguageShort();
   HOMARD_UTILS::PushOnHelp(QString("gui_create_boundary.html"), QString("frontiere-discrete"), QString(LanguageShort.c_str()));
 }
 // ------------------------------------------------------------------------
@@ -161,7 +161,7 @@ void MonCreateBoundaryDi::SetNewName()
 // --------------------------------------------------
 {
 
-  ADAPT::listeBoundarys_var  MyObjects = myHomardGen->GetAllBoundarysName();
+  ADAPT::listeBoundarys_var  MyObjects = myAdaptGen->GetAllBoundarysName();
   int num = 0; QString aName="";
   while (aName == QString("") )
   {
@@ -204,7 +204,7 @@ void MonCreateBoundaryDi::SetFiltrage()
     return;
   }
 
-  MonCreateListGroup *aDlg = new MonCreateListGroup(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),
+  MonCreateListGroup *aDlg = new MonCreateListGroup(NULL, this, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen),
                             _aCaseName, _listeGroupesBoundary) ;
   aDlg->show();
 }

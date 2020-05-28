@@ -25,11 +25,11 @@ using namespace std;
 MonEditListGroup::MonEditListGroup( MonCreateHypothesis* parentHyp,
                                     MonCreateBoundaryDi* parentBound,
                                     bool modal,
-                                    ADAPT::ADAPT_Gen_var myHomardGen,
+                                    ADAPT::ADAPT_Gen_var myAdaptGen,
                                     QString aCaseName,
                                     QStringList listeGroupesHypo):
 //---------------------------------------------------------------------
-MonCreateListGroup(parentHyp,parentBound,myHomardGen,aCaseName,listeGroupesHypo)
+MonCreateListGroup(parentHyp,parentBound,myAdaptGen,aCaseName,listeGroupesHypo)
 {
   MESSAGE("Debut de MonEditListGroup");
     setWindowTitle(QObject::tr("HOM_GROU_EDIT_WINDOW_TITLE"));

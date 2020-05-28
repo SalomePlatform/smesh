@@ -37,11 +37,11 @@ class HOMARD_EXPORT MonCreateYACS : public QScrollArea, public Ui_CreateYACS
     Q_OBJECT
 
   public:
-    MonCreateYACS( bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString CaseName);
+    MonCreateYACS( bool modal, ADAPT::ADAPT_Gen_var myAdaptGen, QString CaseName);
     virtual ~MonCreateYACS();
 
   protected :
-    MonCreateYACS( ADAPT::ADAPT_Gen_var myHomardGen, QString CaseName);
+    MonCreateYACS( ADAPT::ADAPT_Gen_var myAdaptGen, QString CaseName);
 
     QString _Name;
     QString _aCaseName;
@@ -57,7 +57,7 @@ class HOMARD_EXPORT MonCreateYACS : public QScrollArea, public Ui_CreateYACS
     bool Chgt;
 
     ADAPT::HOMARD_YACS_var aYACS;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     virtual void InitConnect();
     virtual bool CreateOrUpdate();

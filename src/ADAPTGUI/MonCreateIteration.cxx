@@ -33,7 +33,7 @@ using namespace std;
 
 // -----------------------------------------------------------------------------------------------------
 MonCreateIteration::MonCreateIteration(QWidget* parent, bool modal,
-                                       ADAPT::ADAPT_Gen_var myHomardGen0, QString IterParentName ):
+                                       ADAPT::ADAPT_Gen_var myAdaptGen0, QString IterParentName ):
 // -----------------------------------------------------------------------------------------------------
 /* Constructs a MonCreateIteration
  * Inherits from CasHomard
@@ -46,7 +46,7 @@ MonCreateIteration::MonCreateIteration(QWidget* parent, bool modal,
     _CaseName("")
     {
       MESSAGE("Constructeur");
-      myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
+      myAdaptGen=ADAPT::ADAPT_Gen::_duplicate(myAdaptGen0);
       setupUi(this);
       if ( modal ) { setWindowModality(Qt::WindowModal); }
       else         { setWindowModality(Qt::NonModal); }
@@ -87,7 +87,7 @@ void MonCreateIteration::InitConnect()
 void MonCreateIteration::GetHypotheses()
 // ------------------------------------------------------------------------
 {
-     ADAPT::listeHypotheses_var  mesHypotheses = myHomardGen->GetAllHypothesesName();
+     ADAPT::listeHypotheses_var  mesHypotheses = myAdaptGen->GetAllHypothesesName();
      for (int i=0; i<mesHypotheses->length(); i++)
      {
          CBHypothese->addItem(QString(mesHypotheses[i]));
@@ -128,7 +128,7 @@ bool MonCreateIteration::PushOnApply()
                               QObject::tr("HOM_ITER_HYPO") );
     return false;
   }
-  ADAPT::HOMARD_Hypothesis_var _myHypothesis = myHomardGen->GetHypothesis(monHypoName.toStdString().c_str());
+  ADAPT::HOMARD_Hypothesis_var _myHypothesis = myAdaptGen->GetHypothesis(monHypoName.toStdString().c_str());
   ADAPT::listeTypes_var ListTypes (_myHypothesis->GetAdapRefinUnRef());
   int TypeAdap = ListTypes[0];
   if ( TypeAdap == 1 && LEFieldFile->text().trimmed() == QString("") )
@@ -149,7 +149,7 @@ bool MonCreateIteration::PushOnApply()
     {
       _Name = aName;
       std::cerr << _Name.toStdString() << std::endl;
-      aIter = myHomardGen->CreateIteration( \
+      aIter = myAdaptGen->CreateIteration( \
                CORBA::string_dup(_Name.toStdString().c_str()),
                CORBA::string_dup(_IterParentName.toStdString().c_str()));
     }
@@ -172,7 +172,7 @@ bool MonCreateIteration::PushOnApply()
     if ( step == -2 ) { aIter->SetTimeStepRankLast(); }
     else              { aIter->SetTimeStepRank(step,rank); }
   }
-  myHomardGen->AssociateIterHypo (IterName.c_str(), monHypoName.toStdString().c_str());
+  myAdaptGen->AssociateIterHypo (IterName.c_str(), monHypoName.toStdString().c_str());
   aIter->SetMeshName(CORBA::string_dup(aMeshName_np1.toStdString().c_str()));
 
   HOMARD_UTILS::updateObjBrowser() ;
@@ -190,7 +190,7 @@ void MonCreateIteration::PushOnOK()
 void MonCreateIteration::PushOnHelp()
 // ------------------------------------------------------------------------
 {
-  std::string LanguageShort = myHomardGen->GetLanguageShort();
+  std::string LanguageShort = myAdaptGen->GetLanguageShort();
   HOMARD_UTILS::PushOnHelp(QString("gui_create_iteration.html"), QString(""), QString(LanguageShort.c_str()));
 }
 // ------------------------------------------------------------------------
@@ -202,7 +202,7 @@ void MonCreateIteration::SetIterParentName()
     if (_IterParentName == QString("")) { raise();return;};
   }
   _CaseName=HOMARD_QT_COMMUN::SelectionCasEtude();
-  ADAPT::HOMARD_Iteration_var aIterParent = myHomardGen->GetIteration(_IterParentName.toStdString().c_str()) ;
+  ADAPT::HOMARD_Iteration_var aIterParent = myAdaptGen->GetIteration(_IterParentName.toStdString().c_str()) ;
   QString MeshName = aIterParent->GetMeshName();
 
   LEMeshName_n->setText(MeshName);
@@ -217,7 +217,7 @@ void MonCreateIteration::SetNewName()
 {
 // Recherche d'un nom par defaut qui n'existe pas encore
 
-  ADAPT::listeIterations_var  MyObjects=myHomardGen->GetAllIterationsName();
+  ADAPT::listeIterations_var  MyObjects=myAdaptGen->GetAllIterationsName();
   int num = 0;//
   QString aName="";
   while (aName=="" )
@@ -249,7 +249,7 @@ void MonCreateIteration::PushHypoEdit()
     return;
   }
   QString aFieldFile=LEFieldFile->text().trimmed();
-  MonEditHypothesis *HypoDlg = new MonEditHypothesis(this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen),CBHypothese->currentText(), _CaseName, aFieldFile) ;
+  MonEditHypothesis *HypoDlg = new MonEditHypothesis(this, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen),CBHypothese->currentText(), _CaseName, aFieldFile) ;
   HypoDlg->show();
 }
 
@@ -273,11 +273,11 @@ void MonCreateIteration::PushHypoNew()
   }
   if ( _CaseName == QString(""))
   {
-    ADAPT::HOMARD_Iteration_var aIterParent = myHomardGen->GetIteration(_IterParentName.toStdString().c_str()) ;
+    ADAPT::HOMARD_Iteration_var aIterParent = myAdaptGen->GetIteration(_IterParentName.toStdString().c_str()) ;
     _CaseName = aIterParent->GetCaseName();
   }
   QString aFieldFile=LEFieldFile->text().trimmed();
-  MonCreateHypothesis *HypoDlg = new MonCreateHypothesis(this, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen), QString(""), _CaseName, aFieldFile) ;
+  MonCreateHypothesis *HypoDlg = new MonCreateHypothesis(this, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen), QString(""), _CaseName, aFieldFile) ;
   HypoDlg->show();
 }
 // ------------------------------------------------------------------------

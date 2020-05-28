@@ -37,7 +37,7 @@ class HOMARD_EXPORT MonCreateCase : public QDialog, public Ui_CreateCase
     Q_OBJECT
 
 public:
-    MonCreateCase( bool modal, ADAPT::ADAPT_Gen_var myHomardGen );
+    MonCreateCase( bool modal, ADAPT::ADAPT_Gen_var myAdaptGen );
     ~MonCreateCase();
 
     void AddBoundaryCAO(QString newBoundary);
@@ -54,7 +54,7 @@ protected :
     int _Pyram;
 
     ADAPT::HOMARD_Cas_var aCase ;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     virtual void InitConnect();
     virtual void InitBoundarys();

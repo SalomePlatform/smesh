@@ -39,13 +39,13 @@ class HOMARD_EXPORT MonCreateBoundaryAn : public QDialog, public Ui_CreateBounda
 
 public:
     MonCreateBoundaryAn( MonCreateCase* parent, bool modal,
-                   ADAPT::ADAPT_Gen_var myHomardGen,
+                   ADAPT::ADAPT_Gen_var myAdaptGen,
                    QString caseName);
     virtual ~MonCreateBoundaryAn();
 
 protected :
     MonCreateBoundaryAn( MonCreateCase* parent,
-                   ADAPT::ADAPT_Gen_var myHomardGen,
+                   ADAPT::ADAPT_Gen_var myAdaptGen,
                    QString caseName);
 
     MonCreateCase * _parent;
@@ -71,7 +71,7 @@ protected :
     bool Chgt;
 
     ADAPT::HOMARD_Boundary_var aBoundaryAn ;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     virtual void InitConnect();
     virtual void InitValBoundaryAn();

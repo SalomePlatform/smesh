@@ -33,7 +33,7 @@
 using namespace std;
 
 // -----------------------------------------------------------------------------------------
-MonIterInfo::MonIterInfo(QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myHomardGen0, QString IterName)
+MonIterInfo::MonIterInfo(QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myAdaptGen0, QString IterName)
 // -----------------------------------------------------------------------------------------
 /* Constructs a MonIterInfo
  * Inherits from CasHomard
@@ -51,7 +51,7 @@ MonIterInfo::MonIterInfo(QWidget* parent, bool modal, ADAPT::ADAPT_Gen_var myHom
     _Option(-1)
 {
     MESSAGE("appel de _duplicate");
-      myHomardGen=ADAPT::ADAPT_Gen::_duplicate(myHomardGen0);
+      myAdaptGen=ADAPT::ADAPT_Gen::_duplicate(myAdaptGen0);
       setupUi(this);
       setModal(modal);
       InitConnect();
@@ -96,7 +96,7 @@ bool MonIterInfo::PushOnApply()
   }
 
   // Recuperation de l'iteration
-  aIter = myHomardGen->GetIteration(_IterName.toStdString().c_str()) ;
+  aIter = myAdaptGen->GetIteration(_IterName.toStdString().c_str()) ;
 
   // Lancement de l'analyse
   try
@@ -112,7 +112,7 @@ bool MonIterInfo::PushOnApply()
 
   // Le bilan de l'analyse a afficher
   QString aFileName = aIter->GetFileInfo() ;
-  MonEditFile *aDlg = new MonEditFile( 0, true, ADAPT::ADAPT_Gen::_duplicate(myHomardGen), aFileName, 0 ) ;
+  MonEditFile *aDlg = new MonEditFile( 0, true, ADAPT::ADAPT_Gen::_duplicate(myAdaptGen), aFileName, 0 ) ;
   if ( aDlg->_codret == 0 ) { aDlg->show(); }
 
 
@@ -130,7 +130,7 @@ void MonIterInfo::PushOnOK()
 void MonIterInfo::PushOnHelp()
 //-------------------------------
 {
-  std::string LanguageShort = myHomardGen->GetLanguageShort();
+  std::string LanguageShort = myAdaptGen->GetLanguageShort();
   HOMARD_UTILS::PushOnHelp(QString("gui_mesh_info.html"), QString(""), QString(LanguageShort.c_str()));
 }
 // ------------------------------------------------------------------------

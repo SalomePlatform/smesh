@@ -32,14 +32,14 @@ using namespace std;
 */
 // -------------------------------------------------------------
 MonEditYACS::MonEditYACS ( bool modal,
-                           ADAPT::ADAPT_Gen_var myHomardGen,
+                           ADAPT::ADAPT_Gen_var myAdaptGen,
                            QString Name ):
-   MonCreateYACS(myHomardGen, Name)
+   MonCreateYACS(myAdaptGen, Name)
 {
     MESSAGE("Debut de MonEditYACS" << Name.toStdString().c_str());
     setWindowTitle(QObject::tr("HOM_YACS_EDIT_WINDOW_TITLE"));
     _Name = Name;
-    aYACS = myHomardGen->GetYACS(_Name.toStdString().c_str());
+    aYACS = myAdaptGen->GetYACS(_Name.toStdString().c_str());
     InitValEdit();
 }
 // ------------------------------
@@ -140,7 +140,7 @@ bool MonEditYACS:: CreateOrUpdate()
 // B. Si changement
   if ( chgt )
   {
-    myHomardGen->InvalideYACS(_Name.toStdString().c_str());
+    myAdaptGen->InvalideYACS(_Name.toStdString().c_str());
   }
 
   HOMARD_UTILS::updateObjBrowser();

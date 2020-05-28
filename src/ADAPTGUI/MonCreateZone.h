@@ -38,13 +38,13 @@ class HOMARD_EXPORT MonCreateZone : public QDialog, public Ui_CreateZone
 
 public:
     MonCreateZone( MonCreateHypothesis* parent, bool modal,
-                   ADAPT::ADAPT_Gen_var myHomardGen,
+                   ADAPT::ADAPT_Gen_var myAdaptGen,
                    QString caseName);
     virtual ~MonCreateZone();
 
 protected :
     MonCreateZone( MonCreateHypothesis* parent,
-                   ADAPT::ADAPT_Gen_var myHomardGen,
+                   ADAPT::ADAPT_Gen_var myAdaptGen,
                    QString caseName);
 
     MonCreateHypothesis * _parent;
@@ -65,7 +65,7 @@ protected :
     bool Chgt;
 
     ADAPT::HOMARD_Zone_var aZone ;
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     virtual void InitConnect();
     virtual void InitValZone();

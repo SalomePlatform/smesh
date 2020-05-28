@@ -37,7 +37,7 @@ class HOMARD_EXPORT MonEditListGroupCAO : public MonCreateListGroupCAO
     Q_OBJECT
 
 public:
-    MonEditListGroupCAO( MonCreateHypothesis* parentHyp, MonCreateBoundaryCAO* parentBound, bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString aCaseName,  QStringList listeGroupesHypo);
+    MonEditListGroupCAO( MonCreateHypothesis* parentHyp, MonCreateBoundaryCAO* parentBound, bool modal, ADAPT::ADAPT_Gen_var myAdaptGen, QString aCaseName,  QStringList listeGroupesHypo);
     virtual ~MonEditListGroupCAO();
 
 protected :

@@ -38,13 +38,13 @@ class HOMARD_EXPORT MonCreateListGroup : public QDialog, public Ui_CreateListGro
     Q_OBJECT
 
 public:
-    MonCreateListGroup( MonCreateHypothesis* parentHyp, MonCreateBoundaryDi* parentBound, bool modal, ADAPT::ADAPT_Gen_var myHomardGen, QString aCaseName,  QStringList listeGroupesHypo);
-    MonCreateListGroup( MonCreateHypothesis* parentHyp, MonCreateBoundaryDi* parentBound, ADAPT::ADAPT_Gen_var myHomardGen, QString aCaseName, QStringList listeGroupesHypo);
+    MonCreateListGroup( MonCreateHypothesis* parentHyp, MonCreateBoundaryDi* parentBound, bool modal, ADAPT::ADAPT_Gen_var myAdaptGen, QString aCaseName,  QStringList listeGroupesHypo);
+    MonCreateListGroup( MonCreateHypothesis* parentHyp, MonCreateBoundaryDi* parentBound, ADAPT::ADAPT_Gen_var myAdaptGen, QString aCaseName, QStringList listeGroupesHypo);
     virtual ~MonCreateListGroup();
 
 protected :
 
-    ADAPT::ADAPT_Gen_var myHomardGen;
+    ADAPT::ADAPT_Gen_var myAdaptGen;
 
     MonCreateHypothesis * _parentHyp;
     MonCreateBoundaryDi * _parentBound;

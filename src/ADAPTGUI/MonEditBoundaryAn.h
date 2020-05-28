@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditBoundaryAn : public MonCreateBoundaryAn
     Q_OBJECT
 public:
     MonEditBoundaryAn( MonCreateCase* parent, bool modal,
-                 ADAPT::ADAPT_Gen_var myHomardGen,
+                 ADAPT::ADAPT_Gen_var myAdaptGen,
                  QString caseName, QString Name);
     virtual ~MonEditBoundaryAn();
 

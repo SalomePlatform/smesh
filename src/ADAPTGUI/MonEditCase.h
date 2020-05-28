@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditCase : public MonCreateCase
     Q_OBJECT
 public:
     MonEditCase( bool modal,
-                 ADAPT::ADAPT_Gen_var myHomardGen,
+                 ADAPT::ADAPT_Gen_var myAdaptGen,
                  QString Name );
     virtual ~MonEditCase();
 

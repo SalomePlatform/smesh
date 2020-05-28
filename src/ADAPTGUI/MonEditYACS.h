@@ -35,7 +35,7 @@ class HOMARD_EXPORT MonEditYACS : public MonCreateYACS
     Q_OBJECT
 public:
     MonEditYACS( bool modal,
-                 ADAPT::ADAPT_Gen_var myHomardGen,
+                 ADAPT::ADAPT_Gen_var myAdaptGen,
                  QString Name );
     virtual ~MonEditYACS();
 
