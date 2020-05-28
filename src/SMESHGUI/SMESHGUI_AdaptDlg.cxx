@@ -133,52 +133,149 @@ SMESHGUI_AdaptDlg::SMESHGUI_AdaptDlg( SMESHGUI* theModule,
     myNbChangesOfContents(0),
     myIsApplyAndClose( false )
 {
-  std::cout  << "SMESHGUI_AdaptDlg avec theCommandID : " << theCommandID << std::endl;
-  if ( ! OnGUIEvent (theCommandID) )
-  {
-    INFOS("Erreur");
-  }
-//   initDialog( true );
-//   if ( !theMesh->_is_nil() )
-//     init( theMesh );
-//   else
-//   {
-//     mySelectSubMesh->setEnabled( false );
-//     mySelectGroup->setEnabled( false );
-//     myGeomGroupBtn->setEnabled( false );
-//     myGeomGroupLine->setEnabled( false );
-//   }
+  bool ok = action( theCommandID ) ;
 }
+
+/*!
+  * \brief Pilote les actions d'adaption de maillage
+  * \param
+  * \return bool OK/notOK
+*/
+bool SMESHGUI_AdaptDlg::action (int theCommandID)
+//=======================================================================
+{
+  std::cout  << "SMESHGUI_AdaptDlg::action avec theCommandID : " << theCommandID << std::endl;
+  
+// Preferences
+  recupPreferences();
+  
+// Menus and actions
+  bool ok =  OnGUIEvent (theCommandID) ;
+  if ( ! ok ) INFOS("Erreur");
+
+  return ok ;
+}
+
+/*!
+  * \brief Gets the preferences for the adaptation
+  * \param
+  * \return
+  * 
+  * Pour chaque valeur, le defaut est la valeur definie dans ADAPT_Gen
+  * . Si la recuperation dans config/salome s'est bien passee a la creation de ADAPT_Gen
+  *   ces valeurs sont les valeurs definies.
+  * . Si cela ne s'est pas bien passe, ce sont les valeurs par defaut de ADAPT_Gen
+*/
+void SMESHGUI_AdaptDlg::recupPreferences()
+{
+  INFOS("Début de recupPreferences")
+//
+// A. Declarations
+//
+  SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
+  SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
+  Engines::EngineComponent_var comp = ls->FindOrLoad_Component("FactoryServer", "SMESH");
+  ADAPT::ADAPT_Gen_var adaptGen = ADAPT::ADAPT_Gen::_narrow(comp);
+  if (!CORBA::is_nil(adaptGen))
+    adaptGen->UpdateStudy();
+
+  int defaut_i ;
+  std::string defaut_s ;
+  QString QString_v ;
+//
+// B. Les valeurs
+// B.1. La langue
+//
+  INFOS("début de B.1.");
+  defaut_s = adaptGen->GetLanguageShort();
+  INFOS("defaut_s OK");
+  SUIT_ResourceMgr* resMgr = mySMESHGUI->getApp()->resourceMgr();
+  INFOS("SUIT_ResourceMgr OK");
+  _LanguageShort = resMgr->stringValue("language", "language", QString(defaut_s.c_str()) );
+  INFOS ("Récupération de LanguageShort = " << _LanguageShort.toStdString().c_str() );
+//
+// B.2. Les publications
+  bool publish_mesh ;
+//
+  _PublisMeshIN = adaptGen->GetPublisMeshIN();
+  if ( _PublisMeshIN == 1 ) { publish_mesh = true ;  }
+  else                      { publish_mesh = false ; }
+  publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_in", publish_mesh );
+  if ( publish_mesh ) { _PublisMeshIN = 1 ; }
+  else                { _PublisMeshIN = 0 ; }
+//
+  _PublisMeshOUT = adaptGen->GetPublisMeshOUT();
+  if ( _PublisMeshOUT == 1 ) { publish_mesh = true ;  }
+  else                       { publish_mesh = false ; }
+  publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_out", publish_mesh );
+  if ( publish_mesh ) { _PublisMeshOUT = 1 ; }
+  else                { _PublisMeshOUT = 0 ; }
+//
+// B.3. Les maximum pour YACS
+//
+  defaut_i = adaptGen->GetYACSMaxIter();
+  _YACSMaxIter = resMgr->integerValue("HOMARD", "yacs_max_iter", defaut_i );
+//
+  defaut_i = adaptGen->GetYACSMaxNode();
+  _YACSMaxNode = resMgr->integerValue("HOMARD", "yacs_max_node", defaut_i );
+//
+  defaut_i = adaptGen->GetYACSMaxElem();
+  _YACSMaxElem = resMgr->integerValue("HOMARD", "yacs_max_elem", defaut_i );
+//
+// B.4. La convergence pour YACS
+//
+  defaut_i = adaptGen->GetYACSConvergenceType();
+  if ( defaut_i == 1 )      { QString_v = tr("VTest > VRef") ; }
+  else if ( defaut_i == 2 ) { QString_v = tr("VTest < VRef") ; }
+  else                      { QString_v = tr("None") ; }
+  QString_v = resMgr->stringValue ( "HOMARD", "yacs_type_test", QString_v );
+  if ( ( QString_v == "VTest > VRef" ) || ( QString_v == "VTest &gt; VRef" ) )      { _YACSTypeTest = 1 ; }
+  else if ( ( QString_v == "VTest < VRef" ) || ( QString_v == "VTest &lt; VRef" ) ) { _YACSTypeTest = 2 ; }
+  else                                                                              { _YACSTypeTest = 0 ; }
+//
+// C. Enregistrement dans l'objet general
+//
+  INFOS ("Enregistrement de LanguageShort = " << _LanguageShort.toStdString().c_str() );
+  INFOS ("Enregistrement de PublisMeshIN = " << _PublisMeshIN<<", PublisMeshOUT = "<< _PublisMeshOUT);
+  INFOS ("Enregistrement de YACSMaxIter = " << _YACSMaxIter<<", YACSMaxNode = "<< _YACSMaxNode<<", YACSMaxElem = "<< _YACSMaxElem);
+  INFOS ("Enregistrement de YACSTypeTest = " << _YACSTypeTest);
+//
+  adaptGen->SetLanguageShort(_LanguageShort.toStdString().c_str());
+  adaptGen->SetPublisMesh(_PublisMeshIN, _PublisMeshOUT);
+  adaptGen->SetYACSMaximum(_YACSMaxIter, _YACSMaxNode, _YACSMaxElem);
+//
+  adaptGen->SetYACSConvergenceType(_YACSTypeTest);
+  INFOS("Fin de recupPreferences")
+}
+
 /*!
   * \brief Launches the GUI for the adaptation
-  * \param theCommandID - the integer taht references the operation
-  * \return Graphical object
+  * \param theCommandID - the integer that references the operation
+  * \return bool OK/notOK
 */
 bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 {
   std::cout  << "OnGUIEvent avec theCommandID : " << theCommandID << std::endl;
 // A. Controles
-  SalomeApp_Application* app =
-      dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
+  SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
   if ( !app ) return false;
 
   SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*> ( app->activeStudy() );
   if ( !aStudy )
   {
-    MESSAGE ( "FAILED to cast active study to SalomeApp_Study" );
+    INFOS ( "FAILED to cast active study to SalomeApp_Study" );
     return false;
   }
 
   SUIT_Desktop* parent = SUIT_Session::session()->activeApplication()->desktop();
 
   SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
-  Engines::EngineComponent_var comp =
-    ls->FindOrLoad_Component("FactoryServer", "SMESH");
+  Engines::EngineComponent_var comp = ls->FindOrLoad_Component("FactoryServer", "SMESH");
   ADAPT::ADAPT_Gen_var adaptGen = ADAPT::ADAPT_Gen::_narrow(comp);
   if (!CORBA::is_nil(adaptGen))
     adaptGen->UpdateStudy();
 
-  SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+  mySMESHGUI->getApp()->updateObjectBrowser();
 //
 // B. Choix selon les commandes
   SCRUTE(theCommandID);
@@ -195,7 +292,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 
 //     case 8012: // Poursuite d une iteration
 //     {
-//       MESSAGE("command " << theCommandID << " activated");
+//       INFOS("command " << theCommandID << " activated");
 //       MonPursueIteration *aDlg = new MonPursueIteration( true,
 //                                 ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
 //       aDlg->show();
@@ -204,7 +301,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 
 //     case 8013: // Creation d une Iteration
 //     {
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       MonCreateIteration *IterDlg = new MonCreateIteration( parent, true,
 //                                      ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName ) ;
 //       IterDlg->show();
@@ -213,13 +310,13 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 
 //     case 8014: // Compute une iteration
 //     {
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       try { adaptGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 1); }
 //       catch( SALOME::SALOME_Exception& S_ex )
 //       {
 //         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                   QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//         getApp()->updateObjectBrowser();
+//         mySMESHGUI->getApp()->updateObjectBrowser();
 //         return false;
 //       }
 //       break;
@@ -227,13 +324,13 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 
 //     case 8015: // Compute une iteration et publication
 //     {
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       try { adaptGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 2); }
 //       catch( SALOME::SALOME_Exception& S_ex )
 //       {
 //         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                   QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//         getApp()->updateObjectBrowser();
+//         mySMESHGUI->getApp()->updateObjectBrowser();
 //         return false;
 //       }
 //       break;
@@ -241,7 +338,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 
 //     case 1121: // Information sur le maillage de l'iteration
 //     {
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       MonIterInfo *IterDlg = new MonIterInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName ) ;
 //       IterDlg->show();
 //       break;
@@ -249,21 +346,21 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //
 //     case 1131: // Publication du maillage de l'iteration
 //     {
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       adaptGen->PublishMeshIterInSmesh(_ObjectName.toStdString().c_str());
 //       break;
 //     }
 //
 //     case 1132: // Publication du maillage de l'iteration a partir du fichier
 //     {
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       adaptGen->PublishResultInSmesh(_ObjectName.toStdString().c_str(), 1);
 //       break;
 //     }
 //
 //     case 1201: // Edition d'un objet
 //     {
-//       MESSAGE("command " << theCommandID << " activated");
+//       INFOS("command " << theCommandID << " activated");
 //       QString nomObjet = HOMARD_QT_COMMUN::SelectionArbreEtude(QString(""), 1);
 //       if (nomObjet == QString("")) break;
 //       _PTR(SObject) obj = chercheMonObjet();
@@ -308,7 +405,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //         // Edition d'un schema YACS
 //         else if (HOMARD_UTILS::isYACS(obj))
 //         {
-//           MESSAGE("appel de MonEditYACS");
+//           INFOS("appel de MonEditYACS");
 //           MonEditYACS *aDlg = new MonEditYACS(true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName) ;
 //           aDlg->show();
 //         }
@@ -324,7 +421,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //
 //     case 1211: // Suppression d'un objet
 //     {
-//       MESSAGE("command " << theCommandID << " activated");
+//       INFOS("command " << theCommandID << " activated");
 //       QString nomObjet = HOMARD_QT_COMMUN::SelectionArbreEtude(QString(""), 1);
 //       if (nomObjet == QString("")) break;
 //       _PTR(SObject) obj = chercheMonObjet();
@@ -339,7 +436,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//             getApp()->updateObjectBrowser();
+//             mySMESHGUI->getApp()->updateObjectBrowser();
 //             return false;
 //           }
 //         }
@@ -352,7 +449,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//             getApp()->updateObjectBrowser();
+//             mySMESHGUI->getApp()->updateObjectBrowser();
 //             return false;
 //           }
 //         }
@@ -365,7 +462,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//             getApp()->updateObjectBrowser();
+//             mySMESHGUI->getApp()->updateObjectBrowser();
 //             return false;
 //           }
 //         }
@@ -378,7 +475,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//             getApp()->updateObjectBrowser();
+//             mySMESHGUI->getApp()->updateObjectBrowser();
 //             return false;
 //           }
 //         }
@@ -391,7 +488,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//             getApp()->updateObjectBrowser();
+//             mySMESHGUI->getApp()->updateObjectBrowser();
 //             return false;
 //           }
 //         }
@@ -404,7 +501,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //           {
 //             QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                       QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//             getApp()->updateObjectBrowser();
+//             mySMESHGUI->getApp()->updateObjectBrowser();
 //             return false;
 //           }
 //         }
@@ -414,8 +511,8 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //
 //     case 1301: // Information sur un maillage
 //     {
-//       MESSAGE("etape 1301")
-//       MESSAGE("command " << theCommandID << " activated");
+//       INFOS("etape 1301")
+//       INFOS("command " << theCommandID << " activated");
 //       MonMeshInfo *aDlg = new MonMeshInfo( parent, true, ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
 //       aDlg->show();
 //       break;
@@ -423,7 +520,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //
 //     case 1302: // Affichage de fichier texte
 //     {
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       _PTR(SObject) obj = chercheMonObjet();
 //       if ( (obj) && ( HOMARD_UTILS::isFileType(obj,QString("log")) || HOMARD_UTILS::isFileType(obj,QString("Summary")) || HOMARD_UTILS::isFileType(obj,QString("xml")) ) )
 //       {
@@ -435,8 +532,8 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //
 //     case 1401: // Création d'un schema YACS
 //     {
-//       MESSAGE("etape 1401")
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("etape 1401")
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       MonCreateYACS *aDlg = new MonCreateYACS( true, ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName ) ;
 //       aDlg->show();
 //       break;
@@ -444,21 +541,21 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 //
 //     case 1402: // Ecriture d'un schéma YACS
 //     {
-//       MESSAGE("etape 1402")
-//       MESSAGE("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
+//       INFOS("etape 1402")
+//       INFOS("command " << theCommandID << " activated avec objet " << _ObjectName.toStdString().c_str() );
 //       try { adaptGen->YACSWrite(_ObjectName.toStdString().c_str()); }
 //       catch( SALOME::SALOME_Exception& S_ex )
 //       {
 //         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
 //                                   QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//         getApp()->updateObjectBrowser();
+//         mySMESHGUI->getApp()->updateObjectBrowser();
 //         return false;
 //       }
 //       break;
 //     }
 
   }
-//   getApp()->updateObjectBrowser();
+//   mySMESHGUI->getApp()->updateObjectBrowser();
   return true;
 }
 
@@ -1530,7 +1627,7 @@ void SMESHGUI_AdaptDlg::onOK()
 //=================================================================================
 void SMESHGUI_AdaptDlg::onListSelectionChanged()
 {
-  //MESSAGE( "SMESHGUI_AdaptDlg::onListSelectionChanged(); myActorsList.count() = " << myActorsList.count());
+  //INFOS( "SMESHGUI_AdaptDlg::onListSelectionChanged(); myActorsList.count() = " << myActorsList.count());
   if( myIsBusy || myActorsList.count() == 0 ) return;
   myIsBusy = true;
 

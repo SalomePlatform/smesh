@@ -74,9 +74,12 @@ public:
                      SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
   ~SMESHGUI_AdaptDlg();
 
+  virtual bool action (int theCommandID);
   virtual bool OnGUIEvent (int theCommandID);
 
   static QString                GetDefaultName( const QString& );
+
+//   static ADAPT::ADAPT_Gen_var InitAdaptGen(SalomeApp_Application*); 
 
 public slots:
   void onAdd();
@@ -148,6 +151,7 @@ private:
 
  private:
 
+  void recupPreferences();
   SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
   LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
   int                           myGrpTypeId;             /* Current group type id : standalone or group on geometry */
@@ -228,6 +232,15 @@ private:
 
   QString                       myObjectToSelect;
   bool                          myIsApplyAndClose;
+
+  QString _ObjectName;
+  QString _LanguageShort ;
+  int _PublisMeshIN ;
+  int _PublisMeshOUT ;
+  int _YACSMaxIter ;
+  int _YACSMaxNode ;
+  int _YACSMaxElem ;
+  int _YACSTypeTest ;
 };
 
 #endif // SMESHGUI_ADAPTDLG_H
