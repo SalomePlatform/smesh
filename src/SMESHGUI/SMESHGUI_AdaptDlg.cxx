@@ -179,72 +179,48 @@ void SMESHGUI_AdaptDlg::recupPreferences()
   if (!CORBA::is_nil(adaptGen))
     adaptGen->UpdateStudy();
 
-  int defaut_i ;
-  std::string defaut_s ;
-  QString QString_v ;
-//
+  SUIT_ResourceMgr* resMgr = mySMESHGUI->getApp()->resourceMgr();
+
 // B. Les valeurs
 // B.1. La langue
-//
-  INFOS("début de B.1.");
-  defaut_s = adaptGen->GetLanguageShort();
-  INFOS("defaut_s OK");
-  SUIT_ResourceMgr* resMgr = mySMESHGUI->getApp()->resourceMgr();
-  INFOS("SUIT_ResourceMgr OK");
-  _LanguageShort = resMgr->stringValue("language", "language", QString(defaut_s.c_str()) );
-  INFOS ("Récupération de LanguageShort = " << _LanguageShort.toStdString().c_str() );
-//
+
+  _LanguageShort = resMgr->stringValue("language", "language", "en" );
+  INFOS ("Enregistrement de LanguageShort = " << _LanguageShort.toStdString().c_str() );
+  adaptGen->SetLanguageShort(_LanguageShort.toStdString().c_str());
+
 // B.2. Les publications
   bool publish_mesh ;
-//
-  _PublisMeshIN = adaptGen->GetPublisMeshIN();
-  if ( _PublisMeshIN == 1 ) { publish_mesh = true ;  }
-  else                      { publish_mesh = false ; }
-  publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_in", publish_mesh );
+
+  publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_in", false );
   if ( publish_mesh ) { _PublisMeshIN = 1 ; }
   else                { _PublisMeshIN = 0 ; }
-//
-  _PublisMeshOUT = adaptGen->GetPublisMeshOUT();
-  if ( _PublisMeshOUT == 1 ) { publish_mesh = true ;  }
-  else                       { publish_mesh = false ; }
-  publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_out", publish_mesh );
+
+  publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_out", false );
   if ( publish_mesh ) { _PublisMeshOUT = 1 ; }
   else                { _PublisMeshOUT = 0 ; }
-//
+
+  INFOS ("Enregistrement de PublisMeshIN = " << _PublisMeshIN<<", PublisMeshOUT = "<< _PublisMeshOUT);
+  adaptGen->SetPublisMesh(_PublisMeshIN, _PublisMeshOUT);
+
 // B.3. Les maximum pour YACS
-//
-  defaut_i = adaptGen->GetYACSMaxIter();
-  _YACSMaxIter = resMgr->integerValue("HOMARD", "yacs_max_iter", defaut_i );
-//
-  defaut_i = adaptGen->GetYACSMaxNode();
-  _YACSMaxNode = resMgr->integerValue("HOMARD", "yacs_max_node", defaut_i );
-//
-  defaut_i = adaptGen->GetYACSMaxElem();
-  _YACSMaxElem = resMgr->integerValue("HOMARD", "yacs_max_elem", defaut_i );
-//
+
+  _YACSMaxIter = resMgr->integerValue("HOMARD", "yacs_max_iter", 0 );
+  _YACSMaxNode = resMgr->integerValue("HOMARD", "yacs_max_node", 0 );
+  _YACSMaxElem = resMgr->integerValue("HOMARD", "yacs_max_elem", 0 );
+
+  INFOS ("Enregistrement de YACSMaxIter = " << _YACSMaxIter<<", YACSMaxNode = "<< _YACSMaxNode<<", YACSMaxElem = "<< _YACSMaxElem);
+  adaptGen->SetYACSMaximum(_YACSMaxIter, _YACSMaxNode, _YACSMaxElem);
+
 // B.4. La convergence pour YACS
-//
-  defaut_i = adaptGen->GetYACSConvergenceType();
-  if ( defaut_i == 1 )      { QString_v = tr("VTest > VRef") ; }
-  else if ( defaut_i == 2 ) { QString_v = tr("VTest < VRef") ; }
-  else                      { QString_v = tr("None") ; }
-  QString_v = resMgr->stringValue ( "HOMARD", "yacs_type_test", QString_v );
+
+  QString QString_v = resMgr->stringValue ( "HOMARD", "yacs_type_test", "None" );
   if ( ( QString_v == "VTest > VRef" ) || ( QString_v == "VTest &gt; VRef" ) )      { _YACSTypeTest = 1 ; }
   else if ( ( QString_v == "VTest < VRef" ) || ( QString_v == "VTest &lt; VRef" ) ) { _YACSTypeTest = 2 ; }
   else                                                                              { _YACSTypeTest = 0 ; }
-//
-// C. Enregistrement dans l'objet general
-//
-  INFOS ("Enregistrement de LanguageShort = " << _LanguageShort.toStdString().c_str() );
-  INFOS ("Enregistrement de PublisMeshIN = " << _PublisMeshIN<<", PublisMeshOUT = "<< _PublisMeshOUT);
-  INFOS ("Enregistrement de YACSMaxIter = " << _YACSMaxIter<<", YACSMaxNode = "<< _YACSMaxNode<<", YACSMaxElem = "<< _YACSMaxElem);
+
   INFOS ("Enregistrement de YACSTypeTest = " << _YACSTypeTest);
-//
-  adaptGen->SetLanguageShort(_LanguageShort.toStdString().c_str());
-  adaptGen->SetPublisMesh(_PublisMeshIN, _PublisMeshOUT);
-  adaptGen->SetYACSMaximum(_YACSMaxIter, _YACSMaxNode, _YACSMaxElem);
-//
   adaptGen->SetYACSConvergenceType(_YACSTypeTest);
+
   INFOS("Fin de recupPreferences")
 }
 
