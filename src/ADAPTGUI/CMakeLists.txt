@@ -113,19 +113,6 @@ SET(_moc_HEADERS
   MonCreateYACS.h
   MonEditYACS.h
   MonEditFile.h
-ui_CreateBoundaryAn.h
-ui_CreateBoundaryCAO.h
-ui_CreateBoundaryDi.h
-ui_CreateCase.h
-ui_CreateHypothesis.h
-ui_CreateIteration.h
-ui_CreateListGroup.h
-ui_CreateYACS.h
-ui_CreateZone.h
-ui_EditFile.h
-ui_IterInfo.h
-ui_MeshInfo.h
-ui_PursueIteration.h
 )
 
 # header files / uic wrappings
