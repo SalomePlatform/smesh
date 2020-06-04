@@ -29,36 +29,12 @@
 
 // Qt includes
 #include <QDialog>
-#include <QList>
-#include <QMap>
 
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
-#include CORBA_SERVER_HEADER(SMESH_Group)
-#include CORBA_SERVER_HEADER(SMESH_Filter)
 
-class QGroupBox;
-class QLabel;
-class QLineEdit;
-class QButtonGroup;
-class QListWidget;
-class QMenu;
-class QPushButton;
-class QToolButton;
-class QCheckBox;
-class QStackedWidget;
-class QAction;
 class SMESHGUI;
-class SMESH_Actor;
-class SMESHGUI_FilterDlg;
-class SMESHGUI_ShapeByMeshOp;
-class QtxColorButton;
-class SUIT_Operation;
-class SVTK_Selector;
-class SUIT_SelectionFilter;
-class LightApp_SelectionMgr;
-class SMESH_LogicalFilter;
 
 //=================================================================================
 // class    : SMESHGUI_AdaptDlg
@@ -77,161 +53,18 @@ public:
   virtual bool action (int theCommandID);
   virtual bool OnGUIEvent (int theCommandID);
 
-  static QString                GetDefaultName( const QString& );
-
-//   static ADAPT::ADAPT_Gen_var InitAdaptGen(SalomeApp_Application*); 
+//   static ADAPT::ADAPT_Gen_var InitAdaptGen(SalomeApp_Application*);
 
 public slots:
-  void onAdd();
-  void onRemove();
 
 protected slots:
-  virtual void                  reject();
 
 private slots:
-  void                          onTypeChanged( int );
-  void                          onGrpTypeChanged( int );
-  void                          onColorChanged( QColor );
-
-  void                          onOK();
-  bool                          onApply();
-  void                          onHelp();
-  void                          onDeactivate();
-  void                          onVisibilityChanged();
-
-  void                          onListSelectionChanged();
-  void                          onObjectSelectionChanged();
-
-  void                          onSelectAll();
-  void                          onSelectSubMesh( bool );
-  void                          onSelectGroup( bool );
-  void                          onSelectGeomGroup( bool );
-  void                          setCurrentSelection();
-
-  void                          setFilters();
-  void                          onSort();
-
-  void                          onNameChanged( const QString& );
-  void                          onFilterAccepted();
-
-  void                          onGeomPopup( QAction* );
-  void                          onGeomSelectionButton( bool );
-
-  void                          onPublishShapeByMeshDlg( SUIT_Operation* );
-  void                          onCloseShapeByMeshDlg( SUIT_Operation* );
-
-  void                          onOpenView();
-  void                          onCloseView();
 
 private:
-  void                          initDialog( bool );
-  void                          init( SMESH::SMESH_Mesh_ptr );
-  void                          init( SMESH::SMESH_GroupBase_ptr );
-  void                          enterEvent( QEvent* );
-  void                          keyPressEvent( QKeyEvent* );
-  void                          setSelectionMode( int );
-  void                          updateButtons();
-  void                          updateGeomPopup();
-  bool                          SetAppropriateActor();
-  void                          setShowEntityMode();
-  void                          restoreShowEntityMode();
-
-  bool                          IsActorVisible( SMESH_Actor* );
-
-  void                          setGroupColor( const SALOMEDS::Color& );
-  SALOMEDS::Color               getGroupColor() const;
-
-  void                          setGroupQColor( const QColor& );
-  QColor                        getGroupQColor() const;
-  void                          setDefaultName() const;
-  void                          setDefaultGroupColor();
-
-  void                          setIsApplyAndClose( const bool theFlag );
-  bool                          isApplyAndClose() const;
-
- private:
 
   void recupPreferences();
   SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
-  LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
-  int                           myGrpTypeId;             /* Current group type id : standalone or group on geometry */
-  int                           myTypeId;                /* Current type id = radio button id */
-  int                           myStoredShownEntity;     /* Store ShowEntity mode of myMesh */
-  QLineEdit*                    myCurrentLineEdit;       /* Current  LineEdit */
-  SVTK_Selector*                mySelector;
-
-  QPushButton*                  myMeshGroupBtn;
-  QLineEdit*                    myMeshGroupLine;
-
-  QButtonGroup*                 myTypeGroup;
-  QLineEdit*                    myName;
-  QString                       myOldName;
-
-  QButtonGroup*                 myGrpTypeGroup;
-
-  QStackedWidget*               myWGStack;
-  QCheckBox*                    mySelectAll;
-  QCheckBox*                    myAllowElemsModif;
-  QLabel*                       myElementsLab;
-  QListWidget*                  myElements;
-  QPushButton*                  myFilterBtn;
-  QPushButton*                  myAddBtn;
-  QPushButton*                  myRemoveBtn;
-  QPushButton*                  mySortBtn;
-
-  QGroupBox*                    mySelectBox;
-  QCheckBox*                    mySelectSubMesh;
-  QPushButton*                  mySubMeshBtn;
-  QLineEdit*                    mySubMeshLine;
-  QCheckBox*                    mySelectGroup;
-  QPushButton*                  myGroupBtn;
-  QLineEdit*                    myGroupLine;
-
-  QtxColorButton*               myColorBtn;
-
-  QCheckBox*                    mySelectGeomGroup;
-  QToolButton*                  myGeomGroupBtn;
-  QLineEdit*                    myGeomGroupLine;
-  QMenu*                        myGeomPopup;
-
-  QPushButton*                  myOKBtn;
-  QPushButton*                  myApplyBtn;
-  QPushButton*                  myCloseBtn;
-  QPushButton*                  myHelpBtn;
-
-  SMESHGUI_ShapeByMeshOp*       myShapeByMeshOp;
-
-  SMESH::SMESH_Mesh_var         myMesh;
-  QList<SMESH_Actor*>           myActorsList;
-  SMESH::SMESH_Group_var        myGroup;
-  SMESH::SMESH_GroupOnGeom_var  myGroupOnGeom;
-  SMESH::SMESH_GroupOnFilter_var myGroupOnFilter;
-  SMESH::Filter_var             myFilter;
-  QList<int>                    myIdList;
-  GEOM::ListOfGO_var            myGeomObjects;
-
-  int                           mySelectionMode;
-  //Handle(SMESH_TypeFilter)      myMeshFilter;
-  //Handle(SMESH_TypeFilter)      mySubMeshFilter;
-  //Handle(SMESH_TypeFilter)      myGroupFilter;
-  SUIT_SelectionFilter*         myMeshFilter;
-  SMESH_LogicalFilter*          mySubMeshFilter;
-  SMESH_LogicalFilter*          myGroupFilter;
-  SUIT_SelectionFilter*         myGeomFilter;
-
-  SMESHGUI_FilterDlg*           myFilterDlg;
-
-  bool                          myCreate, myIsBusy;
-
-  QString                       myHelpFileName;
-
-  QMap<QAction*, int>           myActions;
-
-  bool                          myNameChanged; //added by skl for IPAL19574
-  int                           myNbChangesOfContents; // nb add's and remove's
-
-  QString                       myObjectToSelect;
-  bool                          myIsApplyAndClose;
 
   QString _ObjectName;
   QString _LanguageShort ;
