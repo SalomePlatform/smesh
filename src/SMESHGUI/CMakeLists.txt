@@ -45,6 +45,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/ADAPTGUI
   ${PROJECT_BINARY_DIR}
   ${PROJECT_BINARY_DIR}/idl
+  ${PROJECT_BINARY_DIR}/src/ADAPTGUI
 )
 
 # additional preprocessor / compiler flags
