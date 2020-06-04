@@ -6425,8 +6425,8 @@ class SMESH_DimHyp
   //! fields
   int _dim;    //!< a dimension the algo can build (concurrent dimension)
   int _ownDim; //!< dimension of shape of _subMesh (>=_dim)
-  TopTools_MapOfShape _shapeMap; //!< [sub-]shapes of dimension == _dim
-  SMESH_subMesh*      _subMesh;
+  TopTools_MapOfShape  _shapeMap; //!< [sub-]shapes of dimension == _dim
+  const SMESH_subMesh* _subMesh;
   list<const SMESHDS_Hypothesis*> _hypotheses; //!< algo is first, then its parameters
 
   //-----------------------------------------------------------------------------
@@ -6440,7 +6440,7 @@ class SMESH_DimHyp
                const int            theDim,
                const TopoDS_Shape&  theShape)
   {
-    _subMesh = (SMESH_subMesh*)theSubMesh;
+    _subMesh = theSubMesh;
     SetShape( theDim, theShape );
   }
 
@@ -6571,7 +6571,8 @@ void addDimHypInstance(const int                               theDim,
        theAlgo->NeedLowerHyps( theDim )) // IPAL54678
     return;
   TDimHypList& listOfdimHyp = theDimHypListArr[theDim];
-  if ( listOfdimHyp.empty() || listOfdimHyp.back()->_subMesh != theSubMesh ) {
+  if ( listOfdimHyp.empty() || listOfdimHyp.back()->_subMesh != theSubMesh )
+  {
     SMESH_DimHyp* dimHyp = new SMESH_DimHyp( theSubMesh, theDim, theShape );
     dimHyp->_hypotheses.push_front(theAlgo);
     listOfdimHyp.push_back( dimHyp );
@@ -6627,7 +6628,8 @@ void unionLists(TListOfInt&       theListOfId,
                 const int         theIndx )
 {
   TListOfListOfInt::iterator it = theListOfListOfId.begin();
-  for ( int i = 0; it != theListOfListOfId.end(); it++, i++ ) {
+  for ( int i = 0; it != theListOfListOfId.end(); it++, i++ )
+  {
     if ( i < theIndx )
       continue; //skip already treated lists
     // check if other list has any same submesh object
@@ -6750,82 +6752,84 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
 {
   TListOfListOfInt anOrder;
   ::SMESH_Mesh& mesh = GetImpl();
-  {
-    // collect submeshes and detect concurrent algorithms and hypothesises
-    TDimHypList dimHypListArr[4]; // dimHyp list for each shape dimension
 
-    map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
-    for ( ; i_sm != _mapSubMesh.end(); i_sm++ ) {
-      ::SMESH_subMesh* sm = (*i_sm).second;
-      // shape of submesh
-      const TopoDS_Shape& aSubMeshShape = sm->GetSubShape();
+  // collect submeshes and detect concurrent algorithms and hypothesises
+  TDimHypList dimHypListArr[4]; // dimHyp list for each shape dimension
 
-      // list of assigned hypothesises
-      const list <const SMESHDS_Hypothesis*>& hypList = mesh.GetHypothesisList(aSubMeshShape);
-      // Find out dimensions where the submesh can be concurrent.
-      // We define the dimensions by algo of each of hypotheses in hypList
-      list <const SMESHDS_Hypothesis*>::const_iterator hypIt = hypList.begin();
-      for( ; hypIt != hypList.end(); hypIt++ ) {
-        SMESH_Algo* anAlgo = 0;
-        const SMESH_Hypothesis* hyp = dynamic_cast<const SMESH_Hypothesis*>(*hypIt);
-        if ( hyp->GetType() != SMESHDS_Hypothesis::PARAM_ALGO )
-          // hyp it-self is algo
-          anAlgo = (SMESH_Algo*)dynamic_cast<const SMESH_Algo*>(hyp);
-        else {
-          // try to find algorithm with help of sub-shapes
-          TopExp_Explorer anExp( aSubMeshShape, shapeTypeByDim(hyp->GetDim()) );
-          for ( ; !anAlgo && anExp.More(); anExp.Next() )
-            anAlgo = mesh.GetGen()->GetAlgo( mesh, anExp.Current() );
-        }
-        if (!anAlgo)
-          continue; // no algorithm assigned to a current submesh
+  map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
+  for ( ; i_sm != _mapSubMesh.end(); i_sm++ ) {
+    ::SMESH_subMesh* sm = (*i_sm).second;
+    // shape of submesh
+    const TopoDS_Shape& aSubMeshShape = sm->GetSubShape();
 
-        int dim = anAlgo->GetDim(); // top concurrent dimension (see comment to SMESH_DimHyp)
-        // the submesh can concurrent at <dim> (or lower dims if !anAlgo->NeedDiscreteBoundary()
-        // and !anAlgo->NeedLowerHyps( dim ))
-
-        // create instance of dimension-hypothesis for found concurrent dimension(s) and algorithm
-        for ( int j = anAlgo->NeedDiscreteBoundary() ? dim : 1, jn = dim; j <= jn; j++ )
-          addDimHypInstance( j, aSubMeshShape, anAlgo, sm, hypList, dimHypListArr );
+    // list of assigned hypothesises
+    const list <const SMESHDS_Hypothesis*>& hypList = mesh.GetHypothesisList(aSubMeshShape);
+    // Find out dimensions where the submesh can be concurrent.
+    // We define the dimensions by algo of each of hypotheses in hypList
+    list <const SMESHDS_Hypothesis*>::const_iterator hypIt = hypList.begin();
+    for( ; hypIt != hypList.end(); hypIt++ ) {
+      SMESH_Algo* anAlgo = 0;
+      const SMESH_Hypothesis* hyp = dynamic_cast<const SMESH_Hypothesis*>(*hypIt);
+      if ( hyp->GetType() != SMESHDS_Hypothesis::PARAM_ALGO )
+        // hyp it-self is algo
+        anAlgo = (SMESH_Algo*)dynamic_cast<const SMESH_Algo*>(hyp);
+      else {
+        // try to find algorithm with help of sub-shapes
+        TopExp_Explorer anExp( aSubMeshShape, shapeTypeByDim(hyp->GetDim()) );
+        for ( ; !anAlgo && anExp.More(); anExp.Next() )
+          anAlgo = mesh.GetGen()->GetAlgo( mesh, anExp.Current() );
       }
-    } // end iterations on submesh
+      if (!anAlgo)
+        continue; // no algorithm assigned to a current submesh
+
+      int dim = anAlgo->GetDim(); // top concurrent dimension (see comment to SMESH_DimHyp)
+      // the submesh can concurrent at <dim> (or lower dims if !anAlgo->NeedDiscreteBoundary()
+      // and !anAlgo->NeedLowerHyps( dim ))
+
+      // create instance of dimension-hypothesis for found concurrent dimension(s) and algorithm
+      for ( int j = anAlgo->NeedDiscreteBoundary() ? dim : 1, jn = dim; j <= jn; j++ )
+        addDimHypInstance( j, aSubMeshShape, anAlgo, sm, hypList, dimHypListArr );
+    }
+  } // end iterations on submesh
 
     // iterate on created dimension-hypotheses and check for concurrents
-    for ( int i = 0; i < 4; i++ ) {
-      const TDimHypList& listOfDimHyp = dimHypListArr[i];
-      // check for concurrents in own and other dimensions (step-by-step)
-      TDimHypList::const_iterator dhIt = listOfDimHyp.begin();
-      for ( ; dhIt != listOfDimHyp.end(); dhIt++ ) {
-        const SMESH_DimHyp* dimHyp = *dhIt;
-        TDimHypList listOfConcurr;
-        set<int>    setOfConcurrIds;
-        // looking for concurrents and collect into own list
-        for ( int j = i; j < 4; j++ )
-          findConcurrents( dimHyp, dimHypListArr[j], listOfConcurr, setOfConcurrIds );
-        // check if any concurrents found
-        if ( listOfConcurr.size() > 0 ) {
-          // add own submesh to list of concurrent
-          addInOrderOfPriority( dimHyp, listOfConcurr );
-          list<int> listOfConcurrIds;
-          TDimHypList::iterator hypIt = listOfConcurr.begin();
-          for ( ; hypIt != listOfConcurr.end(); ++hypIt )
-            listOfConcurrIds.push_back( (*hypIt)->_subMesh->GetId() );
-          anOrder.push_back( listOfConcurrIds );
-        }
+  for ( int i = 0; i < 4; i++ )
+  {
+    const TDimHypList& listOfDimHyp = dimHypListArr[i];
+    // check for concurrents in own and other dimensions (step-by-step)
+    TDimHypList::const_iterator dhIt = listOfDimHyp.begin();
+    for ( ; dhIt != listOfDimHyp.end(); dhIt++ )
+    {
+      const SMESH_DimHyp* dimHyp = *dhIt;
+      TDimHypList listOfConcurr;
+      set<int>    setOfConcurrIds;
+      // looking for concurrents and collect into own list
+      for ( int j = i; j < 4; j++ )
+        findConcurrents( dimHyp, dimHypListArr[j], listOfConcurr, setOfConcurrIds );
+      // check if any concurrents found
+      if ( listOfConcurr.size() > 0 )
+      {
+        // add own submesh to list of concurrent
+        addInOrderOfPriority( dimHyp, listOfConcurr );
+        list<int> listOfConcurrIds;
+        TDimHypList::iterator hypIt = listOfConcurr.begin();
+        for ( ; hypIt != listOfConcurr.end(); ++hypIt )
+          listOfConcurrIds.push_back( (*hypIt)->_subMesh->GetId() );
+        anOrder.push_back( listOfConcurrIds );
       }
     }
-
-    removeDimHyps(dimHypListArr);
-
-    // now, minimize the number of concurrent groups
-    // Here we assume that lists of submeshes can have same submesh
-    // in case of multi-dimension algorithms, as result
-    //  list with common submesh has to be united into one list
-    int listIndx = 0;
-    TListOfListOfInt::iterator listIt = anOrder.begin();
-    for(; listIt != anOrder.end(); listIt++, listIndx++ )
-      unionLists( *listIt,  anOrder, listIndx + 1 );
   }
+
+  removeDimHyps(dimHypListArr);
+
+  // now, minimize the number of concurrent groups
+  // Here we assume that lists of submeshes can have same submesh
+  // in case of multi-dimension algorithms, as result
+  //  list with common submesh has to be united into one list
+  int listIndx = 0;
+  TListOfListOfInt::iterator listIt = anOrder.begin();
+  for(; listIt != anOrder.end(); listIt++, listIndx++ )
+    unionLists( *listIt,  anOrder, listIndx + 1 );
 
   return anOrder;
 }
@@ -6913,7 +6917,8 @@ void SMESH_Mesh_i::convertMeshOrder (const TListOfListOfInt&     theIdsOrder,
   theResOrder.length(nbSet);
   TListOfListOfInt::const_iterator it = theIdsOrder.begin();
   int listIndx = 0;
-  for( ; it != theIdsOrder.end(); it++ ) {
+  for( ; it != theIdsOrder.end(); it++ )
+  {
     // translate submesh identificators into submesh objects
     //  takeing into account real number of concurrent lists
     const TListOfInt& aSubOrder = (*it);
@@ -6926,7 +6931,8 @@ void SMESH_Mesh_i::convertMeshOrder (const TListOfListOfInt&     theIdsOrder,
     aResSubSet->length(aSubOrder.size());
     TListOfInt::const_iterator subIt = aSubOrder.begin();
     int j;
-    for( j = 0; subIt != aSubOrder.end(); subIt++ ) {
+    for( j = 0; subIt != aSubOrder.end(); subIt++ )
+    {
       if ( _mapSubMeshIor.find(*subIt) == _mapSubMeshIor.end() )
         continue;
       SMESH::SMESH_subMesh_var subMesh =

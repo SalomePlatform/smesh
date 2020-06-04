@@ -217,6 +217,7 @@ namespace SMESH
     void SetBallPosition(SMESH_Actor* theActor,TVTKIds& theIds, double theDiameter)
     {
       vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
+      myBallPolyData->SetPoints(NULL);
       myBallPolyData->Reset();
       myBallPolyData->DeleteCells();
       myBallPolyData->SetPoints(aGrid->GetPoints());

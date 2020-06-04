@@ -42,11 +42,9 @@ namespace SMESHUtils
   {
     ControlPnt()
       : gp_Pnt(), size(0) {}
-    ControlPnt( const gp_Pnt& aPnt, double theSize)
+    ControlPnt( const gp_Pnt& aPnt, double theSize=0)
       : gp_Pnt( aPnt ), size( theSize ) {}
-    ControlPnt(double theX,double theY,double theZ)
-      : gp_Pnt(theX, theY, theZ), size(0) {}
-    ControlPnt(double theX,double theY,double theZ, double theSize)
+    ControlPnt(double theX,double theY,double theZ, double theSize=0)
       : gp_Pnt(theX, theY, theZ), size( theSize ) {}
 
     double Size() const { return size; };
@@ -57,20 +55,20 @@ namespace SMESHUtils
 
   // Functions to get sample point from shapes
   SMESHUtils_EXPORT void createControlPoints( const TopoDS_Shape&        theShape, 
-                            const double&              theSize, 
-                            std::vector< ControlPnt >& thePoints );
+                                              const double&              theSize, 
+                                              std::vector< ControlPnt >& thePoints );
 
-  SMESHUtils_EXPORT void createPointsSampleFromEdge( const TopoDS_Edge&       theEdge, 
-                                   const double&            theSize, 
-                                   std::vector<ControlPnt>& thePoints );
+  SMESHUtils_EXPORT void createPointsSampleFromEdge( const TopoDS_Edge&       theEdge,
+                                                     const double&            theSize,
+                                                     std::vector<ControlPnt>& thePoints );
 
-  SMESHUtils_EXPORT void createPointsSampleFromFace( const TopoDS_Face&       theFace, 
-                                   const double&            theSize, 
-                                   std::vector<ControlPnt>& thePoints );
+  SMESHUtils_EXPORT void createPointsSampleFromFace( const TopoDS_Face&       theFace,
+                                                     const double&            theSize,
+                                                     std::vector<ControlPnt>& thePoints );
 
-  SMESHUtils_EXPORT void createPointsSampleFromSolid( const TopoDS_Solid&      theSolid, 
-                                    const double&            theSize, 
-                                    std::vector<ControlPnt>& thePoints );
+  SMESHUtils_EXPORT void createPointsSampleFromSolid( const TopoDS_Solid&      theSolid,
+                                                      const double&            theSize,
+                                                      std::vector<ControlPnt>& thePoints );
 
 }
 #endif
