@@ -474,7 +474,7 @@
     </message>
     <message>
         <source>MEN_EDIT</source>
-        <translation>Editer</translation>
+        <translation>Edition</translation>
     </message>
     <message>
         <source>MEN_EDIT_GROUP</source>
