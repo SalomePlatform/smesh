@@ -3034,8 +3034,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-
-  // Adaptation - begin
+  // Adaptation - end
   case SMESHOp::OpUniformRefinement:
   case SMESHOp::OpHONewCase:
   case SMESHOp::OpHOCaseFollow:
@@ -3048,10 +3047,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
       SMESHGUI_AdaptDlg *aDlg = new SMESHGUI_AdaptDlg( this, theCommandID, aMesh);
-//       aDlg->show();
     }
   // Adaptation - end
-
   case SMESHOp::OpSplitBiQuadratic:
   case SMESHOp::OpConvertMeshToQuadratic:
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh from 3D
@@ -4289,7 +4286,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpAutoColor,        "AUTO_COLOR" );
   createSMESHAction( SMESHOp::OpDisableAutoColor, "DISABLE_AUTO_COLOR" );
 
-// Mesh adaptation
+  // Adaptation - begin
   createSMESHAction( SMESHOp::OpUniformRefinement,    "REF_ALL",                 "ICON_REF_ALL" );
   createSMESHAction( SMESHOp::OpHONewCase,            "HOMARD_CREATE_CASE",      "ICON_HOMARD_CREATE_CASE" );
   createSMESHAction( SMESHOp::OpHOCaseFollow,         "HOMARD_FOLLOW_ITERATION", "ICON_HOMARD_FOLLOW_ITERATION" );
@@ -4299,6 +4296,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpHOEdit,               "EDIT",                    "ICON_DLG_EDIT_MESH" );
   createSMESHAction( SMESHOp::OpHODelete,             "DELETE",                  "ICON_DELETE" );
   createSMESHAction( SMESHOp::OpMGAdapt,              "MG_ADAPT",                "ICON_MG_ADAPT" );
+  // Adaptation - end
 
   createSMESHAction( SMESHOp::OpMinimumDistance,  "MEASURE_MIN_DIST", "ICON_MEASURE_MIN_DIST" );
   createSMESHAction( SMESHOp::OpBoundingBox,      "MEASURE_BND_BOX",  "ICON_MEASURE_BND_BOX" );
@@ -4515,6 +4513,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpSmoothing,              modifyId, -1 );
   createMenu( SMESHOp::OpPatternMapping,         modifyId, -1 );
 
+  // Adaptation - begin
   createMenu( SMESHOp::OpUniformRefinement,    adaptId, -1 );
   createMenu( SMESHOp::OpHONewCase,            refHomardId, -1 );
   createMenu( SMESHOp::OpHOCaseFollow,         refHomardId, -1 );
@@ -4526,6 +4525,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpHOEdit,               refHomardId, -1 );
   createMenu( SMESHOp::OpHODelete,             refHomardId, -1 );
   createMenu( SMESHOp::OpMGAdapt,              adaptId, -1 );
+  // Adaptation - end
 
   createMenu( SMESHOp::OpMinimumDistance,  measureId,   -1 );
   createMenu( SMESHOp::OpBoundingBox,      measureId,   -1 );
@@ -4554,7 +4554,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     //renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ),
       transformTb  = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ),
       modifyTb     = createTool( tr( "TB_MODIFY" ),    QString( "SMESHModificationToolbar" ) ),
-//       adaptTb      = createTool( tr( "TB_ADAPTATION" ),QString( "SMESHAdaptationToolbar" ) ),
+      adaptTb      = createTool( tr( "TB_ADAPTATION" ),QString( "SMESHAdaptationToolbar" ) ),
       measuremTb   = createTool( tr( "TB_MEASUREM" ),  QString( "SMESHMeasurementsToolbar" ) ),
       dispModeTb   = createTool( tr( "TB_DISP_MODE" ), QString( "SMESHDisplayModeToolbar" ) );
 
@@ -4674,9 +4674,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpSmoothing,              modifyTb );
   createTool( SMESHOp::OpPatternMapping,         modifyTb );
 
-//   createTool( SMESHOp::OpUniformRefinement, adaptTb );
+  // Adaptation - begin
+  createTool( SMESHOp::OpUniformRefinement, adaptTb );
 //   createTool( SMESHOp::OpHOMARDRefinement,  adaptTb );
-//   createTool( SMESHOp::OpMGAdapt,           adaptTb );
+  createTool( SMESHOp::OpMGAdapt,           adaptTb );
+  // Adaptation - end
 
   createTool( SMESHOp::OpMinimumDistance, measuremTb );
 
@@ -4759,9 +4761,11 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   //popupMgr()->insert( separator(), -1, 0 );
 
+  // Adaptation - begin
 //   createPopupItem( SMESHOp::OpUniformRefinement, OB, mesh );
 //   createPopupItem( SMESHOp::OpHOMARDRefinement,  OB, mesh );
 //   createPopupItem( SMESHOp::OpMGAdapt,           OB, mesh );
+  // Adaptation - end
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
   QString multiple_non_empty = QString( " && %1>0 && numberOfNodes>0" ).arg( dc );
@@ -5745,6 +5749,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( coloringType, "indexes", indices );
   addPreference( tr( "SMESH_DISTRIBUTION_COLOR" ), distributionGr, LightApp_Preferences::Color, "SMESH", "distribution_color" );
 
+  // Adaptation - begin
   // Adaptation tab ------------------------------------------------------------------------
   int adaptTab = addPreference( tr( "ADAPT_PREF_TAB_GENERAL" ) );
   int bloc, pref ;
@@ -5776,6 +5781,7 @@ void SMESHGUI::createPreferences()
   aListOfTypeTest << "VTest > VRef";
   aListOfTypeTest << "VTest < VRef";
   setPreferenceProperty( pref, "strings", aListOfTypeTest );
+  // Adaptation - end
 
 }
 
@@ -5987,6 +5993,7 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   case SMESHOp::OpElem0DOnElemNodes: // Create 0D elements on all nodes
     op = new SMESHGUI_Add0DElemsOnAllNodesOp();
     break;
+  // Adaptation - begin
   case SMESHOp::OpUniformRefinement:
   case SMESHOp::OpHONewCase:
   case SMESHOp::OpHOCaseFollow:
@@ -5997,6 +6004,7 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   case SMESHOp::OpHODelete:
   case SMESHOp::OpMGAdapt:
     break;
+  // Adaptation - end
   default:
     break;
   }
