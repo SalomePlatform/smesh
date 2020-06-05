@@ -340,9 +340,17 @@ class Mesh_Algorithm:
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
             faceIDs = []
             for shape in faces:
-                ff = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["FACE"] )
-                for f in ff:
+                try:
+                  ff = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["FACE"] )
+                  for f in ff:
                     faceIDs.append( self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f))
+                except:
+                  # try to get the SHAPERSTUDY engine directly, because GetGen does not work because of
+                  # simplification of access in geomBuilder: omniORB.registerObjref
+                  from SHAPERSTUDY_utils import getEngine
+                  gen = getEngine()
+                  if gen:
+                    faceIDs = gen.GetIShapesOperations().GetAllSubShapesIDs(shape, self.mesh.geompyD.ShapeType["FACE"], False)
             faces = faceIDs
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
@@ -392,9 +400,17 @@ class Mesh_Algorithm:
         if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
             edgeIDs = []
             for shape in edges:
+              try:
                 ee = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["EDGE"])
                 for e in ee:
-                    edgeIDs.append( self.mesh.geompyD.GetSubShapeID( self.mesh.geom, e ))
+                  edgeIDs.append( self.mesh.geompyD.GetSubShapeID( self.mesh.geom, e ))
+              except:
+                # try to get the SHAPERSTUDY engine directly, because GetGen does not work because of
+                # simplification of access in geomBuilder: omniORB.registerObjref
+                from SHAPERSTUDY_utils import getEngine
+                gen = getEngine()
+                if gen:
+                  edgeIDs = gen.GetIShapesOperations().GetAllSubShapesIDs(shape, self.mesh.geompyD.ShapeType["EDGE"], False)
             edges = edgeIDs
         hyp = self.Hypothesis("ViscousLayers2D",
                               [thickness, numberOfLayers, stretchFactor, edges, isEdgesToIgnore],
