@@ -474,7 +474,7 @@
     </message>
     <message>
         <source>MEN_EDIT</source>
-        <translation>Edition</translation>
+        <translation>Editer</translation>
     </message>
     <message>
         <source>MEN_EDIT_GROUP</source>
@@ -3896,8 +3896,24 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Raffinement uniforme</translation>
     </message>
     <message>
-        <source>TOP_REF_HOMARD</source>
-        <translation>Raffinement avec HOMARD</translation>
+        <source>TOP_HOMARD_CREATE_CASE</source>
+        <translation>Création d'un cas</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_FOLLOW_ITERATION</source>
+        <translation>Poursuite d'une itération.</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_NEW_ITERATION</source>
+        <translation>Création d'une itération</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_COMPUTE</source>
+        <translation>Calculer</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_COMPUTE_PUBLISH</source>
+        <translation>Calculer et publier</translation>
     </message>
     <message>
         <source>TOP_MG_ADAPT</source>

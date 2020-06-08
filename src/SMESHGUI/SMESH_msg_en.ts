@@ -3937,8 +3937,24 @@ Use Display Entity menu command to show them.
         <translation>Uniform refinement</translation>
     </message>
     <message>
-        <source>TOP_REF_HOMARD</source>
-        <translation>Refinement with HOMARD</translation>
+        <source>TOP_HOMARD_CREATE_CASE</source>
+        <translation>New case</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_FOLLOW_ITERATION</source>
+        <translation>Existing case</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_NEW_ITERATION</source>
+        <translation>New iteration</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_COMPUTE_PUBLISH</source>
+        <translation>Compute and publish</translation>
     </message>
     <message>
         <source>TOP_MG_ADAPT</source>
@@ -4575,8 +4591,8 @@ Use Display Entity menu command to show them.
     <message>
         <source>FULL_RECOMPUTE_QUESTION</source>
         <translation>
-The mesh has been edited since a last total re-compute 
-that may prevent successful computation. 
+The mesh has been edited since a last total re-compute
+that may prevent successful computation.
 Do you wish to re-compute the mesh totally to discard the modifications?
 </translation>
     </message>
@@ -6701,7 +6717,7 @@ Please specify them and try again</translation>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</source>
         <translation>Geometry object is not defined.
-Do you want to create an empty mesh 
+Do you want to create an empty mesh
 without algorithms and hypotheses? </translation>
     </message>
     <message>
@@ -6775,8 +6791,8 @@ select mesh or sub-mesh and try again</translation>
     </message>
     <message>
         <source>CONCURRENT_SUBMESH_APPEARS</source>
-        <translation> 
-The assigned algorithm has the same priority as one assigned to an 
+        <translation>
+The assigned algorithm has the same priority as one assigned to an
 adjacent sub-mesh, hence it&apos;s undefined which algorithm to use for
 meshing boundary shared by two sub-meshes. Would you like to set
 the order of sub-mesh computation? </translation>
@@ -8386,7 +8402,7 @@ as they are of improper type:
     <message>
         <source>SUBSHAPES_NOT_FOUND_MSG</source>
         <translation>
-Some sub-shapes not found in the new geometry. They are listed 
+Some sub-shapes not found in the new geometry. They are listed
 below along with dependent mesh objects that are marked with
 red in the Object Browser.</translation>
     </message>
