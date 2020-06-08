@@ -3034,7 +3034,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-  // Adaptation - end
+  // Adaptation - begin
   case SMESHOp::OpUniformRefinement:
   case SMESHOp::OpHONewCase:
   case SMESHOp::OpHOCaseFollow:
@@ -4675,9 +4675,13 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpPatternMapping,         modifyTb );
 
   // Adaptation - begin
-  createTool( SMESHOp::OpUniformRefinement, adaptTb );
-//   createTool( SMESHOp::OpHOMARDRefinement,  adaptTb );
-  createTool( SMESHOp::OpMGAdapt,           adaptTb );
+  createTool( SMESHOp::OpUniformRefinement,    adaptTb );
+  createTool( SMESHOp::OpHONewCase,            adaptTb );
+  createTool( SMESHOp::OpHOCaseFollow,         adaptTb );
+  createTool( SMESHOp::OpHONewIter,            adaptTb );
+  createTool( SMESHOp::OpHOIterCompute,        adaptTb );
+  createTool( SMESHOp::OpHOIterComputePublish, adaptTb );
+  createTool( SMESHOp::OpMGAdapt,              adaptTb );
   // Adaptation - end
 
   createTool( SMESHOp::OpMinimumDistance, measuremTb );
@@ -4762,9 +4766,15 @@ void SMESHGUI::initialize( CAM_Application* app )
   //popupMgr()->insert( separator(), -1, 0 );
 
   // Adaptation - begin
-//   createPopupItem( SMESHOp::OpUniformRefinement, OB, mesh );
-//   createPopupItem( SMESHOp::OpHOMARDRefinement,  OB, mesh );
-//   createPopupItem( SMESHOp::OpMGAdapt,           OB, mesh );
+  createPopupItem( SMESHOp::OpUniformRefinement,    OB, mesh );
+  createPopupItem( SMESHOp::OpHONewCase,            OB, mesh );
+  createPopupItem( SMESHOp::OpHOCaseFollow,         OB, mesh );
+  createPopupItem( SMESHOp::OpHONewIter,            OB, mesh );
+  createPopupItem( SMESHOp::OpHOIterCompute,        OB, mesh );
+  createPopupItem( SMESHOp::OpHOIterComputePublish, OB, mesh );
+  createPopupItem( SMESHOp::OpHOEdit,               OB, mesh );
+  createPopupItem( SMESHOp::OpHODelete,             OB, mesh );
+  createPopupItem( SMESHOp::OpMGAdapt,              OB, mesh );
   // Adaptation - end
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
