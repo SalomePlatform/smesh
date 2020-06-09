@@ -358,7 +358,6 @@ void MonCreateCase::SetNewName()
   {
     aCaseName.setNum(num+1) ;
     aCaseName.insert(0, QString("Case_")) ;
-//    std::cout  << "aCaseName : --" << aCaseName.toStdString().c_str() << "--" << std::endl;
     for ( int i=0; i<MyCases->length(); i++)
     {
       if ( aCaseName ==  QString((MyCases)[i]))
