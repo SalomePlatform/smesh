@@ -48,7 +48,7 @@ SMESHGUI_AdaptDlg::SMESHGUI_AdaptDlg( SMESHGUI* theModule,
                                       SMESH::SMESH_Mesh_ptr theMesh )
   : mySMESHGUI( theModule )
 {
-  bool ok = action( theCommandID ) ;
+  action( theCommandID ) ;
 }
 
 //=================================================================================
@@ -64,19 +64,19 @@ SMESHGUI_AdaptDlg::~SMESHGUI_AdaptDlg()
   * \param
   * \return bool OK/notOK
 */
-bool SMESHGUI_AdaptDlg::action (int theCommandID)
+void SMESHGUI_AdaptDlg::action (int theCommandID)
 //=======================================================================
 {
   std::cout  << "SMESHGUI_AdaptDlg::action avec theCommandID : " << theCommandID << std::endl;
 
 // Preferences
-  recupPreferences();
+//   recupPreferences();
 
 // Menus and actions
   bool ok =  OnGUIEvent (theCommandID) ;
   if ( ! ok ) INFOS("Erreur");
 
-  return ok ;
+  return ;
 }
 
 /*!

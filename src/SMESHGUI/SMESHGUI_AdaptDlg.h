@@ -40,17 +40,15 @@ class SMESHGUI;
 // class    : SMESHGUI_AdaptDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_AdaptDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_AdaptDlg : public QWidget
 {
-  Q_OBJECT
-
 public:
   SMESHGUI_AdaptDlg( SMESHGUI*,
                      int theCommandID,
                      SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
   ~SMESHGUI_AdaptDlg();
 
-  virtual bool action (int theCommandID);
+  void action (int theCommandID);
   virtual bool OnGUIEvent (int theCommandID);
 
 //   static ADAPT::ADAPT_Gen_var InitAdaptGen(SalomeApp_Application*);

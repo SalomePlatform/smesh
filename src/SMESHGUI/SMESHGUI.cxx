@@ -3046,7 +3046,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpMGAdapt:
     {
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
-      SMESHGUI_AdaptDlg *aDlg = new SMESHGUI_AdaptDlg( this, theCommandID, aMesh);
+      SMESHGUI_AdaptDlg *objet = new SMESHGUI_AdaptDlg( this, theCommandID, aMesh);
     }
   // Adaptation - end
   case SMESHOp::OpSplitBiQuadratic:
