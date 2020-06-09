@@ -1069,6 +1069,12 @@ CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsO
     if ( ! ( nodes[i] = getMeshDS()->FindNode( IDsOfNodes[i] )))
       return 0;
 
+  if ( NbNodes == 0 )
+  {
+    INFOS("Polygon without nodes is forbidden");
+    return 0;
+  }
+
   const SMDS_MeshElement* elem = getMeshDS()->AddPolygonalFace(nodes);
 
   // Update Python script
@@ -1097,6 +1103,12 @@ CORBA::Long SMESH_MeshEditor_i::AddQuadPolygonalFace (const SMESH::long_array & 
   std::vector<const SMDS_MeshNode*> nodes (NbNodes);
   for (int i = 0; i < NbNodes; i++)
     nodes[i] = getMeshDS()->FindNode(IDsOfNodes[i]);
+
+  if ( NbNodes == 0 )
+  {
+    INFOS("Polygon without nodes is forbidden");
+    return 0;
+  }
 
   const SMDS_MeshElement* elem = getMeshDS()->AddQuadPolygonalFace(nodes);
 

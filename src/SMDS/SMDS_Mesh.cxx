@@ -831,6 +831,8 @@ SMDS_Mesh::AddPolygonalFaceWithID (const std::vector<const SMDS_MeshNode*> & nod
 {
   if ( NbFaces() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
 
+  if ( nodes.empty() )
+    throw std::invalid_argument("Polygon without nodes is forbidden");
   if ( SMDS_MeshCell* cell = myCellFactory->NewCell( ID ))
   {
     cell->init( SMDSEntity_Polygon, nodes );
@@ -874,6 +876,8 @@ SMDS_Mesh::AddQuadPolygonalFaceWithID (const std::vector<const SMDS_MeshNode*> &
                                        const int                                 ID)
 {
   if ( NbFaces() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( nodes.empty() )
+    throw std::invalid_argument("Polygon without nodes is forbidden");
   if ( SMDS_MeshCell* cell = myCellFactory->NewCell( ID ))
   {
     cell->init( SMDSEntity_Quad_Polygon, nodes );
