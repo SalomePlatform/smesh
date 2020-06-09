@@ -54,7 +54,7 @@ MonCreateCase::MonCreateCase( bool modal, ADAPT::ADAPT_Gen_var myAdaptGen0 )
     _ExtType(0),
     _Pyram(0)
 {
-  INFOS("Debut du constructeur de MonCreateCase");
+  MESSAGE("Debut du constructeur de MonCreateCase");
   myAdaptGen=ADAPT::ADAPT_Gen::_duplicate(myAdaptGen0);
   setupUi(this);
   setModal(modal);
@@ -75,7 +75,7 @@ MonCreateCase::MonCreateCase( bool modal, ADAPT::ADAPT_Gen_var myAdaptGen0 )
 //
   adjustSize();
 
-  INFOS("Fin du constructeur de MonCreateCase");
+//   MESSAGE("Fin du constructeur de MonCreateCase");
 }
 // ------------------------------------------------------------------------
 MonCreateCase::~MonCreateCase()
@@ -87,7 +87,6 @@ MonCreateCase::~MonCreateCase()
 void MonCreateCase::InitConnect()
 // ------------------------------------------------------------------------
 {
-    INFOS("Debut de InitConnect");
     connect( LEName,      SIGNAL(textChanged(QString)), this, SLOT(CaseNameChanged()));
     connect( PushDir,     SIGNAL(pressed()), this, SLOT(SetDirName()));
     connect( PushFichier, SIGNAL(pressed()), this, SLOT(SetFileName()));
@@ -125,14 +124,13 @@ void MonCreateCase::InitConnect()
     connect( buttonApply,    SIGNAL(pressed()), this, SLOT(PushOnApply(0)));
     connect( buttonCancel,   SIGNAL(pressed()), this, SLOT(close()));
     connect( buttonHelp,     SIGNAL(pressed()), this, SLOT(PushOnHelp()));
-    INFOS("Fin de InitConnect");
 }
 // ------------------------------------------------------------------------
 void MonCreateCase::InitBoundarys()
 // ------------------------------------------------------------------------
 // Initialisation des menus avec les frontieres deja enregistrees
 {
-  INFOS("InitBoundarys");
+  MESSAGE("InitBoundarys");
 // Pour les frontieres analytiques : la colonne des groupes
   ADAPT::ListGroupType_var _listeGroupesCas = aCase->GetGroups();
   QTableWidgetItem *__colItem = new QTableWidgetItem();
@@ -149,7 +147,7 @@ void MonCreateCase::InitBoundarys()
 // Pour les frontieres analytiques : les colonnes de chaque frontiere
   ADAPT::HOMARD_Boundary_var myBoundary ;
   ADAPT::listeBoundarys_var  mesBoundarys = myAdaptGen->GetAllBoundarysName();
-//   INFOS("Nombre de frontieres enregistrees : "<<mesBoundarys->length());
+//   MESSAGE("Nombre de frontieres enregistrees : "<<mesBoundarys->length());
   for (int i=0; i<mesBoundarys->length(); i++)
   {
     myBoundary = myAdaptGen->GetBoundary(mesBoundarys[i]);
@@ -167,7 +165,7 @@ void MonCreateCase::InitBoundarys()
 bool MonCreateCase::PushOnApply(int option)
 // --------------------------------
 {
-  INFOS("PushOnApply");
+  MESSAGE("PushOnApply");
   QString aCaseName=LEName->text().trimmed();
   if ( aCaseName == "" )
   {
@@ -233,10 +231,10 @@ bool MonCreateCase::PushOnApply(int option)
         {
 //        Nom du groupe
           NomGroup = QString(TWBoundary->item(row, 0)->text()) ;
-//           INFOS("NomGroup "<<NomGroup.toStdString().c_str());
+//           MESSAGE("NomGroup "<<NomGroup.toStdString().c_str());
           for ( int nugr = 0 ; nugr<ListeGroup.size(); nugr++)
           {
-//             INFOS("....... "<<ListeGroup[nugr].toStdString().c_str());
+//             MESSAGE("....... "<<ListeGroup[nugr].toStdString().c_str());
             if ( NomGroup == ListeGroup[nugr] )
             {
               QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
@@ -354,15 +352,13 @@ void MonCreateCase::PushOnHelp()
 void MonCreateCase::SetNewName()
 // ------------------------------
 {
-  INFOS("Debut de SetNewName");
   ADAPT::listeCases_var  MyCases = myAdaptGen->GetAllCasesName();
-  INFOS("MyCases construit");
   int num = 0; QString aCaseName="";
   while (aCaseName=="" )
   {
     aCaseName.setNum(num+1) ;
     aCaseName.insert(0, QString("Case_")) ;
-    std::cout  << "aCaseName : --" << aCaseName.toStdString().c_str() << "--" << std::endl;
+//    std::cout  << "aCaseName : --" << aCaseName.toStdString().c_str() << "--" << std::endl;
     for ( int i=0; i<MyCases->length(); i++)
     {
       if ( aCaseName ==  QString((MyCases)[i]))
@@ -373,10 +369,8 @@ void MonCreateCase::SetNewName()
       }
    }
   }
-  INFOS("aCaseName construit");
   LEName->clear() ;
   LEName->insert(aCaseName);
-  INFOS("Fin de SetNewName");
 }
 
 // ------------------------------------------------------------------------
@@ -537,7 +531,7 @@ void MonCreateCase::PushBoundaryCAOHelp()
 void MonCreateCase::SetBoundaryD()
 // ------------------------------------------------------------------------
 {
-  INFOS("Debut de SetBoundaryD ");
+  MESSAGE("Debut de SetBoundaryD ");
   if (CBBoundaryD->isChecked())
   {
     bool bOK = PushOnApply(0);
@@ -585,7 +579,7 @@ void MonCreateCase::PushBoundaryDiHelp()
 void MonCreateCase::SetBoundaryA()
 // ------------------------------------------------------------------------
 {
-  INFOS("Debut de SetBoundaryA ");
+  MESSAGE("Debut de SetBoundaryA ");
   if (CBBoundaryA->isChecked())
   {
     bool bOK = PushOnApply(0);
@@ -602,10 +596,10 @@ void MonCreateCase::SetBoundaryA()
 void MonCreateCase::AddBoundaryAn(QString newBoundary)
 // ------------------------------------------------------------------------
 {
-  INFOS("Debut de AddBoundaryAn ");
+  MESSAGE("Debut de AddBoundaryAn ");
 // Ajout d'une nouvelle colonne
   int nbcol = TWBoundary->columnCount();
-//   INFOS("nbcol " <<  nbcol);
+//   MESSAGE("nbcol " <<  nbcol);
   nbcol += 1 ;
   TWBoundary->setColumnCount ( nbcol ) ;
   QTableWidgetItem *__colItem = new QTableWidgetItem();
@@ -614,7 +608,7 @@ void MonCreateCase::AddBoundaryAn(QString newBoundary)
 /*  TWBoundary->horizontalHeaderItem(nbcol-1)->setFlags( Qt::ItemIsSelectable|Qt::ItemIsEnabled );*/
 // Chaque case est a cocher
   int nbrow = TWBoundary->rowCount();
-//   INFOS("nbrow " <<  nbrow);
+//   MESSAGE("nbrow " <<  nbrow);
   for ( int i = 0; i < nbrow; i++ )
   {
     TWBoundary->setItem( i, nbcol-1, new QTableWidgetItem( QString ("") ) );
@@ -624,7 +618,7 @@ void MonCreateCase::AddBoundaryAn(QString newBoundary)
   }
   TWBoundary->resizeColumnToContents(nbcol-1);
 //   TWBoundary->resizeRowsToContents();
-//   INFOS("Fin de AddBoundaryAn ");
+//   MESSAGE("Fin de AddBoundaryAn ");
 }
 // ------------------------------------------------------------------------
 void MonCreateCase::PushBoundaryAnNew()
@@ -645,7 +639,7 @@ void MonCreateCase::PushBoundaryAnEdit()
     QTableWidgetItem *__colItem = new QTableWidgetItem();
     __colItem = TWBoundary->horizontalHeaderItem(i);
     nom = QString(__colItem->text()) ;
-    INFOS("nom "<<nom.toStdString().c_str());
+    MESSAGE("nom "<<nom.toStdString().c_str());
     if (nom != QString(""))
     { MonEditBoundaryAn *BoundaryDlg = new MonEditBoundaryAn(this, true,
         ADAPT::ADAPT_Gen::_duplicate(myAdaptGen), _aCaseName, nom ) ;
@@ -673,7 +667,7 @@ void MonCreateCase::CaseNameChanged()
 void MonCreateCase::SetAdvanced()
 // ------------------------------------------------------------------------
 {
-  INFOS("Debut de SetAdvanced ");
+  MESSAGE("Debut de SetAdvanced ");
   if (CBAdvanced->isChecked())
   { GBAdvancedOptions->setVisible(1);
     GBConforme->setVisible(1);
@@ -695,7 +689,6 @@ void MonCreateCase::SetAdvanced()
     _Pyram = 0 ;
     SetStandard() ;
     SetMED() ;
-  INFOS("Fin de SetAdvanced ");
  }
 //
   adjustSize();
