@@ -61,7 +61,7 @@ private slots:
 
 private:
 
-  void recupPreferences();
+//   void recupPreferences();
   SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
 
   QString _ObjectName;

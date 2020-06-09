@@ -33,7 +33,7 @@
 #include <SalomeApp_Study.h>
 
 // HOMARD includes
-#include "MonCreateCase.h"
+// #include "MonCreateCase.h"
 
 // SALOME KERNEL includes
 #include "utilities.h"
@@ -79,73 +79,72 @@ void SMESHGUI_AdaptDlg::action (int theCommandID)
   return ;
 }
 
-/*!
-  * \brief Gets the preferences for the adaptation
-  * \param
-  * \return
-  *
-  * Pour chaque valeur, le defaut est la valeur definie dans ADAPT_Gen
-  * . Si la recuperation dans config/salome s'est bien passee a la creation de ADAPT_Gen
-  *   ces valeurs sont les valeurs definies.
-  * . Si cela ne s'est pas bien passe, ce sont les valeurs par defaut de ADAPT_Gen
-*/
-void SMESHGUI_AdaptDlg::recupPreferences()
-{
-  INFOS("Début de recupPreferences")
+// /*!
+//   * \brief Gets the preferences for the adaptation
+//   * \param
+//   * \return
+//   *
+//   * Pour chaque valeur, le defaut est la valeur definie dans ADAPT_Gen
+//   * . Si la recuperation dans config/salome s'est bien passee a la creation de ADAPT_Gen
+//   *   ces valeurs sont les valeurs definies.
+//   * . Si cela ne s'est pas bien passe, ce sont les valeurs par defaut de ADAPT_Gen
+// */
+// void SMESHGUI_AdaptDlg::recupPreferences()
+// {
+//   INFOS("Début de recupPreferences")
+// //
+// // A. Declarations
+// //
+//   SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
+//   SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
+//   Engines::EngineComponent_var comp = ls->FindOrLoad_Component("FactoryServer", "SMESH");
+//   ADAPT::ADAPT_Gen_var adaptGen = ADAPT::ADAPT_Gen::_narrow(comp);
+//   if (!CORBA::is_nil(adaptGen))
+//     adaptGen->UpdateStudy();
 //
-// A. Declarations
+//   SUIT_ResourceMgr* resMgr = mySMESHGUI->getApp()->resourceMgr();
 //
-  SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
-  SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
-  Engines::EngineComponent_var comp = ls->FindOrLoad_Component("FactoryServer", "SMESH");
-  ADAPT::ADAPT_Gen_var adaptGen = ADAPT::ADAPT_Gen::_narrow(comp);
-  if (!CORBA::is_nil(adaptGen))
-    adaptGen->UpdateStudy();
-
-  SUIT_ResourceMgr* resMgr = mySMESHGUI->getApp()->resourceMgr();
-
-// B. Les valeurs
-// B.1. La langue
-
-  _LanguageShort = resMgr->stringValue("language", "language", "en" );
-  INFOS ("Enregistrement de LanguageShort = " << _LanguageShort.toStdString().c_str() );
-//   adaptGen->SetLanguageShort(_LanguageShort.toStdString().c_str());
-
-// B.2. Les publications
-  bool publish_mesh ;
-
-  publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_in", false );
-  if ( publish_mesh ) { _PublisMeshIN = 1 ; }
-  else                { _PublisMeshIN = 0 ; }
-
-  publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_out", false );
-  if ( publish_mesh ) { _PublisMeshOUT = 1 ; }
-  else                { _PublisMeshOUT = 0 ; }
-
-  INFOS ("Enregistrement de PublisMeshIN = " << _PublisMeshIN<<", PublisMeshOUT = "<< _PublisMeshOUT);
-//   adaptGen->SetPublisMesh(_PublisMeshIN, _PublisMeshOUT);
-
-// B.3. Les maximum pour YACS
-
-  _YACSMaxIter = resMgr->integerValue("HOMARD", "yacs_max_iter", 0 );
-  _YACSMaxNode = resMgr->integerValue("HOMARD", "yacs_max_node", 0 );
-  _YACSMaxElem = resMgr->integerValue("HOMARD", "yacs_max_elem", 0 );
-
-  INFOS ("Enregistrement de YACSMaxIter = " << _YACSMaxIter<<", YACSMaxNode = "<< _YACSMaxNode<<", YACSMaxElem = "<< _YACSMaxElem);
-//   adaptGen->SetYACSMaximum(_YACSMaxIter, _YACSMaxNode, _YACSMaxElem);
-
-// B.4. La convergence pour YACS
-
-  QString QString_v = resMgr->stringValue ( "HOMARD", "yacs_type_test", "None" );
-  if ( ( QString_v == "VTest > VRef" ) || ( QString_v == "VTest &gt; VRef" ) )      { _YACSTypeTest = 1 ; }
-  else if ( ( QString_v == "VTest < VRef" ) || ( QString_v == "VTest &lt; VRef" ) ) { _YACSTypeTest = 2 ; }
-  else                                                                              { _YACSTypeTest = 0 ; }
-
-  INFOS ("Enregistrement de YACSTypeTest = " << _YACSTypeTest);
-//   adaptGen->SetYACSConvergenceType(_YACSTypeTest);
-
-  INFOS("Fin de recupPreferences")
-}
+// // B. Les valeurs
+// // B.1. La langue
+//
+//   _LanguageShort = resMgr->stringValue("language", "language", "en" );
+//   INFOS ("Enregistrement de LanguageShort = " << _LanguageShort.toStdString().c_str() );
+// //   adaptGen->SetLanguageShort(_LanguageShort.toStdString().c_str());
+//
+// // B.2. Les publications
+//   bool publish_mesh ;
+//
+//   publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_in", false );
+//   if ( publish_mesh ) { _PublisMeshIN = 1 ; }
+//   else                { _PublisMeshIN = 0 ; }
+//
+//   publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_out", false );
+//   if ( publish_mesh ) { _PublisMeshOUT = 1 ; }
+//   else                { _PublisMeshOUT = 0 ; }
+//
+//   INFOS ("Enregistrement de PublisMeshIN = " << _PublisMeshIN<<", PublisMeshOUT = "<< _PublisMeshOUT);
+// //   adaptGen->SetPublisMesh(_PublisMeshIN, _PublisMeshOUT);
+//
+// // B.3. Les maximum pour YACS
+//
+//   _YACSMaxIter = resMgr->integerValue("HOMARD", "yacs_max_iter", 0 );
+//   _YACSMaxNode = resMgr->integerValue("HOMARD", "yacs_max_node", 0 );
+//   _YACSMaxElem = resMgr->integerValue("HOMARD", "yacs_max_elem", 0 );
+//
+//   INFOS ("Enregistrement de YACSMaxIter = " << _YACSMaxIter<<", YACSMaxNode = "<< _YACSMaxNode<<", YACSMaxElem = "<< _YACSMaxElem);
+// //   adaptGen->SetYACSMaximum(_YACSMaxIter, _YACSMaxNode, _YACSMaxElem);
+//
+// // B.4. La convergence pour YACS
+//
+//   QString QString_v = resMgr->stringValue ( "HOMARD", "yacs_type_test", "None" );
+//   if ( ( QString_v == "VTest > VRef" ) || ( QString_v == "VTest &gt; VRef" ) )      { _YACSTypeTest = 1 ; }
+//   else if ( ( QString_v == "VTest < VRef" ) || ( QString_v == "VTest &lt; VRef" ) ) { _YACSTypeTest = 2 ; }
+//   else                                                                              { _YACSTypeTest = 0 ; }
+//
+//   INFOS ("Enregistrement de YACSTypeTest = " << _YACSTypeTest);
+// //   adaptGen->SetYACSConvergenceType(_YACSTypeTest);
+//
+// }
 
 /*!
   * \brief Launches the GUI for the adaptation
@@ -170,9 +169,9 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 
   SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
   Engines::EngineComponent_var comp = ls->FindOrLoad_Component("FactoryServer", "SMESH");
-  ADAPT::ADAPT_Gen_var adaptGen = ADAPT::ADAPT_Gen::_narrow(comp);
-  if (!CORBA::is_nil(adaptGen))
-    adaptGen->UpdateStudy();
+//   ADAPT::ADAPT_Gen_var adaptGen = ADAPT::ADAPT_Gen::_narrow(comp);
+//   if (!CORBA::is_nil(adaptGen))
+//     adaptGen->UpdateStudy();
 
   mySMESHGUI->getApp()->updateObjectBrowser();
 //
@@ -190,51 +189,33 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
     case 8011: // Création d'un Cas
     {
       INFOS("Création d'un Cas");
-      MonCreateCase *aDlg = new MonCreateCase( true,
-                            ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
-      aDlg->show();
+//       MonCreateCase *aDlg = new MonCreateCase( true,
+//                             ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
+//       aDlg->show();
       break;
     }
     case 8012: // Création d'un cas en poursuite d'une itération
     {
       INFOS("Création d'un cas en poursuite d'une itération");
-//       MonPursueIteration *aDlg = new MonPursueIteration( true,
-//                                 ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
-//       aDlg->show();
-//       break;
+//       A faire
+      break;
     }
     case 8013: // Création d'une itération
     {
       INFOS("Création d'une itération" );
-//       MonCreateIteration *IterDlg = new MonCreateIteration( parent, true,
-//                                      ADAPT::ADAPT_Gen::_duplicate(adaptGen), _ObjectName ) ;
-//       IterDlg->show();
+//       A faire
       break;
     }
     case 8014: // Calcule une itération
     {
       INFOS("Calcule une itération" );
-//       try { adaptGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 1); }
-//       catch( SALOME::SALOME_Exception& S_ex )
-//       {
-//         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
-//                                   QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//         mySMESHGUI->getApp()->updateObjectBrowser();
-//         ok = false;
-//       }
+//       A faire
       break;
     }
     case 8015: // Calcule une itération et publication
     {
       INFOS("Calcule une itération et publication");
-//       try { adaptGen->Compute(_ObjectName.toStdString().c_str(), 0, 1, -1, 2); }
-//       catch( SALOME::SALOME_Exception& S_ex )
-//       {
-//         QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
-//                                   QObject::tr(CORBA::string_dup(S_ex.details.text)) );
-//         mySMESHGUI->getApp()->updateObjectBrowser();
-//         ok = false;
-//       }
+//       A faire
       break;
     }
     case 8020: // Adaptation avec MG-Adpat
