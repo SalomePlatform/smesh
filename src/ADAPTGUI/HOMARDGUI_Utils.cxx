@@ -36,7 +36,6 @@
 #include "SALOMEconfig.h"
 #include "utilities.h"
 #include <string>
-#include <ADAPTGUI.h>
 
 
 #include <qstring.h>
@@ -254,25 +253,25 @@ void HOMARD_UTILS::PushOnHelp(QString monFichierAide, QString contexte, QString 
 {
   MESSAGE("Debut de PushOnHelp avec monFichierAide = "<< monFichierAide.toStdString().c_str());
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app)
-  {
-    ADAPTGUI* aHomardGUI = dynamic_cast<ADAPTGUI*>( app->module( "Homard" ) );
-    // Repertoire de reference de la documentation
-    QString rep = aHomardGUI ? app->moduleName(aHomardGUI->moduleName()) : QString("") ;
-    // WARNING/ATTENTION : si on savait recuperer la langue depuis les preferences, on ne ferait pas le passage par argument
-//     SUIT_ResourceMgr* resMgr = getApp()->resourceMgr();
-//     SUIT_ResourceMgr* resMgr = myModule->getApp()->resourceMgr();
-//     QString langue = resMgr->stringValue("language", "language", "en");
-//     QString langue = "fr" ;
-    MESSAGE(". LanguageShort " << LanguageShort.toStdString().c_str()) ;
-    // Complement du fichier
-    QString fichier = QString(LanguageShort+"/"+monFichierAide) ;
-    MESSAGE(". Appel de onHelpContextModule avec :");
-    MESSAGE("    rep      = "<< rep.toStdString().c_str());
-    MESSAGE("    fichier  = "<< fichier.toStdString().c_str());
-    MESSAGE("    contexte = "<< contexte.toStdString().c_str());
-
-    app->onHelpContextModule(rep, fichier, contexte);
-  }
+//   if (app)
+//   {
+//     ADAPTGUI* aHomardGUI = dynamic_cast<ADAPTGUI*>( app->module( "Homard" ) );
+//     // Repertoire de reference de la documentation
+//     QString rep = aHomardGUI ? app->moduleName(aHomardGUI->moduleName()) : QString("") ;
+//     // WARNING/ATTENTION : si on savait recuperer la langue depuis les preferences, on ne ferait pas le passage par argument
+// //     SUIT_ResourceMgr* resMgr = getApp()->resourceMgr();
+// //     SUIT_ResourceMgr* resMgr = myModule->getApp()->resourceMgr();
+// //     QString langue = resMgr->stringValue("language", "language", "en");
+// //     QString langue = "fr" ;
+//     MESSAGE(". LanguageShort " << LanguageShort.toStdString().c_str()) ;
+//     // Complement du fichier
+//     QString fichier = QString(LanguageShort+"/"+monFichierAide) ;
+//     MESSAGE(". Appel de onHelpContextModule avec :");
+//     MESSAGE("    rep      = "<< rep.toStdString().c_str());
+//     MESSAGE("    fichier  = "<< fichier.toStdString().c_str());
+//     MESSAGE("    contexte = "<< contexte.toStdString().c_str());
+//
+//     app->onHelpContextModule(rep, fichier, contexte);
+//   }
 }
 //=========================================================================================================

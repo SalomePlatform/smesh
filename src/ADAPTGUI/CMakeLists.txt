@@ -88,7 +88,6 @@ SET(_uic_FILES
 
 # header files / to be processed by moc
 SET(_moc_HEADERS
-  ADAPTGUI.h
   MonCreateBoundaryCAO.h
   MonCreateBoundaryAn.h
   MonCreateBoundaryDi.h
@@ -135,7 +134,6 @@ QT_WRAP_MOC(_moc_SOURCES ${_moc_HEADERS})
 
 # sources / static
 SET(_other_SOURCES
-  ADAPTGUI.cxx
   HOMARDGUI_Utils.cxx
   MonCreateBoundaryCAO.cxx
   MonCreateBoundaryAn.cxx
