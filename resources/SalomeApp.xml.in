@@ -97,6 +97,13 @@
     <parameter name="vol_precision"                value="-6"  />
     <parameter name="selection_increment"          value="0"  />
     <parameter name="controls_increment"           value="2"  />
+    <!-- Adaptation -->
+    <parameter name="publish_mesh_in"              value="false"  />
+    <parameter name="publish_mesh_out"             value="false"  />
+    <parameter name="yacs_max_iter"                value="0"  />
+    <parameter name="yacs_max_node"                value="0"  />
+    <parameter name="yacs_max_elem"                value="0"  />
+    <parameter name="yacs_type_test"               value="None"  />
   </section>
   <section name="smesh_help" >
     <parameter name="User's Guide/Mesh module/User's Guide"      value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/index.html"/>
