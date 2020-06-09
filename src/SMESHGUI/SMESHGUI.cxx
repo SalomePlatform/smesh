@@ -4542,7 +4542,6 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // ----- create toolbars --------------
   int meshTb       = createTool( tr( "TB_MESH" ),      QString( "SMESHMeshToolbar" ) ) ;
-  INFOS( "meshTb      :" << meshTb );
   createTool( SMESHOp::OpCreateMesh,        meshTb );
   createTool( SMESHOp::OpCreateSubMesh,     meshTb );
   createTool( SMESHOp::OpEditMeshOrSubMesh, meshTb );
@@ -4555,35 +4554,29 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpMeshOrder,         meshTb );
 
   int infoTb       = createTool( tr( "TB_INFO" ),      QString( "SMESHInformationToolbar" ) ) ;
-  INFOS( "infoTb      :" << infoTb );
   createTool( SMESHOp::OpMeshInformation,    infoTb );
   //createTool( SMESHOp::OpStdInfo, meshTb );
   //createTool( SMESHOp::OpWhatIs, meshTb ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createTool( SMESHOp::OpFindElementByPoint, infoTb );
 
   int groupTb      = createTool( tr( "TB_GROUP" ),     QString( "SMESHGroupToolbar" ) ) ;
-  INFOS( "groupTb     :" << groupTb );
-
   createTool( SMESHOp::OpCreateGroup,         groupTb );
   createTool( SMESHOp::OpCreateGeometryGroup, groupTb );
   createTool( SMESHOp::OpConstructGroup,      groupTb );
   createTool( SMESHOp::OpEditGroup,           groupTb );
 
   int ctrl0dTb     = createTool( tr( "TB_CTRL0D" ),    QString( "SMESHNodeControlsToolbar" ) ) ;
-  INFOS( "ctrl0dTb    :" << ctrl0dTb );
   createTool( SMESHOp::OpFreeNode,  ctrl0dTb );
   createTool( SMESHOp::OpEqualNode, ctrl0dTb );
   //createTool( SMESHOp::OpNodeConnectivityNb, ctrl0dTb );
 
   int ctrl1dTb     = createTool( tr( "TB_CTRL1D" ),    QString( "SMESHEdgeControlsToolbar" ) ) ;
-  INFOS( "ctrl1dTb    :" << ctrl1dTb );
   createTool( SMESHOp::OpFreeBorder, ctrl1dTb );
   createTool( SMESHOp::OpLength,     ctrl1dTb );
   createTool( SMESHOp::OpConnection, ctrl1dTb );
   createTool( SMESHOp::OpEqualEdge,  ctrl1dTb );
 
   int ctrl2dTb     = createTool( tr( "TB_CTRL2D" ),    QString( "SMESHFaceControlsToolbar" ) ) ;
-  INFOS( "ctrl2dTb    :" << ctrl2dTb );
   createTool( SMESHOp::OpFreeEdge,            ctrl2dTb );
   createTool( SMESHOp::OpFreeFace,            ctrl2dTb );
   createTool( SMESHOp::OpBareBorderFace,      ctrl2dTb );
@@ -4649,7 +4642,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   //createTool( SMESHOp::OpRenumberingElements, renumbTb );
 
   int transformTb  = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ) ;
-  INFOS( "transformTb :" << transformTb );
   createTool( SMESHOp::OpMergeNodes,     transformTb );
   createTool( SMESHOp::OpMergeElements,  transformTb );
   createTool( SMESHOp::OpTranslation,    transformTb );
@@ -4661,7 +4653,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpDuplicateNodes, transformTb );
 
   int modifyTb     = createTool( tr( "TB_MODIFY" ),    QString( "SMESHModificationToolbar" ) ) ;
-  INFOS( "modifyTb    :" << modifyTb );
   createTool( SMESHOp::OpConvertMeshToQuadratic, modifyTb );
   createTool( SMESHOp::OpCreateBoundaryElements, modifyTb );
   createTool( SMESHOp::OpExtrusion,              modifyTb );
@@ -4681,7 +4672,6 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // Adaptation - begin
   int adaptTb      = createTool( tr( "TB_ADAPTATION" ),QString( "SMESHAdaptationToolbar" ) ) ;
-  INFOS( "adaptTb     :" << adaptTb );
   createTool( SMESHOp::OpUniformRefinement,    adaptTb );
   createTool( SMESHOp::OpHONewCase,            adaptTb );
   createTool( SMESHOp::OpHOCaseFollow,         adaptTb );
@@ -4692,11 +4682,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   // Adaptation - end
 
   int measuremTb   = createTool( tr( "TB_MEASUREM" ),  QString( "SMESHMeasurementsToolbar" ) ) ;
-  INFOS( "measuremTb  :" << measuremTb );
   createTool( SMESHOp::OpMinimumDistance, measuremTb );
 
   int dispModeTb   = createTool( tr( "TB_DISP_MODE" ), QString( "SMESHDisplayModeToolbar" ) );
-  INFOS( "dispModeTb  :" << dispModeTb );
   createTool( SMESHOp::OpUpdate, dispModeTb );
 
   QString lc = "$";        // VSR : instead of QtxPopupSelection::defEquality();
