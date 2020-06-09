@@ -350,7 +350,10 @@ class Mesh_Algorithm:
                   from SHAPERSTUDY_utils import getEngine
                   gen = getEngine()
                   if gen:
-                    faceIDs = gen.GetIShapesOperations().GetAllSubShapesIDs(shape, self.mesh.geompyD.ShapeType["FACE"], False)
+                    aShapeOp = gen.GetIShapesOperations()
+                    ff = aShapeOp.ExtractSubShapes( shape, self.mesh.geompyD.ShapeType["FACE"], False)
+                    for f in ff:
+                      faceIDs.append( aShapeOp.GetSubShapeIndex( self.mesh.geom, f ))
             faces = faceIDs
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
@@ -410,7 +413,10 @@ class Mesh_Algorithm:
                 from SHAPERSTUDY_utils import getEngine
                 gen = getEngine()
                 if gen:
-                  edgeIDs = gen.GetIShapesOperations().GetAllSubShapesIDs(shape, self.mesh.geompyD.ShapeType["EDGE"], False)
+                  aShapeOp = gen.GetIShapesOperations()
+                  ee = aShapeOp.ExtractSubShapes( shape, self.mesh.geompyD.ShapeType["EDGE"], False)
+                  for e in ee:
+                    edgeIDs.append( aShapeOp.GetSubShapeIndex( self.mesh.geom, e ))
             edges = edgeIDs
         hyp = self.Hypothesis("ViscousLayers2D",
                               [thickness, numberOfLayers, stretchFactor, edges, isEdgesToIgnore],
