@@ -1122,15 +1122,15 @@
     </message>
     <message>
         <source>MEN_HOMARD_CREATE_CASE</source>
-        <translation>Création d'un cas</translation>
+        <translation>Création d'un cas d'adaptation</translation>
     </message>
     <message>
         <source>MEN_HOMARD_FOLLOW_ITERATION</source>
-        <translation>Poursuite d'une itération.</translation>
+        <translation>Poursuite d'une itération d'adaptation</translation>
     </message>
     <message>
         <source>MEN_HOMARD_NEW_ITERATION</source>
-        <translation>Création d'une itération</translation>
+        <translation>Création d'une itération d'adaptation</translation>
     </message>
     <message>
         <source>MEN_HOMARD_COMPUTE</source>
@@ -3197,11 +3197,11 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>STB_REF_HOMARD</source>
-        <translation>Raffinement avec HOMARD</translation>
+        <translation>Adaptation avec HOMARD</translation>
     </message>
     <message>
         <source>STB_HOMARD_CREATE_CASE</source>
-        <translation>Création d'un nouveau cas</translation>
+        <translation>Création d'un nouveau cas d'adaptation avec HOMARD</translation>
     </message>
     <message>
         <source>STB_HOMARD_FOLLOW_ITERATION</source>
@@ -3933,11 +3933,11 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>TOP_HOMARD_CREATE_CASE</source>
-        <translation>Création d'un cas</translation>
+        <translation>Création d'un cas d'adaptation avec HOMARD</translation>
     </message>
     <message>
         <source>TOP_HOMARD_FOLLOW_ITERATION</source>
-        <translation>Poursuite d'une itération.</translation>
+        <translation>Poursuite d'une itération d'adaptation avec HOMARD</translation>
     </message>
     <message>
         <source>TOP_HOMARD_NEW_ITERATION</source>

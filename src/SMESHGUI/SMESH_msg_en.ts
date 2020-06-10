@@ -346,11 +346,11 @@
     </message>
     <message>
         <source>MEN_REF_HOMARD</source>
-        <translation>Refinement with HOMARD</translation>
+        <translation>Adaptation with HOMARD</translation>
     </message>
     <message>
         <source>MEN_HOMARD_CREATE_CASE</source>
-        <translation>New case</translation>
+        <translation>New case for adaptation with HOMARD</translation>
     </message>
     <message>
         <source>MEN_HOMARD_FOLLOW_ITERATION</source>
@@ -3238,7 +3238,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>STB_HOMARD_CREATE_CASE</source>
-        <translation>Creation of a new case</translation>
+        <translation>Creation of a new case for adaptation with HOMARD</translation>
     </message>
     <message>
         <source>STB_HOMARD_FOLLOW_ITERATION</source>

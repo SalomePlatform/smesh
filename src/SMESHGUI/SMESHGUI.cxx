@@ -4760,19 +4760,15 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh_submesh );
   createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh_group, "&& selcount=1 && dim>=2");
-  //popupMgr()->insert( separator(), -1, 0 );
-
-  //popupMgr()->insert( separator(), -1, 0 );
+  popupMgr()->insert( separator(), -1, 0 );
 
   // Adaptation - begin
   createPopupItem( SMESHOp::OpUniformRefinement,    OB, mesh );
   createPopupItem( SMESHOp::OpHONewCase,            OB, mesh );
-  createPopupItem( SMESHOp::OpHOCaseFollow,         OB, mesh );
-  createPopupItem( SMESHOp::OpHONewIter,            OB, mesh );
-  createPopupItem( SMESHOp::OpHOIterCompute,        OB, mesh );
-  createPopupItem( SMESHOp::OpHOIterComputePublish, OB, mesh );
-  createPopupItem( SMESHOp::OpHOEdit,               OB, mesh );
-  createPopupItem( SMESHOp::OpHODelete,             OB, mesh );
+//   createPopupItem( SMESHOp::OpHOCaseFollow,         OB, mesh );
+//   createPopupItem( SMESHOp::OpHONewIter,            OB, mesh );
+//   createPopupItem( SMESHOp::OpHOIterCompute,        OB, mesh );
+//   createPopupItem( SMESHOp::OpHOIterComputePublish, OB, mesh );
   createPopupItem( SMESHOp::OpMGAdapt,              OB, mesh );
   // Adaptation - end
 
