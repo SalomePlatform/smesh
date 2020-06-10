@@ -2942,40 +2942,76 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Adaptation</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_PUBLICATION</source>
-        <translation>Publication</translation>
+        <source>ADAPT_PREF_NONE</source>
+        <translation>None</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_PUBLICATION_MAILLAGE_IN</source>
-        <translation>IN meshes</translation>
+        <source>ADAPT_PREF_HOMARD_PUBLICATION</source>
+        <translation>Publication of meshes with HOMARD</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_PUBLICATION_MAILLAGE_OUT</source>
-        <translation>OUT meshes</translation>
+        <source>ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_IN</source>
+        <translation>IN mesh</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_MAX</source>
-        <translation>Maximum numbers for a YACS schema with HOMARD</translation>
+        <source>ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_OUT</source>
+        <translation>OUT mesh</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_MAX_ITER</source>
-        <translation>Iterations</translation>
+        <source>ADAPT_PREF_HOMARD_YACS</source>
+        <translation>A YACS schema with HOMARD</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_MAX_NODE</source>
-        <translation>Nodes</translation>
+        <source>ADAPT_PREF_HOMARD_YACS_MAX_ITER</source>
+        <translation>Maximal number of iterations</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_MAX_ELEM</source>
-        <translation>Elements</translation>
+        <source>ADAPT_PREF_HOMARD_YACS_MAX_NODE</source>
+        <translation>Maximal number of nodes</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_CONVERGENCE</source>
-        <translation>Convergence</translation>
+        <source>ADAPT_PREF_HOMARD_YACS_MAX_ELEM</source>
+        <translation>Maximal number of elements</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_TYPE_TEST</source>
+        <source>ADAPT_PREF_HOMARD_YACS_TYPE_CONVERGENCE</source>
         <translation>Test type for a YACS schema with HOMARD</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT</source>
+        <translation>Adaptation with MG-Adapt</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_FILE_MAILLAGE_OUT</source>
+        <translation>Write the OUT mesh</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_PUBLICATION_MAILLAGE_OUT</source>
+        <translation>Publication of the OUT mesh</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP</source>
+        <translation>Size map</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP_LOCAL</source>
+        <translation>Local</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP_BACKGROUND</source>
+        <translation>Background</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP</source>
+        <translation>Time step</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_LAST</source>
+        <translation>Last</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_C</source>
+        <translation>Value</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>

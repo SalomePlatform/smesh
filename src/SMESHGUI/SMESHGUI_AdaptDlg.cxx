@@ -111,32 +111,32 @@ void SMESHGUI_AdaptDlg::action (int theCommandID)
 //   INFOS ("Enregistrement de LanguageShort = " << _LanguageShort.toStdString().c_str() );
 // //   adaptGen->SetLanguageShort(_LanguageShort.toStdString().c_str());
 //
-// // B.2. Les publications
+// // B.2. Les publications avec HOMARD
 //   bool publish_mesh ;
 //
-//   publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_in", false );
+//   publish_mesh = resMgr->booleanValue("HOMARD", "homard_publish_mesh_in", false );
 //   if ( publish_mesh ) { _PublisMeshIN = 1 ; }
 //   else                { _PublisMeshIN = 0 ; }
 //
-//   publish_mesh = resMgr->booleanValue("HOMARD", "publish_mesh_out", false );
+//   publish_mesh = resMgr->booleanValue("HOMARD", "homard_publish_mesh_out", false );
 //   if ( publish_mesh ) { _PublisMeshOUT = 1 ; }
 //   else                { _PublisMeshOUT = 0 ; }
 //
 //   INFOS ("Enregistrement de PublisMeshIN = " << _PublisMeshIN<<", PublisMeshOUT = "<< _PublisMeshOUT);
 // //   adaptGen->SetPublisMesh(_PublisMeshIN, _PublisMeshOUT);
 //
-// // B.3. Les maximum pour YACS
+// // B.3. Les maximum pour YACS avec HOMARD
 //
-//   _YACSMaxIter = resMgr->integerValue("HOMARD", "yacs_max_iter", 0 );
-//   _YACSMaxNode = resMgr->integerValue("HOMARD", "yacs_max_node", 0 );
-//   _YACSMaxElem = resMgr->integerValue("HOMARD", "yacs_max_elem", 0 );
+//   _YACSMaxIter = resMgr->integerValue("HOMARD", "homard_yacs_max_iter", 0 );
+//   _YACSMaxNode = resMgr->integerValue("HOMARD", "homard_yacs_max_node", 0 );
+//   _YACSMaxElem = resMgr->integerValue("HOMARD", "homard_yacs_max_elem", 0 );
 //
 //   INFOS ("Enregistrement de YACSMaxIter = " << _YACSMaxIter<<", YACSMaxNode = "<< _YACSMaxNode<<", YACSMaxElem = "<< _YACSMaxElem);
 // //   adaptGen->SetYACSMaximum(_YACSMaxIter, _YACSMaxNode, _YACSMaxElem);
 //
-// // B.4. La convergence pour YACS
+// // B.4. La convergence pour YACS avec HOMARD
 //
-//   QString QString_v = resMgr->stringValue ( "HOMARD", "yacs_type_test", "None" );
+//   QString QString_v = resMgr->stringValue ( "HOMARD", "homard_yacs_type_test", "None" );
 //   if ( ( QString_v == "VTest > VRef" ) || ( QString_v == "VTest &gt; VRef" ) )      { _YACSTypeTest = 1 ; }
 //   else if ( ( QString_v == "VTest < VRef" ) || ( QString_v == "VTest &lt; VRef" ) ) { _YACSTypeTest = 2 ; }
 //   else                                                                              { _YACSTypeTest = 0 ; }

@@ -2904,40 +2904,76 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Adaptation</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_PUBLICATION</source>
-        <translation>Publication</translation>
+        <source>ADAPT_PREF_NONE</source>
+        <translation>Sans</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_PUBLICATION_MAILLAGE_IN</source>
-        <translation>Les maillages d'entrée</translation>
+        <source>ADAPT_PREF_HOMARD_PUBLICATION</source>
+        <translation>Publication des maillages avec HOMARD</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_PUBLICATION_MAILLAGE_OUT</source>
-        <translation>Les maillages de sortie</translation>
+        <source>ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_IN</source>
+        <translation>Le maillage d'entrée</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_MAX</source>
-        <translation>Nombres maximaux pour un schéma YACS avec HOMARD</translation>
+        <source>ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_OUT</source>
+        <translation>Le maillage de sortie</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_MAX_ITER</source>
-        <translation>Itérations</translation>
+        <source>ADAPT_PREF_HOMARD_YACS</source>
+        <translation>Schéma YACS avec HOMARD</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_MAX_NODE</source>
-        <translation>Noeuds</translation>
+        <source>ADAPT_PREF_HOMARD_YACS_MAX_ITER</source>
+        <translation>Nombre maximal d'itérations</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_MAX_ELEM</source>
-        <translation>Eléments</translation>
+        <source>ADAPT_PREF_HOMARD_YACS_MAX_NODE</source>
+        <translation>Nombre maximal de noeuds</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_CONVERGENCE</source>
-        <translation>Convergence</translation>
+        <source>ADAPT_PREF_HOMARD_YACS_MAX_ELEM</source>
+        <translation>Nombre maximal d'éléments</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_YACS_TYPE_TEST</source>
-        <translation>Type de test pour un schéma YACS avec HOMARD</translation>
+        <source>ADAPT_PREF_HOMARD_YACS_TYPE_CONVERGENCE</source>
+        <translation>Type de test pour la convergence</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT</source>
+        <translation>Adaptation avec MG-Adapt</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_FILE_MAILLAGE_OUT</source>
+        <translation>Ecriture du maillage de sortie</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_PUBLICATION_MAILLAGE_OUT</source>
+        <translation>Publication du maillage de sortie</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP</source>
+        <translation>Carte de tailles</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP_LOCAL</source>
+        <translation>Locale</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP_BACKGROUND</source>
+        <translation>Arrière-plan</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP</source>
+        <translation>Choix du pas de temps</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_LAST</source>
+        <translation>Dernier</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_C</source>
+        <translation>Valeur</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>

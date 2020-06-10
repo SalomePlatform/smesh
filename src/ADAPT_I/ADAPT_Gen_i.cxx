@@ -5317,13 +5317,13 @@ void ADAPT_Gen_i::SetPreferences( )
           {
             std::istringstream chainebis( chaine ) ;
             // 3.2.1. Les publications
-            if ( chaine2 == "publish_mesh_in" )  { chainebis >> PublisMeshIN ; }
-            if ( chaine2 == "publish_mesh_out" ) { chainebis >> PublisMeshOUT ; }
+            if ( chaine2 == "homard_publish_mesh_in" )  { chainebis >> PublisMeshIN ; }
+            if ( chaine2 == "homard_publish_mesh_out" ) { chainebis >> PublisMeshOUT ; }
             // 3.2.2. Les maximum pour YACS
-            if ( chaine2 == "yacs_max_iter" ) { chainebis >> YACSMaxIter ; }
-            if ( chaine2 == "yacs_max_node" ) { chainebis >> YACSMaxNode ; }
-            if ( chaine2 == "yacs_max_elem" ) { chainebis >> YACSMaxElem ; }
-            if ( chaine2 == "yacs_type_test" ) { YACSTypeTestchaine = chaine ; }
+            if ( chaine2 == "homard_yacs_max_iter" ) { chainebis >> YACSMaxIter ; }
+            if ( chaine2 == "homard_yacs_max_node" ) { chainebis >> YACSMaxNode ; }
+            if ( chaine2 == "homard_yacs_max_elem" ) { chainebis >> YACSMaxElem ; }
+            if ( chaine2 == "homard_yacs_type_test" ) { YACSTypeTestchaine = chaine ; }
           }
         }
       }

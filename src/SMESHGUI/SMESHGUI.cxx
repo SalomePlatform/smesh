@@ -5763,33 +5763,50 @@ void SMESHGUI::createPreferences()
   int adaptTab = addPreference( tr( "ADAPT_PREF_TAB_GENERAL" ) );
   int bloc, pref ;
   // Refinement with HOMARD
-  bloc = addPreference( tr( "ADAPT_PREF_PUBLICATION" ), adaptTab );
+  bloc = addPreference( tr( "ADAPT_PREF_HOMARD_PUBLICATION" ), adaptTab );
   setPreferenceProperty( bloc, "columns", 1 );
-  pref = addPreference( tr( "ADAPT_PREF_PUBLICATION_MAILLAGE_IN" ), bloc, LightApp_Preferences::Bool, "HOMARD", "publish_mesh_in" );
-  pref = addPreference( tr( "ADAPT_PREF_PUBLICATION_MAILLAGE_OUT" ), bloc, LightApp_Preferences::Bool, "HOMARD", "publish_mesh_out" );
+  pref = addPreference( tr( "ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_IN" ), bloc, LightApp_Preferences::Bool, "HOMARD", "homard_publish_mesh_in" );
+  pref = addPreference( tr( "ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_OUT" ), bloc, LightApp_Preferences::Bool, "HOMARD", "homard_publish_mesh_out" );
 
-  bloc = addPreference( tr( "ADAPT_PREF_YACS_MAX" ), adaptTab );
+  // YACS with HOMARD
+  bloc = addPreference( tr( "ADAPT_PREF_HOMARD_YACS" ), adaptTab );
   setPreferenceProperty( bloc, "columns", 1 );
-  pref = addPreference( tr( "ADAPT_PREF_YACS_MAX_ITER" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "yacs_max_iter" );
+  pref = addPreference( tr( "ADAPT_PREF_HOMARD_YACS_MAX_ITER" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "homard_yacs_max_iter" );
   setPreferenceProperty( pref, "min",  0 );
   setPreferenceProperty( pref, "max",  100000000 );
   setPreferenceProperty( pref, "step", 1 );
-  pref = addPreference( tr( "ADAPT_PREF_YACS_MAX_NODE" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "yacs_max_node" );
+  pref = addPreference( tr( "ADAPT_PREF_HOMARD_YACS_MAX_NODE" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "homard_yacs_max_node" );
   setPreferenceProperty( pref, "min",  0 );
   setPreferenceProperty( pref, "max",  100000000 );
   setPreferenceProperty( pref, "step", 1000 );
-  pref = addPreference( tr( "ADAPT_PREF_YACS_MAX_ELEM" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "yacs_max_elem" );
+  pref = addPreference( tr( "ADAPT_PREF_HOMARD_YACS_MAX_ELEM" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "homard_yacs_max_elem" );
   setPreferenceProperty( pref, "min",  0 );
   setPreferenceProperty( pref, "max",  100000000 );
   setPreferenceProperty( pref, "step", 1000 );
-  bloc = addPreference( tr( "ADAPT_PREF_YACS_CONVERGENCE" ), adaptTab );
-  setPreferenceProperty( bloc, "columns", 1 );
-  pref = addPreference( tr( "ADAPT_PREF_YACS_TYPE_TEST" ), bloc, LightApp_Preferences::Selector, "HOMARD", "yacs_type_test" );
+  pref = addPreference( tr( "ADAPT_PREF_HOMARD_YACS_TYPE_CONVERGENCE" ), bloc, LightApp_Preferences::Selector, "HOMARD", "homard_yacs_type_test" );
   QStringList aListOfTypeTest;
-  aListOfTypeTest << "None";
+  aListOfTypeTest << tr( "ADAPT_PREF_NONE" );
   aListOfTypeTest << "VTest > VRef";
   aListOfTypeTest << "VTest < VRef";
   setPreferenceProperty( pref, "strings", aListOfTypeTest );
+
+  // MG-Adapt
+  bloc = addPreference( tr( "ADAPT_PREF_MG_ADAPT" ), adaptTab );
+  setPreferenceProperty( bloc, "columns", 1 );
+  pref = addPreference( tr( "ADAPT_PREF_MG_ADAPT_FILE_MAILLAGE_OUT" ), bloc, LightApp_Preferences::Bool, "HOMARD", "mg_adapt_file_mesh_out" );
+  pref = addPreference( tr( "ADAPT_PREF_MG_ADAPT_PUBLICATION_MAILLAGE_OUT" ), bloc, LightApp_Preferences::Bool, "HOMARD", "mg_adapt_publish_mesh_out" );
+  pref = addPreference( tr( "ADAPT_PREF_MG_ADAPT_SIZE_MAP" ), bloc, LightApp_Preferences::Selector, "HOMARD", "mg_adapt_size_map" );
+  QStringList aListOfSizeMap;
+  aListOfSizeMap << tr( "ADAPT_PREF_MG_ADAPT_SIZE_MAP_LOCAL" );
+  aListOfSizeMap << tr( "ADAPT_PREF_MG_ADAPT_SIZE_MAP_BACKGROUND" );
+  aListOfSizeMap << tr( "ADAPT_PREF_NONE" );;
+  setPreferenceProperty( pref, "strings", aListOfSizeMap );
+  pref = addPreference( tr( "ADAPT_PREF_MG_ADAPT_TIME_STEP" ), bloc, LightApp_Preferences::Selector, "HOMARD", "mg_adapt_time_step" );
+  QStringList aListOfTimeStep;
+  aListOfTimeStep << tr( "ADAPT_PREF_NONE" );
+  aListOfTimeStep << tr( "ADAPT_PREF_MG_ADAPT_TIME_STEP_LAST" );
+  aListOfTimeStep << tr( "ADAPT_PREF_MG_ADAPT_TIME_STEP_C" );;
+  setPreferenceProperty( pref, "strings", aListOfTimeStep );
   // Adaptation - end
 
 }
