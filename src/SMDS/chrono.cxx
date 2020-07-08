@@ -21,6 +21,7 @@
 #include "utilities.h"
 
 using namespace std;
+using namespace SMDS;
 
 cntStruct* counters::_ctrs = 0;
 int counters::_nbChrono = 0;
