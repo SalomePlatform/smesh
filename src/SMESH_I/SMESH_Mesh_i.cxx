@@ -6757,7 +6757,8 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
   TDimHypList dimHypListArr[4]; // dimHyp list for each shape dimension
 
   map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
-  for ( ; i_sm != _mapSubMesh.end(); i_sm++ ) {
+  for ( ; i_sm != _mapSubMesh.end(); i_sm++ )
+  {
     ::SMESH_subMesh* sm = (*i_sm).second;
     // shape of submesh
     const TopoDS_Shape& aSubMeshShape = sm->GetSubShape();
@@ -6767,7 +6768,8 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
     // Find out dimensions where the submesh can be concurrent.
     // We define the dimensions by algo of each of hypotheses in hypList
     list <const SMESHDS_Hypothesis*>::const_iterator hypIt = hypList.begin();
-    for( ; hypIt != hypList.end(); hypIt++ ) {
+    for( ; hypIt != hypList.end(); hypIt++ )
+    {
       SMESH_Algo* anAlgo = 0;
       const SMESH_Hypothesis* hyp = dynamic_cast<const SMESH_Hypothesis*>(*hypIt);
       if ( hyp->GetType() != SMESHDS_Hypothesis::PARAM_ALGO )

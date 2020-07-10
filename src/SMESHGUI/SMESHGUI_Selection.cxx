@@ -43,8 +43,6 @@
 #include <SalomeApp_Application.h>
 #include <LightApp_VTKSelector.h>
 #include <SVTK_ViewWindow.h>
-#include <LightApp_SelectionMgr.h>
-#include <LightApp_DataOwner.h>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -79,8 +77,6 @@ void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr
 
   if( mgr )
   {
-    myOwners.clear();
-    mgr->selected(myOwners, client);
     for( int i=0, n=count(); i<n; i++ ) {
       myTypes.append( typeName( type( entry( i ) ) ) );
       myControls.append( controlMode( i ) );
@@ -659,20 +655,22 @@ bool SMESHGUI_Selection::hasGeomReference( int ind ) const
 
 bool SMESHGUI_Selection::canBreakLink( int ind ) const
 {
-  if ( ind >= 0 && ind < myTypes.count()) {
-    if (isReference(ind)) {
-      SUIT_DataOwner* aOwn = myOwners.at(ind);
-      LightApp_DataOwner* sowner = dynamic_cast<LightApp_DataOwner*>(aOwn);
-      QString aEntry = sowner->entry();
-      _PTR(SObject) aSObject = SMESH::getStudy()->FindObjectID(aEntry.toStdString());
-      _PTR(SObject) aFatherObj = aSObject->GetFather();
-      _PTR(SComponent) aComponent = aFatherObj->GetFatherComponent();
-      if (aComponent->ComponentDataType() == "SMESH") {
-        QString aObjEntry = entry(ind);
-        _PTR(SObject) aGeomSObject = SMESH::getStudy()->FindObjectID(aObjEntry.toStdString());
-        GEOM::GEOM_Object_var aObject = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aGeomSObject);
-        if (!aObject->_is_nil())
-          return aObject->IsParametrical();
+  if ( ind >= 0 && isReference(ind) ) {
+    QString aEntry = objectInfo(ind, OI_RefEntry).toString();
+    if (!aEntry.isEmpty()) {
+      _PTR(SObject) aSObject = SMESH::getStudy()->FindObjectID( aEntry.toStdString());
+      if (aSObject) {
+	_PTR(SObject) aFatherObj = aSObject->GetFather();
+	if (aFatherObj) {
+	  _PTR(SComponent) aComponent = aFatherObj->GetFatherComponent();
+	  if (aComponent && aComponent->ComponentDataType() == "SMESH") {
+	    QString aObjEntry = entry(ind);
+	    _PTR(SObject) aGeomSObject = SMESH::getStudy()->FindObjectID(aObjEntry.toStdString());
+	    GEOM::GEOM_Object_var aObject = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aGeomSObject);
+	    if (!aObject->_is_nil())
+	      return aObject->IsParametrical();
+          }
+        }
       }
     }
   }
