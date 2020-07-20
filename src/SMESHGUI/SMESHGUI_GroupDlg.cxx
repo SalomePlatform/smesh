@@ -74,6 +74,7 @@
 #include <vtkActorCollection.h>
 
 // OCCT includes
+#include <TColStd_MapOfAsciiString.hxx>
 #include <TColStd_MapOfInteger.hxx>
 
 // Qt includes
@@ -522,19 +523,38 @@ QString SMESHGUI_GroupDlg::GetDefaultName(const QString& theOperation)
   return aName;
 }
 
+//=======================================================================
+//function : setDefaultName
+//purpose  : 
+//=======================================================================
+
 void  SMESHGUI_GroupDlg::setDefaultName() const
 {
   QString aResName;
-  int i=1;
-  QString aPrefix ="Group_";
-  _PTR(SObject) anObj;
-  do
+  const QString aPrefix ="Group_";
+
+  if ( myMesh->_is_nil() )
   {
-    aResName = aPrefix + QString::number( i++ );
-    anObj = SMESH::getStudy()->FindObject( aResName.toUtf8().constData() );
+    aResName = aPrefix + "1";
   }
-  while ( anObj );
-  myName->setText(aResName); 
+  else
+  {
+    SMESH::ListOfGroups_var allGroups = myMesh->GetGroups();
+    TColStd_MapOfAsciiString allNames( allGroups->length() );
+    for ( CORBA::ULong i = 0; i < allGroups->length(); ++i )
+    {
+      CORBA::String_var name = allGroups[i]->GetName();
+      allNames.Add( name.in() );
+    }
+    int i = 1;
+    while ( true )
+    {
+      aResName = aPrefix + QString::number( i++ );
+      if ( !allNames.Contains( aResName.toUtf8().constData() ))
+        break;
+    }
+  }
+  myName->setText(aResName);
 }
 
 //=================================================================================
@@ -944,7 +964,8 @@ bool SMESHGUI_GroupDlg::onApply()
 
     if (myGroup->_is_nil()) { // creation or conversion
       // check if group on geometry is not null
-      if (!myGroupOnGeom->_is_nil() || !myGroupOnFilter->_is_nil()) {
+      if (!myGroupOnGeom->_is_nil() || !myGroupOnFilter->_is_nil())
+      {
         if (myMesh->_is_nil())
           return false;
         if ( myGroupOnGeom->_is_nil() )
@@ -958,7 +979,8 @@ bool SMESHGUI_GroupDlg::onApply()
       }
     }
 
-    if (myGroup->_is_nil()) { // creation
+    if (myGroup->_is_nil()) // creation
+    {
       if (myMesh->_is_nil())
         return false;
 
@@ -990,10 +1012,10 @@ bool SMESHGUI_GroupDlg::onApply()
           myGroup->Add(anIdList.inout());
         }
       }
+    }
 
-
-    } else { // edition
-
+    else // edition
+    {
       resultGroup = SMESH::SMESH_GroupBase::_narrow( myGroup );
       isCreation = false;
 
@@ -1111,6 +1133,7 @@ bool SMESHGUI_GroupDlg::onApply()
     }
     anIsOk = true;
   }
+
   if (myGrpTypeId == 2) // group on filter
   {
     if ( myFilter->_is_nil() ) return false;
@@ -1170,7 +1193,7 @@ bool SMESHGUI_GroupDlg::onApply()
           Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
           if ( isConversion ) { // need to reset TVisualObj and actor
             SMESH::RemoveVisualObjectWithActors( anIO->getEntry(), true );
-            SMESH::Update( anIO,true);
+            SMESH::Update( anIO, true );
             myActorsList.clear();
             anActor = SMESH::FindActorByEntry( anIO->getEntry() );
             if ( !anActor ) return false;

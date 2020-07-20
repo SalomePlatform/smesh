@@ -660,15 +660,15 @@ bool SMESHGUI_Selection::canBreakLink( int ind ) const
     if (!aEntry.isEmpty()) {
       _PTR(SObject) aSObject = SMESH::getStudy()->FindObjectID( aEntry.toStdString());
       if (aSObject) {
-	_PTR(SObject) aFatherObj = aSObject->GetFather();
-	if (aFatherObj) {
-	  _PTR(SComponent) aComponent = aFatherObj->GetFatherComponent();
-	  if (aComponent && aComponent->ComponentDataType() == "SMESH") {
-	    QString aObjEntry = entry(ind);
-	    _PTR(SObject) aGeomSObject = SMESH::getStudy()->FindObjectID(aObjEntry.toStdString());
-	    GEOM::GEOM_Object_var aObject = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aGeomSObject);
-	    if (!aObject->_is_nil())
-	      return aObject->IsParametrical();
+        _PTR(SObject) aFatherObj = aSObject->GetFather();
+        if (aFatherObj) {
+          _PTR(SComponent) aComponent = aFatherObj->GetFatherComponent();
+          if (aComponent && aComponent->ComponentDataType() == "SMESH") {
+            QString aObjEntry = entry(ind);
+            _PTR(SObject) aGeomSObject = SMESH::getStudy()->FindObjectID(aObjEntry.toStdString());
+            GEOM::GEOM_Object_var aObject = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aGeomSObject);
+            if (!aObject->_is_nil())
+              return aObject->IsParametrical();
           }
         }
       }

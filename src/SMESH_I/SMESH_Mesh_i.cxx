@@ -5821,15 +5821,21 @@ void SMESH_Mesh_i::CreateGroupServants()
     GEOM::GEOM_Object_var shapeVar = _gen_i->ShapeToGeomObject( shape );
     _gen_i->PublishGroup( aMesh, groupVar, shapeVar, group->GetName());
   }
+
   if ( !addedIDs.empty() )
   {
     // python dump
-    set<int>::iterator id = addedIDs.begin();
-    for ( ; id != addedIDs.end(); ++id )
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator i_grp = _mapGroups.begin();
+    for ( int index = 0; i_grp != _mapGroups.end(); ++index, ++i_grp )
     {
-      map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(*id);
-      int i = std::distance( _mapGroups.begin(), it );
-      TPythonDump() << it->second << " = " << aMesh << ".GetGroups()[ "<< i << " ]";
+      set<int>::iterator it = addedIDs.find( i_grp->first );
+      if ( it != addedIDs.end() )
+      {
+        TPythonDump() << i_grp->second << " = " << aMesh << ".GetGroups()[ "<< index << " ]";
+        addedIDs.erase( it );
+        if ( addedIDs.empty() )
+          break;
+      }
     }
   }
 }
