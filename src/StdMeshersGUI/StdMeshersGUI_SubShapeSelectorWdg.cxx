@@ -74,7 +74,8 @@ StdMeshersGUI_SubShapeSelectorWdg
 ::StdMeshersGUI_SubShapeSelectorWdg( QWidget *        parent,
                                      TopAbs_ShapeEnum subShType,
                                      const bool       toShowList,
-                                     const bool       toShowActivateBtn ):
+                                     const bool       toShowActivateBtn,
+                                     const int        minListWidth ):
   QWidget( parent ),
   myMaxSize( -1 ),
   myPreviewActor( 0 )
@@ -93,8 +94,8 @@ StdMeshersGUI_SubShapeSelectorWdg
     myAddButton      = new QPushButton( tr( "SMESH_BUT_ADD" ),    this );
     myRemoveButton   = new QPushButton( tr( "SMESH_BUT_REMOVE" ), this );
     myListWidget->setSelectionMode( QListWidget::ExtendedSelection );
-    myListWidget->setMinimumWidth(300);
-    myListWidget->setWrapping(true);
+    myListWidget->setMinimumWidth( minListWidth );
+    myListWidget->setWrapping( true );
     myActivateButton->setCheckable( true );
   }
   else
@@ -256,6 +257,20 @@ void StdMeshersGUI_SubShapeSelectorWdg::ShowPreview( bool visible)
 
 //================================================================================
 /*!
+ * \brief Connect selection slots
+  * \param other - another StdMeshersGUI_ObjectReferenceParamWdg
+ */
+//================================================================================
+
+void StdMeshersGUI_SubShapeSelectorWdg::
+AvoidSimultaneousSelection ( StdMeshersGUI_SubShapeSelectorWdg* other)
+{
+  connect(other, SIGNAL(selectionActivated()), this, SLOT(deactivateSelection()));
+  connect(this, SIGNAL(selectionActivated()), other, SLOT(deactivateSelection()));
+}
+
+//================================================================================
+/*!
  * \brief Connect/disconnect to change of selection
  */
 //================================================================================
@@ -275,7 +290,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::ActivateSelection( bool toActivate )
 
   if ( toActivate )
   {
-    connect( mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(selectionIntoArgument()));
+    connect( mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(selectionIntoArgument()));
   }
   else
   {
@@ -284,6 +299,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::ActivateSelection( bool toActivate )
 
   if ( sender() == myActivateButton )
     ShowPreview( toActivate );
+
+  if ( toActivate )
+    emit selectionActivated();
 }
 
 //================================================================================

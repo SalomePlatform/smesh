@@ -40,6 +40,8 @@
 #include <TColStd_HSequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
 
+#include <cstring>
+
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
 #else
@@ -77,7 +79,7 @@ namespace SMESH
       TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
       if(!aCollection.IsEmpty())
       {
-        const std::string & objEntry = SMESH_Gen_i::GetSMESHGen()->GetLastObjEntry();
+        const std::string & objEntry = aSMESHGen->GetLastObjEntry();
         if ( !objEntry.empty() )
           aCollection += (TVar::ObjPrefix() + objEntry ).c_str();
         aSMESHGen->AddToPythonScript(aCollection);
@@ -1387,4 +1389,56 @@ void SMESH_Gen_i::CleanPythonTrace()
   if (!myPythonScript.IsNull()) {
     myPythonScript->Clear();
   }
+}
+
+//================================================================================
+/*!
+ * \brief Count inclusions of a string in a raw Python dump script
+ */
+//================================================================================
+
+int SMESH_Gen_i::CountInPyDump(const TCollection_AsciiString& theText)
+{
+  int count = 0;
+
+  SALOMEDS::Study_var aStudy = getStudyServant();
+  if ( CORBA::is_nil( aStudy ))
+    return count;
+
+  SMESH_Gen_i* me = GetSMESHGen();
+  CORBA::String_var compDataType = me->ComponentDataType();
+  SALOMEDS::SObject_wrap aSO = aStudy->FindComponent( compDataType.in() );
+  if ( CORBA::is_nil( aSO ))
+    return count;
+
+  // Trace saved in the study
+  SALOMEDS::GenericAttribute_wrap attr;
+  if ( aSO->FindAttribute( attr.inout(), "AttributePythonObject" ))
+  {
+    SALOMEDS::AttributePythonObject_var pyAttr =
+      SALOMEDS::AttributePythonObject::_narrow( attr );
+    CORBA::String_var script = pyAttr->GetObject();
+    for ( const char * scriptPos = script.in(); true; ++scriptPos )
+      if (( scriptPos = strstr( scriptPos, theText.ToCString() )))
+        ++count;
+      else
+        break;
+  }
+
+  // New python commands
+  if ( !me->myPythonScript.IsNull() )
+  {
+    const int nbLines = me->myPythonScript->Length();
+    for ( int i = 1; i <= nbLines; ++i )
+    {
+      const TCollection_AsciiString& line = me->myPythonScript->Value( i );
+      for ( int loc = 1; loc <= line.Length(); ++loc )
+        if (( loc = line.Location( theText, loc, line.Length() )))
+          ++count;
+        else
+          break;
+    }
+  }
+
+  return count;
 }
