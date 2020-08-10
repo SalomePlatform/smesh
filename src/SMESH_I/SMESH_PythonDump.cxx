@@ -1080,9 +1080,14 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString anUpdatedScript;
 
   Resource_DataMapOfAsciiStringAsciiString mapRemoved;
-  Resource_DataMapOfAsciiStringAsciiString mapEntries; // names and entries present in anUpdatedScript
+  Resource_DataMapOfAsciiStringAsciiString mapEntries; // { entry: name } present in anUpdatedScript
   Standard_Integer objectCounter = 0;
   TCollection_AsciiString anEntry, aName, aGUIName, aBaseName("smeshObj_");
+
+  std::string           compDataType = ComponentDataType(); // SMESH module's data type
+  SALOMEDS::SComponent_var   smeshSO = getStudyServant()->FindComponent( compDataType.c_str() );
+  CORBA::String_var          smeshID = smeshSO->GetID();
+  TCollection_AsciiString smeshEntry = smeshID.in();
 
   // Treat every script line and add it to anUpdatedScript
   for ( linesIt = lines.begin(); linesIt != lines.end(); ++linesIt )
@@ -1135,15 +1140,22 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
         }
         else
         {
-          // Removed Object
-          do {
-            aName = aBaseName + (++objectCounter);
-          } while (theObjectNames.IsBound(aName));
+          if ( !anEntry.StartsWith( smeshEntry )) // not SMESH object
+          {
+            aName = SMESH::TPythonDump::NotPublishedObjectName();
+          }
+          else
+          {
+            // Removed Object
+            do {
+              aName = aBaseName + (++objectCounter);
+            } while (theObjectNames.IsBound(aName));
 
-          if ( !aRemovedObjIDs.count( anEntry ) && aLine.Value(1) != '#')
-            mapRemoved.Bind(anEntry, aName);
+            if ( !aRemovedObjIDs.count( anEntry ) && aLine.Value(1) != '#')
+              mapRemoved.Bind(anEntry, aName);
 
-          theObjectNames.Bind(anEntry, aName);
+            theObjectNames.Bind(anEntry, aName);
+          }
         }
         theObjectNames.Bind(aName, anEntry); // to detect same name of diff objects
       }
