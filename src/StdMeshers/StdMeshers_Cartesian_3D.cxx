@@ -4958,7 +4958,7 @@ namespace
   /*!
    * \brief Return created volumes and volumes that can have free facet because of
    *        skipped small volume. Also create mesh faces on free facets
-   *        of adjacent not-cut volumes id the result volume is too small.
+   *        of adjacent not-cut volumes if the result volume is too small.
    */
   void Hexahedron::getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryElems )
   {
@@ -5005,8 +5005,8 @@ namespace
           if ( !faceID )
             break;
           if ( _grid->IsInternal( faceID ) ||
-               _grid->IsShared( faceID ) ||
-               _grid->IsBoundaryFace( faceID ))
+               _grid->IsShared( faceID ) /*||
+               _grid->IsBoundaryFace( faceID )*/)
             break; // create only if a new face will be used by other 3D algo
         }
 
