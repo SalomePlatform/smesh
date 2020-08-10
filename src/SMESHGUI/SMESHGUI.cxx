@@ -4694,7 +4694,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpFileInformation,   OB, mesh, "&& selcount=1 && isImported" );
   createPopupItem( SMESHOp::OpMeshInformation,   OB, mesh_part );
-  createPopupItem( SMESHOp::OpFindElementByPoint,OB, mesh_group, "&& selcount=1" );
+  createPopupItem( SMESHOp::OpFindElementByPoint,OB, mesh_group, "&& selcount=1 && " + hasElems );
   createPopupItem( SMESHOp::OpOverallMeshQuality,OB, mesh_part );
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpCreateGroup,       OB, mesh, "&& selcount=1" );
@@ -4704,7 +4704,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( SMESHOp::OpEditHypothesis,    OB, hypo, "&& isEditableHyp");
   createPopupItem( SMESHOp::OpUnassign,          OB, hyp_alg );
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh_submesh );
+  createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh_submesh, "&& " + hasElems );
   createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh_group, "&& selcount=1 && dim>=2");
   //popupMgr()->insert( separator(), -1, 0 );
 
@@ -4750,7 +4750,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpMeshInformation,    View, mesh_part );
   createPopupItem( SMESHOp::OpOverallMeshQuality, View, mesh_part );
-  createPopupItem( SMESHOp::OpFindElementByPoint, View, mesh );
+  createPopupItem( SMESHOp::OpFindElementByPoint, View, mesh, "&& " + hasElems);
   popupMgr()->insert( separator(), -1, 0 );
 
   createPopupItem( SMESHOp::OpUpdate,           OB + " " + View, mesh_part );
@@ -5880,6 +5880,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   case SMESHOp::OpCompute:
   case SMESHOp::OpComputeSubMesh:
     op = new SMESHGUI_ComputeOp();
+    break;
+  case SMESHOp::OpShowErrors:
+    op = new SMESHGUI_ShowErrorsOp();
     break;
   case SMESHOp::OpPreCompute:
     op = new SMESHGUI_PrecomputeOp();
