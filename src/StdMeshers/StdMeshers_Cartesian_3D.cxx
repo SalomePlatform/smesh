@@ -362,6 +362,9 @@ namespace
     gp_XYZ             _origin;
     gp_Mat             _invB; // inverted basis of _axes
 
+    // index shift within _nodes of nodes of a cell from the 1st node
+    int                _nodeShift[8];
+
     vector< const SMDS_MeshNode* >    _nodes; // mesh nodes at grid nodes
     vector< const F_IntersectPoint* > _gridIntP; // grid node intersection with geometry
     ObjectPool< E_IntersectPoint >    _edgeIntPool; // intersections with EDGEs
@@ -427,6 +430,7 @@ namespace
     bool IsBoundaryFace( TGeomID face ) const { return _geometry._boundaryFaces.Contains( face ); }
     void SetOnShape( const SMDS_MeshNode* n, const F_IntersectPoint& ip, bool unset=false );
     bool IsToCheckNodePos() const { return !_toAddEdges && _toCreateFaces; }
+    bool IsToRemoveExcessEntities() const { return !_toAddEdges; }
 
     void SetCoordinates(const vector<double>& xCoords,
                         const vector<double>& yCoords,
@@ -759,9 +763,13 @@ namespace
     // --------------------------------------------------------------------------------
     struct _Face
     {
+      SMESH_Block::TShapeID   _name;
       vector< _OrientedLink > _links;       // links on GridLine's
       vector< _Link >         _polyLinks;   // links added to close a polygonal face
       vector< _Node* >        _eIntNodes;   // nodes at intersection with EDGEs
+
+      _Face():_name( SMESH_Block::ID_NONE )
+      {}
       bool IsPolyLink( const _OrientedLink& ol )
       {
         return _polyLinks.empty() ? false :
@@ -789,41 +797,72 @@ namespace
     // --------------------------------------------------------------------------------
     struct _volumeDef // holder of nodes of a volume mesh element
     {
+      typedef void* _ptr;
+
       struct _nodeDef
       {
         const SMDS_MeshNode*    _node; // mesh node at hexahedron corner
         const B_IntersectPoint* _intPoint;
 
+        _nodeDef(): _node(0), _intPoint(0) {}
         _nodeDef( _Node* n ): _node( n->_node), _intPoint( n->_intPoint ) {}
         const SMDS_MeshNode*    Node() const
         { return ( _intPoint && _intPoint->_node ) ? _intPoint->_node : _node; }
         const E_IntersectPoint* EdgeIntPnt() const
         { return static_cast< const E_IntersectPoint* >( _intPoint ); }
+        _ptr Ptr() const { return Node() ? (_ptr) Node() : (_ptr) EdgeIntPnt(); }
       };
+
       vector< _nodeDef >      _nodes;
       vector< int >           _quantities;
       _volumeDef*             _next; // to store several _volumeDefs in a chain
       TGeomID                 _solidID;
       const SMDS_MeshElement* _volume; // new volume
 
+      vector< SMESH_Block::TShapeID > _names; // name of side a polygon originates from
+
       _volumeDef(): _next(0), _solidID(0), _volume(0) {}
       ~_volumeDef() { delete _next; }
       _volumeDef( _volumeDef& other ):
         _next(0), _solidID( other._solidID ), _volume( other._volume )
-      { _nodes.swap( other._nodes ); _quantities.swap( other._quantities ); other._volume = 0; }
-
-      void Set( const vector< _Node* >& nodes, const vector< int >& quant = vector< int >() )
-      { _nodes.assign( nodes.begin(), nodes.end() ); _quantities = quant; }
+      { _nodes.swap( other._nodes ); _quantities.swap( other._quantities ); other._volume = 0;
+        _names.swap( other._names ); }
 
       void Set( _Node** nodes, int nb )
       { _nodes.assign( nodes, nodes + nb ); }
 
       void SetNext( _volumeDef* vd )
       { if ( _next ) { _next->SetNext( vd ); } else { _next = vd; }}
+
+      bool IsEmpty() const { return (( _nodes.empty() ) &&
+                                     ( !_next || _next->IsEmpty() )); }
+
+
+      struct _linkDef: public std::pair<_ptr,_ptr> // to join polygons in removeExcessSideDivision()
+      {
+        _nodeDef _node1;//, _node2;
+        mutable /*const */_linkDef *_prev, *_next;
+        size_t _loopIndex;
+
+        _linkDef():_prev(0), _next(0) {}
+
+        void init( const _nodeDef& n1, const _nodeDef& n2, size_t iLoop )
+        {
+          _node1     = n1; //_node2 = n2;
+          _loopIndex = iLoop;
+          first      = n1.Ptr();
+          second     = n2.Ptr();
+          if ( first > second ) std::swap( first, second );
+        }
+        void setNext( _linkDef* next )
+        {
+          _next = next;
+          next->_prev = this;
+        }
+      };
     };
 
     // topology of a hexahedron
-    int   _nodeShift[8];
     _Node _hexNodes [8];
     _Link _hexLinks [12];
     _Face _hexQuads [6];
@@ -837,7 +876,7 @@ namespace
     // additional nodes created at intersection points
     vector< _Node > _intNodes;
 
-    // nodes inside the hexahedron (at VERTEXes)
+    // nodes inside the hexahedron (at VERTEXes) refer to _intNodes
     vector< _Node* > _vIntNodes;
 
     // computed volume elements
@@ -858,7 +897,7 @@ namespace
     Hexahedron(Grid* grid);
     int MakeElements(SMESH_MesherHelper&                      helper,
                      const map< TGeomID, vector< TGeomID > >& edge2faceIDsMap);
-    void ComputeElements( const Solid* solid = 0, int solidIndex = -1 );
+    void computeElements( const Solid* solid = 0, int solidIndex = -1 );
 
   private:
     Hexahedron(const Hexahedron& other, size_t i, size_t j, size_t k, int cellID );
@@ -893,6 +932,7 @@ namespace
                       const map< TGeomID, vector< TGeomID > >& edge2faceIDsMap );
     void getVolumes( vector< const SMDS_MeshElement* > & volumes );
     void getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryVolumes );
+    void removeExcessSideDivision(const vector< Hexahedron* >& allHexa);
     TGeomID getAnyFace() const;
     void cutByExtendedInternal( std::vector< Hexahedron* >& hexes,
                                 const TColStd_MapOfInteger& intEdgeIDs );
@@ -927,7 +967,7 @@ namespace
       TID2Nb::iterator id2nb = id2nbMap.insert( s0 ).first;
       id2nb->second++;
     }
-  };
+  }; // class Hexahedron
 
 #ifdef WITH_TBB
   // --------------------------------------------------------------------------
@@ -942,7 +982,7 @@ namespace
     {
       for ( size_t i = r.begin(); i != r.end(); ++i )
         if ( Hexahedron* hex = _hexVec[ i ] )
-          hex->ComputeElements();
+          hex->computeElements();
     }
   };
   // --------------------------------------------------------------------------
@@ -2089,14 +2129,14 @@ namespace
     size_t i101 = i100 + dz;
     size_t i011 = i010 + dz;
     size_t i111 = i110 + dz;
-    _nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V000 )] = i000;
-    _nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V100 )] = i100;
-    _nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V010 )] = i010;
-    _nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V110 )] = i110;
-    _nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V001 )] = i001;
-    _nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V101 )] = i101;
-    _nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V011 )] = i011;
-    _nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V111 )] = i111;
+    grid->_nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V000 )] = i000;
+    grid->_nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V100 )] = i100;
+    grid->_nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V010 )] = i010;
+    grid->_nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V110 )] = i110;
+    grid->_nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V001 )] = i001;
+    grid->_nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V101 )] = i101;
+    grid->_nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V011 )] = i011;
+    grid->_nodeShift[ SMESH_Block::ShapeIndex( SMESH_Block::ID_V111 )] = i111;
 
     vector< int > idVec;
     // set nodes to links
@@ -2112,8 +2152,10 @@ namespace
     int interlace[4] = { 0, 3, 1, 2 }; // to walk by links around a face: { u0, 1v, u1, 0v }
     for ( int faceID = SMESH_Block::ID_Fxy0; faceID <= SMESH_Block::ID_F1yz; ++faceID )
     {
-      SMESH_Block::GetFaceEdgesIDs( faceID, idVec );
       _Face& quad = _hexQuads[ SMESH_Block::ShapeIndex( faceID )];
+      quad._name = (SMESH_Block::TShapeID) faceID;
+
+      SMESH_Block::GetFaceEdgesIDs( faceID, idVec );
       bool revFace = ( faceID == SMESH_Block::ID_Fxy0 ||
                        faceID == SMESH_Block::ID_Fx1z ||
                        faceID == SMESH_Block::ID_F0yz );
@@ -2141,9 +2183,6 @@ namespace
     _polygons.reserve(100); // to avoid reallocation;
 
     // copy topology
-    for ( int i = 0; i < 8; ++i )
-      _nodeShift[i] = other._nodeShift[i];
-
     for ( int i = 0; i < 12; ++i )
     {
       const _Link& srcLink = other._hexLinks[ i ];
@@ -2156,6 +2195,7 @@ namespace
     {
       const _Face& srcQuad = other._hexQuads[ i ];
       _Face&       tgtQuad = this->_hexQuads[ i ];
+      tgtQuad._name = srcQuad._name;
       tgtQuad._links.resize(4);
       for ( int j = 0; j < 4; ++j )
       {
@@ -2188,8 +2228,8 @@ namespace
     _origNodeInd = _grid->NodeIndex( _i,_j,_k );
     for ( int iN = 0; iN < 8; ++iN )
     {
-      _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _nodeShift[iN] ];
-      _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _nodeShift[iN] ];
+      _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _grid->_nodeShift[iN] ];
+      _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _grid->_nodeShift[iN] ];
 
       if ( _hexNodes[iN]._intPoint ) // intersection with a FACE
       {
@@ -2348,8 +2388,8 @@ namespace
     {
       _hexNodes[iN]._isInternalFlags = 0;
 
-      _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _nodeShift[iN] ];
-      _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _nodeShift[iN] ];
+      _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _grid->_nodeShift[iN] ];
+      _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _grid->_nodeShift[iN] ];
 
       if ( _hexNodes[iN]._node && !solid->Contains( _hexNodes[iN]._node->GetShapeID() ))
         _hexNodes[iN]._node = 0;
@@ -2569,7 +2609,7 @@ namespace
   /*!
    * \brief Compute mesh volumes resulted from intersection of the Hexahedron
    */
-  void Hexahedron::ComputeElements( const Solid* solid, int solidIndex )
+  void Hexahedron::computeElements( const Solid* solid, int solidIndex )
   {
     if ( !solid )
     {
@@ -2583,7 +2623,7 @@ namespace
           for ( size_t i = 0; i < nbSolids; ++i )
           {
             solid = _grid->GetSolid( solidIDs[i] );
-            ComputeElements( solid, i );
+            computeElements( solid, i );
             if ( !_volumeDefs._nodes.empty() && i < nbSolids - 1 )
               _volumeDefs.SetNext( new _volumeDef( _volumeDefs ));
           }
@@ -2648,6 +2688,7 @@ namespace
       _polygons.resize( _polygons.size() + 1 );
       _Face* polygon = &_polygons.back();
       polygon->_polyLinks.reserve( 20 );
+      polygon->_name = quad._name;
 
       splits.clear();
       for ( int iE = 0; iE < 4; ++iE ) // loop on 4 sides of a quadrangle
@@ -2682,6 +2723,7 @@ namespace
           _polygons.resize( _polygons.size() + 1 );
           polygon = &_polygons.back();
           polygon->_polyLinks.reserve( 20 );
+          polygon->_name = quad._name;
         }
         polygon->_links.push_back( splits[ iS ] );
         splits[ iS++ ]._link = 0;
@@ -3148,6 +3190,40 @@ namespace
     if ( _hasTooSmall )
       return false; // too small volume
 
+
+    // Try to find out names of no-name polygons (issue # 19887)
+    if ( _grid->IsToRemoveExcessEntities() && _polygons.back()._name == SMESH_Block::ID_NONE )
+    {
+      gp_XYZ uvwCenter =
+        0.5 * ( _grid->_coords[0][_i] + _grid->_coords[0][_i+1] ) * _grid->_axes[0] +
+        0.5 * ( _grid->_coords[1][_j] + _grid->_coords[1][_j+1] ) * _grid->_axes[1] +
+        0.5 * ( _grid->_coords[2][_k] + _grid->_coords[2][_k+1] ) * _grid->_axes[2];
+      for ( size_t i = _polygons.size() - 1; _polygons[i]._name == SMESH_Block::ID_NONE; --i )
+      {
+        _Face& face = _polygons[ i ];
+        Bnd_Box bb;
+        gp_Pnt uvw;
+        for ( size_t iL = 0; iL < face._links.size(); ++iL )
+        {
+          _Node* n = face._links[ iL ].FirstNode();
+          gp_XYZ p = SMESH_NodeXYZ( n->Node() );
+          _grid->ComputeUVW( p, uvw.ChangeCoord().ChangeData() );
+          bb.Add( uvw );
+        }
+        gp_Pnt pMin = bb.CornerMin();
+        if ( bb.IsXThin( _grid->_tol ))
+          face._name = pMin.X() < uvwCenter.X() ? SMESH_Block::ID_F0yz : SMESH_Block::ID_F1yz;
+        else if ( bb.IsYThin( _grid->_tol ))
+          face._name = pMin.Y() < uvwCenter.Y() ? SMESH_Block::ID_Fx0z : SMESH_Block::ID_Fx1z;
+        else if ( bb.IsZThin( _grid->_tol ))
+          face._name = pMin.Z() < uvwCenter.Z() ? SMESH_Block::ID_Fxy0 : SMESH_Block::ID_Fxy1;
+      }
+    }
+
+    _volumeDefs._nodes.clear();
+    _volumeDefs._quantities.clear();
+    _volumeDefs._names.clear();
+
     // create a classic cell if possible
 
     int nbPolygons = 0;
@@ -3168,14 +3244,12 @@ namespace
     else if ( nbNodes == 5 && nbPolygons == 5 ) isClassicElem = addPyra ();
     if ( !isClassicElem )
     {
-      _volumeDefs._nodes.clear();
-      _volumeDefs._quantities.clear();
-
       for ( size_t iF = 0; iF < _polygons.size(); ++iF )
       {
         const size_t nbLinks = _polygons[ iF ]._links.size();
         if ( nbLinks == 0 ) continue;
         _volumeDefs._quantities.push_back( nbLinks );
+        _volumeDefs._names.push_back( _polygons[ iF ]._name );
         for ( size_t iL = 0; iL < nbLinks; ++iL )
           _volumeDefs._nodes.push_back( _polygons[ iF ]._links[ iL ].FirstNode() );
       }
@@ -3294,22 +3368,24 @@ namespace
       }
     }
 
-    // add elements resulted from hexadron intersection
+    // compute definitions of volumes resulted from hexadron intersection
 #ifdef WITH_TBB
     tbb::parallel_for ( tbb::blocked_range<size_t>( 0, intHexa.size() ),
                         ParallelHexahedron( intHexa ),
-                        tbb::simple_partitioner()); // ComputeElements() is called here
-    for ( size_t i = 0; i < intHexa.size(); ++i )
-      if ( Hexahedron * hex = intHexa[ i ] )
-        nbAdded += hex->addVolumes( helper );
+                        tbb::simple_partitioner()); // computeElements() is called here
 #else
     for ( size_t i = 0; i < intHexa.size(); ++i )
       if ( Hexahedron * hex = intHexa[ i ] )
+        hex->computeElements();
+#endif
+
+    // add volumes
+    for ( size_t i = 0; i < intHexa.size(); ++i )
+      if ( Hexahedron * hex = intHexa[ i ] )
       {
-        hex->ComputeElements();
+        hex->removeExcessSideDivision( allHexa );
         nbAdded += hex->addVolumes( helper );
       }
-#endif
 
     // fill boundaryVolumes with volumes neighboring too small skipped volumes
     if ( _grid->_toCreateFaces )
@@ -3604,7 +3680,8 @@ namespace
           int  i = ! ( u < _grid->_tol ); // [0,1]
           int iN = link._nodes[ i ] - hex->_hexNodes; // [0-7]
 
-          const F_IntersectPoint * & ip = _grid->_gridIntP[ hex->_origNodeInd + _nodeShift[iN] ];
+          const F_IntersectPoint * & ip = _grid->_gridIntP[ hex->_origNodeInd +
+                                                            _grid->_nodeShift[iN] ];
           if ( !ip )
           {
             ip = _grid->_extIntPool.getNew();
@@ -3698,8 +3775,8 @@ namespace
 
     for ( size_t iN = 0; iN < 8; ++iN ) // check corners
     {
-      _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _nodeShift[iN] ];
-      _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _nodeShift[iN] ];
+      _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _grid->_nodeShift[iN] ];
+      _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _grid->_nodeShift[iN] ];
       if ( _hexNodes[iN]._intPoint )
         for ( size_t iF = 0; iF < _hexNodes[iN]._intPoint->_faceIDs.size(); ++iF )
         {
@@ -5005,8 +5082,9 @@ namespace
           if ( !faceID )
             break;
           if ( _grid->IsInternal( faceID ) ||
-               _grid->IsShared( faceID ) /*||
-               _grid->IsBoundaryFace( faceID )*/)
+               _grid->IsShared( faceID ) //||
+               //_grid->IsBoundaryFace( faceID ) -- commented for #19887
+               ) 
             break; // create only if a new face will be used by other 3D algo
         }
 
@@ -5034,6 +5112,159 @@ namespace
       }
     }
   }
+
+  //================================================================================
+  /*!
+   * \brief Remove edges and nodes dividing a hexa side in the case if an adjacent
+   *        volume also sharing the dividing edge is missing due to its small side.
+   *        Issue #19887.
+   */
+  //================================================================================
+
+  void Hexahedron::removeExcessSideDivision(const vector< Hexahedron* >& allHexa)
+  {
+    if ( !_grid->IsToRemoveExcessEntities() || _volumeDefs.IsEmpty() )
+      return;
+    if (( _volumeDefs._quantities.empty() ) &&
+        ( !_volumeDefs._next || _volumeDefs._next->_quantities.empty() ))
+      return; // not a polyhedron
+      
+    // look for a divided side adjacent to a small hexahedron
+
+    int di[6] = { 0, 0, 0, 0,-1, 1 };
+    int dj[6] = { 0, 0,-1, 1, 0, 0 };
+    int dk[6] = {-1, 1, 0, 0, 0, 0 };
+
+    for ( int iF = 0; iF < 6; ++iF ) // loop on 6 sides of a hexahedron
+    {
+      size_t neighborIndex = _grid->CellIndex( _i + di[iF],
+                                               _j + dj[iF],
+                                               _k + dk[iF] );
+      if ( neighborIndex >= allHexa.size() ||
+           !allHexa[ neighborIndex ]       ||
+           !allHexa[ neighborIndex ]->_hasTooSmall )
+        continue;
+
+      // check if a side is divided into several polygons
+      for ( _volumeDef* volDef = &_volumeDefs; volDef; volDef = volDef->_next )
+      {
+        int nbPolygons = 0, nbNodes = 0;
+        for ( size_t i = 0; i < volDef->_names.size(); ++i )
+          if ( volDef->_names[ i ] == _hexQuads[ iF ]._name )
+          {
+            ++nbPolygons;
+            nbNodes += volDef->_quantities[ i ];
+          }
+        if ( nbPolygons < 2 )
+          continue;
+
+        // construct loops from polygons
+        typedef _volumeDef::_linkDef TLinkDef;
+        std::vector< TLinkDef* > loops;
+        std::vector< TLinkDef > links( nbNodes );
+        for ( size_t i = 0, iN = 0, iLoop = 0; iLoop < volDef->_quantities.size(); ++iLoop )
+        {
+          size_t nbLinks = volDef->_quantities[ iLoop ];
+          if ( volDef->_names[ iLoop ] != _hexQuads[ iF ]._name )
+          {
+            iN += nbLinks;
+            continue;
+          }
+          loops.push_back( & links[i] );
+          for ( size_t n = 0; n < nbLinks-1; ++n, ++i, ++iN )
+          {
+            links[i].init( volDef->_nodes[iN], volDef->_nodes[iN+1], iLoop );
+            links[i].setNext( &links[i+1] );
+          }
+          links[i].init( volDef->_nodes[iN], volDef->_nodes[iN-nbLinks+1], iLoop );
+          links[i].setNext( &links[i-nbLinks+1] );
+          ++i; ++iN;
+        }
+
+        // look for equal links in different loops and join such loops
+        bool loopsJoined = false;
+        std::set< TLinkDef > linkSet;
+        for ( size_t iLoop = 0; iLoop < loops.size(); ++iLoop )
+        {
+          bool joined = false;
+          TLinkDef* beg = 0;
+          for ( TLinkDef* l = loops[ iLoop ]; l != beg; l = l->_next ) // walk around the iLoop
+          {
+            std::pair< std::set< TLinkDef >::iterator, bool > it2new = linkSet.insert( *l );
+            if ( !it2new.second ) // equal found, join loops
+            {
+              const TLinkDef* equal = &(*it2new.first);
+              if ( equal->_loopIndex == l->_loopIndex )
+                continue; // error?
+
+              // exclude l and equal and join two loops
+              if ( l->_prev != equal )
+                l->_prev->setNext( equal->_next );
+              if ( equal->_prev != l )
+                equal->_prev->setNext( l->_next );
+
+              joined = true;
+              if ( volDef->_quantities[ l->_loopIndex ] > 0 )
+                volDef->_quantities[ l->_loopIndex     ] *= -1;
+              if ( volDef->_quantities[ equal->_loopIndex ] > 0 )
+                volDef->_quantities[ equal->_loopIndex ] *= -1;
+
+              if ( loops[ iLoop ] == l )
+                loops[ iLoop ] = l->_prev->_next;
+            }
+            beg = loops[ iLoop ];
+          }
+          if ( joined )
+          {
+            loops[ iLoop ] = 0;
+            loopsJoined = true;
+          }
+        }
+        // update volDef
+        if ( loopsJoined )
+        {
+          // set unchanged polygons
+          std::vector< int > newQuantities; newQuantities.reserve( volDef->_quantities.size() );
+          std::vector< _volumeDef::_nodeDef > newNodes; newNodes.reserve( volDef->_nodes.size() );
+          vector< SMESH_Block::TShapeID > newNames; newNames.reserve( volDef->_names.size() );
+          for ( size_t i = 0, iLoop = 0; iLoop < volDef->_quantities.size(); ++iLoop )
+          {
+            if ( volDef->_quantities[ iLoop ] < 0 )
+            {
+              i -= volDef->_quantities[ iLoop ];
+              continue;
+            }
+            newQuantities.push_back( volDef->_quantities[ iLoop ]);
+            newNodes.insert( newNodes.end(),
+                             volDef->_nodes.begin() + i,
+                             volDef->_nodes.begin() + i + newQuantities.back() );
+            newNames.push_back( volDef->_names[ iLoop ]); 
+            i += volDef->_quantities[ iLoop ];
+          }
+
+          // set joined loops
+          for ( size_t iLoop = 0; iLoop < loops.size(); ++iLoop )
+          {
+            if ( !loops[ iLoop ] )
+              continue;
+            newQuantities.push_back( 0 );
+            TLinkDef* beg = 0;
+            for ( TLinkDef* l = loops[ iLoop ]; l != beg; l = l->_next, ++newQuantities.back() )
+            {
+              newNodes.push_back( l->_node1 );
+              beg = loops[ iLoop ];
+            }
+            newNames.push_back( _hexQuads[ iF ]._name ); 
+          }
+          volDef->_quantities.swap( newQuantities );
+          volDef->_nodes.swap( newNodes );
+          volDef->_names.swap( newNames );
+        }
+      } // loop on volDef's
+    } // loop on hex sides
+
+    return;
+  } // removeExcessSideDivision()
 
   //================================================================================
   /*!
