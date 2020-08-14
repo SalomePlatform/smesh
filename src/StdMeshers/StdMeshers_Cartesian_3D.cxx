@@ -446,12 +446,14 @@ namespace
    */
   struct CellsAroundLink
   {
+    int    _iDir;
     int    _dInd[4][3];
     size_t _nbCells[3];
     int    _i,_j,_k;
     Grid*  _grid;
 
     CellsAroundLink( Grid* grid, int iDir ):
+      _iDir( iDir ),
       _dInd{ {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0} },
       _nbCells{ grid->_coords[0].size() - 1,
           grid->_coords[1].size() - 1,
@@ -470,7 +472,7 @@ namespace
       _j = j - _dInd[iL][1];
       _k = k - _dInd[iL][2];
     }
-    bool GetCell( int iL, int& i, int& j, int& k, int& cellIndex )
+    bool GetCell( int iL, int& i, int& j, int& k, int& cellIndex, int& linkIndex )
     {
       i =  _i + _dInd[iL][0];
       j =  _j + _dInd[iL][1];
@@ -480,6 +482,7 @@ namespace
            k < 0 || k >= (int)_nbCells[2] )
         return false;
       cellIndex = _grid->CellIndex( i,j,k );
+      linkIndex = iL + _iDir * 4;
       return true;
     }
   };
@@ -811,6 +814,7 @@ namespace
         const E_IntersectPoint* EdgeIntPnt() const
         { return static_cast< const E_IntersectPoint* >( _intPoint ); }
         _ptr Ptr() const { return Node() ? (_ptr) Node() : (_ptr) EdgeIntPnt(); }
+        bool operator==(const _nodeDef& other ) const { return Ptr() == other.Ptr(); }
       };
 
       vector< _nodeDef >      _nodes;
@@ -828,6 +832,10 @@ namespace
       { _nodes.swap( other._nodes ); _quantities.swap( other._quantities ); other._volume = 0;
         _names.swap( other._names ); }
 
+      size_t size() const { return 1 + ( _next ? _next->size() : 0 ); }
+      _volumeDef* at(int index)
+      { return index == 0 ? this : ( _next ? _next->at(index-1) : _next ); }
+
       void Set( _Node** nodes, int nb )
       { _nodes.assign( nodes, nodes + nb ); }
 
@@ -836,6 +844,8 @@ namespace
 
       bool IsEmpty() const { return (( _nodes.empty() ) &&
                                      ( !_next || _next->IsEmpty() )); }
+      bool IsPolyhedron() const { return ( !_quantities.empty() ||
+                                           ( _next && !_next->_quantities.empty() )); }
 
 
       struct _linkDef: public std::pair<_ptr,_ptr> // to join polygons in removeExcessSideDivision()
@@ -933,6 +943,7 @@ namespace
     void getVolumes( vector< const SMDS_MeshElement* > & volumes );
     void getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryVolumes );
     void removeExcessSideDivision(const vector< Hexahedron* >& allHexa);
+    void removeExcessNodes(vector< Hexahedron* >& allHexa);
     TGeomID getAnyFace() const;
     void cutByExtendedInternal( std::vector< Hexahedron* >& hexes,
                                 const TColStd_MapOfInteger& intEdgeIDs );
@@ -3273,7 +3284,7 @@ namespace
     int nbIntHex = 0;
 
     // set intersection nodes from GridLine's to links of allHexa
-    int i,j,k, cellIndex;
+    int i,j,k, cellIndex, iLink;
     for ( int iDir = 0; iDir < 3; ++iDir )
     {
       // loop on GridLine's parallel to iDir
@@ -3290,7 +3301,7 @@ namespace
           fourCells.Init( lineInd.I(), lineInd.J(), lineInd.K() );
           for ( int iL = 0; iL < 4; ++iL ) // loop on 4 cells sharing a link
           {
-            if ( !fourCells.GetCell( iL, i,j,k, cellIndex ))
+            if ( !fourCells.GetCell( iL, i,j,k, cellIndex, iLink ))
               continue;
             Hexahedron *& hex = allHexa[ cellIndex ];
             if ( !hex)
@@ -3298,7 +3309,6 @@ namespace
               hex = new Hexahedron( *this, i, j, k, cellIndex );
               ++nbIntHex;
             }
-            const int iLink = iL + iDir * 4;
             hex->_hexLinks[iLink]._fIntPoints.push_back( &(*ip) );
             hex->_nbFaceIntNodes += bool( ip->_node );
           }
@@ -3379,13 +3389,22 @@ namespace
         hex->computeElements();
 #endif
 
+    // simplify polyhedrons
+    if ( _grid->IsToRemoveExcessEntities() )
+    {
+      for ( size_t i = 0; i < intHexa.size(); ++i )
+        if ( Hexahedron * hex = intHexa[ i ] )
+          hex->removeExcessSideDivision( allHexa );
+
+      for ( size_t i = 0; i < intHexa.size(); ++i )
+        if ( Hexahedron * hex = intHexa[ i ] )
+          hex->removeExcessNodes( allHexa );
+    }
+
     // add volumes
     for ( size_t i = 0; i < intHexa.size(); ++i )
       if ( Hexahedron * hex = intHexa[ i ] )
-      {
-        hex->removeExcessSideDivision( allHexa );
         nbAdded += hex->addVolumes( helper );
-      }
 
     // fill boundaryVolumes with volumes neighboring too small skipped volumes
     if ( _grid->_toCreateFaces )
@@ -3709,13 +3728,12 @@ namespace
           int i,j,k, cellIndex;
           for ( int iC = 0; iC < 4; ++iC ) // loop on 4 cells sharing the link
           {
-            if ( !fourCells.GetCell( iC, i,j,k, cellIndex ))
+            if ( !fourCells.GetCell( iC, i,j,k, cellIndex, iLink ))
               continue;
             Hexahedron * h = hexes[ cellIndex ];
             if ( !h )
               h = hexes[ cellIndex ] = new Hexahedron( *this, i, j, k, cellIndex );
-            const int iL = iC + iDir * 4;
-            h->_hexLinks[iL]._fIntPoints.push_back( ip );
+            h->_hexLinks[iLink]._fIntPoints.push_back( ip );
             h->_nbFaceIntNodes++;
             //isCut = true;
           }
@@ -5123,10 +5141,7 @@ namespace
 
   void Hexahedron::removeExcessSideDivision(const vector< Hexahedron* >& allHexa)
   {
-    if ( !_grid->IsToRemoveExcessEntities() || _volumeDefs.IsEmpty() )
-      return;
-    if (( _volumeDefs._quantities.empty() ) &&
-        ( !_volumeDefs._next || _volumeDefs._next->_quantities.empty() ))
+    if ( ! _volumeDefs.IsPolyhedron() )
       return; // not a polyhedron
       
     // look for a divided side adjacent to a small hexahedron
@@ -5186,7 +5201,6 @@ namespace
         std::set< TLinkDef > linkSet;
         for ( size_t iLoop = 0; iLoop < loops.size(); ++iLoop )
         {
-          bool joined = false;
           TLinkDef* beg = 0;
           for ( TLinkDef* l = loops[ iLoop ]; l != beg; l = l->_next ) // walk around the iLoop
           {
@@ -5197,13 +5211,18 @@ namespace
               if ( equal->_loopIndex == l->_loopIndex )
                 continue; // error?
 
+              loopsJoined = true;
+
+              for ( size_t i = iLoop - 1; i < loops.size(); --i )
+                if ( loops[ i ] && loops[ i ]->_loopIndex == equal->_loopIndex )
+                  loops[ i ] = 0;
+
               // exclude l and equal and join two loops
               if ( l->_prev != equal )
                 l->_prev->setNext( equal->_next );
               if ( equal->_prev != l )
                 equal->_prev->setNext( l->_next );
 
-              joined = true;
               if ( volDef->_quantities[ l->_loopIndex ] > 0 )
                 volDef->_quantities[ l->_loopIndex     ] *= -1;
               if ( volDef->_quantities[ equal->_loopIndex ] > 0 )
@@ -5214,19 +5233,17 @@ namespace
             }
             beg = loops[ iLoop ];
           }
-          if ( joined )
-          {
-            loops[ iLoop ] = 0;
-            loopsJoined = true;
-          }
         }
         // update volDef
         if ( loopsJoined )
         {
           // set unchanged polygons
-          std::vector< int > newQuantities; newQuantities.reserve( volDef->_quantities.size() );
-          std::vector< _volumeDef::_nodeDef > newNodes; newNodes.reserve( volDef->_nodes.size() );
-          vector< SMESH_Block::TShapeID > newNames; newNames.reserve( volDef->_names.size() );
+          std::vector< int >                  newQuantities;
+          std::vector< _volumeDef::_nodeDef > newNodes;
+          vector< SMESH_Block::TShapeID >     newNames;
+          newQuantities.reserve( volDef->_quantities.size() );
+          newNodes.reserve     ( volDef->_nodes.size() );
+          newNames.reserve     ( volDef->_names.size() );
           for ( size_t i = 0, iLoop = 0; iLoop < volDef->_quantities.size(); ++iLoop )
           {
             if ( volDef->_quantities[ iLoop ] < 0 )
@@ -5238,7 +5255,7 @@ namespace
             newNodes.insert( newNodes.end(),
                              volDef->_nodes.begin() + i,
                              volDef->_nodes.begin() + i + newQuantities.back() );
-            newNames.push_back( volDef->_names[ iLoop ]); 
+            newNames.push_back( volDef->_names[ iLoop ]);
             i += volDef->_quantities[ iLoop ];
           }
 
@@ -5254,7 +5271,7 @@ namespace
               newNodes.push_back( l->_node1 );
               beg = loops[ iLoop ];
             }
-            newNames.push_back( _hexQuads[ iF ]._name ); 
+            newNames.push_back( _hexQuads[ iF ]._name );
           }
           volDef->_quantities.swap( newQuantities );
           volDef->_nodes.swap( newNodes );
@@ -5265,6 +5282,185 @@ namespace
 
     return;
   } // removeExcessSideDivision()
+
+
+  //================================================================================
+  /*!
+   * \brief Remove nodes splitting Cartesian cell edges in the case if a node
+   *        is used in every cells only by two polygons sharing the edge
+   *        Issue #19887.
+   */
+  //================================================================================
+
+  void Hexahedron::removeExcessNodes(vector< Hexahedron* >& allHexa)
+  {
+    if ( ! _volumeDefs.IsPolyhedron() )
+      return; // not a polyhedron
+
+    typedef vector< _volumeDef::_nodeDef >::iterator TNodeIt;
+    vector< int > nodesInPoly[ 4 ]; // node index in _volumeDefs._nodes
+    vector< int > volDefInd  [ 4 ]; // index of a _volumeDefs
+    Hexahedron*   hexa       [ 4 ];
+    int i,j,k, cellIndex, iLink = 0, iCellLink;
+    for ( int iDir = 0; iDir < 3; ++iDir )
+    {
+      CellsAroundLink fourCells( _grid, iDir );
+      for ( int iL = 0; iL < 4; ++iL, ++iLink ) // 4 links in a direction
+      {
+        _Link& link = _hexLinks[ iLink ];
+        fourCells.Init( _i, _j, _k, iLink );
+
+        for ( size_t iP = 0; iP < link._fIntPoints.size(); ++iP ) // loop on nodes on the link
+        {
+          bool nodeRemoved = true;
+          _volumeDef::_nodeDef node; node._intPoint = link._fIntPoints[iP];
+
+          for ( size_t i = 0, nb = _volumeDefs.size(); i < nb &&  nodeRemoved; ++i )
+            if ( _volumeDef* vol = _volumeDefs.at( i ))
+              nodeRemoved =
+                ( std::find( vol->_nodes.begin(), vol->_nodes.end(), node ) == vol->_nodes.end() );
+          if ( nodeRemoved )
+            continue; // node already removed
+
+          // check if a node encounters zero or two times in 4 cells sharing iLink
+          // if so, the node can be removed from the cells
+          bool       nodeIsOnEdge = true;
+          int nbPolyhedraWithNode = 0;
+          for ( int iC = 0; iC < 4; ++iC ) // loop on 4 cells sharing a link
+          {
+            nodesInPoly[ iC ].clear();
+            volDefInd  [ iC ].clear();
+            hexa       [ iC ] = 0;
+            if ( !fourCells.GetCell( iC, i,j,k, cellIndex, iCellLink ))
+              continue;
+            hexa[ iC ] = allHexa[ cellIndex ];
+            if ( !hexa[ iC ])
+              continue;
+            for ( size_t i = 0, nb = hexa[ iC ]->_volumeDefs.size(); i < nb; ++i )
+              if ( _volumeDef* vol = hexa[ iC ]->_volumeDefs.at( i ))
+              {
+                for ( TNodeIt nIt = vol->_nodes.begin(); nIt != vol->_nodes.end(); ++nIt )
+                {
+                  nIt = std::find( nIt, vol->_nodes.end(), node );
+                  if ( nIt != vol->_nodes.end() )
+                  {
+                    nodesInPoly[ iC ].push_back( std::distance( vol->_nodes.begin(), nIt ));
+                    volDefInd  [ iC ].push_back( i );
+                  }
+                  else
+                    break;
+                }
+                nbPolyhedraWithNode += ( !nodesInPoly[ iC ].empty() );
+              }
+            if ( nodesInPoly[ iC ].size() != 0 &&
+                 nodesInPoly[ iC ].size() != 2 )
+            {
+              nodeIsOnEdge = false;
+              break;
+            }
+          } // loop  on 4 cells
+
+          // remove nodes from polyhedra
+          if ( nbPolyhedraWithNode > 0 && nodeIsOnEdge )
+          {
+            for ( int iC = 0; iC < 4; ++iC ) // loop on 4 cells sharing the link
+            {
+              if ( nodesInPoly[ iC ].empty() )
+                continue;
+              for ( int i = volDefInd[ iC ].size() - 1; i >= 0; --i )
+              {
+                _volumeDef* vol = hexa[ iC ]->_volumeDefs.at( volDefInd[ iC ][ i ]);
+                int nIndex = nodesInPoly[ iC ][ i ];
+                // decrement _quantities
+                for ( size_t iQ = 0; iQ < vol->_quantities.size(); ++iQ )
+                  if ( nIndex < vol->_quantities[ iQ ])
+                  {
+                    vol->_quantities[ iQ ]--;
+                    break;
+                  }
+                  else
+                  {
+                    nIndex -= vol->_quantities[ iQ ];
+                  }
+                vol->_nodes.erase( vol->_nodes.begin() + nodesInPoly[ iC ][ i ]);
+
+                if ( i == 0 &&
+                     vol->_nodes.size() == 6 * 4 &&
+                     vol->_quantities.size() == 6 ) // polyhedron becomes hexahedron?
+                {
+                  bool allQuads = true;
+                  for ( size_t iQ = 0; iQ < vol->_quantities.size() &&  allQuads; ++iQ )
+                    allQuads = ( vol->_quantities[ iQ ] == 4 );
+                  if ( allQuads )
+                  {
+                    // set side nodes as this: bottom, top, top, ...
+                    int iTop, iBot; // side indices
+                    for ( int iS = 0; iS < 6; ++iS )
+                    {
+                      if ( vol->_names[ iS ] == SMESH_Block::ID_Fxy0 )
+                        iBot = iS;
+                      if ( vol->_names[ iS ] == SMESH_Block::ID_Fxy1 )
+                        iTop = iS;
+                    }
+                    if ( iBot != 0 )
+                    {
+                      if ( iTop == 0 )
+                      {
+                        std::copy( vol->_nodes.begin(),
+                                   vol->_nodes.begin() + 4,
+                                   vol->_nodes.begin() + 4 );
+                        iTop = 1;
+                      }
+                      std::copy( vol->_nodes.begin() + 4 * iBot,
+                                 vol->_nodes.begin() + 4 * ( iBot + 1),
+                                 vol->_nodes.begin() );
+                    }
+                    if ( iTop != 1 )
+                      std::copy( vol->_nodes.begin() + 4 * iTop,
+                                 vol->_nodes.begin() + 4 * ( iTop + 1),
+                                 vol->_nodes.begin() + 4 );
+
+                    std::copy( vol->_nodes.begin() + 4,
+                               vol->_nodes.begin() + 8,
+                               vol->_nodes.begin() + 8 );
+                    // set up top facet nodes by comparing their uvw with bottom nodes
+                    E_IntersectPoint ip[8];
+                    for ( int iN = 0; iN < 8; ++iN )
+                    {
+                      SMESH_NodeXYZ p = vol->_nodes[ iN ].Node();
+                      _grid->ComputeUVW( p, ip[ iN ]._uvw );
+                    }
+                    const double tol2 = _grid->_tol * _grid->_tol;
+                    for ( int iN = 0; iN < 4; ++iN )
+                    {
+                      gp_Pnt2d pBot( ip[ iN ]._uvw[0], ip[ iN ]._uvw[1] );
+                      for ( int iT = 4; iT < 8; ++iT )
+                      {
+                        gp_Pnt2d pTop( ip[ iT ]._uvw[0], ip[ iT ]._uvw[1] );
+                        if ( pBot.SquareDistance( pTop ) < tol2 )
+                        {
+                          // vol->_nodes[ iN + 4 ]._node = ip[ iT ]._node;
+                          // vol->_nodes[ iN + 4 ]._intPoint = 0;
+                          vol->_nodes[ iN + 4 ] = vol->_nodes[ iT + 4 ];
+                          break;
+                        }
+                      }
+                    }
+                    vol->_nodes.resize( 8 );
+                    vol->_quantities.clear();
+                    //vol->_names.clear();
+                  }
+                }
+              } // loop on _volumeDefs
+            } // loop on 4 cell abound a link
+          } // if ( nodeIsOnEdge )
+        } // loop on intersection points of a link
+      } // loop on 4 links of a direction
+    } // loop on 3 directions
+
+    return;
+
+  } // removeExcessNodes()
 
   //================================================================================
   /*!
