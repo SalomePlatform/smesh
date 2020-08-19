@@ -2388,6 +2388,7 @@ namespace
   {
     _i = i; _j = j; _k = k;
 
+    bool isCompute = solid;
     if ( !solid )
       solid = _grid->GetSolid();
 
@@ -2416,6 +2417,9 @@ namespace
 
     _intNodes.clear();
     _vIntNodes.clear();
+
+    if ( !isCompute )
+      return;
 
     if ( _nbFaceIntNodes + _eIntPoints.size()                  > 0 &&
          _nbFaceIntNodes + _eIntPoints.size() + _nbCornerNodes > 3)
@@ -2596,7 +2600,8 @@ namespace
       } // loop on _eIntPoints
     }
 
-    else if ( 3 < _nbCornerNodes && _nbCornerNodes < 8 ) // _nbFaceIntNodes == 0
+    else if (( 3 < _nbCornerNodes && _nbCornerNodes < 8 ) || // _nbFaceIntNodes == 0
+             ( !_grid->_geometry.IsOneSolid() ))
     {
       _Link split;
       // create sub-links (_splits) of whole links
@@ -3331,7 +3336,9 @@ namespace
       if ( hex ) // split hexahedron
       {
         intHexa.push_back( hex );
-        if ( hex->_nbFaceIntNodes > 0 || hex->_eIntPoints.size() > 0 )
+        if ( hex->_nbFaceIntNodes > 0 ||
+             hex->_eIntPoints.size() > 0 ||
+             hex->getSolids( solidIDs ) > 1 )
           continue; // treat intersected hex later in parallel
         this->init( hex->_i, hex->_j, hex->_k );
       }
@@ -4464,10 +4471,13 @@ namespace
         {
           curIntPnt._paramOnLine = coords[ ijk[ iDir ]] - coords[0] + _grid->_tol;
           const GridLine& line = _grid->_lines[ iDir ][ lineIndex[ iL ]];
-          multiset< F_IntersectPoint >::const_iterator ip =
-            line._intPoints.upper_bound( curIntPnt );
-          --ip;
-          firstIntPnt = &(*ip);
+          if ( !line._intPoints.empty() )
+          {
+            multiset< F_IntersectPoint >::const_iterator ip =
+              line._intPoints.upper_bound( curIntPnt );
+            --ip;
+            firstIntPnt = &(*ip);
+          }
         }
         else if ( !link._fIntPoints.empty() )
         {
