@@ -289,8 +289,8 @@ StdMeshers_CompositeHexa_3D::StdMeshers_CompositeHexa_3D(int hypId, SMESH_Gen* g
  */
 //================================================================================
 
-bool StdMeshers_CompositeHexa_3D::CheckHypothesis(SMESH_Mesh&         aMesh,
-                                                  const TopoDS_Shape& aShape,
+bool StdMeshers_CompositeHexa_3D::CheckHypothesis(SMESH_Mesh&         /*aMesh*/,
+                                                  const TopoDS_Shape& /*aShape*/,
                                                   Hypothesis_Status&  aStatus)
 {
   _blockRenumberHyp = nullptr;
@@ -1480,7 +1480,7 @@ bool _QuadFaceGrid::LoadGrid( SMESH_ProxyMesh& mesh )
     if ( fIt->next()->NbNodes() % 4 > 0 )
       return error("Non-quadrangular mesh faces are not allowed on sides of a composite block");
 
-  bool isProxy, isTmpElem;
+  bool isProxy = false, isTmpElem = false;
   if ( faceSubMesh && faceSubMesh->NbElements() > 0 )
   {
     isProxy   = dynamic_cast< const SMESH_ProxyMesh::SubMesh* >( faceSubMesh );
@@ -1896,7 +1896,7 @@ bool _QuadFaceGrid::GetNormal( const TopoDS_Vertex& v, gp_Vec& n ) const
         n = d1u.Crossed( d1v );
         return true;
       }
-      catch (Standard_Failure) {
+      catch (Standard_Failure&) {
         return false;
       }
     }

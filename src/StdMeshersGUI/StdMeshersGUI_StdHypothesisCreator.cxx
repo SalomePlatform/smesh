@@ -1571,7 +1571,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
 //purpose  : is called from buildStdFrame()
 //=======================================================================
 
-QWidget* StdMeshersGUI_StdHypothesisCreator::getCustomWidget( const StdParam & param,
+QWidget* StdMeshersGUI_StdHypothesisCreator::getCustomWidget( const StdParam & /*param*/,
                                                               QWidget*         parent,
                                                               const int        index) const
 {
@@ -1734,7 +1734,7 @@ void StdMeshersGUI_StdHypothesisCreator::valueChanged( QWidget* paramWidget)
  */
 //================================================================================
 
-bool StdMeshersGUI_StdHypothesisCreator::initVariableName(SMESH::SMESH_Hypothesis_var theHyp, 
+bool StdMeshersGUI_StdHypothesisCreator::initVariableName(SMESH::SMESH_Hypothesis_var /*theHyp*/, 
                                                           StdParam &                  theParams, 
                                                           const char*                 theMethod) const
 {

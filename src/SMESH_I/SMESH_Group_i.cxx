@@ -98,7 +98,8 @@ SMESH_GroupOnFilter_i::SMESH_GroupOnFilter_i( PortableServer::POA_ptr thePOA,
 
 SMESH_GroupBase_i::~SMESH_GroupBase_i()
 {
-  if ( myPreMeshInfo ) delete myPreMeshInfo; myPreMeshInfo = NULL;
+  if ( myPreMeshInfo ) delete myPreMeshInfo;
+  myPreMeshInfo = NULL;
 }
 
 //=======================================================================
@@ -798,7 +799,6 @@ SMESH_PredicatePtr SMESH_GroupOnFilter_i::GetPredicate( SMESH::Filter_ptr filter
 //================================================================================
 
 void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
-  throw (SALOME::SALOME_Exception)
 {
   if ( myFilter->_is_equivalent( theFilter ))
     return;
@@ -1072,7 +1072,7 @@ SMESH_GroupOnFilter_i::~SMESH_GroupOnFilter_i()
  */
 //================================================================================
 
-void SMESH_GroupOnFilter_i::OnBaseObjModified(NotifyerAndWaiter* filter, bool /*removed*/)
+void SMESH_GroupOnFilter_i::OnBaseObjModified(NotifyerAndWaiter* /*filter*/, bool /*removed*/)
 {
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();

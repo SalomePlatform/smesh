@@ -316,7 +316,7 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
   }
 }
 
-SUIT_SelectionFilter* SMESHGUI_Make2DFrom3DOp::createFilter( const int theId ) const
+SUIT_SelectionFilter* SMESHGUI_Make2DFrom3DOp::createFilter( const int /*theId*/ ) const
 {
   SMESHGUI_Make2DFrom3DOp* me = (SMESHGUI_Make2DFrom3DOp*) this;
 

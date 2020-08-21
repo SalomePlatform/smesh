@@ -62,7 +62,7 @@ class SMDS_Ptr : public std::unique_ptr< T >
   SMDS_Ptr( T * pos = (T *) 0, bool isOwner=true ):
     std::unique_ptr< T >( pos ), myIsOwner( isOwner ) {}
 
-  SMDS_Ptr( const SMDS_Ptr& from ) : myIsOwner( from.myIsOwner )
+  SMDS_Ptr( const SMDS_Ptr& from ) : std::unique_ptr< T >(), myIsOwner( from.myIsOwner )
   { this->swap( const_cast<SMDS_Ptr&>( from )); }
 
   SMDS_Ptr& operator=( const SMDS_Ptr& from  )

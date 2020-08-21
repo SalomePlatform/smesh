@@ -142,7 +142,6 @@ SMESH_Gen::~SMESH_Gen()
 //=============================================================================
 
 SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
-  throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
 
@@ -453,8 +452,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
  * Prepare Compute a mesh
  */
 //=============================================================================
-void SMESH_Gen::PrepareCompute(SMESH_Mesh &          aMesh,
-                               const TopoDS_Shape &  aShape)
+void SMESH_Gen::PrepareCompute(SMESH_Mesh &          /*aMesh*/,
+                               const TopoDS_Shape &  /*aShape*/)
 {
   _compute_canceled = false;
   resetCurrentSubMesh();
@@ -465,8 +464,8 @@ void SMESH_Gen::PrepareCompute(SMESH_Mesh &          aMesh,
  * Cancel Compute a mesh
  */
 //=============================================================================
-void SMESH_Gen::CancelCompute(SMESH_Mesh &          aMesh,
-                              const TopoDS_Shape &  aShape)
+void SMESH_Gen::CancelCompute(SMESH_Mesh &          /*aMesh*/,
+                              const TopoDS_Shape &  /*aShape*/)
 {
   _compute_canceled = true;
   if ( const SMESH_subMesh* sm = GetCurrentSubMesh() )
@@ -1053,10 +1052,10 @@ std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
       }
 
       // get a separator from rootDir
-      for ( pos = strlen( rootDir )-1; pos >= 0 && sep.empty(); --pos )
-        if ( rootDir[pos] == '/' || rootDir[pos] == '\\' )
+      for ( int i = strlen( rootDir )-1; i >= 0 && sep.empty(); --i )
+        if ( rootDir[i] == '/' || rootDir[i] == '\\' )
         {
-          sep = rootDir[pos];
+          sep = rootDir[i];
           break;
         }
 #ifdef WIN32

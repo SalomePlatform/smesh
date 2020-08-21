@@ -65,7 +65,7 @@ public:
 
   // Set positions of enforced nodes
   void SetEnforcedNodes(const GEOM::ListOfGO&     vertices,
-                        const SMESH::nodes_array& points) throw ( SALOME::SALOME_Exception );
+                        const SMESH::nodes_array& points);
   
   // Returns positions of enforced nodes
   void GetEnforcedNodes(GEOM::ListOfGO_out vertices, SMESH::nodes_array_out points);

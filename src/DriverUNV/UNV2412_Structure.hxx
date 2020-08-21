@@ -65,7 +65,7 @@ namespace UNV2412{
   MESHDRIVERUNV_EXPORT bool
     IsVolume(int theFeDescriptorId);
 
-};
+}
 
 
 #endif

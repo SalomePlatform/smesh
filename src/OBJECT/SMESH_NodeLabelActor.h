@@ -46,7 +46,7 @@ public:
                             void* theCallData);
 
 
-  vtkTypeMacro(SMESH_NodeLabelActor, SMESH_DeviceActor);
+  vtkTypeMacro(SMESH_NodeLabelActor, SMESH_DeviceActor)
 
 
   virtual void SetPointsLabeled(bool theIsPointsLabeled);

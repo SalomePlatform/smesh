@@ -380,7 +380,7 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
   try {
     axes = gp_Ax2( p0, normal, v01 );
   }
-  catch ( Standard_Failure ) {
+  catch ( Standard_Failure& ) {
     return false;
   }
   double factor = 1.0, modulus = normal.Modulus();

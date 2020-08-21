@@ -2045,7 +2045,7 @@ double Deflection2D::GetBadRate( double Value, int /*nbNodes*/ ) const
 */
 //================================================================================
 
-double MultiConnection::GetValue( const TSequenceOfXYZ& P )
+double MultiConnection::GetValue( const TSequenceOfXYZ& /*P*/ )
 {
   return 0;
 }
@@ -2072,7 +2072,7 @@ SMDSAbs_ElementType MultiConnection::GetType() const
 */
 //================================================================================
 
-double MultiConnection2D::GetValue( const TSequenceOfXYZ& P )
+double MultiConnection2D::GetValue( const TSequenceOfXYZ& /*P*/ )
 {
   return 0;
 }
@@ -4263,7 +4263,7 @@ private:
   bool isOutOfFace  (const gp_Pnt& p);
   bool isOutOfEdge  (const gp_Pnt& p);
   bool isOutOfVertex(const gp_Pnt& p);
-  bool isOutOfNone  (const gp_Pnt& p) { return true; }
+  bool isOutOfNone  (const gp_Pnt& /*p*/) { return true; }
   bool isBox        (const TopoDS_Shape& s);
 
   TopoDS_Shape prepareSolid( const TopoDS_Shape& theSolid );

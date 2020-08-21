@@ -794,6 +794,7 @@ namespace SMESH
         }
         aStudy->setVisibilityStateForAll(Qtx::HiddenState);
       }
+      // fall through
       default: {
         if (SMESH_Actor *anActor = FindActorByEntry(theWnd,theEntry)) {
           switch (theAction) {
@@ -1326,7 +1327,7 @@ namespace SMESH
 
   int GetSelected(LightApp_SelectionMgr*       theMgr,
                   TColStd_IndexedMapOfInteger& theMap,
-                  const bool                   theIsElement)
+                  const bool                   /*theIsElement*/)
   {
     theMap.Clear();
     SALOME_ListIO selected; theMgr->selectedObjects( selected );

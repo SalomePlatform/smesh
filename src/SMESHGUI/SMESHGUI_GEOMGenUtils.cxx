@@ -46,7 +46,7 @@ namespace SMESH
 {
   GEOM::GEOM_Gen_var GetGEOMGen( GEOM::GEOM_Object_ptr go )
   {
-    GEOM::GEOM_Gen_ptr gen;
+    GEOM::GEOM_Gen_ptr gen = GEOM::GEOM_Gen::_nil();
     if ( !CORBA::is_nil( go ))
       gen = go->GetGen();
     return gen;

@@ -62,7 +62,6 @@ StdMeshers_Adaptive1D_i::~StdMeshers_Adaptive1D_i()
 //=======================================================================
 
 void StdMeshers_Adaptive1D_i::SetMinSize( CORBA::Double minSegLen )
-  throw (SALOME::SALOME_Exception)
 {
   ASSERT( myBaseImpl );
   try {
@@ -93,7 +92,6 @@ CORBA::Double StdMeshers_Adaptive1D_i::GetMinSize()
 //=======================================================================
 
 void StdMeshers_Adaptive1D_i::SetMaxSize( CORBA::Double maxSegLen )
-  throw (SALOME::SALOME_Exception)
 {
   ASSERT( myBaseImpl );
   try {
@@ -124,7 +122,6 @@ CORBA::Double StdMeshers_Adaptive1D_i::GetMaxSize()
 //=======================================================================
 
 void StdMeshers_Adaptive1D_i::SetDeflection( CORBA::Double theValue )
-  throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {

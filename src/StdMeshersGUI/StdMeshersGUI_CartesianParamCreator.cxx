@@ -534,7 +534,7 @@ namespace StdMeshersGUI
   //================================================================================
 
   QWidget* LineDelegate::createEditor( QWidget*                    parent,
-                                       const QStyleOptionViewItem& opt,
+                                       const QStyleOptionViewItem& /*opt*/,
                                        const QModelIndex&          index) const
   {
     QWidget* w = 0;

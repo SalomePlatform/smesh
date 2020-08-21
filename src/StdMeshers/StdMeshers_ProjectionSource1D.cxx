@@ -72,7 +72,6 @@ StdMeshers_ProjectionSource1D::~StdMeshers_ProjectionSource1D()
 //=============================================================================
 
 void StdMeshers_ProjectionSource1D::SetSourceEdge(const TopoDS_Shape& edge)
-  throw ( SALOME_Exception )
 {
   if ( edge.IsNull() )
     throw SALOME_Exception(LOCALIZED("Null edge is not allowed"));
@@ -97,7 +96,6 @@ void StdMeshers_ProjectionSource1D::SetSourceEdge(const TopoDS_Shape& edge)
 
 void StdMeshers_ProjectionSource1D::SetVertexAssociation(const TopoDS_Shape& sourceVertex,
                                                          const TopoDS_Shape& targetVertex)
-  throw ( SALOME_Exception )
 {
   if ( sourceVertex.IsNull() != targetVertex.IsNull() )
     throw SALOME_Exception(LOCALIZED("Two or none vertices must be provided"));

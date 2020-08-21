@@ -260,8 +260,8 @@ namespace
     virtual void ProcessEvent(const int                       event,
                               const int                       eventType,
                               SMESH_subMesh*                  faceSubMesh,
-                              SMESH_subMeshEventListenerData* data,
-                              const SMESH_Hypothesis*         hyp)
+                              SMESH_subMeshEventListenerData* /*data*/,
+                              const SMESH_Hypothesis*         /*hyp*/)
     {
       if ( eventType == SMESH_subMesh::ALGO_EVENT )
       {
@@ -1248,7 +1248,7 @@ namespace
   //================================================================================
 
   void separateNodes( SMESH_MesherHelper&            theHelper,
-                      const SMESH_MAT2d::MedialAxis& theMA,
+                      const SMESH_MAT2d::MedialAxis& /*theMA*/,
                       TMAPar2NPoints &               thePointsOnE,
                       SinuousFace&                   theSinuFace,
                       const vector< bool >&          theIsComputedEdge)
@@ -1932,7 +1932,7 @@ namespace
                           const vector<TopoDS_Edge>& theShortEdges,
                           SMESH_Algo*                the1dAlgo,
                           const bool                 theHasRadialHyp,
-                          const bool                 theIs2nd)
+                          const bool                 /*theIs2nd*/)
   {
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     for ( size_t i = 0; i < theShortEdges.size(); ++i )

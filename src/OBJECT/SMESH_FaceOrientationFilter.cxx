@@ -42,7 +42,7 @@
 
 #define PI   3.14159265359
 
-vtkStandardNewMacro(SMESH_FaceOrientationFilter);
+vtkStandardNewMacro(SMESH_FaceOrientationFilter)
 
 /*!
  * \class SMESH_FaceOrientationFilter
@@ -237,7 +237,7 @@ void GetFaceParams( vtkCell* theFace, double theNormal[3], double& theSize )
  * Execute method. Output calculation.
  */
 int SMESH_FaceOrientationFilter::RequestData(
-  vtkInformation *request,
+  vtkInformation * /*request*/,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector)
 {

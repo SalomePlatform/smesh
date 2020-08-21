@@ -68,7 +68,7 @@ int SMDS_Mesh::chunkSize = 1024;
  */
 //================================================================================
 
-int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
+int SMDS_Mesh::CheckMemory(const bool doNotRaise)
 {
   return -1;
 #if !defined WIN32 && !defined __APPLE__

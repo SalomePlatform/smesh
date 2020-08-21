@@ -1243,16 +1243,16 @@ void SMESHGUI_SewingDlg::onMoveBorderEnd(int button)
     {
       aPRT.node1 = ( aPRT.node1 + size + dn ) % size;
       aPRT.node2 = ( aPRT.node2 + size + dn ) % size;
-      break;
     }
+    break;
   case MOVE_LEFT_2:
   case MOVE_RIGHT_2:
     if (( isClosed ) ||
         ( 0 <= aPRT.nodeLast+dn && aPRT.nodeLast+dn < size ))
     {
       aPRT.nodeLast = ( aPRT.nodeLast + size + dn ) % size;
-      break;
     }
+    break;
   default:
     return; // impossible to move
   }
@@ -1584,8 +1584,8 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
         if (e) 
           newIndices.Add(e->GetID());
         
-          if (!isEvenOneExists)
-            isEvenOneExists = true;
+        if (!isEvenOneExists)
+          isEvenOneExists = true;
       }
       
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
@@ -1798,7 +1798,7 @@ void SMESHGUI_SewingDlg::ActivateThisDialog()
 // function : enterEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_SewingDlg::enterEvent (QEvent* e)
+void SMESHGUI_SewingDlg::enterEvent (QEvent* /*e*/)
 {
   if (!ConstructorsBox->isEnabled()) {
     SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );

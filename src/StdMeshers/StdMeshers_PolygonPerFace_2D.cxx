@@ -60,8 +60,8 @@ StdMeshers_PolygonPerFace_2D::StdMeshers_PolygonPerFace_2D(int        hypId,
 //purpose  : 
 //=======================================================================
 
-bool StdMeshers_PolygonPerFace_2D::CheckHypothesis(SMESH_Mesh&                          theMesh,
-                                                   const TopoDS_Shape&                  theShape,
+bool StdMeshers_PolygonPerFace_2D::CheckHypothesis(SMESH_Mesh&                          /*theMesh*/,
+                                                   const TopoDS_Shape&                  /*theShape*/,
                                                    SMESH_Hypothesis::Hypothesis_Status& theStatus)
 {
   theStatus = HYP_OK;

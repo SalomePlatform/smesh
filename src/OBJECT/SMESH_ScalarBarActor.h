@@ -91,7 +91,7 @@ class SMESHOBJECT_EXPORT SMESH_ScalarBarActor: public vtkActor2D {
  public:
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  vtkTypeMacro(SMESH_ScalarBarActor,vtkActor2D);
+  vtkTypeMacro(SMESH_ScalarBarActor,vtkActor2D)
 
   // Description:
   // Instantiate object with 64 maximum colors; 5 labels; %%-#6.3g label

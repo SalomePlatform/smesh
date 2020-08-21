@@ -32,7 +32,7 @@
 
 class SMESHOBJECT_EXPORT SMESH_ExtractGeometry : public vtkExtractGeometry{
 public:
-  vtkTypeMacro(SMESH_ExtractGeometry,vtkExtractGeometry);
+  vtkTypeMacro(SMESH_ExtractGeometry,vtkExtractGeometry)
 
   static SMESH_ExtractGeometry *New();
 

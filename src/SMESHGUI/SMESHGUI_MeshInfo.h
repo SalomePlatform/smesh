@@ -71,7 +71,7 @@ public:
 
 class SMESHGUI_EXPORT SMESHGUI_BaseInfo : public SMESHGUI_Info
 {
-  Q_OBJECT;
+  Q_OBJECT
   
   enum
   {
@@ -158,7 +158,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_ElemInfo : public SMESHGUI_Info
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   SMESHGUI_ElemInfo( QWidget* = 0 );
@@ -205,7 +205,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_SimpleElemInfo : public SMESHGUI_ElemInfo
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   SMESHGUI_SimpleElemInfo( QWidget* = 0 );
@@ -223,7 +223,7 @@ private slots:
 
 class SMESHGUI_EXPORT SMESHGUI_TreeElemInfo : public SMESHGUI_ElemInfo
 {
-  Q_OBJECT;
+  Q_OBJECT
 
   class ItemDelegate;
   class ItemCreator;
@@ -251,7 +251,7 @@ private:
 
 class InfoComputor: public QObject
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   enum { GrpSize, GrpNbNodes };
@@ -271,7 +271,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_AddInfo : public SMESHGUI_Info
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   SMESHGUI_AddInfo( QWidget* = 0 );
@@ -307,7 +307,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_CtrlInfo : public SMESHGUI_Info
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   SMESHGUI_CtrlInfo( QWidget* = 0 );
@@ -354,7 +354,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_MeshInfoDlg : public QDialog
 { 
-  Q_OBJECT;
+  Q_OBJECT
 
   enum { NodeMode, ElemMode, GroupMode };
 
@@ -409,7 +409,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_CtrlInfoDlg : public QDialog
 { 
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   SMESHGUI_CtrlInfoDlg( QWidget* = 0 );

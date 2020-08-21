@@ -50,22 +50,22 @@
 #include <unistd.h>
 #endif
 
-IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
-IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
-IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient);
-IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pySubMesh         ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pySelfEraser      ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyGroup           ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyFilter          ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
-IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
-IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
-IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis);
-IMPLEMENT_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient)
+IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient)
+IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient)
+IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject)
+IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject)
+IMPLEMENT_STANDARD_RTTIEXT(_pySubMesh         ,_pyObject)
+IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject)
+IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject)
+IMPLEMENT_STANDARD_RTTIEXT(_pySelfEraser      ,_pyObject)
+IMPLEMENT_STANDARD_RTTIEXT(_pyGroup           ,_pyObject)
+IMPLEMENT_STANDARD_RTTIEXT(_pyFilter          ,_pyObject)
+IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis)
+IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis)
+IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis)
+IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis)
+IMPLEMENT_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis)
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -930,8 +930,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
 #ifdef _DEBUG_
-        // is types complete? (compilation failure mains that enum GeometryType changed)
-        int _asrt[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 2 : -1 ]; _asrt[0]=_asrt[1];
+        // is types complete? (compilation failure means that enum GeometryType changed)
+        int _asrt[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 2 : -1 ]; _asrt[0]=_asrt[1]; // _asrt[1] may be used uninitialized => replace this with static_assert?
 #endif
       }
       if (Type == "SMESH.FT_EntityType")
@@ -950,8 +950,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
 #ifdef _DEBUG_
-        // is 'types' complete? (compilation failure mains that enum EntityType changed)
-        int _asrt[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 2 : -1 ]; _asrt[0]=_asrt[1];
+        // is 'types' complete? (compilation failure means that enum EntityType changed)
+        int _asrt[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 2 : -1 ]; _asrt[0]=_asrt[1]; // _asrt[1] may be used uninitialized => replace this with static_assert?
 #endif
       }
     }
@@ -1230,7 +1230,7 @@ void _pyGen::Flush()
  */
 //================================================================================
 
-void _pyGen::PlaceSubmeshAfterItsCreation( Handle(_pyCommand) theCmdUsingSubmesh ) const
+void _pyGen::PlaceSubmeshAfterItsCreation( Handle(_pyCommand) /*theCmdUsingSubmesh*/ ) const
 {
   // map< _pyID, Handle(_pyObject) >::const_iterator id_obj = myObjects.begin();
   // for ( ; id_obj != myObjects.end(); ++id_obj )
@@ -4482,7 +4482,7 @@ _pySubMesh::_pySubMesh(const Handle(_pyCommand)& theCreationCmd, bool toKeepAgrC
  */
 //================================================================================
 
-bool _pySubMesh::CanBeArgOfMethod(const _AString& theMethodName)
+bool _pySubMesh::CanBeArgOfMethod(const _AString& /*theMethodName*/)
 {
   return false;
   // names of all methods where a sub-mesh can be used as argument

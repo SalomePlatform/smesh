@@ -57,7 +57,6 @@ StdMeshers_Geometric1D_i::StdMeshers_Geometric1D_i( PortableServer::POA_ptr theP
 //=============================================================================
 
 void StdMeshers_Geometric1D_i::SetStartLength( CORBA::Double theLength )
-  throw (SALOME::SALOME_Exception)
 {
   try {
     this->GetImpl()->SetStartLength( theLength );
@@ -77,7 +76,6 @@ void StdMeshers_Geometric1D_i::SetStartLength( CORBA::Double theLength )
 //=============================================================================
 
 void StdMeshers_Geometric1D_i::SetCommonRatio( CORBA::Double factor )
-  throw (SALOME::SALOME_Exception)
 {
   try {
     this->GetImpl()->SetCommonRatio( factor );

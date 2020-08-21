@@ -50,7 +50,7 @@ SMESH_Hypothesis_i::SMESH_Hypothesis_i( PortableServer::POA_ptr thePOA )
   : SALOME::GenericObj_i( thePOA )
 {
   myBaseImpl = 0;
-};
+}
 
 //=============================================================================
 /*!
@@ -65,7 +65,7 @@ SMESH_Hypothesis_i::~SMESH_Hypothesis_i()
   //MESSAGE( "SMESH_Hypothesis_i::~SMESH_Hypothesis_i" );
   if ( myBaseImpl )
     delete myBaseImpl;
-};
+}
 
 //=============================================================================
 /*!
@@ -78,7 +78,7 @@ SMESH_Hypothesis_i::~SMESH_Hypothesis_i()
 char* SMESH_Hypothesis_i::GetName()
 {
   return CORBA::string_dup( myBaseImpl->GetName() );
-};
+}
 
 //=============================================================================
 /*!
@@ -91,7 +91,7 @@ char* SMESH_Hypothesis_i::GetName()
 char* SMESH_Hypothesis_i::GetLibName()
 {
   return CORBA::string_dup( myBaseImpl->GetLibName() );
-};
+}
 
 //=============================================================================
 /*!
@@ -104,7 +104,7 @@ char* SMESH_Hypothesis_i::GetLibName()
 void SMESH_Hypothesis_i::SetLibName(const char* theLibName)
 {
   myBaseImpl->SetLibName( theLibName );
-};
+}
 
 //=============================================================================
 /*!

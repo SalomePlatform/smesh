@@ -2421,7 +2421,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n11,
                                                const SMDS_MeshNode* n12,
                                                const int id, 
-                                               bool force3d)
+                                               bool /*force3d*/)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshVolume* elem = 0;
@@ -3769,7 +3769,7 @@ namespace { // Structures used by FixQuadraticElements()
   /*!
    * \brief Dump QLink and QFace
    */
-  ostream& operator << (ostream& out, const QLink& l)
+  ostream& operator << (ostream& out, const QLink& l)  // todo: unused in release mode
   {
     out <<"QLink nodes: "
         << l.node1()->GetID() << " - "
@@ -3777,7 +3777,7 @@ namespace { // Structures used by FixQuadraticElements()
         << l.node2()->GetID() << endl;
     return out;
   }
-  ostream& operator << (ostream& out, const QFace& f)
+  ostream& operator << (ostream& out, const QFace& f)  // todo: unused in release mode
   {
     out <<"QFace nodes: "/*<< &f << "  "*/;
     for ( TIDSortedNodeSet::const_iterator n = f.begin(); n != f.end(); ++n )
@@ -3820,6 +3820,7 @@ namespace { // Structures used by FixQuadraticElements()
 #ifdef _DEBUG_
     _face = face;
 #endif
+    (void)face; // unused in release mode
   }
   //================================================================================
   /*!
@@ -4130,7 +4131,7 @@ namespace { // Structures used by FixQuadraticElements()
    */
   //================================================================================
 
-  bool QFace::IsSpoiled(const QLink* bentLink ) const
+  bool QFace::IsSpoiled(const QLink* bentLink ) const // todo: unused
   {
     // code is valid for convex faces only
     gp_XYZ gc(0,0,0);
@@ -4613,7 +4614,7 @@ namespace { // Structures used by FixQuadraticElements()
             if ( curvNorm * D2 > 0 )
               continue; // convex edge
           }
-          catch ( Standard_Failure )
+          catch ( Standard_Failure& )
           {
             continue;
           }
@@ -4728,7 +4729,7 @@ namespace { // Structures used by FixQuadraticElements()
             if ( concaveU || concaveV )
               concaveFaces.push_back( face );
           }
-          catch ( Standard_Failure )
+          catch ( Standard_Failure& )
           {
             concaveFaces.push_back( face );
           }
@@ -5260,7 +5261,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
               try {
                 gp_Vec x = x01.Normalized() + x12.Normalized();
                 trsf.SetTransformation( gp_Ax3( gp::Origin(), link1->Normal(), x), gp_Ax3() );
-              } catch ( Standard_Failure ) {
+              } catch ( Standard_Failure& ) {
                 trsf.Invert();
               }
               move.Transform(trsf);

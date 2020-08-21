@@ -63,7 +63,7 @@ StdMeshers_Prism_3D_i::~StdMeshers_Prism_3D_i()
 }
 //-----------------------------------------------------------------------------
 
-bool StdMeshers_Prism_3D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
+bool StdMeshers_Prism_3D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int /*algoDim*/ )
 {
   return ::StdMeshers_Prism_3D::IsApplicable( S, toCheckAll );
 }

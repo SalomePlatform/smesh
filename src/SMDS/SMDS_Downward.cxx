@@ -122,7 +122,7 @@ int SMDS_Downward::addCell(int vtkId)
  *
  * @param cellId
  */
-void SMDS_Downward::initCell(int cellId)
+void SMDS_Downward::initCell(int /*cellId*/)
 {
 }
 
@@ -131,7 +131,7 @@ void SMDS_Downward::initCell(int cellId)
  * @param cellId not used here.
  * @return
  */
-int SMDS_Downward::getNumberOfDownCells(int cellId)
+int SMDS_Downward::getNumberOfDownCells(int /*cellId*/)
 {
   return _nbDownCells;
 }
@@ -154,7 +154,7 @@ const int* SMDS_Downward::getDownCells(int cellId)
  * @param cellId index of the cell in the downward structure relative to a vtk cell type.
  * @return table of downward entities types.
  */
-const unsigned char* SMDS_Downward::getDownTypes(int cellId)
+const unsigned char* SMDS_Downward::getDownTypes(int /*cellId*/)
 {
   return &_cellTypes[0];
 }
@@ -165,7 +165,7 @@ const unsigned char* SMDS_Downward::getDownTypes(int cellId)
  * @param lowCellId index of the children cell to add (dimension n-1)
  * @param aType vtk cell type of the cell to add (needed to find the SMDS_Downward structure containing the cell to add).
  */
-void SMDS_Downward::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_Downward::addDownCell(int /*cellId*/, int /*lowCellId*/, unsigned char /*aType*/)
 {
   ASSERT(0); // must be re-implemented in derived class
 }
@@ -176,12 +176,12 @@ void SMDS_Downward::addDownCell(int cellId, int lowCellId, unsigned char aType)
  * @param upCellId index of the parent cell to add (dimension n+1)
  * @param aType vtk cell type of the cell to add (needed to find the SMDS_Downward structure containing the cell to add).
  */
-void SMDS_Downward::addUpCell(int cellId, int upCellId, unsigned char aType)
+void SMDS_Downward::addUpCell(int /*cellId*/, int /*upCellId*/, unsigned char /*aType*/)
 {
   ASSERT(0); // must be re-implemented in derived class
 }
 
-int SMDS_Downward::getNodeSet(int cellId, int* nodeSet)
+int SMDS_Downward::getNodeSet(int /*cellId*/, int* /*nodeSet*/)
 {
   return 0;
 }
@@ -777,17 +777,17 @@ void SMDS_Down3D::compactStorage()
   // nothing to do, size was known before
 }
 
-int SMDS_Down3D::getNumberOfUpCells(int cellId)
+int SMDS_Down3D::getNumberOfUpCells(int /*cellId*/)
 {
   return 0;
 }
 
-const int* SMDS_Down3D::getUpCells(int cellId)
+const int* SMDS_Down3D::getUpCells(int /*cellId*/)
 {
   return 0;
 }
 
-const unsigned char* SMDS_Down3D::getUpTypes(int cellId)
+const unsigned char* SMDS_Down3D::getUpTypes(int /*cellId*/)
 {
   return 0;
 }
@@ -904,7 +904,7 @@ void SMDS_DownTriangle::computeEdgesWithNodes(int cellId, ListElemByNodesType& e
   edgesWithNodes.elems[2].vtkType = VTK_LINE;
 }
 
-void SMDS_DownTriangle::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_DownTriangle::addDownCell(int cellId, int lowCellId, unsigned char /*aType*/)
 {
   //ASSERT((cellId >=0)&& (cellId < _maxId));
   //ASSERT(aType == VTK_LINE);
@@ -961,7 +961,7 @@ void SMDS_DownQuadTriangle::computeEdgesWithNodes(int cellId, ListElemByNodesTyp
   edgesWithNodes.elems[2].vtkType = VTK_QUADRATIC_EDGE;
 }
 
-void SMDS_DownQuadTriangle::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_DownQuadTriangle::addDownCell(int cellId, int lowCellId, unsigned char /*aType*/)
 {
   //ASSERT((cellId >=0)&& (cellId < _maxId));
   //ASSERT(aType == VTK_QUADRATIC_EDGE);
@@ -1021,7 +1021,7 @@ void SMDS_DownQuadrangle::computeEdgesWithNodes(int cellId, ListElemByNodesType&
   edgesWithNodes.elems[3].vtkType = VTK_LINE;
 }
 
-void SMDS_DownQuadrangle::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_DownQuadrangle::addDownCell(int cellId, int lowCellId, unsigned char /*aType*/)
 {
   //ASSERT((cellId >=0)&& (cellId < _maxId));
   //ASSERT(aType == VTK_LINE);
@@ -1085,7 +1085,7 @@ void SMDS_DownQuadQuadrangle::computeEdgesWithNodes(int cellId, ListElemByNodesT
   edgesWithNodes.elems[3].vtkType = VTK_QUADRATIC_EDGE;
 }
 
-void SMDS_DownQuadQuadrangle::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_DownQuadQuadrangle::addDownCell(int cellId, int lowCellId, unsigned char /*aType*/)
 {
   //ASSERT((cellId >=0)&& (cellId < _maxId));
   //ASSERT(aType == VTK_QUADRATIC_EDGE);
@@ -1150,7 +1150,7 @@ void SMDS_DownTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
 
-void SMDS_DownTetra::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_DownTetra::addDownCell(int cellId, int lowCellId, unsigned char /*aType*/)
 {
   //ASSERT((cellId >=0)&& (cellId < _maxId));
   //ASSERT(aType == VTK_TRIANGLE);
@@ -1258,7 +1258,7 @@ void SMDS_DownQuadTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
 
-void SMDS_DownQuadTetra::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_DownQuadTetra::addDownCell(int cellId, int lowCellId, unsigned char /*aType*/)
 {
   //ASSERT((cellId >=0)&& (cellId < _maxId));
   //ASSERT(aType == VTK_QUADRATIC_TRIANGLE);
@@ -2006,7 +2006,7 @@ void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& or
   MESSAGE(nodes[4] << " " << nodes[5] << " " << nodes[6] << " " << nodes[7]);
 }
 
-void SMDS_DownHexa::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_DownHexa::addDownCell(int cellId, int lowCellId, unsigned char /*aType*/)
 {
   //ASSERT((cellId >=0)&& (cellId < _maxId));
   int *faces = &_cellIds[_nbDownCells * cellId];
@@ -2137,7 +2137,7 @@ void SMDS_DownQuadHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
 
-void SMDS_DownQuadHexa::addDownCell(int cellId, int lowCellId, unsigned char aType)
+void SMDS_DownQuadHexa::addDownCell(int cellId, int lowCellId, unsigned char /*aType*/)
 {
   //ASSERT((cellId >=0)&& (cellId < _maxId));
   int *faces = &_cellIds[_nbDownCells * cellId];

@@ -63,7 +63,7 @@ StdMeshers_RadialQuadrangle_1D2D_i::~StdMeshers_RadialQuadrangle_1D2D_i()
 
 //-----------------------------------------------------------------------------
 
-bool StdMeshers_RadialQuadrangle_1D2D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
+bool StdMeshers_RadialQuadrangle_1D2D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int /*algoDim*/ )
 {
   return ::StdMeshers_RadialQuadrangle_1D2D::IsApplicable( S, toCheckAll );
 }

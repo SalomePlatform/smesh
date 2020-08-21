@@ -83,7 +83,7 @@ class SMESH_ActorDef : public SMESH_Actor
   friend class SMESH_Actor;
 
  public:
-  vtkTypeMacro(SMESH_ActorDef,SMESH_Actor);
+  vtkTypeMacro(SMESH_ActorDef,SMESH_Actor)
   
   virtual void Delete();
 

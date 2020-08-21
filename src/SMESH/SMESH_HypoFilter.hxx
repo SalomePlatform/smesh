@@ -107,7 +107,7 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   enum Logical { AND, AND_NOT, OR, OR_NOT };
   enum Comparison { EQUAL, NOT_EQUAL, MORE, LESS };
 
-  SMESH_HypoFilter(const SMESH_HypoFilter& other){}
+  SMESH_HypoFilter(const SMESH_HypoFilter& /*other*/){}
 
   void add( Logical bool_op, SMESH_HypoPredicate* pred )
   {

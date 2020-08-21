@@ -62,7 +62,7 @@ class SMDS_EXPORT SMDS_MeshNode: public SMDS_MeshElement
 
   virtual bool IsPoly() const { return false; }
   virtual bool IsQuadratic() const { return false; }
-  virtual bool IsMediumNode(const SMDS_MeshNode* node) const  { return false; }
+  virtual bool IsMediumNode(const SMDS_MeshNode* /*node*/) const  { return false; }
   virtual int  NbCornerNodes() const { return 1; }
 
   void Print(std::ostream & OS) const;

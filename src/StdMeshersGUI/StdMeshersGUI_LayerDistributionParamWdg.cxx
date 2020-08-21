@@ -224,7 +224,7 @@ void StdMeshersGUI_LayerDistributionParamWdg::onEdit()
   }
 }
 
-void StdMeshersGUI_LayerDistributionParamWdg::onEdited( int result )
+void StdMeshersGUI_LayerDistributionParamWdg::onEdited( int /*result*/ )
 {
   if ( myDlg )
   {

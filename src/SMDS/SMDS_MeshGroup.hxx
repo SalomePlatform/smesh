@@ -41,7 +41,7 @@ class SMDS_EXPORT SMDS_MeshGroup: public SMDS_MeshObject, SMDS_ElementHolder
 
   void SetType (const SMDSAbs_ElementType theType);
   void Clear();
-  void Reserve(size_t nbElems) {}
+  void Reserve(size_t /*nbElems*/) {}
   bool Add(const SMDS_MeshElement * theElem);
   bool Remove(const SMDS_MeshElement * theElem);
   bool IsEmpty() const { return myElements.empty(); }

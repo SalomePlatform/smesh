@@ -697,7 +697,7 @@ void SMESHGUI_FilterTable::ComboDelegate::setModelData( QWidget* editor,
 
 void SMESHGUI_FilterTable::ComboDelegate::updateEditorGeometry( QWidget* editor,
                                                                 const QStyleOptionViewItem& option, 
-                                                                const QModelIndex& index ) const
+                                                                const QModelIndex& /*index*/ ) const
 {
   editor->setGeometry( option.rect );
 }
@@ -1732,6 +1732,7 @@ static QList<int> entityTypes( const int theType )
   {
   case SMESH::NODE:
     typeIds.append( SMDSEntity_Node );
+    break;
   case SMESH::EDGE:
     typeIds.append( SMDSEntity_Edge );
     typeIds.append( SMDSEntity_Quad_Edge );
@@ -1776,7 +1777,7 @@ static QList<int> entityTypes( const int theType )
 // Purpose : Provides reaction on change of criterion
 //=======================================================================
 
-void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, const int entityType)
+void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int /*col*/, const int entityType)
 {
   int aType = entityType == -1 ? GetType() : entityType;
   Table* aTable = myTables[ aType ];
@@ -2377,7 +2378,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCompare() const
 // Purpose : Create table
 //=======================================================================
 SMESHGUI_FilterTable::Table* SMESHGUI_FilterTable::createTable (QWidget*  theParent,
-                                                                const int theType)
+                                                                const int /*theType*/)
 {
   // create table
   Table* aTable= new Table(0, 6, theParent);
@@ -3816,6 +3817,7 @@ void SMESHGUI_FilterDlg::onSelectionDone()
         myTable->SetThreshold(aRow, SMESH::toQStr( grp->GetName() ));
         myTable->SetID       (aRow, anIO->getEntry() );
       }
+      break;
     }
   default: // get a GEOM object
     {

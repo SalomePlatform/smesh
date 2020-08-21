@@ -718,7 +718,7 @@ BadOrientedVolume_i::BadOrientedVolume_i()
 {
   Controls::PredicatePtr control( new Controls::BadOrientedVolume() );
   myFunctorPtr = myPredicatePtr = control;
-};
+}
 
 FunctorType BadOrientedVolume_i::GetFunctorType()
 {
@@ -733,7 +733,7 @@ BareBorderVolume_i::BareBorderVolume_i()
 {
   Controls::PredicatePtr control( new Controls::BareBorderVolume() );
   myFunctorPtr = myPredicatePtr = control;
-};
+}
 
 FunctorType BareBorderVolume_i::GetFunctorType()
 {
@@ -748,7 +748,7 @@ BareBorderFace_i::BareBorderFace_i()
 {
   Controls::PredicatePtr control( new Controls::BareBorderFace() );
   myFunctorPtr = myPredicatePtr = control;
-};
+}
 
 FunctorType BareBorderFace_i::GetFunctorType()
 {
@@ -763,7 +763,7 @@ OverConstrainedVolume_i::OverConstrainedVolume_i()
 {
   Controls::PredicatePtr control( new Controls::OverConstrainedVolume() );
   myFunctorPtr = myPredicatePtr = control;
-};
+}
 
 FunctorType OverConstrainedVolume_i::GetFunctorType()
 {
@@ -778,7 +778,7 @@ OverConstrainedFace_i::OverConstrainedFace_i()
 {
   Controls::PredicatePtr control( new Controls::OverConstrainedFace() );
   myFunctorPtr = myPredicatePtr = control;
-};
+}
 
 FunctorType OverConstrainedFace_i::GetFunctorType()
 {
@@ -843,7 +843,7 @@ void BelongToMeshGroup_i::SetGroupID( const char* theID ) // IOR or StoreName
 std::string BelongToMeshGroup_i::GetGroupID()
 {
   if ( myGroup->_is_nil() )
-    SMESH::SMESH_GroupBase_var( GetGroup() );
+    SMESH::SMESH_GroupBase_var( GetGroup() );  // todo: unnecessary parentheses?
 
   if ( !myGroup->_is_nil() )
     myID = SMESH_Gen_i::GetORB()->object_to_string( myGroup );
@@ -1637,7 +1637,6 @@ void ConnectedElements_i::SetPoint( CORBA::Double x, CORBA::Double y, CORBA::Dou
 }
 
 void ConnectedElements_i::SetVertex( GEOM::GEOM_Object_ptr vertex )
-  throw (SALOME::SALOME_Exception)
 {
   TopoDS_Shape shape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( vertex );
   if ( shape.IsNull() )
@@ -1659,7 +1658,6 @@ void ConnectedElements_i::SetVertex( GEOM::GEOM_Object_ptr vertex )
 }
 
 void ConnectedElements_i::SetNode ( CORBA::Long nodeID )
-  throw (SALOME::SALOME_Exception)
 {
   if ( nodeID < 1 )
     THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetNode(): nodeID must be > 0",
@@ -1675,7 +1673,6 @@ void ConnectedElements_i::SetNode ( CORBA::Long nodeID )
  */
 void ConnectedElements_i::SetThreshold ( const char*                             threshold,
                                          SMESH::ConnectedElements::ThresholdType type )
-  throw (SALOME::SALOME_Exception)
 {
   if ( !threshold )
     THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetThreshold(): NULL threshold",

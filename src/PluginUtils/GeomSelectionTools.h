@@ -72,7 +72,7 @@ public:
 namespace PluginUtils
 {
   PLUGINUTILS_EXPORT QString PrintDoubleValue( double, int = 16 );
-};
+}
 
 #endif // _GEOMSELECTIONTOOLS_H_
 

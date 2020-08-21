@@ -75,7 +75,7 @@ StdMeshersGUI_FixedPointsParamWdg::LineDelegate::LineDelegate( QTreeWidget* pare
 }
 
 QWidget* StdMeshersGUI_FixedPointsParamWdg::LineDelegate::createEditor( QWidget* parent,
-                                                                        const QStyleOptionViewItem& option,
+                                                                        const QStyleOptionViewItem& /*option*/,
                                                                         const QModelIndex& index ) const
 {
   QWidget* w = 0;

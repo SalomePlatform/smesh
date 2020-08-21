@@ -53,29 +53,21 @@ public:
                    int                     localId );
   ~SMESH_subMesh_i();
 
-  CORBA::Long GetNumberOfElements()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long GetNumberOfElements();
   
-  CORBA::Long  GetNumberOfNodes( CORBA::Boolean all )
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long  GetNumberOfNodes( CORBA::Boolean all );
   
-  SMESH::long_array* GetElementsId()
-    throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetElementsId();
 
-  SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
-    throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType );
   
-  SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
-    throw (SALOME::SALOME_Exception);
+  SMESH::ElementType GetElementType( CORBA::Long id, bool iselem );
   
-  SMESH::long_array* GetNodesId()
-    throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetNodesId();
   
-  SMESH::SMESH_Mesh_ptr GetFather()
-    throw (SALOME::SALOME_Exception);
+  SMESH::SMESH_Mesh_ptr GetFather();
   
-  GEOM::GEOM_Object_ptr GetSubShape()
-    throw (SALOME::SALOME_Exception);
+  GEOM::GEOM_Object_ptr GetSubShape();
 
   CORBA::Long GetId();
 
@@ -144,8 +136,7 @@ class SMESH_I_EXPORT SMESH_Invalid_subMesh_i:
                            int                     localId,
                            GEOM::GEOM_Object_ptr   shape);
 
-  virtual GEOM::GEOM_Object_ptr GetSubShape()
-    throw (SALOME::SALOME_Exception);
+  virtual GEOM::GEOM_Object_ptr GetSubShape();
 
  protected:
 

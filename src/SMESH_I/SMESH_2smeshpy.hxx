@@ -74,16 +74,16 @@ class _pyHypothesis;
 class _pyAlgorithm;
 class _pyHypothesisReader;
 
-DEFINE_STANDARD_HANDLE (_pyCommand         ,Standard_Transient);
-DEFINE_STANDARD_HANDLE (_pyObject          ,Standard_Transient);
-DEFINE_STANDARD_HANDLE (_pyHypothesisReader,Standard_Transient);
-DEFINE_STANDARD_HANDLE (_pyGen             ,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyMesh            ,_pyObject);
-DEFINE_STANDARD_HANDLE (_pySubMesh         ,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyGroup           ,_pySubMesh);
-DEFINE_STANDARD_HANDLE (_pyMeshEditor      ,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyHypothesis      ,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyAlgorithm       ,_pyHypothesis);
+DEFINE_STANDARD_HANDLE (_pyCommand         ,Standard_Transient)
+DEFINE_STANDARD_HANDLE (_pyObject          ,Standard_Transient)
+DEFINE_STANDARD_HANDLE (_pyHypothesisReader,Standard_Transient)
+DEFINE_STANDARD_HANDLE (_pyGen             ,_pyObject)
+DEFINE_STANDARD_HANDLE (_pyMesh            ,_pyObject)
+DEFINE_STANDARD_HANDLE (_pySubMesh         ,_pyObject)
+DEFINE_STANDARD_HANDLE (_pyGroup           ,_pySubMesh)
+DEFINE_STANDARD_HANDLE (_pyMeshEditor      ,_pyObject)
+DEFINE_STANDARD_HANDLE (_pyHypothesis      ,_pyObject)
+DEFINE_STANDARD_HANDLE (_pyAlgorithm       ,_pyHypothesis)
 
 typedef TCollection_AsciiString _pyID;
 typedef TCollection_AsciiString _AString;
@@ -490,7 +490,7 @@ public:
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
   virtual const char* AccessorMethod() const { return "GetAlgorithm()"; }
-  virtual bool IsWrappable(const _pyID& theMesh) { return !myIsWrapped; }
+  virtual bool IsWrappable(const _pyID& /*theMesh*/) { return !myIsWrapped; }
 
   DEFINE_STANDARD_RTTIEXT(_pyAlgorithm,_pyHypothesis)
 };
@@ -509,7 +509,7 @@ public:
 
   DEFINE_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis)
 };
-DEFINE_STANDARD_HANDLE (_pyComplexParamHypo, _pyHypothesis);
+DEFINE_STANDARD_HANDLE (_pyComplexParamHypo, _pyHypothesis)
 
 // -------------------------------------------------------------------------------------
 /*!
@@ -531,7 +531,7 @@ public:
 
   DEFINE_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis)
 };
-DEFINE_STANDARD_HANDLE (_pyLayerDistributionHypo, _pyHypothesis);
+DEFINE_STANDARD_HANDLE (_pyLayerDistributionHypo, _pyHypothesis)
 
 // -------------------------------------------------------------------------------------
 /*!
@@ -548,7 +548,7 @@ public:
 
   DEFINE_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis)
 };
-DEFINE_STANDARD_HANDLE (_pyNumberOfSegmentsHyp, _pyHypothesis);
+DEFINE_STANDARD_HANDLE (_pyNumberOfSegmentsHyp, _pyHypothesis)
 
 // -------------------------------------------------------------------------------------
 /*!
@@ -563,7 +563,7 @@ public:
                                   const _pyID&              theMesh);
   DEFINE_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis)
 };
-DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis);
+DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis)
 
 // -------------------------------------------------------------------------------------
 /*!
@@ -582,7 +582,7 @@ public:
 
   DEFINE_STANDARD_RTTIEXT(_pySelfEraser,_pyObject)
 };
-DEFINE_STANDARD_HANDLE (_pySelfEraser, _pyObject);
+DEFINE_STANDARD_HANDLE (_pySelfEraser, _pyObject)
 
 // -------------------------------------------------------------------------------------
 /*!
@@ -624,7 +624,7 @@ public:
 
   DEFINE_STANDARD_RTTIEXT(_pyFilter,_pyObject)
 };
-DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject);
+DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject)
 
 // -------------------------------------------------------------------------------------
 /*!

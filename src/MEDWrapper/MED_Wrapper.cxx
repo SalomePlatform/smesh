@@ -38,8 +38,8 @@
 static int MYDEBUG = 0;
 static int MYVALUEDEBUG = 0;
 #else
-static int MYDEBUG = 0;
-static int MYVALUEDEBUG = 0;
+static int MYDEBUG = 0;      // todo: unused in release mode
+static int MYVALUEDEBUG = 0; // todo: unused in release mode
 #endif
 
 namespace MED
@@ -630,7 +630,7 @@ namespace MED
   void
   TWrapper
   ::GetNames(TElemInfo& theInfo,
-             TInt theNb,
+             TInt /*theNb*/,
              EEntiteMaillage theEntity,
              EGeometrieElement theGeom,
              TErr* theErr)
@@ -721,7 +721,7 @@ namespace MED
   void
   TWrapper
   ::GetNumeration(TElemInfo& theInfo,
-                  TInt theNb,
+                  TInt /*theNb*/,
                   EEntiteMaillage theEntity,
                   EGeometrieElement theGeom,
                   TErr* theErr)
@@ -812,7 +812,7 @@ namespace MED
   void
   TWrapper
   ::GetFamilies(TElemInfo& theInfo,
-                TInt theNb,
+                TInt /*theNb*/,
                 EEntiteMaillage theEntity,
                 EGeometrieElement theGeom,
                 TErr* theErr)
@@ -2323,7 +2323,7 @@ namespace MED
   //----------------------------------------------------------------------------
   EGeometrieElement
   TWrapper
-  ::GetBallGeom(const TMeshInfo& theMeshInfo)
+  ::GetBallGeom(const TMeshInfo& /*theMeshInfo*/)
   {
     TErr anError;
     TFileWrapper aFileWrapper(myFile, eLECTURE, &anError, myMinor);
@@ -2763,7 +2763,7 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::GetGaussInfo(TInt theId,
+  ::GetGaussInfo(TInt /*theId*/,
                  TGaussInfo& theInfo,
                  TErr* theErr)
   {
@@ -3127,7 +3127,7 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::GetProfileInfo(TInt theId,
+  ::GetProfileInfo(TInt /*theId*/,
                    TProfileInfo& theInfo,
                    TErr* theErr)
   {
@@ -4006,7 +4006,7 @@ namespace MED
   //----------------------------------------------------------------------------
   PGrilleInfo
   TWrapper
-  ::CrGrilleInfo(const PMeshInfo& theMeshInfo)
+  ::CrGrilleInfo(const PMeshInfo& /*theMeshInfo*/)
   {
     return PGrilleInfo(); // not implemented????
   }

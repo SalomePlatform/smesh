@@ -636,4 +636,4 @@ bool StdMeshers_RadialPrism_3D::IsApplicable( const TopoDS_Shape & aShape, bool 
     if ( !toCheckAll ) return true;
   }
   return ( toCheckAll && nbFoundSolids != 0);
-};
+}

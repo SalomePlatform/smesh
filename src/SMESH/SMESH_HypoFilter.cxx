@@ -57,7 +57,7 @@ bool SMESH_HypoFilter::NamePredicate::IsOk (const SMESH_Hypothesis* aHyp,
 int SMESH_HypoFilter::TypePredicate::Value( const SMESH_Hypothesis* aHyp ) const
 {
   return aHyp->GetType();
-};
+}
 
 //=======================================================================
 //function : DimPredicate::Value
@@ -78,7 +78,7 @@ bool SMESH_HypoFilter::ApplicablePredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                  const TopoDS_Shape&     /*aShape*/) const
 {
   return SMESH_subMesh::IsApplicableHypothesis( aHyp, (TopAbs_ShapeEnum)_shapeType );
-};
+}
 
 //=======================================================================
 //function : IsAuxiliaryPredicate::IsOk
@@ -89,7 +89,7 @@ bool SMESH_HypoFilter::IsAuxiliaryPredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                   const TopoDS_Shape&     /*aShape*/) const
 {
   return aHyp->IsAuxiliary();
-};
+}
 
 //=======================================================================
 //function : ApplicablePredicate::ApplicablePredicate
@@ -117,7 +117,7 @@ bool SMESH_HypoFilter::InstancePredicate::IsOk(const SMESH_Hypothesis* aHyp,
 //purpose  : 
 //=======================================================================
 
-bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
+bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* /*aHyp*/,
                                                    const TopoDS_Shape&     aShape) const
 {
   return ( !_mainShape.IsNull() && !aShape.IsNull() && _mainShape.IsSame( aShape ));

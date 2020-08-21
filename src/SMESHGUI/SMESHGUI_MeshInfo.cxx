@@ -1804,8 +1804,8 @@ void SMESHGUI_ElemInfo::writeInfo( InfoWriter* writer, const QList<uint>& ids )
               writer->write( SMESHGUI_AddInfo::tr( "TYPE" ), SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) );
             }
             int size = group.size();
-            if ( size != -1 );
-            writer->write( SMESHGUI_AddInfo::tr( "SIZE" ), size );
+            if ( size != -1 )
+              writer->write( SMESHGUI_AddInfo::tr( "SIZE" ), size );
             QColor color = group.color();
             if ( color.isValid() )
               writer->write( SMESHGUI_AddInfo::tr( "COLOR" ), color.name() );
@@ -1935,7 +1935,7 @@ void SMESHGUI_ElemInfo::writeInfo( InfoWriter* writer, const QList<uint>& ids )
               writer->write( SMESHGUI_AddInfo::tr( "TYPE" ), SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" ) );
             }
             int size = group.size();
-            if ( size != -1 );
+            if ( size != -1 )
               writer->write( SMESHGUI_AddInfo::tr( "SIZE" ), size );
             QColor color = group.color();
             if ( color.isValid() )
@@ -2175,8 +2175,8 @@ void SMESHGUI_TreeElemInfo::information( const QList<uint>& ids )
   \param nbNodes number of unique nodes in element
   \param parentItem parent item of tree
 */
-void SMESHGUI_TreeElemInfo::nodeInfo( const SMDS_MeshNode* node, int index,
-                                      int nbNodes, QTreeWidgetItem* parentItem )
+void SMESHGUI_TreeElemInfo::nodeInfo( const SMDS_MeshNode* /*node*/, int /*index*/,
+                                      int /*nbNodes*/, QTreeWidgetItem* /*parentItem*/ )
 {
   // int precision   = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
   // // node number and ID
@@ -2284,7 +2284,7 @@ void SMESHGUI_TreeElemInfo::contextMenuEvent( QContextMenuEvent* e )
   }
 }
 
-void SMESHGUI_TreeElemInfo::itemDoubleClicked( QTreeWidgetItem* theItem, int theColumn )
+void SMESHGUI_TreeElemInfo::itemDoubleClicked( QTreeWidgetItem* theItem, int /*theColumn*/ )
 {
   if ( theItem ) {
     int type = theItem->data( 1, TypeRole ).toInt();

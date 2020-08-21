@@ -214,7 +214,7 @@ bool SMESHGUI_FieldSelectorWdg::GetSelectedFields()
 /*!
  * \brief SLOT called when a tree item is checked
  */
-void SMESHGUI_FieldSelectorWdg::onItemCheck(QTreeWidgetItem * item, int column)
+void SMESHGUI_FieldSelectorWdg::onItemCheck(QTreeWidgetItem * item, int /*column*/)
 {
   myTree->blockSignals( true );
   if ( !item->parent() ) // mesh item

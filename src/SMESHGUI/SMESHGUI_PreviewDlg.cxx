@@ -101,7 +101,7 @@ void SMESHGUI_PreviewDlg::toDisplaySimulation() {
 // function : onDisplaySimulation
 // purpose  : 
 //=================================================================================
-void SMESHGUI_PreviewDlg::onDisplaySimulation(bool toDisplayPreview) {
+void SMESHGUI_PreviewDlg::onDisplaySimulation(bool /*toDisplayPreview*/) {
   //Empty implementation here
 }
 
@@ -212,7 +212,7 @@ void SMESHGUI_MultiPreviewDlg::toDisplaySimulation()
 // function : onDisplaySimulation
 // purpose  : 
 //=================================================================================
-void SMESHGUI_MultiPreviewDlg::onDisplaySimulation( bool toDisplayPreview )
+void SMESHGUI_MultiPreviewDlg::onDisplaySimulation( bool /*toDisplayPreview*/ )
 {
   //Empty implementation here
 }

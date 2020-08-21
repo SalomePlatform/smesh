@@ -421,7 +421,7 @@ namespace
                 if ( face2 )
                   polySeg.myFace[ iP ] = face2;
                 else
-                  ;// ??
+                  {} // todo: ??
                 for ( int i = 0; i < 3; ++i )
                 {
                   nodes[ i ] = polySeg.myFace[ iP ]->GetNode( i );

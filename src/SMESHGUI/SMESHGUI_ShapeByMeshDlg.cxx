@@ -469,7 +469,7 @@ void SMESHGUI_ShapeByMeshOp::activateSelection()
 //purpose  : SLOT. Called when element type changed.
 //=======================================================================
 
-void SMESHGUI_ShapeByMeshOp::onTypeChanged (int theType)
+void SMESHGUI_ShapeByMeshOp::onTypeChanged (int /*theType*/)
 {
   setElementID("");
   activateSelection();

@@ -3209,8 +3209,8 @@ bool StdMeshers_Quadrangle_2D::evaluateQuadPref(SMESH_Mesh &        aMesh,
  */
 //=============================================================================
 
-void StdMeshers_Quadrangle_2D::splitQuadFace(SMESHDS_Mesh *       theMeshDS,
-                                             int                  theFaceID,
+void StdMeshers_Quadrangle_2D::splitQuadFace(SMESHDS_Mesh *       /*theMeshDS*/,
+                                             int                  /*theFaceID*/,
                                              const SMDS_MeshNode* theNode1,
                                              const SMDS_MeshNode* theNode2,
                                              const SMDS_MeshNode* theNode3,

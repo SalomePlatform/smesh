@@ -141,7 +141,7 @@ namespace UNV {
       resLine.resize( resLine.size()-1 );
     return resLine;
   }
-};
+}
 
 
 #ifndef MESSAGE

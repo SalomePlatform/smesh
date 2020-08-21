@@ -546,7 +546,8 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
     {
       delete _ebbTree[i]; _ebbTree[i] = NULL;
     }
-    if ( _nodeSearcher ) delete _nodeSearcher; _nodeSearcher = 0;
+    if ( _nodeSearcher ) delete _nodeSearcher;
+    _nodeSearcher = 0;
   }
   virtual int FindElementsByPoint(const gp_Pnt&                           point,
                                   SMDSAbs_ElementType                     type,
@@ -1673,7 +1674,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   try {
     tgtCS = gp_Ax3( xyz[0], OZ, OX );
   }
-  catch ( Standard_Failure ) {
+  catch ( Standard_Failure& ) {
     return badDistance;
   }
   trsf.SetTransformation( tgtCS );

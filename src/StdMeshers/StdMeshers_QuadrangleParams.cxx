@@ -223,7 +223,7 @@ bool StdMeshers_QuadrangleParams::SetParametersByMesh(const SMESH_Mesh* theMesh,
  *  \retval bool - true if parameter values have been successfully defined
  */
 //================================================================================
-bool StdMeshers_QuadrangleParams::SetParametersByDefaults(const TDefaults&  dflts,
+bool StdMeshers_QuadrangleParams::SetParametersByDefaults(const TDefaults&  /*dflts*/,
                                                           const SMESH_Mesh* /*mesh*/)
 {
   return true;

@@ -352,10 +352,10 @@ namespace MED
   TGaussInfo::TLess
   ::operator()(const TGaussInfo& theLeft, const TGaussInfo& theRight) const
   {
-    if(!&theLeft)
+    if(!&theLeft)    // todo: address of reference can be assumed always non-null by compiler
       return true;
 
-    if(!&theRight)
+    if(!&theRight)   // todo: address of reference can be assumed always non-null by compiler
       return false;
 
     if(theLeft.myGeom != theRight.myGeom)
@@ -644,12 +644,13 @@ namespace MED
       switch(aDim){
       case 3:
         aCoord[2] = myCoord[aDim*theId+2];
+        // fall through
       case 2:
         aCoord[1] = myCoord[aDim*theId+1];
-      case 1:{
+        // fall through
+      case 1:
         aCoord[0] = myCoord[aDim*theId];
         break;
-      }
       }
     } else {
 

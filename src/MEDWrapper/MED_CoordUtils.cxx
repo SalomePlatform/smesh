@@ -36,7 +36,7 @@ namespace MED
 
   template<>
   TFloat
-  GetCoord<eNone>(const TCCoordSlice& theCoordSlice)
+  GetCoord<eNone>(const TCCoordSlice& /*theCoordSlice*/)
   {
     return 0.0;
   }

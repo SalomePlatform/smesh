@@ -49,7 +49,7 @@ public:
                             void* theCallData);
 
 
-  vtkTypeMacro(SMESH_CellLabelActor, SMESH_DeviceActor);
+  vtkTypeMacro(SMESH_CellLabelActor, SMESH_DeviceActor)
 
 
   virtual void SetCellsLabeled(bool theIsCellsLabeled);

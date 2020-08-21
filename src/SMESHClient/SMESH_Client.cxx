@@ -745,9 +745,9 @@ namespace
   //=======================================================================
   //function : ChangePolyhedronNodes
   //=======================================================================
-  inline void ChangePolyhedronNodes (SMDS_Mesh* theMesh,
-                                     SMESH::log_array_var& theSeq,
-                                     CORBA::Long theId)
+  inline void ChangePolyhedronNodes (SMDS_Mesh* /*theMesh*/,
+                                     SMESH::log_array_var& /*theSeq*/,
+                                     CORBA::Long /*theId*/)
   {
     // const SMESH::long_array& anIndexes = theSeq[theId].indexes;
     // CORBA::Long iind = 0, aNbElems = theSeq[theId].number;
