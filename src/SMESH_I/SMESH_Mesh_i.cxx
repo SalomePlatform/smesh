@@ -2058,12 +2058,12 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   TopoDS_Shape S = _impl->GetShapeToMesh();
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   TCollection_AsciiString aIOR;
-  CORBA::String_var ior;
   if ( geomClient->Find( S, aIOR ))
     geomClient->RemoveShapeFromBuffer( aIOR );
 
   // clear buffer also for sub-groups
-  const std::set<SMESHDS_GroupBase*>& groups = _impl->GetMeshDS()->GetGroups();
+  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
+  const std::set<SMESHDS_GroupBase*>& groups = meshDS->GetGroups();
   std::set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
   for (; g != groups.end(); ++g)
     if (const SMESHDS_GroupOnGeom* group = dynamic_cast<SMESHDS_GroupOnGeom*>(*g))
@@ -2073,12 +2073,21 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
         geomClient->RemoveShapeFromBuffer( aIOR );
     }
 
+  // clear buffer also for sub-meshes
+  std::map<int, SMESH_subMesh_i*>::const_iterator aSubMeshIter = _mapSubMesh_i.cbegin();
+  for(; aSubMeshIter != _mapSubMesh_i.cend(); aSubMeshIter++) {
+    int aShapeID = aSubMeshIter->first;
+    const TopoDS_Shape& aSubShape = meshDS->IndexToShape(aShapeID);
+    TCollection_AsciiString aShapeIOR;
+    if ( geomClient->Find( aSubShape, aShapeIOR ))
+      geomClient->RemoveShapeFromBuffer( aShapeIOR );
+  }
+
   typedef struct {
     int shapeID, fromID, toID; // indices of elements of a sub-mesh
   } TRange;
   std::vector< TRange > elemRanges, nodeRanges; // elements of sub-meshes
   std::vector< SMDS_PositionPtr > positions; // node positions
-  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
   if ( !geomChanged )
   {
     // store positions of elements on geometry
