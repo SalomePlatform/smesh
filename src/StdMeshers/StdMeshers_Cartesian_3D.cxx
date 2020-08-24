@@ -731,11 +731,11 @@ namespace
     {
       struct _Split // data of a link split
       {
-        int    _linkID;      // hex link ID
+        int    _linkID;          // hex link ID
         _Node* _nodes[2];
         int    _iCheckIteration; // iteration where split is tried as Hexahedron split
         _Link* _checkedSplit;    // split set to hex links
-        bool   _isUsed;    // used in a volume
+        bool   _isUsed;          // used in a volume
 
         _Split( _Link & split, int iLink ):
           _linkID( iLink ), _nodes{ split._nodes[0], split._nodes[1] },
@@ -944,6 +944,7 @@ namespace
     void getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryVolumes );
     void removeExcessSideDivision(const vector< Hexahedron* >& allHexa);
     void removeExcessNodes(vector< Hexahedron* >& allHexa);
+    void preventVolumesOverlapping();
     TGeomID getAnyFace() const;
     void cutByExtendedInternal( std::vector< Hexahedron* >& hexes,
                                 const TColStd_MapOfInteger& intEdgeIDs );
@@ -2388,6 +2389,7 @@ namespace
   {
     _i = i; _j = j; _k = k;
 
+    bool isCompute = solid;
     if ( !solid )
       solid = _grid->GetSolid();
 
@@ -2416,6 +2418,9 @@ namespace
 
     _intNodes.clear();
     _vIntNodes.clear();
+
+    if ( !isCompute )
+      return;
 
     if ( _nbFaceIntNodes + _eIntPoints.size()                  > 0 &&
          _nbFaceIntNodes + _eIntPoints.size() + _nbCornerNodes > 3)
@@ -2596,7 +2601,8 @@ namespace
       } // loop on _eIntPoints
     }
 
-    else if ( 3 < _nbCornerNodes && _nbCornerNodes < 8 ) // _nbFaceIntNodes == 0
+    else if (( 3 < _nbCornerNodes && _nbCornerNodes < 8 ) || // _nbFaceIntNodes == 0
+             ( !_grid->_geometry.IsOneSolid() ))
     {
       _Link split;
       // create sub-links (_splits) of whole links
@@ -2683,6 +2689,9 @@ namespace
     for ( int iN = 0; iN < 8; ++iN )
       _hexNodes[iN]._usedInFace = 0;
 
+    if ( intFlag & IS_CUT_BY_INTERNAL_FACE && !_grid->_toAddEdges ) // Issue #19913
+      preventVolumesOverlapping();
+
     // Create polygons from quadrangles
     // --------------------------------
 
@@ -2690,7 +2699,8 @@ namespace
     vector<_Node*>          chainNodes;
     _Face*                  coplanarPolyg;
 
-    bool hasEdgeIntersections = !_eIntPoints.empty();
+    const bool hasEdgeIntersections = !_eIntPoints.empty();
+    const bool toCheckSideDivision = isImplementEdges() || intFlag & IS_CUT_BY_INTERNAL_FACE;
 
     for ( int iF = 0; iF < 6; ++iF ) // loop on 6 sides of a hexahedron
     {
@@ -2750,7 +2760,7 @@ namespace
           n1 = split.FirstNode();
           if ( n1 == n2 &&
                n1->_intPoint &&
-               (( n1->_intPoint->_faceIDs.size() > 1 && isImplementEdges() ) ||
+               (( n1->_intPoint->_faceIDs.size() > 1 && toCheckSideDivision ) ||
                 ( n1->_isInternalFlags )))
           {
             // n1 is at intersection with EDGE
@@ -3331,7 +3341,9 @@ namespace
       if ( hex ) // split hexahedron
       {
         intHexa.push_back( hex );
-        if ( hex->_nbFaceIntNodes > 0 || hex->_eIntPoints.size() > 0 )
+        if ( hex->_nbFaceIntNodes > 0 ||
+             hex->_eIntPoints.size() > 0 ||
+             hex->getSolids( solidIDs ) > 1 )
           continue; // treat intersected hex later in parallel
         this->init( hex->_i, hex->_j, hex->_k );
       }
@@ -4464,10 +4476,13 @@ namespace
         {
           curIntPnt._paramOnLine = coords[ ijk[ iDir ]] - coords[0] + _grid->_tol;
           const GridLine& line = _grid->_lines[ iDir ][ lineIndex[ iL ]];
-          multiset< F_IntersectPoint >::const_iterator ip =
-            line._intPoints.upper_bound( curIntPnt );
-          --ip;
-          firstIntPnt = &(*ip);
+          if ( !line._intPoints.empty() )
+          {
+            multiset< F_IntersectPoint >::const_iterator ip =
+              line._intPoints.upper_bound( curIntPnt );
+            --ip;
+            firstIntPnt = &(*ip);
+          }
         }
         else if ( !link._fIntPoints.empty() )
         {
@@ -5461,6 +5476,69 @@ namespace
     return;
 
   } // removeExcessNodes()
+
+  //================================================================================
+  /*!
+   * \brief [Issue #19913] Modify _hexLinks._splits to prevent creating overlapping volumes
+   */
+  //================================================================================
+
+  void Hexahedron::preventVolumesOverlapping()
+  {
+    // Cut off a quadrangle corner if two links sharing the corner
+    // are shared by same two solids, in this case each of solids gets
+    // a triangle for it-self.
+    std::vector< TGeomID > soIDs[4];
+    for ( int iF = 0; iF < 6; ++iF ) // loop on 6 sides of a hexahedron
+    {
+      _Face& quad = _hexQuads[ iF ] ;
+
+      int iFOpposite = iF + ( iF % 2 ? -1 : 1 );
+      _Face& quadOpp = _hexQuads[ iFOpposite ] ;
+
+      int nbSides = 0, nbSidesOpp = 0;
+      for ( int iE = 0; iE < 4; ++iE ) // loop on 4 sides of a quadrangle
+      {
+        nbSides    += ( quad._links   [ iE ].NbResultLinks() > 0 );
+        nbSidesOpp += ( quadOpp._links[ iE ].NbResultLinks() > 0 );
+      }
+      if ( nbSides < 4 || nbSidesOpp != 2 )
+        continue;
+
+      for ( int iE = 0; iE < 4; ++iE )
+      {
+        soIDs[ iE ].clear();
+        _Node* n = quad._links[ iE ].FirstNode();
+        if ( n->_intPoint && n->_intPoint->_faceIDs.size() )
+          soIDs[ iE ] = _grid->GetSolidIDs( n->_intPoint->_faceIDs[0] );
+      }
+      if ((( soIDs[0].size() >= 2 ) +
+           ( soIDs[1].size() >= 2 ) +
+           ( soIDs[2].size() >= 2 ) +
+           ( soIDs[3].size() >= 2 ) ) < 3 )
+        continue;
+
+      bool done = false;
+      for ( int i = 0; i < 4; ++i )
+      {
+        int i1 = _grid->_helper->WrapIndex( i + 1, 4 );
+        int i2 = _grid->_helper->WrapIndex( i + 2, 4 );
+        int i3 = _grid->_helper->WrapIndex( i + 3, 4 );
+        if ( soIDs[i1].size() == 2 && soIDs[i ] != soIDs[i1] &&
+             soIDs[i2].size() == 2 && soIDs[i1] == soIDs[i2] &&
+             soIDs[i3].size() == 2 && soIDs[i2] == soIDs[i3] )
+        {
+          quad._links[ i1 ]._link->_splits.clear();
+          quad._links[ i2 ]._link->_splits.clear();
+          done = true;
+          break;
+        }
+      }
+      if ( done )
+        break;
+    }
+    return;
+  } // preventVolumesOverlapping()
 
   //================================================================================
   /*!
