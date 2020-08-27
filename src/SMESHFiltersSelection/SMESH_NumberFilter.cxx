@@ -135,7 +135,7 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
   }
 
   // Verify number of sub-shapes
-  if (mySubShapeType == TopAbs_SHAPE);
+  if (mySubShapeType == TopAbs_SHAPE)
     return true;
 
   TopTools_IndexedMapOfShape aMap;
