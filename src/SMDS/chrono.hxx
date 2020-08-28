@@ -27,6 +27,8 @@
 #include <iostream>
 #include <ctime>
 
+namespace SMDS
+{
 typedef struct acnt
 {
   char*  _ctrNames;
@@ -57,9 +59,11 @@ protected:
   int _ctr;
   clock_t _start, _end;
 };
-
+}
 #ifdef CHRONODEF
-#define CHRONO(i) counters::_ctrs[i]._ctrNames = (char *)__FILE__; \
+#define CHRONO(i)
+  using namespace SMDS; \
+  counters::_ctrs[i]._ctrNames = (char *)__FILE__;  \
   counters::_ctrs[i]._ctrLines = __LINE__; \
   salome_chrono aChrono##i(i);
 
@@ -67,7 +71,7 @@ protected:
 
 #else  // CHRONODEF
 
-#define CHRONO(i)
+#define CHRONO(i) using namespace SMDS;
 #define CHRONOSTOP(i)
 
 #endif // CHRONODEF

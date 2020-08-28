@@ -35,6 +35,8 @@
  * internal part of a solid shape and polyhedral volumes near the shape boundary.
  *
  * Issue 0021336
+ * Issue #16523: Treatment of internal faces
+ * Issue #17237: Body fitting on sub-mesh
  */
 class StdMeshers_CartesianParameters3D;
 

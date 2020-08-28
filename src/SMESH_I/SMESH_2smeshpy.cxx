@@ -3939,7 +3939,7 @@ int _pyCommand::GetArgBeginning() const
   if ( pos == UNKNOWN )
   {
     pos = GetBegPos( METHOD_IND ) + myMeth.Length();
-    if ( pos < 1 )
+    if ( pos < 1 && Length() >= 4 )
       pos = myString.Location( "(", 4, Length() ); // 4 = strlen("b.c(")
   }
   return pos;
@@ -4024,6 +4024,11 @@ TCollection_AsciiString _pyCommand::GetWord( const _AString & theString,
   }
   theStartPos = beg;
   //cout << theString << " ---- " << beg << " - " << end << endl;
+  if ( end > theString.Length() )
+  {
+    theStartPos = EMPTY;
+    return theEmptyString;
+  }
   return theString.SubString( beg, end );
 }
 

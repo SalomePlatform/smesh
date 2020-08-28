@@ -494,6 +494,8 @@ public:
 
   void CleanPythonTrace();
 
+  static int CountInPyDump(const TCollection_AsciiString& text);
+
   // *****************************************
   // Internal methods
   // *****************************************

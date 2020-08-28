@@ -89,7 +89,8 @@ SalomeApp_Study* SMESHGUI_Displayer::study() const
   return dynamic_cast<SalomeApp_Study*>( myApp->activeStudy() );
 }
 
-bool SMESHGUI_Displayer::canBeDisplayed( const QString& entry, const QString& viewer_type ) const {
+bool SMESHGUI_Displayer::canBeDisplayed( const QString& entry, const QString& viewer_type ) const
+{
   bool res = false;
   if(viewer_type != SVTK_Viewer::Type())
     return res;
@@ -97,25 +98,18 @@ bool SMESHGUI_Displayer::canBeDisplayed( const QString& entry, const QString& vi
   _PTR(SObject) obj = SMESH::getStudy()->FindObjectID( (const char*)entry.toUtf8() );
   CORBA::Object_var anObj = SMESH::SObjectToObject( obj );
   
-    /*
-    if( !CORBA::is_nil( anObj ) ) {
+  if ( !CORBA::is_nil( anObj ) )
+  {
     SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( anObj );
-    if ( ! mesh->_is_nil() )
-    res = (mesh->NbNodes() > 0);
-    
-    SMESH::SMESH_subMesh_var aSubMeshObj = SMESH::SMESH_subMesh::_narrow( anObj );
-    if ( !aSubMeshObj->_is_nil() )
-    res = (aSubMeshObj->GetNumberOfNodes(true) > 0);
-    
-    SMESH::SMESH_GroupBase_var aGroupObj = SMESH::SMESH_GroupBase::_narrow( anObj );
-    if ( !aGroupObj->_is_nil() )
-    res = !aGroupObj->IsEmpty();
-    }*/
-  if( !CORBA::is_nil( anObj ) ) {
-    if(!SMESH::SMESH_Mesh::_narrow( anObj )->_is_nil() ||
-       !SMESH::SMESH_subMesh::_narrow( anObj )->_is_nil() ||
-       !SMESH::SMESH_GroupBase::_narrow( anObj )->_is_nil())
-    res = true;
+    if ( ! ( res = !mesh->_is_nil() ))
+    {
+      SMESH::SMESH_subMesh_var aSubMeshObj = SMESH::SMESH_subMesh::_narrow( anObj );
+      if ( ! ( res = !aSubMeshObj->_is_nil() ))
+      {
+        SMESH::SMESH_GroupBase_var aGroupObj = SMESH::SMESH_GroupBase::_narrow( anObj );
+        res = !aGroupObj->_is_nil();
+      }
+    }
   }
   return res;
 }

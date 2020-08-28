@@ -2058,12 +2058,12 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   TopoDS_Shape S = _impl->GetShapeToMesh();
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   TCollection_AsciiString aIOR;
-  CORBA::String_var ior;
   if ( geomClient->Find( S, aIOR ))
     geomClient->RemoveShapeFromBuffer( aIOR );
 
   // clear buffer also for sub-groups
-  const std::set<SMESHDS_GroupBase*>& groups = _impl->GetMeshDS()->GetGroups();
+  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
+  const std::set<SMESHDS_GroupBase*>& groups = meshDS->GetGroups();
   std::set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
   for (; g != groups.end(); ++g)
     if (const SMESHDS_GroupOnGeom* group = dynamic_cast<SMESHDS_GroupOnGeom*>(*g))
@@ -2073,12 +2073,21 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
         geomClient->RemoveShapeFromBuffer( aIOR );
     }
 
+  // clear buffer also for sub-meshes
+  std::map<int, SMESH_subMesh_i*>::const_iterator aSubMeshIter = _mapSubMesh_i.cbegin();
+  for(; aSubMeshIter != _mapSubMesh_i.cend(); aSubMeshIter++) {
+    int aShapeID = aSubMeshIter->first;
+    const TopoDS_Shape& aSubShape = meshDS->IndexToShape(aShapeID);
+    TCollection_AsciiString aShapeIOR;
+    if ( geomClient->Find( aSubShape, aShapeIOR ))
+      geomClient->RemoveShapeFromBuffer( aShapeIOR );
+  }
+
   typedef struct {
     int shapeID, fromID, toID; // indices of elements of a sub-mesh
   } TRange;
   std::vector< TRange > elemRanges, nodeRanges; // elements of sub-meshes
   std::vector< SMDS_PositionPtr > positions; // node positions
-  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
   if ( !geomChanged )
   {
     // store positions of elements on geometry
@@ -5821,15 +5830,21 @@ void SMESH_Mesh_i::CreateGroupServants()
     GEOM::GEOM_Object_var shapeVar = _gen_i->ShapeToGeomObject( shape );
     _gen_i->PublishGroup( aMesh, groupVar, shapeVar, group->GetName());
   }
+
   if ( !addedIDs.empty() )
   {
     // python dump
-    set<int>::iterator id = addedIDs.begin();
-    for ( ; id != addedIDs.end(); ++id )
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator i_grp = _mapGroups.begin();
+    for ( int index = 0; i_grp != _mapGroups.end(); ++index, ++i_grp )
     {
-      map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(*id);
-      int i = std::distance( _mapGroups.begin(), it );
-      TPythonDump() << it->second << " = " << aMesh << ".GetGroups()[ "<< i << " ]";
+      set<int>::iterator it = addedIDs.find( i_grp->first );
+      if ( it != addedIDs.end() )
+      {
+        TPythonDump() << i_grp->second << " = " << aMesh << ".GetGroups()[ "<< index << " ]";
+        addedIDs.erase( it );
+        if ( addedIDs.empty() )
+          break;
+      }
     }
   }
 }
@@ -6757,7 +6772,8 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
   TDimHypList dimHypListArr[4]; // dimHyp list for each shape dimension
 
   map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
-  for ( ; i_sm != _mapSubMesh.end(); i_sm++ ) {
+  for ( ; i_sm != _mapSubMesh.end(); i_sm++ )
+  {
     ::SMESH_subMesh* sm = (*i_sm).second;
     // shape of submesh
     const TopoDS_Shape& aSubMeshShape = sm->GetSubShape();
@@ -6767,7 +6783,8 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
     // Find out dimensions where the submesh can be concurrent.
     // We define the dimensions by algo of each of hypotheses in hypList
     list <const SMESHDS_Hypothesis*>::const_iterator hypIt = hypList.begin();
-    for( ; hypIt != hypList.end(); hypIt++ ) {
+    for( ; hypIt != hypList.end(); hypIt++ )
+    {
       SMESH_Algo* anAlgo = 0;
       const SMESH_Hypothesis* hyp = dynamic_cast<const SMESH_Hypothesis*>(*hypIt);
       if ( hyp->GetType() != SMESHDS_Hypothesis::PARAM_ALGO )

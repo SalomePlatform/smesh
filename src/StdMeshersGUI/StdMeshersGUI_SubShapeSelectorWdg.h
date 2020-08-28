@@ -53,7 +53,8 @@ public:
   StdMeshersGUI_SubShapeSelectorWdg( QWidget*         parent = 0,
                                      TopAbs_ShapeEnum subShType = TopAbs_EDGE,
                                      const bool       toShowList = true,
-                                     const bool       toShowSelectBtn = false);
+                                     const bool       toShowSelectBtn = false,
+                                     const int        minListWidth=300);
   ~StdMeshersGUI_SubShapeSelectorWdg();
 
   SMESH::long_array_var          GetListOfIDs();
@@ -82,12 +83,23 @@ public:
   SMESH_PreviewActorsCollection* GetActorCollection() { return myPreviewActor; }
   void                           ClearSelected();
 
+  void AvoidSimultaneousSelection( StdMeshersGUI_SubShapeSelectorWdg* other);
+
 public slots:
+
   void                           ActivateSelection( bool );
+  void                           deactivateSelection() { ActivateSelection( false ); }
 
 signals:
   void                           selectionChanged(); // in the list
   void                           shapeSelected();    // globally
+  /*!
+   * \brief Emitted when selection is activated
+    *
+    * Useful to deactivate one Object Reference param widget when an other
+    * one is activated
+   */
+  void                           selectionActivated();
 
 private:
   void                           updateState();
