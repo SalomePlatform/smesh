@@ -2052,8 +2052,7 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   bool geomChanged = true;
   GEOM::GEOM_Object_var oldGeom = GetShapeToMesh();
   if ( !theNewGeom->_is_nil() && !oldGeom->_is_nil() )
-    geomChanged = ( //oldGeom->_is_equivalent( theNewGeom ) ||
-                   oldGeom->GetTick() < theNewGeom->GetTick() );
+    geomChanged = ( oldGeom->GetTick() != theNewGeom->GetTick() );
 
   TopoDS_Shape S = _impl->GetShapeToMesh();
   GEOM_Client* geomClient = _gen_i->GetShapeReader();

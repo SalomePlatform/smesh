@@ -2094,7 +2094,7 @@ bool _FaceSide::StoreNodes(SMESH_ProxyMesh&              mesh,
                                            smToCheckEdges, mesh ))
             break;
           else
-            nodes.erase( --( u_node1.base() ));
+            nodes.erase( --(( u_node2 = u_node1 ).base() ));
       }
     }
 
