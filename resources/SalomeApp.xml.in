@@ -101,12 +101,16 @@
   <section name="smesh_help" >
     <parameter name="User's Guide/Mesh module/User's Guide"      value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/index.html"/>
     <parameter name="Developer's Guide/Mesh module/Developer's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/tui/SMESH/index.html;;http://docs.salome-platform.org/latest/tui/SMESH/index.html"/>
-    <parameter name="User's Guide/Mesh module/Plug-ins/MGSurfOpt plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/yams/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/yams/index.html"/>
-    <parameter name="User's Guide/Mesh module/Plug-ins/MGCleaner plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MGCleaner/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/MGCleaner/index.html"/>
     <parameter name="User's Guide/Mesh module/Plug-ins/Z-cracks plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/zcracks/index.html"/>
     <parameter name="User's Guide/Mesh module/Plug-ins/MacMesh plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MacMesh/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/MacMesh/index.html"/>
     <parameter name="User's Guide/Mesh module/Plug-ins/blocFissure plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/blocFissure/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/blocFissure/index.html"/>
     <parameter name="User's Guide/Mesh module/Plug-ins/SpherePadder plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/padder/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/padder/index.html"/>
+    <parameter name="User's Guide/Mesh module/MGCleaner plugin/User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MGCleaner/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/MGCleaner/index.html"/>
+    <parameter name="User's Guide/Mesh module/MGCleaner plugin/Reference"    value="%MESHGEMS_ROOT_DIR%/Docs/mg-cleaner_api_manual.pdf"/>
+    <parameter name="User's Guide/Mesh module/MGCleaner plugin/Manual"       value="%MESHGEMS_ROOT_DIR%/Docs/mg-cleaner_user_manual.pdf"/>
+    <parameter name="User's Guide/Mesh module/MGSurfOpt plugin/User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/yams/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/yams/index.html"/>
+    <parameter name="User's Guide/Mesh module/MGSurfOpt plugin/Reference"    value="%MESHGEMS_ROOT_DIR%/Docs/mg-surfopt_api_manual.pdf"/>
+    <parameter name="User's Guide/Mesh module/MGSurfOpt plugin/Manual"       value="%MESHGEMS_ROOT_DIR%/Docs/mg-surfopt_user_manual.pdf"/>
   </section>
   <section name="resources">
     <!-- Module resources -->
