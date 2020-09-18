@@ -309,6 +309,14 @@
         <translation>Calculer</translation>
     </message>
     <message>
+        <source>MEN_RE_COMPUTE</source>
+        <translation>Nettoyer et calculer</translation>
+    </message>
+    <message>
+        <source>MEN_SHOW_ERRORS</source>
+        <translation>Montrer les erreurs de calcul</translation>
+    </message>
+    <message>
         <source>MEN_COMPUTE_SUBMESH</source>
         <translation>Calculer le sous-maillage</translation>
     </message>
@@ -1467,6 +1475,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
         <translation>Définition automatique des dimensions spatiales</translation>
     </message>
     <message>
+        <source>SMESH_ZTOLERANCE</source>
+        <translation>Tolérance en Z</translation>
+    </message>
+    <message>
         <source>SMESH_REQUIRED_GROUPS</source>
         <translation>Créer les groupes des types nécessaires</translation>
     </message>
@@ -2269,6 +2281,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_NAME</source>
         <translation>Nom</translation>
+    </message>
+    <message>
+        <source>SMESH_NAMES</source>
+        <translation>Noms</translation>
     </message>
     <message>
         <source>SMESH_NODES</source>
@@ -4486,6 +4502,11 @@ Il ne peut pas être supprimé.</translation>
       </translation>
     </message>
     <message>
+        <source>MSG_WARN_ON_GEOM_MODIF</source>
+        <translation>Cette action est interdite car la géométrie
+ a changé et le maillage doit etre recalculé..</translation>
+    </message>
+    <message>
         <source>SMESH_ADVANCED</source>
         <translation>Avancé</translation>
     </message>
@@ -4543,6 +4564,29 @@ Il ne peut pas être supprimé.</translation>
     <message>
         <source>FIELDS_TO_EXPORT</source>
         <translation>Exporter les champs</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_FaceGroupsSeparatedByEdgesDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Groupes de faces séparées par une arête vive.</translation>
+    </message>
+    <message>
+        <source>SHARP_ANGLE</source>
+        <translation>Angle vif</translation>
+    </message>
+    <message>
+        <source>CREATE_EDGES</source>
+        <translation>Créer les arêtes</translation>
+    </message>
+    <message>
+        <source>USE_EXISTING_EDGES</source>
+        <translation>Utiliser les arêtes existantes</translation>
+    </message>
+    <message>
+        <source>NB_GROUPS_CREATED</source>
+        <translation>%1 groupes de faces créé(s)</translation>
     </message>
 </context>
 <context>
@@ -5087,7 +5131,15 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>MESHES</source>
-        <translation>Maillages</translation>
+        <translation>Maillages, sous-maillages, groupes</translation>
+    </message>
+    <message>
+        <source>NEW_MESH_NAME</source>
+        <translation>Nom du nouveau maillage</translation>
+    </message>
+    <message>
+        <source>MESH_APPEND_TO</source>
+        <translation>Ajouter au maillage</translation>
     </message>
     <message>
         <source>PROCESSING_IDENTICAL_GROUPS</source>
@@ -5456,6 +5508,10 @@ Choisissez un groupe et essayez de nouveau</translation>
         <translation>Les nœuds à conserver pendant la fusion</translation>
     </message>
     <message>
+        <source>KEEP_ELEMENTS</source>
+        <translation>Elements à conserver pendant la fusion</translation>
+    </message>
+    <message>
         <source>GROUP_SUBMESH</source>
         <translation>Groupes et sous-maillages</translation>
     </message>
@@ -5473,18 +5529,6 @@ Choisissez un groupe et essayez de nouveau</translation>
     <message>
         <source>CANT_GET_TANGENT</source>
         <translation>Impossible d&apos;obtenir la tangente pour un des nœuds du chemin</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_0D</source>
-        <translation>Extrusion des éléments 0D</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_1D</source>
-        <translation>Extrusion des éléments 1D</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_2D</source>
-        <translation>Extrusion des éléments 2D</translation>
     </message>
     <message>
         <source>EXTRUSION_ALONG_PATH</source>
@@ -5513,6 +5557,14 @@ Choisissez un groupe et essayez de nouveau</translation>
     <message>
         <source>SMESH_BASE_POINT</source>
         <translation>Point de base</translation>
+    </message>
+    <message>
+        <source>SMESH_SCALES</source>
+        <translation>Facteurs d'échelle</translation>
+    </message>
+    <message>
+        <source>LINEAR_SCALES</source>
+        <translation>Variation linéaires des facteurs d'échelle</translation>
     </message>
     <message>
         <source>SMESH_PATH</source>
@@ -5546,18 +5598,6 @@ Choisissez un groupe et essayez de nouveau</translation>
 <context>
     <name>SMESHGUI_ExtrusionDlg</name>
     <message>
-        <source>EXTRUSION_0D</source>
-        <translation>Extrusion de nœuds</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_1D</source>
-        <translation>Extrusion des éléments 1D</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_2D</source>
-        <translation>Extrusion des éléments 2D</translation>
-    </message>
-    <message>
         <source>EXTRUSION_ALONG_LINE</source>
         <translation>Extrusion suivant une ligne</translation>
     </message>
@@ -5580,6 +5620,14 @@ Choisissez un groupe et essayez de nouveau</translation>
     <message>
         <source>BASE_POINT</source>
         <translation>Point de base</translation>
+    </message>
+    <message>
+        <source>LINEAR_ANGLES</source>
+        <translation>Variation linéaire des angles</translation>
+    </message>
+    <message>
+        <source>SMESH_ANGLES</source>
+        <translation>Angles de rotation</translation>
     </message>
 </context>
 <context>
@@ -5961,6 +6009,10 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     <message>
         <source>LENGTH2D</source>
         <translation>Longueur 2D</translation>
+    </message>
+    <message>
+        <source>LENGTH3D</source>
+        <translation>Longueur 3D</translation>
     </message>
     <message>
         <source>DEFLECTION2D</source>
@@ -7647,6 +7699,10 @@ en raison de leurs types incompatibles:
         <translation>Coordonnées</translation>
     </message>
     <message>
+        <source>NB_NODES</source>
+        <translation>Nombre de nœuds</translation>
+    </message>
+    <message>
         <source>CONNECTIVITY</source>
         <translation>Connectivité</translation>
     </message>
@@ -7953,6 +8009,10 @@ en raison de leurs types incompatibles:
         <translation>Format du fichier</translation>
     </message>
     <message>
+        <source>VERSION_UNKNOWN</source>
+        <translation>Inconnu</translation>
+    </message>
+    <message>
         <source>STANDALONE_MESH</source>
         <translation>Autonome</translation>
     </message>
@@ -8150,6 +8210,21 @@ en raison de leurs types incompatibles:
     </message>
 </context>
 <context>
+    <name>SMESHGUI_Angle</name>
+    <message>
+        <source>NODES_GROUP</source>
+        <translation>Trois nœuds</translation>
+    </message>
+    <message>
+        <source>RESULT</source>
+        <translation>Angle en degrés</translation>
+    </message>
+    <message>
+        <source>COMPUTE</source>
+        <translation>Calculer</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_CopyMeshDlg</name>
     <message>
         <source>OBJECT_NAME</source>
@@ -8204,6 +8279,10 @@ with red in the Object Browser.</translation>
     <message>
         <source>BASIC_PROPERTIES</source>
         <translation>Propriétés basiques</translation>
+    </message>
+    <message>
+        <source>ANGLE</source>
+        <translation>Angle</translation>
     </message>
 </context>
 <context>
@@ -8341,7 +8420,7 @@ with red in the Object Browser.</translation>
     </message>
     <message>
         <source>NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>EDGES</source>
