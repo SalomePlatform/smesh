@@ -250,12 +250,16 @@ void SMESHGUI_DeleteGroupDlg::onOk()
 //=================================================================================
 void SMESHGUI_DeleteGroupDlg::reject()
 {
+  if (SMESH::GetCurrentVtkView()) {
+    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
+  }
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
-  disconnect(mySMESHGUI, 0, this, 0);
-  mySMESHGUI->ResetState();
+  //disconnect(mySMESHGUI, 0, this, 0);
+  //mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
+  mySMESHGUI->ResetState();
   QDialog::reject();
 }
 
