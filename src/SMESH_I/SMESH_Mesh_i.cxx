@@ -1212,6 +1212,9 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
       if ( n->NbInverseElements() == 0 )
         _impl->GetMeshDS()->RemoveFreeNode( n, /*sm=*/0 );
 
+  _impl->GetMeshDS()->Modified();
+  _impl->SetIsModified( true );
+
   // Update Python script (theGroup must be alive for this)
   pyDump << SMESH::SMESH_Mesh_var(_this())
          << ".RemoveGroupWithContents( " << theGroup << " )";
