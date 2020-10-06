@@ -440,6 +440,18 @@ class Mesh_Algorithm:
         for i in reverseList:
             if isinstance( i, int ):
                 s = geompy.GetSubShape(self.mesh.geom, [i])
+
+                #bos #20082 begin:
+                if s is None and type(self.geom) != geomBuilder.GEOM._objref_GEOM_Object:
+                    # try to get the SHAPERSTUDY engine directly, as GetGen does not work because of
+                    # simplification of access in geomBuilder: omniORB.registerObjref
+                    from SHAPERSTUDY_utils import getEngine
+                    gen = getEngine()
+                    if gen:
+                        aShapeOp = gen.GetIShapesOperations()
+                        s = aShapeOp.GetSubShape(self.mesh.geom, i)
+                #bos #20082 end
+
                 if s.GetShapeType() != geomBuilder.GEOM.EDGE:
                     raise TypeError("Not EDGE index given")
                 resList.append( i )
