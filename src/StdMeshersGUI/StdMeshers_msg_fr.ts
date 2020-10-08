@@ -53,6 +53,14 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
         <source>EXTMETH_FACE_OFFSET</source>
         <translation>Décalage de la face</translation>
     </message>
+    <message>
+        <source>CREATE_GROUPS_FROM_LAYERS</source>
+        <translation>Créer des groupes à partir des couches</translation>
+    </message>
+    <message>
+        <source>GROUP_NAME</source>
+        <translation>Nom du groupe</translation>
+    </message>
 </context>
 <context>
     <name>@default</name>
@@ -536,6 +544,10 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
         <source>ENF_NODES</source>
         <translation>Nœuds imposés</translation>
     </message>
+    <message>
+        <source>CORNERS</source>
+        <translation>Sommets de coin</translation>
+    </message>
 </context>
 <context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>
@@ -561,6 +573,18 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     <message>
         <source>ADD_EDGES</source>
         <translation>Ajouter des arêtes</translation>
+    </message>
+    <message>
+        <source>CREATE_FACES</source>
+        <translation>Créer des faces</translation>
+    </message>
+    <message>
+        <source>CONSIDER_INTERNAL_FACES</source>
+        <translation>Considérer les faces partagées et internes</translation>
+    </message>
+    <message>
+        <source>USE_THRESHOLD_FOR_INTERNAL_FACES</source>
+        <translation>Appliquer le seuil aux faces partagées/internes</translation>
     </message>
     <message>
         <source>AXIS_X</source>

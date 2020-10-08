@@ -2,8 +2,7 @@ Advanced Remeshing Options
 ==========================
 
 .. note::
-  Be aware that no control of coherency is done when you set these parameters : for instance, geometrical approximation is only allowed when SurfOpt computes a mesh for finite elements but the GUI will let you choose geometrical approximation and compute a visualisation mesh. See Distene's documentation for more details : 
-  :download:`MeshGems-SurfOpt: The automatic surface remeshing tool of the MeshGems Suite <files/mg-surfopt_user_manual.pdf>`.
+  Be aware that no control of coherency is done when you set these parameters : for instance, geometrical approximation is only allowed when SurfOpt computes a mesh for finite elements but the GUI will let you choose geometrical approximation and compute a visualisation mesh. See Distene's documentation for more details.
 
 
 - **Ridge detection**
@@ -30,7 +29,7 @@ This parameter P enables the user to specify the maximal chordal deviation  E re
 
 - **Maximal/Minimal size around vertices**
 
-  These two parameters allow the user to prescribe a Maximal/Minimal size for the mesh elements, ie the lengths of the edges. 
+  These two parameters allow the user to prescribe a Maximal/Minimal size for the mesh elements, ie the lengths of the edges.
 
 - **Mesh gradation**
 
