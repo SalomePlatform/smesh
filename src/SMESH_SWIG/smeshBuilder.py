@@ -38,8 +38,9 @@ SMESH.MED_MINOR_7 = 27 # back compatibility
 SMESH.MED_MINOR_8 = 28 # back compatibility
 SMESH.MED_MINOR_9 = 29 # back compatibility
 
-from   SMESH import *
-from   salome.smesh.smesh_algorithm import Mesh_Algorithm
+from SMESH import *
+from salome.smesh.smesh_algorithm import Mesh_Algorithm
+from StdMeshers import BlockCS
 
 import SALOME
 import SALOMEDS

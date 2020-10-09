@@ -214,6 +214,9 @@ class SMESH_EXPORT SMESH_Mesh
   bool IsNotConformAllowed() const;
   
   bool IsMainShape(const TopoDS_Shape& theShape) const;
+
+  TopoDS_Shape GetShapeByEntry(const std::string& entry) const;
+
   /*!
    * \brief Return list of ancestors of theSubShape in the order
    *        that lower dimension shapes come first
@@ -342,6 +345,7 @@ class SMESH_EXPORT SMESH_Mesh
     virtual void HypothesisModified( int hypID, bool updateIcons )=0;
     virtual void Load()=0;
     virtual bool IsLoaded()=0;
+    virtual TopoDS_Shape GetShapeByEntry(const std::string& entry)=0;
     virtual ~TCallUp() {}
   };
   void SetCallUp( TCallUp * upCaller );

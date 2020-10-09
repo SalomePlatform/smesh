@@ -2024,6 +2024,16 @@ bool SMESH_Mesh::IsMainShape(const TopoDS_Shape& theShape) const
   return theShape.IsSame(_myMeshDS->ShapeToMesh() );
 }
 
+//=======================================================================
+//function : GetShapeByEntry
+//purpose  : return TopoDS_Shape by its study entry
+//=======================================================================
+
+TopoDS_Shape SMESH_Mesh::GetShapeByEntry(const std::string& entry) const
+{
+  return _callUp ? _callUp->GetShapeByEntry( entry ) : TopoDS_Shape();
+}
+
 //=============================================================================
 /*!
  *  

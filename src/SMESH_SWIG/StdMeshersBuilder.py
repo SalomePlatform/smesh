@@ -916,7 +916,16 @@ class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
         """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, Hexa)
+        self.renumHypothesis = 0
         pass
+
+    def Renumber(self, blockCSList=[] ):
+        if isinstance( blockCSList, StdMeshers.BlockCS ):
+            blockCSList = [blockCSList]
+        if not self.renumHypothesis:
+            self.renumHypothesis = self.Hypothesis("BlockRenumber", blockCSList, UseExisting=0)
+        self.renumHypothesis.SetBlocksOrientation( blockCSList )
+        return self.renumHypothesis
 
     pass # end of StdMeshersBuilder_Hexahedron class
 

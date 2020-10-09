@@ -34,6 +34,7 @@
 #include "StdMeshers_Adaptive1D_i.hxx"
 #include "StdMeshers_Arithmetic1D_i.hxx"
 #include "StdMeshers_AutomaticLength_i.hxx"
+#include "StdMeshers_BlockRenumber_i.hxx"
 #include "StdMeshers_CartesianParameters3D_i.hxx"
 #include "StdMeshers_Cartesian_3D_i.hxx"
 #include "StdMeshers_CompositeSegment_1D_i.hxx"
@@ -207,6 +208,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_ViscousLayers2D_i>;
     else if (strcmp(aHypName, "CartesianParameters3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_CartesianParameters3D_i>;
+    else if (strcmp(aHypName, "BlockRenumber") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_BlockRenumber_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)

@@ -34,6 +34,10 @@ and hypotheses.
     *  :ref:`tui_max_element_volume` hypothesis 
     *  :ref:`Viscous layers <tui_viscous_layers>` hypotheses
 
+* Hexahedron (i,j,k) 3D algorithm
+
+   *   :ref:`tui_block_renumber`
+
 * :ref:`tui_projection`
 * :ref:`Extrusion 3D <tui_prism_3d_algo>` algorithm
 * :ref:`Radial Prism <tui_radial_prism>` algorithm
@@ -135,6 +139,16 @@ Length from Edges
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex07.py>`
+
+.. _tui_block_renumber:
+
+Renumber 3D hypothesis
+======================
+
+.. literalinclude:: ../../../examples/filters_ex39.py
+    :language: python
+
+:download:`Download this script <../../../examples/filters_ex39.py>`
 
 Defining Additional Hypotheses
 ##############################

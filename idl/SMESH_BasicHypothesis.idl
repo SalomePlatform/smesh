@@ -1089,6 +1089,25 @@ module StdMeshers
       raises (SALOME::SALOME_Exception);
   };
 
+
+  /*!
+   * interface of "Renumber" hypothesis used by Hexahedron(ijk) algorithm
+   * to renumber mesh of a block to be structured-like
+   */
+  struct BlockCS // Local coordinate system of a block
+  {
+    GEOM::GEOM_Object solid;
+    GEOM::GEOM_Object vertex000;
+    GEOM::GEOM_Object vertex001;
+  };
+  typedef sequence<BlockCS> blockcs_array;
+
+  interface StdMeshers_BlockRenumber : SMESH::SMESH_Hypothesis
+  {
+    void SetBlocksOrientation( in blockcs_array blockCS );
+    blockcs_array GetBlocksOrientation();
+  };
+
   /*!
    * StdMeshers_SegmentAroundVertex_0D: interface of "SegmentAroundVertex" algorithm
    */
