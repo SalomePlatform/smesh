@@ -500,7 +500,7 @@ bool StdMeshersGUI_BlockRenumberCreator::checkParams( QString& msg ) const
 
 QString StdMeshersGUI_BlockRenumberCreator::helpPage() const
 {
-  return "block_renumber.html";
+  return "3d_meshing_hypo.html#renumber-hypothesis";
 }
 
 //================================================================================
