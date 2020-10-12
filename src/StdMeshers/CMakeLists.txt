@@ -62,6 +62,7 @@ SET(_link_LIBRARIES
   ${GEOM_GEOMUtils}
   SMESHimpl
   SMESHDS
+  SMESHUtils
   ${TBB_LIBS}
 )
 
