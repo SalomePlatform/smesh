@@ -182,7 +182,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&            theFace,
   } // loop on edges
 
   // orient seam edges (#19982)
-  const tol = Precision::Confusion();
+  const double tol = Precision::Confusion();
   if ( NbEdges() > 1 && !myC2d[0].IsNull() )
     for ( int i = 0; i < NbEdges(); ++i )
     {
