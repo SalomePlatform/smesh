@@ -2297,10 +2297,13 @@ class Mesh(metaclass = MeshMeta):
                 auto_groups (boolean): parameter for creating/not creating
                         the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
                         the typical use is auto_groups=False.
-                minor (int): define the minor version (y, where version is x.y.z) of MED file format.
-                        The minor must be between 0 and the current minor version of MED file library.
-                        If minor is equal to -1, the minor version is not changed (default).
-                        The major version (x, where version is x.y.z) cannot be changed.
+                version (int): define the version (xy, where version is x.y.z) of MED file format.
+                        For instance med 3.2.1 is coded 3*10+2 = 32, med 4.0.0 is coded 4*10+0 = 40.
+                        The rules of compatibility to write a mesh in an older version than 
+                        the current version depend on the current version. For instance, 
+                        with med 4.0 it is possible to write/append med files in 4.0.0 (default)
+                        or 3.2.1 or 3.3.1 formats.
+                        If the version is equal to -1, the version is not changed (default).
                 overwrite (boolean): parameter for overwriting/not overwriting the file
                 meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
                 autoDimension: if *True* (default), a space dimension of a MED mesh can be either
@@ -2328,7 +2331,7 @@ class Mesh(metaclass = MeshMeta):
         #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
         fileName        = args[0]
         auto_groups     = args[1] if len(args) > 1 else False
-        minor           = args[2] if len(args) > 2 else -1
+        version         = args[2] if len(args) > 2 else -1
         overwrite       = args[3] if len(args) > 3 else True
         meshPart        = args[4] if len(args) > 4 else None
         autoDimension   = args[5] if len(args) > 5 else True
@@ -2337,7 +2340,8 @@ class Mesh(metaclass = MeshMeta):
         z_tolerance     = args[8] if len(args) > 8 else -1.
         # process keywords arguments
         auto_groups     = kwargs.get("auto_groups", auto_groups)
-        minor           = kwargs.get("minor", minor)
+        version         = kwargs.get("version", version)
+        version         = kwargs.get("minor", version)
         overwrite       = kwargs.get("overwrite", overwrite)
         meshPart        = kwargs.get("meshPart", meshPart)
         autoDimension   = kwargs.get("autoDimension", autoDimension)
@@ -2355,10 +2359,11 @@ class Mesh(metaclass = MeshMeta):
             z_tolerance,Parameters,hasVars = ParseParameters(z_tolerance)
             self.mesh.SetParameters(Parameters)
 
-            self.mesh.ExportPartToMED( meshPart, fileName, auto_groups, minor, overwrite, autoDimension,
+            self.mesh.ExportPartToMED( meshPart, fileName, auto_groups,
+                                       version, overwrite, autoDimension,
                                        fields, geomAssocFields, z_tolerance)
         else:
-            self.mesh.ExportMED(fileName, auto_groups, minor, overwrite, autoDimension)
+            self.mesh.ExportMED(fileName, auto_groups, version, overwrite, autoDimension)
 
     def ExportSAUV(self, f, auto_groups=0):
         """

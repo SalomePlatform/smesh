@@ -3776,7 +3776,7 @@ void SMESH_Mesh_i::ExportMED(const char*        file,
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportMED( r'"
                 << file << "', "
                 << "auto_groups=" <<auto_groups << ", "
-                << "minor=" << version <<  ", "
+                << "version=" << version <<  ", "
                 << "overwrite=" << overwrite << ", "
                 << "meshPart=None, "
                 << "autoDimension=" << autoDimension << " )";
