@@ -38,14 +38,19 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_Octree.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
 #include "utilities.h"
 
+#include <BRepAdaptor_Curve.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
+#include <BndLib_Add3dCurve.hxx>
+#include <GCPnts_TangentialDeflection.hxx>
+#include <ShapeAnalysis_Curve.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
@@ -55,25 +60,251 @@
 
 using namespace std;
 
-//=============================================================================
-/*!
- * Creates StdMeshers_Import_1D
- */
-//=============================================================================
-
-StdMeshers_Import_1D::StdMeshers_Import_1D(int hypId, SMESH_Gen * gen)
-  :SMESH_1D_Algo(hypId, gen), _sourceHyp(0)
-{
-  _name = "Import_1D";
-  _shapeType = (1 << TopAbs_EDGE);
-
-  _compatibleHypothesis.push_back("ImportSource1D");
-}
-
 //================================================================================
 namespace // INTERNAL STUFF
 //================================================================================
 {
+  /*!
+   * \brief Compute point position on a curve. Use octree to fast reject far points
+   */
+  class CurveProjector : public SMESH_Octree
+  {
+  public:
+    CurveProjector( const TopoDS_Edge& edge, double enlarge );
+
+    bool IsOnCurve( const gp_XYZ& point, double & distance2, double & u );
+
+    bool IsOut( const gp_XYZ& point ) const { return getBox()->IsOut( point ); }
+
+  protected:
+    CurveProjector() {}
+    SMESH_Octree* newChild() const { return new CurveProjector; }
+    void          buildChildrenData();
+    Bnd_B3d*      buildRootBox();
+
+  private:
+    struct CurveSegment : public Bnd_B3d
+    {
+      double _chord, _chord2, _length2;
+      gp_Pnt _pFirst, _pLast;
+      gp_Lin _line;
+      Handle(Geom_Curve) _curve;
+
+      CurveSegment() {}
+      void Init( const gp_Pnt& pf, const gp_Pnt& pl,
+                 double uf, double ul, double tol, Handle(Geom_Curve)& curve );
+      bool IsOn( const gp_XYZ& point, double & distance2, double & u );
+      bool IsInContact( const Bnd_B3d& bb );
+    };
+    std::vector< CurveSegment > _segments;
+  };
+
+  //===============================================================================
+  /*!
+   * \brief Create an octree of curve segments
+   */
+  //================================================================================
+
+  CurveProjector::CurveProjector( const TopoDS_Edge& edge, double enlarge )
+    :SMESH_Octree( 0 )
+  {
+    double f,l;
+    Handle(Geom_Curve) curve = BRep_Tool::Curve( edge, f, l );
+    double curDeflect = 0.3; // Curvature deflection
+    double angDeflect = 1e+100; // Angular deflection - don't control chordal error
+    GCPnts_TangentialDeflection div( BRepAdaptor_Curve( edge ), angDeflect, curDeflect );
+    _segments.resize( div.NbPoints() - 1 );
+    for ( int i = 1; i < div.NbPoints(); ++i )
+      try {
+        _segments[ i - 1 ].Init( div.Value( i ),     div.Value( i+1 ),
+                                 div.Parameter( i ), div.Parameter( i+1 ),
+                                 enlarge, curve );
+      }
+      catch ( Standard_Failure ) {
+        _segments.resize( _segments.size() - 1 );
+        --i;
+      }
+    if ( _segments.size() < 3 )
+      myIsLeaf = true;
+
+    compute();
+
+    if ( _segments.size() == 1 )
+      myBox->Enlarge( enlarge );
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return the maximal box
+   */
+  //================================================================================
+
+  Bnd_B3d* CurveProjector::buildRootBox()
+  {
+    Bnd_B3d* box = new Bnd_B3d;
+    for ( size_t i = 0; i < _segments.size(); ++i )
+      box->Add( _segments[i] );
+    return box;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Redistribute segments among children
+   */
+  //================================================================================
+
+  void CurveProjector::buildChildrenData()
+  {
+    bool allIn = true;
+    for ( size_t i = 0; i < _segments.size(); ++i )
+    {
+      for (int j = 0; j < 8; j++)
+      {
+        if ( _segments[i].IsInContact( *myChildren[j]->getBox() ))
+          ((CurveProjector*)myChildren[j])->_segments.push_back( _segments[i]);
+        else
+          allIn = false;
+      }
+    }
+    if ( allIn && _segments.size() < 3 )
+    {
+      myIsLeaf = true;
+      for (int j = 0; j < 8; j++)
+        static_cast<CurveProjector*>( myChildren[j])->myIsLeaf = true;
+    }
+    else
+    {
+      SMESHUtils::FreeVector( _segments ); // = _segments.clear() + free memory
+
+      for (int j = 0; j < 8; j++)
+      {
+        CurveProjector* child = static_cast<CurveProjector*>( myChildren[j]);
+        if ( child->_segments.size() < 3 )
+          child->myIsLeaf = true;
+      }
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return true if a point is close to the curve
+   *  \param [in] point - the point
+   *  \param [out] distance2 - distance to the curve
+   *  \param [out] u - parameter on the curve
+   *  \return bool - is the point is close to the curve
+   */
+  //================================================================================
+
+  bool CurveProjector::IsOnCurve( const gp_XYZ& point, double & distance2, double & u )
+  {
+    if ( getBox()->IsOut( point ))
+      return false;
+
+    if ( isLeaf() )
+    {
+      for ( size_t i = 0; i < _segments.size(); ++i )
+        if ( !_segments[i].IsOut( point ) &&
+             _segments[i].IsOn( point, distance2, u ))
+          return true;
+    }
+    else
+    {
+      for (int i = 0; i < 8; i++)
+        if (((CurveProjector*) myChildren[i])->IsOnCurve( point, distance2, u ))
+          return true;
+    }
+    return false;
+  }
+  
+  //================================================================================
+  /*!
+   * \brief Initialize
+   */
+  //================================================================================
+
+  void CurveProjector::CurveSegment::Init(const gp_Pnt&       pf,
+                                          const gp_Pnt&       pl,
+                                          const double        uf,
+                                          const double        ul,
+                                          const double        tol,
+                                          Handle(Geom_Curve)& curve )
+  {
+    _pFirst  = pf;
+    _pLast   = pl;
+    _curve   = curve;
+    _length2 = pf.SquareDistance( pl );
+    _chord2  = Max( _line.     SquareDistance( curve->Value( uf + 0.25 * ( ul - uf ))),
+                    Max( _line.SquareDistance( curve->Value( uf + 0.5  * ( ul - uf ))),
+                         _line.SquareDistance( curve->Value( uf + 0.75 * ( ul - uf )))));
+    _chord2  = Max( tol, _chord2 );
+    _chord   = Sqrt( _chord2 );
+    _line.SetLocation( pf );
+    _line.SetDirection( gp_Vec( pf, pl ));
+
+    Bnd_Box bb;
+    BndLib_Add3dCurve::Add( GeomAdaptor_Curve( curve, uf, ul ), tol, bb );
+    Add( bb.CornerMin() );
+    Add( bb.CornerMax() );
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return true if a point is close to the curve segment
+   *  \param [in] point - the point
+   *  \param [out] distance2 - distance to the curve
+   *  \param [out] u - parameter on the curve
+   *  \return bool - is the point is close to the curve segment
+   */
+  //================================================================================
+
+  bool CurveProjector::CurveSegment::IsOn( const gp_XYZ& point, double & distance2, double & u )
+  {
+    distance2 = _line.SquareDistance( point );
+    if ( distance2 > _chord2 )
+      return false;
+
+    // check if the point projection falls into the segment range
+    {
+      gp_Vec edge( _pFirst, _pLast );
+      gp_Vec n1p ( _pFirst, point  );
+      u = ( edge * n1p ) / _length2; // param [0,1] on the edge
+      if ( u < 0 )
+      {
+        if ( _pFirst.SquareDistance( point ) > _chord2 )
+          return false;
+      }
+      else if ( u > _chord )
+      {
+        if ( _pLast.SquareDistance( point ) > _chord2 )
+          return false;
+      }
+    }
+    gp_Pnt proj;
+    distance2 = ShapeAnalysis_Curve().Project( _curve, point, Precision::Confusion(),
+                                               proj, u, false );
+    distance2 *= distance2;
+    return true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Check if the segment is in contact with a box
+   */
+  //================================================================================
+
+  bool CurveProjector::CurveSegment::IsInContact( const Bnd_B3d& bb )
+  {
+    if ( bb.IsOut( _line.Position(), /*isRay=*/true, _chord ))
+      return false;
+
+    gp_Ax1 axRev = _line.Position().Reversed();
+    axRev.SetLocation( _pLast );
+    return !bb.IsOut( axRev, /*isRay=*/true, _chord );
+  }
+
+  //================================================================================
+  //================================================================================
+
   int getSubmeshIDForCopiedMesh(const SMESHDS_Mesh* srcMeshDS, SMESH_Mesh* tgtMesh);
 
   enum _ListenerDataType
@@ -590,7 +821,49 @@ namespace // INTERNAL STUFF
     return 0;
   }
 
+  //================================================================================
+  /*!
+   * \brief Return minimal square length of edges of 1D and 2D elements sharing the node
+   */
+  //================================================================================
+
+  double getMinEdgeLength2( const SMDS_MeshNode* n )
+  {
+    SMESH_NodeXYZ p = n;
+    double minLen2 = Precision::Infinite();
+    for ( SMDS_ElemIteratorPtr eIt = n->GetInverseElementIterator(); eIt->more();  )
+    {
+      const SMDS_MeshElement*      e = eIt->next();
+      const SMDSAbs_ElementType type = e->GetType();
+      if ( type != SMDSAbs_Edge && type != SMDSAbs_Face )
+        continue;
+      int i = e->GetNodeIndex( n );
+      int iNext = SMESH_MesherHelper::WrapIndex( i + 1, e->NbCornerNodes() );
+      minLen2 = Min( minLen2, p.SquareDistance( e->GetNode( iNext )));
+      if ( type != SMDSAbs_Face )
+        continue;
+      int iPrev = SMESH_MesherHelper::WrapIndex( i - 1, e->NbCornerNodes() );
+      minLen2 = Min( minLen2, p.SquareDistance( e->GetNode( iPrev )));
+    }
+    return minLen2;
+  }
+
 } // namespace
+
+//=============================================================================
+/*!
+ * Creates StdMeshers_Import_1D
+ */
+//=============================================================================
+
+StdMeshers_Import_1D::StdMeshers_Import_1D(int hypId, SMESH_Gen * gen)
+  :SMESH_1D_Algo(hypId, gen), _sourceHyp(0)
+{
+  _name = "Import_1D";
+  _shapeType = (1 << TopAbs_EDGE);
+
+  _compatibleHypothesis.push_back("ImportSource1D");
+}
 
 //=============================================================================
 /*!
@@ -658,17 +931,31 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
   const double edgeTol = BRep_Tool::Tolerance( geomEdge );
   const int shapeID = tgtMesh->ShapeToIndex( geomEdge );
 
-  set<int> subShapeIDs;
-  subShapeIDs.insert( shapeID );
+
+  double geomTol = Precision::Confusion();
+  for ( size_t iG = 0; iG < srcGroups.size(); ++iG )
+  {
+    const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
+    for ( SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements(); srcElems->more(); )
+    {
+      const SMDS_MeshElement* edge = srcElems->next();
+      geomTol = Sqrt( 0.5 * ( getMinEdgeLength2( edge->GetNode(0) ) +
+                              getMinEdgeLength2( edge->GetNode(1) ))) / 25;
+      iG = srcGroups.size();
+      break;
+    }
+  }
+  CurveProjector curveProjector( geomEdge, geomTol );
 
   // get nodes on vertices
+  set<int> vertexIDs;
   list < SMESH_TNodeXYZ > vertexNodes;
   list < SMESH_TNodeXYZ >::iterator vNIt;
   TopExp_Explorer vExp( theShape, TopAbs_VERTEX );
   for ( ; vExp.More(); vExp.Next() )
   {
     const TopoDS_Vertex& v = TopoDS::Vertex( vExp.Current() );
-    if ( !subShapeIDs.insert( tgtMesh->ShapeToIndex( v )).second )
+    if ( !vertexIDs.insert( tgtMesh->ShapeToIndex( v )).second )
       continue; // closed edge
     const SMDS_MeshNode* n = SMESH_Algo::VertexNode( v, tgtMesh );
     if ( !n )
@@ -696,56 +983,61 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
 
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
     vector<const SMDS_MeshNode*> newNodes;
-    SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
-    double u = 0.314159; // "random" value between 0 and 1, avoid 0 and 1, false detection possible on edge restrictions
     while ( srcElems->more() ) // loop on group contents
     {
       const SMDS_MeshElement* edge = srcElems->next();
+      gp_XYZ middle = 0.5 * ( SMESH_NodeXYZ( edge->GetNode(0)) +
+                              SMESH_NodeXYZ( edge->GetNode(1)));
+      if ( curveProjector.IsOut( middle ))
+        continue;
+
       // find or create nodes of a new edge
       newNodes.resize( edge->NbNodes() );
-      //MESSAGE("edge->NbNodes " << edge->NbNodes());
       newNodes.back() = 0;
+      int nbNodesOnVertex = 0;
       SMDS_MeshElement::iterator node = edge->begin_nodes();
-      SMESH_TNodeXYZ a(edge->GetNode(0));
-      // --- define a tolerance relative to the length of an edge
-      double mytol = a.Distance(edge->GetNode(edge->NbNodes()-1))/25;
-      //mytol = max(1.E-5, 10*edgeTol); // too strict and not necessary
-      //MESSAGE("mytol = " << mytol);
       for ( size_t i = 0; i < newNodes.size(); ++i, ++node )
       {
-        TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
+        TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, nullptr )).first;
         if ( n2nIt->second )
         {
-          if ( !subShapeIDs.count( n2nIt->second->getshapeId() ))
-            break;
+          int sId = n2nIt->second->getshapeId();
+          if ( sId != shapeID )
+          {
+            if ( vertexIDs.count( sId ))
+              ++nbNodesOnVertex;
+            else
+              break;
+          }
         }
-        else
+        else if ( !vertexNodes.empty() )
         {
           // find an existing vertex node
           double checktol = max(1.E-10, 10*edgeTol*edgeTol);
           for ( vNIt = vertexNodes.begin(); vNIt != vertexNodes.end(); ++vNIt)
             if ( vNIt->SquareDistance( *node ) < checktol)
             {
-              //MESSAGE("SquareDistance " << vNIt->SquareDistance( *node ) << " checktol " << checktol <<" "<<vNIt->X()<<" "<<vNIt->Y()<<" "<<vNIt->Z());
               (*n2nIt).second = vNIt->_node;
               vertexNodes.erase( vNIt );
+              ++nbNodesOnVertex;
               break;
             }
-            else if ( vNIt->SquareDistance( *node ) < 10*checktol)
-              MESSAGE("SquareDistance missed" << vNIt->SquareDistance( *node ) << " checktol " << checktol <<" "<<vNIt->X()<<" "<<vNIt->Y()<<" "<<vNIt->Z());
         }
         if ( !n2nIt->second )
         {
-          // find out if node lies on theShape
-          //double dxyz[4];
-          tmpNode->setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
-          if ( helper.CheckNodeU( geomEdge, tmpNode, u, mytol, /*force=*/true)) // , dxyz )) // dxyz used for debug purposes
+          // find out if the node lies on theShape
+          SMESH_NodeXYZ xyz = *node;
+          double dist2, u;
+          if ( curveProjector.IsOnCurve( xyz, dist2, u ))
           {
-            SMDS_MeshNode* newNode = tgtMesh->AddNode( (*node)->X(), (*node)->Y(), (*node)->Z());
-            n2nIt->second = newNode;
-            tgtMesh->SetNodeOnEdge( newNode, shapeID, u );
-            //MESSAGE("u=" << u << " " << newNode->X()<< " " << newNode->Y()<< " " << newNode->Z());
-            //MESSAGE("d=" << dxyz[0] << " " << dxyz[1] << " " << dxyz[2] << " " << dxyz[3]);
+            // tolerance relative to the length of surrounding edges
+            double mytol2 = getMinEdgeLength2( *node ) / 25 / 25;
+            if ( dist2 < mytol2 )
+            {
+              SMDS_MeshNode* newNode = tgtMesh->AddNode( xyz.X(), xyz.Y(), xyz.Z() );
+              n2nIt->second = newNode;
+              tgtMesh->SetNodeOnEdge( newNode, shapeID, u );
+            }
           }
         }
         if ( !(newNodes[i] = n2nIt->second ))
@@ -763,12 +1055,17 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
         newEdge = tgtMesh->AddEdge( newNodes[0], newNodes[1], newNodes[2] );
       else
         newEdge = tgtMesh->AddEdge( newNodes[0], newNodes[1]);
-      //MESSAGE("add Edge " << newNodes[0]->GetID() << " " << newNodes[1]->GetID());
       tgtMesh->SetMeshElementOnShape( newEdge, shapeID );
       e2e->insert( make_pair( edge, newEdge ));
-    }
-    helper.GetMeshDS()->RemoveNode(tmpNode);
-  }
+
+      if ( nbNodesOnVertex >= 2 ) // EDGE is meshed by a sole segment
+      {
+        iG = srcGroups.size(); // stop looingp on groups
+        break;
+      }
+    }  // loop on group contents
+  } // loop on groups
+
   if ( n2n->empty())
     return error("Empty source groups");
 

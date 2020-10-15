@@ -317,7 +317,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
   //================================================================================
   /*!
-   * \brief Redistrubute element boxes among children
+   * \brief Redistribute element boxes among children
    */
   //================================================================================
 

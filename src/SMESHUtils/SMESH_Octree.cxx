@@ -28,6 +28,9 @@
 //
 #include "SMESH_Octree.hxx"
 
+#include <Precision.hxx>
+#include <limits>
+
 //===========================================================================
 /*!
  * Constructor. limit must be provided at tree root construction.
@@ -90,7 +93,12 @@ void SMESH_Octree::enlargeByFactor( Bnd_B3d* box, double factor ) const
   {
     gp_XYZ halfSize = 0.5 * ( box->CornerMax() - box->CornerMin() );
     for ( int iDim = 1; iDim <= 3; ++iDim )
-      halfSize.SetCoord( iDim, factor * halfSize.Coord( iDim ));
+    {
+      double newHSize = factor * halfSize.Coord( iDim );
+      if ( newHSize < std::numeric_limits<double>::min() )
+        newHSize = Precision::Confusion(); // 1.e-7
+      halfSize.SetCoord( iDim, newHSize );
+    }
     box->SetHSize( halfSize );
   }
 }

@@ -840,16 +840,6 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
       vector< const SMDS_MeshNode* >& columnX0 = columns[ colIndex( x, 0 )];
       for ( z = 0; z < zSize; ++z )
         renumHelper.AddReplacingNode( columnX0[ z ] );
-      if ( x == 0 || x == X )
-      {
-        for ( y = 1; y < ySize; ++y )
-        {
-          vector< const SMDS_MeshNode* >& column0Y = columns[ colIndex( x, y )];
-          for ( z = 0; z < zSize; ++z )
-            renumHelper.AddReplacingNode( column0Y[ z ] );
-        }
-        continue;
-      }
     }
 
     const double rX = x / double(X);

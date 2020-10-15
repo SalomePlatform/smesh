@@ -324,8 +324,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     {
       const SMDS_MeshElement* face = srcElems->next();
 
-      SMDS_MeshElement::iterator node = face->begin_nodes();
-      if ( bndBox3d.IsOut( SMESH_TNodeXYZ( *node )))
+      if ( bndBox3d.IsOut( SMESH_NodeXYZ( face->GetNode(0) )))
         continue;
 
       // find or create nodes of a new face
@@ -334,13 +333,14 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       newNodes.back() = 0;
       int nbCreatedNodes = 0;
       bool isOut = false, isIn = false; // if at least one node isIn - do not classify other nodes
-      for ( size_t i = 0; i < newNodes.size(); ++i, ++node )
+      for ( size_t i = 0; i < newNodes.size(); ++i )
       {
-        SMESH_TNodeXYZ nXYZ = *node;
+        const SMDS_MeshNode* node = face->GetNode( i );
+        SMESH_NodeXYZ nXYZ = node;
         nodeState[ i ] = TopAbs_UNKNOWN;
         newNodes [ i ] = 0;
 
-        it_isnew = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 ));
+        it_isnew = n2n->insert( make_pair( node, nullptr ));
         n2nIt    = it_isnew.first;
 
         const SMDS_MeshNode* & newNode = n2nIt->second;
@@ -354,7 +354,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           if ( newNode->GetID() < (int) isNodeIn.size() &&
                isNodeIn[ newNode->GetID() ])
             isIn = true;
-          if ( !isIn && bndNodes.count( *node ))
+          if ( !isIn && bndNodes.count( node ))
             nodeState[ i ] = TopAbs_ON;
         }
         else
@@ -373,7 +373,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           // find out if node lies on the surface of theShape
           gp_XY uv( Precision::Infinite(), 0 );
-          isOut = ( !helper.CheckNodeUV( geomFace, *node, uv, groupTol, /*force=*/true ) ||
+          isOut = ( !helper.CheckNodeUV( geomFace, node, uv, groupTol, /*force=*/true ) ||
                     bndBox2d.IsOut( uv ));
           //int iCoo;
           if ( !isOut && !isIn ) // classify
@@ -381,7 +381,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
             nodeState[i] = classifier.Perform( uv ); //classifier.Perform( geomFace, uv, clsfTol );
             //nodeState[i] = classifier.State();
             isOut = ( nodeState[i] == TopAbs_OUT );
-            if ( isOut && helper.IsOnSeam( uv ) && onEdgeClassifier.IsSatisfy( (*node)->GetID() ))
+            if ( isOut && helper.IsOnSeam( uv ) && onEdgeClassifier.IsSatisfy( node->GetID() ))
             {
               // uv.SetCoord( iCoo, helper.GetOtherParam( uv.Coord( iCoo )));
               // classifier.Perform( geomFace, uv, clsfTol );
@@ -402,7 +402,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
               isNodeIn.resize( newNode->GetID() + 1, false );
             }
             if ( nodeState[i] == TopAbs_ON )
-              bndNodes.insert( *node );
+              bndNodes.insert( node );
             else if ( nodeState[i] != TopAbs_UNKNOWN )
               isNodeIn[ newNode->GetID() ] = isIn = true;
           }
