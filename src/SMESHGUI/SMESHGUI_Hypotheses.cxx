@@ -605,7 +605,7 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
   else if ( aHypType == "MaxElementArea")
     aHelpFileName = "2d_meshing_hypo.html#max-element-area-anchor";
   else if ( aHypType == "MaxElementVolume")
-    aHelpFileName = "max_element_volume_hypo.html";
+    aHelpFileName = "3d_meshing_hypo.html#max-element-volume-hypothesis";
   else if ( aHypType == "StartEndLength")
     aHelpFileName = "1d_meshing_hypo.html#start-and-end-length-anchor";
   else if ( aHypType == "Deflection1D")

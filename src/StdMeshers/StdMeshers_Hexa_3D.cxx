@@ -824,7 +824,16 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   pointsOnShapes[ SMESH_Block::ID_V111 ] = fTop->GetXYZ( X, Y );
 
   gp_XYZ params; // normalized parameters of an internal node within the unit box
-  for ( x = 0; x < xSize; ++x )
+
+  if ( toRenumber )
+    for ( y = 0; y < ySize; ++y )
+    {
+      vector< const SMDS_MeshNode* >& column0y = columns[ colIndex( 0, y )];
+      for ( z = 0; z < zSize; ++z )
+        renumHelper.AddReplacingNode( column0y[ z ] );
+    }
+
+  for ( x = 1; x < xSize-1; ++x )
   {
     if ( toRenumber )
     {
@@ -911,6 +920,14 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
         renumHelper.AddReplacingNode( columnX0[ z ] );
     }
   } // x loop
+
+  if ( toRenumber )
+    for ( y = 0; y < ySize; ++y )
+    {
+      vector< const SMDS_MeshNode* >& columnXy = columns[ colIndex( X, y )];
+      for ( z = 0; z < zSize; ++z )
+        renumHelper.AddReplacingNode( columnXy[ z ] );
+    }
 
   // side data no more needed, free memory
   for ( int i = 0; i < 6; ++i )
