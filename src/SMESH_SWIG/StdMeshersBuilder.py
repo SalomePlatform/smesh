@@ -1900,6 +1900,12 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
                         points dividing the whole shape into ranges where the functions apply; points
                         coordinates should vary within (0.0, 1.0) range. Parameter *t* of the spacing
                         function f(t) varies from 0.0 to 1.0 within a shape range. 
+        Note: 
+            The actual grid spacing can slightly differ from the defined one. This is done for the
+            best fitting of polyhedrons and for a better mesh quality on the interval boundaries.
+            For example, if a constant **Spacing** is defined along an axis, the actual grid will
+            fill the shape's dimension L along this axis with round number of equal cells:
+            Spacing_actual = L / round( L / Spacing_defined ).
 
         Examples:
             "10.5" - defines a grid with a constant spacing
