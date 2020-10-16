@@ -63,6 +63,7 @@
 #include <list>
 #include <set>
 #include <vector>
+#include <numeric>
 #include <Bnd_B3d.hxx>
 
 using namespace std;

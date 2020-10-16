@@ -56,6 +56,8 @@
 
 #include <cstddef>
 
+#include <numeric>
+
 typedef SMESH_Comment TComm;
 
 using namespace std;
