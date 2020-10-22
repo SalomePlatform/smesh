@@ -1504,9 +1504,12 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
   SMESH_MesherHelper helper( *GetMesh() );
   helper.SetElementsOnShape( true );
 
-  SMDS_ElemIteratorPtr faceIt;
-  if ( theElems.empty() ) faceIt = GetMeshDS()->elementsIterator(SMDSAbs_Face);
-  else                    faceIt = SMESHUtils::elemSetIterator( theElems );
+  // get standalone groups of faces
+  vector< SMDS_MeshGroup* > allFaceGroups, faceGroups;
+  for ( SMESHDS_GroupBase* grBase : GetMeshDS()->GetGroups() )
+    if ( SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>( grBase ))
+      if ( group->GetType() == SMDSAbs_Face && !group->IsEmpty() )
+        allFaceGroups.push_back( & group->SMDSGroup() );
 
   bool   checkUV;
   gp_XY  uv [9]; uv[8] = gp_XY(0,0);
@@ -1516,6 +1519,10 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
   TopoDS_Face                    F;
   Handle(Geom_Surface)           surface;
   TopLoc_Location                loc;
+
+  SMDS_ElemIteratorPtr faceIt;
+  if ( theElems.empty() ) faceIt = GetMeshDS()->elementsIterator(SMDSAbs_Face);
+  else                    faceIt = SMESHUtils::elemSetIterator( theElems );
 
   while ( faceIt->more() )
   {
@@ -1593,12 +1600,18 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
       myLastCreatedNodes.push_back( nCentral );
     }
 
-    // create 4 triangles
-
     helper.SetIsQuadratic  ( nodes.size() > 4 );
     helper.SetIsBiQuadratic( nodes.size() == 9 );
     if ( helper.GetIsQuadratic() )
       helper.AddTLinks( static_cast< const SMDS_MeshFace*>( quad ));
+
+    // select groups to update
+    faceGroups.clear();
+    for ( SMDS_MeshGroup* group : allFaceGroups )
+      if ( group->Remove( quad ))
+        faceGroups.push_back( group );
+
+    // create 4 triangles
 
     GetMeshDS()->RemoveFreeElement( quad, subMeshDS, /*fromGroups=*/false );
 
@@ -1607,8 +1620,9 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
       SMDS_MeshElement* tria = helper.AddFace( nodes[ i ],
                                                nodes[(i+1)%4],
                                                nCentral );
-      ReplaceElemInGroups( tria, quad, GetMeshDS() );
       myLastCreatedElems.push_back( tria );
+      for ( SMDS_MeshGroup* group : faceGroups )
+        group->Add( tria );
     }
   }
 }

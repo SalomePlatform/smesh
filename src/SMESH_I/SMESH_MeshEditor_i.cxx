@@ -1966,6 +1966,8 @@ void SMESH_MeshEditor_i::QuadTo4Tri (SMESH::SMESH_IDSource_ptr theObject)
   getEditor().QuadTo4Tri( faces );
   TPythonDump() << this << ".QuadTo4Tri( " << theObject << " )";
 
+  declareMeshModified( /*isReComputeSafe=*/false );
+
   SMESH_CATCH( SMESH::throwCorbaException );
 }
 
