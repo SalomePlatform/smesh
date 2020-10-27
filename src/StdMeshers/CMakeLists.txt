@@ -62,7 +62,9 @@ SET(_link_LIBRARIES
   ${GEOM_GEOMUtils}
   SMESHimpl
   SMESHDS
+  SMESHUtils
   ${TBB_LIBS}
+  ${Boost_LIBRARIES}
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)
@@ -130,6 +132,7 @@ SET(StdMeshers_HEADERS
   StdMeshers_QuadFromMedialAxis_1D2D.hxx
   StdMeshers_PolygonPerFace_2D.hxx
   StdMeshers_PolyhedronPerSolid_3D.hxx
+  StdMeshers_BlockRenumber.hxx
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)
@@ -196,6 +199,7 @@ SET(StdMeshers_SOURCES
   StdMeshers_QuadFromMedialAxis_1D2D.cxx
   StdMeshers_PolygonPerFace_2D.cxx
   StdMeshers_PolyhedronPerSolid_3D.cxx
+  StdMeshers_BlockRenumber.cxx
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)

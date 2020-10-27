@@ -208,6 +208,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tree_hypo_projection_2d.png
   mesh_tree_hypo_projection_3d.png
   mesh_tree_hypo_quadratic.png
+  mesh_tree_hypo_renumber.png
   mesh_tree_hypo_segment.png
   mesh_tree_hypo_source_3d_shape.png
   mesh_tree_hypo_source_edge.png

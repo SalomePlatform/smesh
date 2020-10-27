@@ -29,6 +29,7 @@
 
 class SMESH_Mesh;
 class SMESH_ProxyMesh;
+class StdMeshers_BlockRenumber;
 class StdMeshers_FaceSide;
 class TopoDS_Edge;
 class TopoDS_Face;
@@ -44,7 +45,8 @@ class STDMESHERS_EXPORT StdMeshers_CompositeHexa_3D: public SMESH_3D_Algo
 {
 public:
   StdMeshers_CompositeHexa_3D(int hypId, SMESH_Gen* gen);
-  //virtual ~StdMeshers_CompositeHexa_3D();
+
+  void SetHypothesis( const StdMeshers_BlockRenumber* hyp ) { _blockRenumberHyp = hyp; }
 
   virtual bool Compute(SMESH_Mesh&         aMesh,
                        const TopoDS_Shape& aShape);
@@ -56,18 +58,21 @@ public:
                                const TopoDS_Shape& aShape,
                                Hypothesis_Status&  aStatus);
 
-private:
+ private:
 
   bool findBoxFaces( const TopoDS_Shape&         shape,
                      std::list< _QuadFaceGrid >& boxFaceContainer,
                      SMESH_Mesh&                 mesh,
                      SMESH_ProxyMesh&            proxyMesh,
+                     bool&                       toRenumber,
                      _QuadFaceGrid * &           fBottom,
                      _QuadFaceGrid * &           fTop,
                      _QuadFaceGrid * &           fFront,
                      _QuadFaceGrid * &           fBack,
                      _QuadFaceGrid * &           fLeft,
                      _QuadFaceGrid * &           fRight);
+
+  const StdMeshers_BlockRenumber* _blockRenumberHyp;
 };
 
 #endif

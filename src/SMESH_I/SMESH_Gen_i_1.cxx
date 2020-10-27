@@ -236,8 +236,8 @@ template<typename T> static inline T* objectToServant( CORBA::Object_ptr theIOR 
 GEOM::GEOM_Object_ptr SMESH_Gen_i::ShapeToGeomObject (const TopoDS_Shape& theShape )
 {
   GEOM::GEOM_Object_var aShapeObj;
-  if ( !theShape.IsNull() ) {
-    GEOM_Client* aClient = GetShapeReader();
+  if ( !theShape.IsNull() && mySMESHGen ) {
+    GEOM_Client* aClient = mySMESHGen->GetShapeReader();
     TCollection_AsciiString IOR;
     if ( aClient && aClient->Find( theShape, IOR ))
     {
@@ -257,15 +257,34 @@ GEOM::GEOM_Object_ptr SMESH_Gen_i::ShapeToGeomObject (const TopoDS_Shape& theSha
 TopoDS_Shape SMESH_Gen_i::GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject)
 {
   TopoDS_Shape S;
-  if ( !theGeomObject->_is_nil() && !theGeomObject->_non_existent() )
+  if ( mySMESHGen && !theGeomObject->_is_nil() && !theGeomObject->_non_existent() )
   {
-    GEOM_Client*           aClient = GetShapeReader();
+    GEOM_Client*           aClient = mySMESHGen->GetShapeReader();
     GEOM::GEOM_Gen_var aGeomEngine = GetGeomEngine( theGeomObject );
     if ( aClient && !aGeomEngine->_is_nil () )
       S = aClient->GetShape( aGeomEngine, theGeomObject );
   }
   return S;
 }
+
+//================================================================================
+/*!
+ * \brief Get GEOM Object by its study entry
+ */
+//================================================================================
+
+GEOM::GEOM_Object_ptr SMESH_Gen_i::GetGeomObjectByEntry( const std::string& entry )
+{
+  GEOM::GEOM_Object_var go;
+  if ( !entry.empty() && mySMESHGen )
+  {
+    SALOMEDS::SObject_wrap so = mySMESHGen->getStudyServant()->FindObjectID( entry.c_str() );
+    CORBA::Object_var     obj = SObjectToObject( so );
+    go = GEOM::GEOM_Object::_narrow( obj );
+  }
+  return go._retn();
+}
+
 
 //=======================================================================
 //function : publish

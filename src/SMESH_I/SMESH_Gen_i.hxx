@@ -116,13 +116,15 @@ public:
   // Get CORBA object corresponding to the SALOMEDS::SObject
   static CORBA::Object_var SObjectToObject( SALOMEDS::SObject_ptr theSObject );
   // Get the SALOMEDS::SObject corresponding to a CORBA object
-  static SALOMEDS::SObject_ptr ObjectToSObject(CORBA::Object_ptr theObject);
+  static SALOMEDS::SObject_ptr ObjectToSObject( CORBA::Object_ptr theObject );
   // Get the SALOMEDS::Study from naming service
   static SALOMEDS::Study_var getStudyServant();
   // Get GEOM Object corresponding to TopoDS_Shape
-  GEOM::GEOM_Object_ptr ShapeToGeomObject (const TopoDS_Shape& theShape );
+  static GEOM::GEOM_Object_ptr ShapeToGeomObject( const TopoDS_Shape& theShape );
   // Get TopoDS_Shape corresponding to GEOM_Object
-  TopoDS_Shape GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject);
+  static TopoDS_Shape GeomObjectToShape( GEOM::GEOM_Object_ptr theGeomObject );
+  // Get GEOM Object by its study entry
+  static GEOM::GEOM_Object_ptr GetGeomObjectByEntry( const std::string& entry );
 
   // Default constructor
   SMESH_Gen_i();

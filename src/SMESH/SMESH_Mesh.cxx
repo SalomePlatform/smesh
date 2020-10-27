@@ -1406,10 +1406,8 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
  *  \param [in] theAutoGroups - boolean parameter for creating/not creating
  *              the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
  *              the typical use is auto_groups=false.
- *  \param [in] theMinor - define the minor version (y, where version is x.y.z) of MED file format.
- *              The theMinor must be between 0 and the current minor version of MED file library.
- *              If theMinor is equal to -1, the minor version is not changed (default).
- *              The major version (x, where version is x.y.z) cannot be changed.
+ *  \param [in] theVersion - define the minor (xy, where version is x.y.z) of MED file format.
+ *              If theVersion is equal to -1, the minor version is not changed (default).
  *  \param [in] meshPart - mesh data to export
  *  \param [in] theAutoDimension - if \c true, a space dimension of a MED mesh can be either
  *              - 1D if all mesh nodes lie on OX coordinate axis, or
@@ -2024,6 +2022,16 @@ bool SMESH_Mesh::IsNotConformAllowed() const
 bool SMESH_Mesh::IsMainShape(const TopoDS_Shape& theShape) const
 {
   return theShape.IsSame(_myMeshDS->ShapeToMesh() );
+}
+
+//=======================================================================
+//function : GetShapeByEntry
+//purpose  : return TopoDS_Shape by its study entry
+//=======================================================================
+
+TopoDS_Shape SMESH_Mesh::GetShapeByEntry(const std::string& entry) const
+{
+  return _callUp ? _callUp->GetShapeByEntry( entry ) : TopoDS_Shape();
 }
 
 //=============================================================================

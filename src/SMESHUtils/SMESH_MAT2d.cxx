@@ -1077,6 +1077,11 @@ namespace
           }
         }
 
+        else // 2D_mesh_QuadranglePreference_00/A1, bos20144.brep
+        {
+          continue; // bndSegs.size() == 1
+        }
+
         bndSegs[i].setBranch( branchID, bndSegsPerEdge ); // set to i-th and to the opposite bndSeg
         if ( bndSegs[i].hasOppositeEdge() )
           branchEdges[ bndSegs[i].branchID() ].push_back( bndSegs[i]._edge );

@@ -181,6 +181,41 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&            theFace,
 
   } // loop on edges
 
+  // orient seam edges (#19982)
+  const double tol = Precision::Confusion();
+  if ( NbEdges() > 1 && !myC2d[0].IsNull() )
+    for ( int i = 0; i < NbEdges(); ++i )
+    {
+      int iPrev = SMESH_MesherHelper::WrapIndex( i - 1, NbEdges() );
+      if ( !BRep_Tool::IsClosed( myEdge[i], myFace ) || !myC2d[iPrev] )
+        continue;
+      gp_Pnt2d pLastPrev = myC2d[iPrev]->Value( myLast[iPrev] );
+      gp_Pnt2d pFirst    = myC2d[i]->Value( myFirst[i] );
+      if ( pLastPrev.IsEqual( pFirst, tol ))
+        continue; // OK
+      pFirst = myC2d[i]->Value( myLast[i] );
+      if ( pLastPrev.IsEqual( pFirst, tol ))
+      {
+        std::swap( myFirst[i], myLast[i] );
+        continue;
+      }
+      TopoDS_Edge E = myEdge[i];
+      E.Reverse();
+      Handle(Geom2d_Curve) c2dRev = BRep_Tool::CurveOnSurface( E, myFace, myFirst[i], myLast[i] );
+      pFirst = c2dRev->Value( myFirst[i] );
+      if ( pLastPrev.IsEqual( pFirst, tol ))
+      {
+        myC2d[i] = c2dRev;
+        continue;
+      }
+      pFirst = c2dRev->Value( myLast[i] );
+      if ( pLastPrev.IsEqual( pFirst, tol ))
+      {
+        myC2d[i] = c2dRev;
+        std::swap( myFirst[i], myLast[i] );
+      }
+    }
+
   // count nodes and segments
   NbPoints( /*update=*/true );
 

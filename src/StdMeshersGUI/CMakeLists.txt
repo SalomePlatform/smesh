@@ -81,6 +81,7 @@ SET(_moc_HEADERS
   StdMeshersGUI_RadioButtonsGrpWdg.h
   StdMeshersGUI_PropagationHelperWdg.h
   StdMeshersGUI_NameCheckableGrpWdg.h
+  StdMeshersGUI_BlockRenumberCreator.h
 )
 
 IF(SALOME_USE_PLOT2DVIEWER)
@@ -117,6 +118,7 @@ SET(_other_SOURCES
   StdMeshersGUI_RadioButtonsGrpWdg.cxx
   StdMeshersGUI_PropagationHelperWdg.cxx
   StdMeshersGUI_NameCheckableGrpWdg.cxx
+  StdMeshersGUI_BlockRenumberCreator.cxx
 )
 
 IF(SALOME_USE_PLOT2DVIEWER)

@@ -1073,14 +1073,14 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
               PGetNodesFun getNodesFun = 0;
               if ( elemType == SMDSAbs_Face  && meshDim == 3 )
                 switch ( axis ) {
-                case 0: getNodesFun = & TZoneData::IFaceNodes;
-                case 1: getNodesFun = & TZoneData::JFaceNodes;
-                case 2: getNodesFun = & TZoneData::KFaceNodes;
+                case 0: getNodesFun = & TZoneData::IFaceNodes; break;
+                case 1: getNodesFun = & TZoneData::JFaceNodes; break;
+                case 2: getNodesFun = & TZoneData::KFaceNodes; break;
                 }
               else if ( elemType == SMDSAbs_Edge && meshDim == 2 )
                 switch ( axis ) {
-                case 0: getNodesFun = & TZoneData::IEdgeNodes;
-                case 1: getNodesFun = & TZoneData::JEdgeNodes;
+                case 0: getNodesFun = & TZoneData::IEdgeNodes; break;
+                case 1: getNodesFun = & TZoneData::JEdgeNodes; break;
                 }
               if ( !getNodesFun )
               {
@@ -1103,14 +1103,14 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
               PGetNodesFun getNodesFun = 0;
               if ( elemType == SMDSAbs_Face )
                 switch ( axis ) {
-                case 0: getNodesFun = & TZoneData::IFaceNodes;
-                case 1: getNodesFun = & TZoneData::JFaceNodes;
-                case 2: getNodesFun = & TZoneData::KFaceNodes;
+                case 0: getNodesFun = & TZoneData::IFaceNodes; break;
+                case 1: getNodesFun = & TZoneData::JFaceNodes; break;
+                case 2: getNodesFun = & TZoneData::KFaceNodes; break;
                 }
               else if ( elemType == SMDSAbs_Edge && meshDim == 2 )
                 switch ( axis ) {
-                case 0: getNodesFun = & TZoneData::IEdgeNodes;
-                case 1: getNodesFun = & TZoneData::JEdgeNodes;
+                case 0: getNodesFun = & TZoneData::IEdgeNodes; break;
+                case 1: getNodesFun = & TZoneData::JEdgeNodes; break;
                 }
               if ( !getNodesFun )
               {
@@ -1129,9 +1129,9 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
 
             PAddElemFun addElemFun = 0;
             switch ( meshDim ) {
-            case 1: addElemFun = & add_BAR_2;
-            case 2: addElemFun = & add_QUAD_4;
-            case 3: addElemFun = & add_HEXA_8;
+            case 1: addElemFun = & add_BAR_2;  break;
+            case 2: addElemFun = & add_QUAD_4; break;
+            case 3: addElemFun = & add_HEXA_8; break;
             }
             int elemID = meshInfo.NbElements();
             const SMDS_MeshElement* elem = 0;

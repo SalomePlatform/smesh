@@ -31,6 +31,8 @@
 
 #include "SMESH_Utils.hxx"
 
+const double theEnlargeFactor = 1. + 1e-10;
+
 //================================================================================
 // Data limiting the tree height
 struct SMESH_TreeLimit {
@@ -160,6 +162,7 @@ void SMESH_Tree<BND_BOX,NB_CHILDREN>::compute()
   {
     if ( !myLimit ) myLimit = new SMESH_TreeLimit();
     myBox = buildRootBox();
+    enlargeByFactor( myBox, theEnlargeFactor );
     if ( myLimit->myMinBoxSize > 0. && maxSize() <= myLimit->myMinBoxSize )
       myIsLeaf = true;
     else
@@ -227,7 +230,7 @@ void SMESH_Tree<BND_BOX,NB_CHILDREN>::buildChildren()
     myChildren[i]->myLimit = myLimit;
     myChildren[i]->myLevel = myLevel + 1;
     myChildren[i]->myBox = newChildBox( i );
-    enlargeByFactor( myChildren[i]->myBox, 1. + 1e-10 );
+    enlargeByFactor( myChildren[i]->myBox, theEnlargeFactor );
     if ( myLimit->myMinBoxSize > 0. && myChildren[i]->maxSize() <= myLimit->myMinBoxSize )
       myChildren[i]->myIsLeaf = true;
   }
