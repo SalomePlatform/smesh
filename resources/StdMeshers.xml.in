@@ -226,6 +226,11 @@
                 icon-id  ="mesh_hypo_length.png"
                 dim      ="3"/>
 
+    <hypothesis type     ="BlockRenumber"
+                label-id ="Renumber"
+                icon-id  ="mesh_hypo_renumber.png"
+                dim      ="3"/>
+
   </hypotheses>
 
   <algorithms>
@@ -390,11 +395,13 @@
                input    ="QUAD"
                output   ="HEXA,PENTA"
 	       need-geom="false"
+               hypos    ="BlockRenumber"
                opt-hypos="ViscousLayers"
                dim      ="3">
       <python-wrap>
         <algo>Hexa_3D=Hexahedron(algo=smeshBuilder.Hexa)</algo>
         <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetFaces(1),SetFaces(2),SetMethod(),SetGroupName())</hypo>
+        <hypo>BlockRenumber=Renumber(GetBlocksOrientation())</hypo>
       </python-wrap>
     </algorithm>
 

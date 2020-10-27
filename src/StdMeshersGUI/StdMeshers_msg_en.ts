@@ -478,6 +478,14 @@ Consider creating another hypothesis instead of using this one for this mesh/sub
         <source>SMESH_QUAD_TYPE</source>
         <translation>Type</translation>
     </message>
+    <message>
+        <source>SMESH_BLOCK_RENUMBER_TITLE</source>
+        <translation>Hypothesis Construction</translation>
+    </message>
+    <message>
+        <source>SMESH_BLOCK_RENUMBER_HYPOTHESIS</source>
+        <translation>Renumber</translation>
+    </message>
 </context>
 <context>
     <name>StdMeshersGUI_QuadrangleParamWdg</name>
@@ -647,6 +655,57 @@ Consider creating another hypothesis instead of using this one for this mesh/sub
     <message>
         <source>CHAIN_NUM_NB_EDGES</source>
         <translation>Chain %1 (%2 edges)</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI_BlockRenumberCreator</name>
+    <message>
+        <source>BLOCK_CS_GROUPBOX</source>
+        <translation>Block coordinate system</translation>
+    </message>
+    <message>
+        <source>SOLID</source>
+        <translation>Solid</translation>
+    </message>
+    <message>
+        <source>V000</source>
+        <translation>Vertex (0,0,0)</translation>
+    </message>
+    <message>
+        <source>V001</source>
+        <translation>Vertex (0,0,1)</translation>
+    </message>
+    <message>
+        <source>ADD</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <source>MODIFY</source>
+        <translation>Modify</translation>
+    </message>
+    <message>
+        <source>COLUMN_BLOCK</source>
+        <translation>Block</translation>
+    </message>
+    <message>
+        <source>COLUMN_V000</source>
+        <translation>Vertex (0,0,0)</translation>
+    </message>
+    <message>
+        <source>COLUMN_V001</source>
+        <translation>Vertex (0,0,1)</translation>
+    </message>
+    <message>
+        <source>BLOCK_LABEL</source>
+        <translation>Block: </translation>
+    </message>
+    <message>
+        <source>V000_LABEL</source>
+        <translation>Vertex (0,0,0): </translation>
+    </message>
+    <message>
+        <source>V001_LABEL</source>
+        <translation>Vertex (0,0,1): </translation>
     </message>
 </context>
 </TS>

@@ -59,6 +59,8 @@ This dialog allows to define
     
 	* You can specify the **Coordinates** of grid nodes. **Insert** button inserts a node at **Step** distance (negative or positive) from the selected node. **Delete** button removes the selected node. Double click on a coordinate in the list enables its edition. **Note** that node coordinates are measured along directions of axes that can differ from the directions of the Global Coordinate System.
 	* You can define the **Spacing** of a grid as an algebraic formula *f(t)* where *t* is a position along a grid axis normalized at [0.0,1.0]. *f(t)* must be non-negative at 0. <= *t* <= 1. The whole extent of geometry can be divided into ranges with their own spacing formulas to apply; a t varies between 0.0 and 1.0 within each **Range**. **Insert** button divides a selected range into two. **Delete** button adds the selected sub-range to the previous one. Double click on a range in the list enables edition of its right boundary. Double click on a function in the list enables its edition.
+
+.. note:: The actual grid spacing can slightly differ from the defined one. This is done for the best fitting of polyhedrons and for a better mesh quality on the interval boundaries. For example, if a constant **Spacing** is defined along an axis, the actual grid will fill the shape's dimension L along this axis with round number of equal cells: Spacing_actual = L / round( L / Spacing_defined ).
   
 * **Fixed Point** group allows defining an exact location of a grid node in the direction defined by spacing. The following cases are possible:
    

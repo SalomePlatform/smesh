@@ -24,10 +24,11 @@
 // Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 // SMESH includes
 //
-#include "StdMeshersGUI_StdHypothesisCreator.h"
-#include "StdMeshersGUI_NbSegmentsCreator.h"
+#include "StdMeshersGUI_BlockRenumberCreator.h"
 #include "StdMeshersGUI_CartesianParamCreator.h"
+#include "StdMeshersGUI_NbSegmentsCreator.h"
 #include "StdMeshersGUI_QuadrangleParamWdg.h"
+#include "StdMeshersGUI_StdHypothesisCreator.h"
 
 //=============================================================================
 /*! GetHypothesisCreator
@@ -45,6 +46,8 @@ extern "C"
       return new StdMeshersGUI_CartesianParamCreator( aHypType );
     else if ( aHypType=="QuadrangleParams" )
       return new StdMeshersGUI_QuadrangleParamCreator( aHypType );
+    else if ( aHypType=="BlockRenumber")
+      return new StdMeshersGUI_BlockRenumberCreator( aHypType );
     else
       return new StdMeshersGUI_StdHypothesisCreator( aHypType );
   }

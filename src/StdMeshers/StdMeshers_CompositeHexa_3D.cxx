@@ -38,6 +38,8 @@
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
+#include "StdMeshers_BlockRenumber.hxx"
+#include "StdMeshers_FaceSide.hxx"
 #include "StdMeshers_ViscousLayers.hxx"
 
 #include <BRepAdaptor_Surface.hxx>
@@ -61,6 +63,8 @@
 #include <list>
 #include <set>
 #include <vector>
+#include <numeric>
+#include <Bnd_B3d.hxx>
 
 using namespace std;
 
@@ -180,6 +184,8 @@ public: //** Methods to find and orient faces of 6 sides of the box **//
   TChildIterator GetChildren() const
   { return TChildIterator( myChildren.begin(), myChildren.end()); }
 
+  bool Contain( const TopoDS_Vertex& vertex ) const { return mySides.Contain( vertex ); }
+
 public: //** Loading and access to mesh **//
 
   //!< Load nodes of a mesh
@@ -271,7 +277,7 @@ private:
 //================================================================================
 
 StdMeshers_CompositeHexa_3D::StdMeshers_CompositeHexa_3D(int hypId, SMESH_Gen* gen)
-  :SMESH_3D_Algo(hypId, gen)
+  :SMESH_3D_Algo(hypId, gen), _blockRenumberHyp( nullptr )
 {
   _name = "CompositeHexa_3D";
   _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit /shape type
@@ -287,6 +293,7 @@ bool StdMeshers_CompositeHexa_3D::CheckHypothesis(SMESH_Mesh&         aMesh,
                                                   const TopoDS_Shape& aShape,
                                                   Hypothesis_Status&  aStatus)
 {
+  _blockRenumberHyp = nullptr;
   aStatus = HYP_OK;
   return true;
 }
@@ -545,6 +552,163 @@ namespace
     return faceFound;
   }
 
+    //================================================================================
+  /*!
+   * \brief Rearrange block sides according to StdMeshers_BlockRenumber hypothesis
+   */
+  //================================================================================
+
+  bool arrangeForRenumber( list< _QuadFaceGrid >&     blockSides,
+                           const TopTools_MapOfShape& cornerVertices,
+                           SMESH_Mesh*                mesh,
+                           TopoDS_Vertex&             v000,
+                           TopoDS_Vertex&             v001 )
+  {
+    if ( v000.IsNull() )
+    {
+      // block CS is not defined;
+      // renumber only if the block has an edge parallel to an axis of global CS
+
+      v000 = StdMeshers_RenumberHelper::GetVertex000( cornerVertices );
+    }
+
+    Bnd_B3d bbox;
+    for ( auto it = cornerVertices.cbegin(); it != cornerVertices.cend(); ++it )
+      bbox.Add( BRep_Tool::Pnt( TopoDS::Vertex( *it )));
+    double tol = 1e-5 * Sqrt( bbox.SquareExtent() );
+
+    // get block edges starting at v000
+
+    std::vector< const _FaceSide* > edgesAtV000;
+    std::vector< gp_Vec >           edgeDir;
+    std::vector< int >              iParallel; // 0 - none, 1 - X, 2 - Y, 3 - Z
+    TopTools_MapOfShape             lastVertices;
+    for ( _QuadFaceGrid & quad: blockSides )
+    {
+      for ( int iS = 0; iS < 4 &&  edgesAtV000.size() < 3; ++iS )
+      {
+        const _FaceSide* side = & quad.GetSide( iS );
+        TopoDS_Vertex v1 = side->FirstVertex(), v2 = side->LastVertex();
+        if (( v1.IsSame( v000 ) && !lastVertices.Contains( v2 )) ||
+            ( v2.IsSame( v000 ) && !lastVertices.Contains( v1 )))
+        {
+          bool reverse = v2.IsSame( v000 );
+          if ( reverse )
+            std::swap( v1, v2 );
+          lastVertices.Add( v2 );
+
+          edgesAtV000.push_back( side );
+
+          gp_Pnt pf = BRep_Tool::Pnt( v1 );
+          gp_Pnt pl = BRep_Tool::Pnt( v2 );
+          gp_Vec vec( pf, pl );
+          edgeDir.push_back( vec );
+
+          iParallel.push_back( 0 );
+          if ( !v001.IsNull() )
+          {
+            if ( quad.IsComplex() )
+              for ( _QuadFaceGrid::TChildIterator chIt = quad.GetChildren(); chIt.more(); )
+              {
+                const _QuadFaceGrid& child = chIt.next();
+                if ( child.GetSide( iS ).Contain( v001 ))
+                {
+                  iParallel.back() = 3;
+                  break;
+                }
+              }
+            else if ( side->Contain( v001 ))
+              iParallel.back() = 3;
+          }
+          else
+          {
+            bool isStraight = true;
+            std::list< TopoDS_Edge > edges;
+            for ( int iE = 0; true; ++iE )
+            {
+              TopoDS_Edge edge = side->Edge( iE );
+              if ( edge.IsNull() )
+                break;
+              edges.push_back( edge );
+              if ( isStraight )
+                isStraight = SMESH_Algo::IsStraight( edge );
+            }
+            // is parallel to a GCS axis?
+            if ( isStraight )
+            {
+              int nbDiff = (( Abs( vec.X() ) > tol ) +
+                            ( Abs( vec.Y() ) > tol ) +
+                            ( Abs( vec.Z() ) > tol ) );
+              if ( nbDiff == 1 )
+                iParallel.back() = ( Abs( vec.X() ) > tol ) ? 1 : ( Abs( vec.Y() ) > tol ) ? 2 : 3;
+            }
+            else
+            {
+              TopoDS_Face nullFace;
+              StdMeshers_FaceSide fSide( nullFace, edges, mesh, true, true );
+              edgeDir.back() = gp_Vec( pf, fSide.Value3d( reverse ? 0.99 : 0.01 ));
+            }
+          }
+        }
+      }
+    }
+    if ( std::accumulate( iParallel.begin(), iParallel.end(), 0 ) == 0 )
+      return false;
+
+    // find edge OZ and edge OX
+    const _FaceSide* edgeOZ = nullptr, *edgeOY = nullptr, *edgeOX = nullptr;
+    auto iZIt = std::find( iParallel.begin(), iParallel.end(), 3 );
+    if ( iZIt != iParallel.end() )
+    {
+      int i = std::distance( iParallel.begin(), iZIt );
+      edgeOZ = edgesAtV000[ i ];
+      int iE1 = SMESH_MesherHelper::WrapIndex( i + 1, edgesAtV000.size() );
+      int iE2 = SMESH_MesherHelper::WrapIndex( i + 2, edgesAtV000.size() );
+      if (( edgeDir[ iE1 ] ^ edgeDir[ iE2 ] ) * edgeDir[ i ] < 0 )
+        std::swap( iE1, iE2 );
+      edgeOX = edgesAtV000[ iE1 ];
+      edgeOY = edgesAtV000[ iE2 ];
+    }
+    else
+    {
+      for ( size_t i = 0; i < edgesAtV000.size(); ++i )
+      {
+        if ( !iParallel[ i ] )
+          continue;
+        int iE1 = SMESH_MesherHelper::WrapIndex( i + 1, edgesAtV000.size() );
+        int iE2 = SMESH_MesherHelper::WrapIndex( i + 2, edgesAtV000.size() );
+        if (( edgeDir[ iE1 ] ^ edgeDir[ iE2 ] ) * edgeDir[ i ] < 0 )
+          std::swap( iE1, iE2 );
+        edgeOZ = edgesAtV000[ iParallel[i] == 1 ? iE2 : iE1 ];
+        edgeOX = edgesAtV000[ iParallel[i] == 1 ? i : iE1 ];
+        edgeOY = edgesAtV000[ iParallel[i] == 1 ? iE1 : i ];
+        break;
+      }
+    }
+
+    if ( !edgeOZ || !edgeOX || !edgeOY )
+      return false;
+
+    TopoDS_Vertex v100 = edgeOX->LastVertex();
+    if ( v100.IsSame( v000 ))
+      v100 = edgeOX->FirstVertex();
+
+    // Find the left quad, one including v000 but not v100
+
+    for ( auto quad = blockSides.begin(); quad != blockSides.end(); ++quad )
+    {
+      if ( quad->Contain( v000 ) && !quad->Contain( v100 )) // it's a left quad
+      {
+        if ( quad != blockSides.begin() )
+          blockSides.splice( blockSides.begin(), blockSides, quad );
+        blockSides.front().SetBottomSide( *edgeOZ ); // edgeOY
+
+        return true;
+      }
+    }
+    return false;
+  }
+
 } // namespace
 
 //================================================================================
@@ -557,6 +721,7 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
                                                 list< _QuadFaceGrid >& boxFaces,
                                                 SMESH_Mesh&            mesh,
                                                 SMESH_ProxyMesh&       proxyMesh,
+                                                bool&                  toRenumber,
                                                 _QuadFaceGrid * &      fBottom,
                                                 _QuadFaceGrid * &      fTop,
                                                 _QuadFaceGrid * &      fFront,
@@ -609,6 +774,22 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
     for ( exp.Init( shape, TopAbs_FACE); exp.More(); exp.Next(), ++boxFace )
       boxFace->Init( TopoDS::Face( exp.Current() ), proxyMesh );
   }
+
+  toRenumber = _blockRenumberHyp;
+  if ( toRenumber )
+  {
+    TopoDS_Vertex v000, v001;
+    _blockRenumberHyp->IsSolidIncluded( mesh, shape, v000, v001 );
+
+    toRenumber = arrangeForRenumber( boxFaces, cornerVertices, &mesh, v000, v001 );
+
+    if ( toRenumber )
+    {
+      mesh.GetMeshDS()->Modified();
+      mesh.GetMeshDS()->CompactMesh(); // remove numbering holes
+    }
+  }
+  
   // ----------------------------------------
   // Find out position of faces within a box
   // ----------------------------------------
@@ -686,8 +867,9 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   // Try to find 6 side faces
   // -------------------------
   list< _QuadFaceGrid > boxFaceContainer;
+  bool toRenumber = false;
   _QuadFaceGrid *fBottom, *fTop, *fFront, *fBack, *fLeft, *fRight;
-  if ( ! findBoxFaces( theShape, boxFaceContainer, theMesh, *proxyMesh,
+  if ( ! findBoxFaces( theShape, boxFaceContainer, theMesh, *proxyMesh, toRenumber,
                        fBottom, fTop, fFront, fBack, fLeft, fRight))
     return false;
 
@@ -710,6 +892,8 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   fFront ->ComputeIJK( COO_X, COO_Z, /*y=*/0. );
   fRight ->ComputeIJK( COO_Y, COO_Z, /*x=*/1. );
   fTop   ->ComputeIJK( COO_X, COO_Y, /*z=*/1. );
+
+  StdMeshers_RenumberHelper renumHelper( theMesh, _blockRenumberHyp );
 
   int x, xSize = fBottom->GetNbHoriSegments(*proxyMesh) + 1, X = xSize - 1;
   int y, ySize = fBottom->GetNbVertSegments(*proxyMesh) + 1, Y = ySize - 1;
@@ -768,8 +952,23 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
 
   gp_XYZ params; // normalized parameters of an internal node within the unit box
 
-  for ( x = 1; x < xSize-1; ++x )
+  if ( toRenumber )
+    for ( y = 0; y < ySize; ++y )
+    {
+      vector< const SMDS_MeshNode* >& columnXy = columns[ colIndex( X, y )];
+      for ( z = 0; z < zSize; ++z )
+        renumHelper.AddReplacingNode( columnXy[ z ] );
+    }
+
+  for ( x = X-1; x > 0; --x )
   {
+    if ( toRenumber )
+    {
+      vector< const SMDS_MeshNode* >& columnX0 = columns[ colIndex( x, 0 )];
+      for ( z = 0; z < zSize; ++z )
+        renumHelper.AddReplacingNode( columnX0[ z ] );
+    }
+
     const double rX = x / double(X);
     for ( y = 1; y < ySize-1; ++y )
     {
@@ -788,6 +987,10 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
       // points projections on horizontal faces
       pointsOnShapes[ SMESH_Block::ID_Fxy0 ] = fBottom->GetXYZ( x, y );
       pointsOnShapes[ SMESH_Block::ID_Fxy1 ] = fTop   ->GetXYZ( x, y );
+
+      if ( toRenumber )
+        renumHelper.AddReplacingNode( column[ 0 ] );
+
       for ( z = 1; z < zSize-1; ++z ) // z loop
       {
         // compute normalized parameters of an internal node within the unit box
@@ -832,16 +1035,35 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
         //cout << "Params: ( "<< params.X()<<", "<<params.Y()<<", "<<params.Z()<<" )"<<endl;
         //cout << "coords: ( "<< coords.X()<<", "<<coords.Y()<<", "<<coords.Z()<<" )"<<endl;
 #endif
-      }
+      } // z loop
+      if ( toRenumber )
+        renumHelper.AddReplacingNode( column[ Z ] );
+
+    } // y loop
+    if ( toRenumber )
+    {
+      vector< const SMDS_MeshNode* >& columnXY = columns[ colIndex( x, Y )];
+      for ( z = 0; z < zSize; ++z )
+        renumHelper.AddReplacingNode( columnXY[ z ] );
     }
-  }
+  } // for ( x = X-1; x > 0; --x )
+
+  if ( toRenumber )
+    for ( y = 0; y < ySize; ++y )
+    {
+      vector< const SMDS_MeshNode* >& column0Y = columns[ colIndex( 0, y )];
+      for ( z = 0; z < zSize; ++z )
+        renumHelper.AddReplacingNode( column0Y[ z ] );
+    }
+
+
   // faces no more needed, free memory
   boxFaceContainer.clear();
 
   // ----------------
   // Add hexahedrons
   // ----------------
-  for ( x = 0; x < xSize-1; ++x ) {
+  for ( x = xSize-2; true; --x ) {
     for ( y = 0; y < ySize-1; ++y ) {
       vector< const SMDS_MeshNode* >& col00 = columns[ colIndex( x, y )];
       vector< const SMDS_MeshNode* >& col10 = columns[ colIndex( x+1, y )];
@@ -850,11 +1072,22 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
       for ( z = 0; z < zSize-1; ++z )
       {
         // bottom face normal of a hexa mush point outside the volume
-        helper.AddVolume(col00[z],   col01[z],   col11[z],   col10[z],
-                         col00[z+1], col01[z+1], col11[z+1], col10[z+1]);
+        helper.AddVolume(col10[z], col11[z], col11[z+1], col10[z+1],
+                         col00[z], col01[z], col01[z+1], col00[z+1]);
       }
     }
+    if ( x == 0)
+      break;
+
   }
+  if ( toRenumber )
+    renumHelper.DoReplaceNodes();
+
+  if ( _blockRenumberHyp )
+  {
+    return error( _blockRenumberHyp->CheckHypothesis( theMesh, theShape ));
+  }
+
   return true;
 }
 
@@ -875,7 +1108,8 @@ bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh&         theMesh,
   // -------------------------
   list< _QuadFaceGrid > boxFaceContainer;
   _QuadFaceGrid *fBottom, *fTop, *fFront, *fBack, *fLeft, *fRight;
-  if ( ! findBoxFaces( theShape, boxFaceContainer, theMesh, *proxyMesh,
+  bool toRenumber = false;
+  if ( ! findBoxFaces( theShape, boxFaceContainer, theMesh, *proxyMesh, toRenumber,
                        fBottom, fTop, fFront, fBack, fLeft, fRight))
     return false;
 

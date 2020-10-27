@@ -16,7 +16,7 @@ In **MESH** there are:
 
 * :ref:`a1d_meshing_hypo_page` for meshing of **edges**
 * :ref:`a2d_meshing_hypo_page` for meshing of **faces**
-* :ref:`3D Hypothesis <max_element_volume_hypo_page>` for meshing of **volumes**
+* :ref:`a3d_meshing_hypo_page` for meshing of **volumes**
 * :ref:`additional_hypo_page`
 
 **Table of Contents**
@@ -26,6 +26,6 @@ In **MESH** there are:
 
    1d_meshing_hypo.rst
    2d_meshing_hypo.rst
-   3D: Max Element Volume hypothesis <max_element_volume_hypo>
+   3d_meshing_hypo.rst
    additional_hypo.rst	
 

@@ -100,6 +100,10 @@
             <translation>mesh_hypo_length.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_BLOCK_RENUMBER</source>
+            <translation>mesh_tree_hypo_renumber.png</translation>
+        </message>
+        <message>
             <source>ICON_SELECT</source>
             <translation>select1.png</translation>
         </message>
@@ -290,6 +294,10 @@
         <message>
             <source>ICON_SMESH_TREE_HYPO_QuadraticMesh</source>
             <translation>mesh_tree_hypo_quadratic.png</translation>
+        </message>
+        <message>
+            <source>ICON_SMESH_TREE_HYPO_BlockRenumber</source>
+            <translation>mesh_tree_hypo_renumber.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_SegmentLengthAroundVertex</source>

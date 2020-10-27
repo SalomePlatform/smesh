@@ -1212,6 +1212,9 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
       if ( n->NbInverseElements() == 0 )
         _impl->GetMeshDS()->RemoveFreeNode( n, /*sm=*/0 );
 
+  _impl->GetMeshDS()->Modified();
+  _impl->SetIsModified( true );
+
   // Update Python script (theGroup must be alive for this)
   pyDump << SMESH::SMESH_Mesh_var(_this())
          << ".RemoveGroupWithContents( " << theGroup << " )";
@@ -3432,12 +3435,17 @@ namespace
   {
     SMESH_Mesh_i* _mesh;
     TCallUp_i(SMESH_Mesh_i* mesh):_mesh(mesh) {}
-    virtual void RemoveGroup (const int theGroupID) { _mesh->removeGroup( theGroupID ); }
-    virtual void HypothesisModified( int hypID,
-                                     bool updIcons) { _mesh->onHypothesisModified( hypID,
-                                                                                   updIcons ); }
-    virtual void Load ()                            { _mesh->Load(); }
-    virtual bool IsLoaded()                         { return _mesh->IsLoaded(); }
+    void RemoveGroup (const int theGroupID) override { _mesh->removeGroup( theGroupID ); }
+    void HypothesisModified( int hypID,
+                             bool updIcons) override { _mesh->onHypothesisModified( hypID,
+                                                                                    updIcons ); }
+    void Load ()                            override { _mesh->Load(); }
+    bool IsLoaded()                         override { return _mesh->IsLoaded(); }
+    TopoDS_Shape GetShapeByEntry(const std::string& entry) override
+    {
+      GEOM::GEOM_Object_var go = SMESH_Gen_i::GetGeomObjectByEntry( entry );
+      return SMESH_Gen_i::GeomObjectToShape( go );
+    }
   };
 }
 
@@ -3773,7 +3781,7 @@ void SMESH_Mesh_i::ExportMED(const char*        file,
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportMED( r'"
                 << file << "', "
                 << "auto_groups=" <<auto_groups << ", "
-                << "minor=" << version <<  ", "
+                << "version=" << version <<  ", "
                 << "overwrite=" << overwrite << ", "
                 << "meshPart=None, "
                 << "autoDimension=" << autoDimension << " )";
