@@ -4450,7 +4450,7 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
              A list of edge groups and a list of corresponding node groups,
-             where the group is a list of IDs of edges or elements, like follows
+             where the group is a list of IDs of edges or nodes, like follows
              [[[branch_edges_1],[branch_edges_2]], [[branch_nodes_1],[branch_nodes_2]]].
              If a group is closed, the first and last nodes of the group are same.
         """
