@@ -151,9 +151,10 @@ namespace
     // Clear collected data
     void reset()
     {
-      myFace2QuadMap.Clear();
       StdMeshers_Quadrangle_2D::myQuadList.clear();
       StdMeshers_Quadrangle_2D::myHelper = nullptr;
+      StdMeshers_Quadrangle_2D::myProxyMesh.reset();
+      myFace2QuadMap.Clear();
     }
 
     //================================================================================
@@ -778,7 +779,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   SMESH_MesherHelper helper( theMesh );
   myHelper = &helper;
   myPrevBottomSM = 0;
-  TQuadrangleAlgo::Cleaner( TQuadrangleAlgo::instance( this ));
+  TQuadrangleAlgo::Cleaner quadCleaner( TQuadrangleAlgo::instance( this ));
 
   int nbSolids = helper.Count( theShape, TopAbs_SOLID, /*skipSame=*/false );
   if ( nbSolids < 1 )
@@ -848,6 +849,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   }
 
   TopTools_MapOfShape meshedSolids;
+  NCollection_DataMap< TopoDS_Shape, SMESH_subMesh* > meshedFace2AlgoSM;
   list< Prism_3D::TPrismTopo > meshedPrism;
   list< TopoDS_Face > suspectSourceFaces;
   TopTools_ListIteratorOfListOfShape solidIt;
@@ -871,6 +873,8 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
         {
           prism.Clear();
           prism.myBottom = face;
+          if ( meshedFace2AlgoSM.IsBound( face ))
+            prism.myAlgoSM = meshedFace2AlgoSM.Find( face );
           if ( !initPrism( prism, solid, selectBottom ) ||
                !compute( prism ))
             return false;
@@ -880,6 +884,11 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
                !myHelper->IsStructured( theMesh.GetSubMesh( prism.myTop )))
           {
             meshedFaces.push_front( prism.myTop );
+            if ( prism.myAlgoSM  && prism.myAlgoSM->GetAlgo() )
+            {
+              meshedFace2AlgoSM.Bind( prism.myTop,    prism.myAlgoSM );
+              meshedFace2AlgoSM.Bind( prism.myBottom, prism.myAlgoSM );
+            }
           }
           else
           {
@@ -914,9 +923,18 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
               solidList.Remove( solidIt );
               continue; // already computed prism
             }
-            if ( myHelper->IsBlock( solid )) {
-              solidIt.Next();
-              continue; // too trivial
+            if ( myHelper->IsBlock( solid ))
+            {
+              bool isStructBase = true;
+              if ( prismIt->myAlgoSM )
+                isStructBase = ( myHelper->IsSameElemGeometry( prismIt->myAlgoSM->GetSubMeshDS(),
+                                                               SMDSGeom_QUADRANGLE ) &&
+                                 myHelper->IsStructured(prismIt->myAlgoSM ));
+              if ( isStructBase )
+              {
+                solidIt.Next();
+                continue; // too trivial
+              }
             }
             // find a source FACE of the SOLID: it's a FACE sharing a bottom EDGE with wFace
             const TopoDS_Edge& wEdge = (*wQuad)->side[ QUAD_TOP_SIDE ].grid->Edge(0);
@@ -935,27 +953,41 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
                 }
               prism.Clear();
               prism.myBottom = candidateF;
+              prism.myAlgoSM = prismIt->myAlgoSM;
               mySetErrorToSM = false;
               if ( !myHelper->IsSubShape( candidateF, prismIt->myShape3D ) &&
                    myHelper ->IsSubShape( candidateF, solid ) &&
                    !myHelper->GetMesh()->GetSubMesh( candidateF )->IsMeshComputed() &&
                    initPrism( prism, solid, /*selectBottom=*/false ) &&
                    !myHelper->GetMesh()->GetSubMesh( prism.myTop )->IsMeshComputed() &&
-                   !myHelper->GetMesh()->GetSubMesh( prism.myBottom )->IsMeshComputed() &&
-                   project2dMesh( sourceF, prism.myBottom ))
+                   !myHelper->GetMesh()->GetSubMesh( prism.myBottom )->IsMeshComputed() )
               {
-                mySetErrorToSM = true;
-                if ( !compute( prism ))
-                  return false;
-                SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( prism.myTop );
-                if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ))
+                if ( project2dMesh( sourceF, prism.myBottom ))
                 {
-                  meshedFaces.push_front( prism.myTop );
-                  meshedFaces.push_front( prism.myBottom );
-                  selectBottom = false;
+                  mySetErrorToSM = true;
+                  if ( !compute( prism ))
+                    return false;
+                  SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( prism.myTop );
+                  if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ))
+                  {
+                    meshedFaces.push_front( prism.myTop );
+                    meshedFaces.push_front( prism.myBottom );
+                    selectBottom = false;
+                    if ( prism.myAlgoSM  && prism.myAlgoSM->GetAlgo() )
+                    {
+                      meshedFace2AlgoSM.Bind( prism.myTop, prism.myAlgoSM );
+                      meshedFace2AlgoSM.Bind( prism.myBottom, prism.myAlgoSM );
+                    }
+                  }
+                  meshedPrism.push_back( prism );
+                  meshedSolids.Add( solid );
                 }
-                meshedPrism.push_back( prism );
-                meshedSolids.Add( solid );
+                else
+                {
+                  meshedFaces.push_back( prism.myBottom );
+                  if ( prism.myAlgoSM && prism.myAlgoSM->GetAlgo() )
+                    meshedFace2AlgoSM.Bind( prism.myBottom, prism.myAlgoSM );
+                }
               }
               InitComputeError();
             }
@@ -1008,7 +1040,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
             allSubMeComputed = smIt->next()->IsMeshComputed();
           if ( allSubMeComputed )
           {
-            faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+            faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE_SUBMESH );
             if ( !faceSM->IsEmpty() ) {
               meshedFaces.push_front( face ); // higher priority
               selectBottom = true;
@@ -1562,8 +1594,9 @@ bool StdMeshers_Prism_3D::computeBase(const Prism_3D::TPrismTopo& thePrism)
   {
     // find any applicable algorithm assigned to any FACE of the main shape
     std::vector< TopoDS_Shape > faces;
-    if ( myPrevBottomSM &&
-         myPrevBottomSM->GetAlgo()->IsApplicableToShape( thePrism.myBottom, /*all=*/false ))
+    if ( thePrism.myAlgoSM && thePrism.myAlgoSM->GetAlgo() )
+      faces.push_back( thePrism.myAlgoSM->GetSubShape() );
+    if ( myPrevBottomSM && myPrevBottomSM->GetAlgo() )
       faces.push_back( myPrevBottomSM->GetSubShape() );
 
     TopExp_Explorer faceIt( mesh->GetShapeToMesh(), TopAbs_FACE );
@@ -1588,7 +1621,7 @@ bool StdMeshers_Prism_3D::computeBase(const Prism_3D::TPrismTopo& thePrism)
           while ( smIt->more() && subOK )
           {
             SMESH_subMesh* sub = smIt->next();
-            sub->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+            sub->ComputeStateEngine( SMESH_subMesh::COMPUTE_SUBMESH );
             subOK = sub->IsMeshComputed();
           }
           if ( !subOK )
@@ -1596,22 +1629,30 @@ bool StdMeshers_Prism_3D::computeBase(const Prism_3D::TPrismTopo& thePrism)
         }
         try {
           OCC_CATCH_SIGNALS;
+
+          Hypothesis_Status status;
+          algo->CheckHypothesis( *mesh, faces[i], status );
           algo->InitComputeError();
-          algo->Compute( *mesh, botSM->GetSubShape() );
+          if ( algo->Compute( *mesh, botSM->GetSubShape() ))
+          {
+            myPrevBottomSM = thePrism.myAlgoSM = mesh->GetSubMesh( faces[i] );
+            break;
+          }
         }
         catch (...) {
         }
       }
     }
   }
+  else
+  {
+    myPrevBottomSM = thePrism.myAlgoSM = botSM;
+  }
 
   if ( botSM->IsEmpty() )
     return error( COMPERR_BAD_INPUT_MESH,
                   TCom( "No mesher defined to compute the base face #")
                   << shapeID( thePrism.myBottom ));
-
-  if ( botSM->GetAlgo() )
-    myPrevBottomSM = botSM;
 
   return true;
 }
@@ -3504,6 +3545,7 @@ namespace Prism_3D
     myBottomEdges.clear();
     myNbEdgesInWires.clear();
     myWallQuads.clear();
+    myAlgoSM = nullptr;
   }
 
   //================================================================================
@@ -4806,7 +4848,7 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
       column = & ( myParamToColumnMap->rbegin()->second );
     else
       column = & ( myParamToColumnMap->begin()->second );
-    if ( column->size() > 0 )
+    if ( column->size() > 1 )
       edge = myHelper.GetSubShapeByNode( (*column)[ 1 ], meshDS );
     if ( edge.IsNull() || edge.ShapeType() == TopAbs_VERTEX )
       node = column->front();

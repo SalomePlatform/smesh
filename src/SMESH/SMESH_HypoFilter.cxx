@@ -156,7 +156,7 @@ void SMESH_HypoFilter::IsMoreLocalThanPredicate::findPreferable()
 
 //=======================================================================
 //function : IsMoreLocalThanPredicate::IsOk
-//purpose  : 
+//purpose  : Check if aShape is more local than this->_shape
 //=======================================================================
 
 bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aHyp,
@@ -169,16 +169,23 @@ bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aH
   if ( SMESH_MesherHelper::IsSubShape( aShape, /*mainShape=*/_shape ))
     return true;
 
-  if ( aShape.ShapeType() == TopAbs_COMPOUND && 
+  if ( aShape.ShapeType() == TopAbs_COMPOUND &&
        !SMESH_MesherHelper::IsSubShape( _shape, /*mainShape=*/aShape)) // issue 0020963
   {
-    for ( int type = TopAbs_SOLID; type < TopAbs_SHAPE; ++type )
-      if ( aHyp->GetDim() == SMESH_Gen::GetShapeDim( TopAbs_ShapeEnum( type )))
-        for ( TopExp_Explorer exp( aShape, TopAbs_ShapeEnum( type )); exp.More(); exp.Next())
-          if ( SMESH_MesherHelper::IsSubShape( exp.Current(), /*mainShape=*/_shape ))
-            return true;
+    // [bos#22320] compound of FACEs is MORE local than compound of SOLIDs
+    TopAbs_ShapeEnum givenType = SMESH_MesherHelper::GetGroupType( _shape );
+    TopAbs_ShapeEnum   hypType = SMESH_MesherHelper::GetGroupType( aShape );
+    if ( SMESH_Gen::GetShapeDim( givenType ) > SMESH_Gen::GetShapeDim( hypType ))
+    {
+      for ( int type = TopAbs_SOLID; type < TopAbs_SHAPE; ++type )
+        if ( aHyp->GetDim() == SMESH_Gen::GetShapeDim( TopAbs_ShapeEnum( type )))
+          for ( TopExp_Explorer exp( aShape, TopAbs_ShapeEnum( type )); exp.More(); exp.Next())
+            if ( SMESH_MesherHelper::IsSubShape( exp.Current(), /*mainShape=*/_shape ))
+              return true;
+    }
   }
 
+  // take forced sub-mesh priority into account
   if ( _preferableShapes.Contains( aShape ))
     return true; // issue 21559, Mesh_6
 
@@ -187,7 +194,7 @@ bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aH
 
 //=======================================================================
 //function : SMESH_HypoFilter
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH_HypoFilter::SMESH_HypoFilter()
