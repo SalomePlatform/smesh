@@ -726,9 +726,10 @@ namespace SMESH
    */
   //================================================================================
 
-  bool noSmeshActors(SUIT_ViewWindow *theWnd)
+  bool NoSmeshActors(SUIT_ViewWindow *theWnd)
   {
-    if(SVTK_ViewWindow* aViewWindow = GetVtkViewWindow(theWnd)) {
+    SUIT_ViewWindow* aWnd = ( theWnd == nullptr ) ? GetActiveWindow() : theWnd;
+    if(SVTK_ViewWindow* aViewWindow = GetVtkViewWindow(aWnd)) {
       vtkRenderer *aRenderer = aViewWindow->getRenderer();
       VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
       vtkActorCollection *aCollection = aCopy.GetActors();
@@ -826,7 +827,7 @@ namespace SMESH
               if ( (aVisualObj = GetVisualObj(theEntry)) && aVisualObj->IsValid())
               {
                 if ((anActor = CreateActor(theEntry,true))) {
-                  bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
+                  bool needFitAll = NoSmeshActors(theWnd); // fit for the first object only
                   DisplayActor(theWnd,anActor);
                   anActor->SetVisibility(true);
                   aStudy->setVisibilityState(theEntry, Qtx::ShownState);

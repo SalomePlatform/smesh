@@ -46,7 +46,8 @@
 
 SMESHGUI_Displayer::SMESHGUI_Displayer( SalomeApp_Application* app )
 : LightApp_Displayer(),
-  myApp( app )
+  myApp( app ),
+  isNeedFitAll(false)
 {
 }
 
@@ -71,6 +72,7 @@ SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_
         anActor = SMESH::CreateActor( entry.toUtf8().data(), true );
       if( anActor )
       {
+        isNeedFitAll = SMESH::NoSmeshActors();
         SMESH::DisplayActor( wnd, anActor );
         prs = LightApp_Displayer::buildPresentation( entry.toUtf8().data(), aViewFrame );
       }
@@ -112,4 +114,14 @@ bool SMESHGUI_Displayer::canBeDisplayed( const QString& entry, const QString& vi
     }
   }
   return res;
+}
+
+void SMESHGUI_Displayer::Display( const QStringList& theList, const bool anUpdateViewer, SALOME_View* theView ) 
+{
+  LightApp_Displayer::Display( theList, anUpdateViewer, theView );
+  
+  if (isNeedFitAll) {
+    SMESH::FitAll();
+    isNeedFitAll = false;
+  }
 }
