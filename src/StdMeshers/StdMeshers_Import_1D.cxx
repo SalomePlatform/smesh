@@ -200,22 +200,37 @@ namespace // INTERNAL STUFF
     if ( getBox()->IsOut( point ))
       return false;
 
+    bool ok = false;
+    double dist2, param;
+    distance2 = Precision::Infinite();
+
     if ( isLeaf() )
     {
       for ( size_t i = 0; i < _segments.size(); ++i )
         if ( !_segments[i].IsOut( point ) &&
-             _segments[i].IsOn( point, distance2, u ))
-          return true;
+             _segments[i].IsOn( point, dist2, param ) &&
+             dist2 < distance2 )
+        {
+          distance2 = dist2;
+          u         = param;
+          ok        = true;
+        }
+      return ok;
     }
     else
     {
       for (int i = 0; i < 8; i++)
-        if (((CurveProjector*) myChildren[i])->IsOnCurve( point, distance2, u ))
-          return true;
+        if (((CurveProjector*) myChildren[i])->IsOnCurve( point, dist2, param ) &&
+            dist2 < distance2 )
+        {
+          distance2 = dist2;
+          u         = param;
+          ok        = true;
+        }
     }
-    return false;
+    return ok;
   }
-  
+
   //================================================================================
   /*!
    * \brief Initialize
@@ -233,13 +248,13 @@ namespace // INTERNAL STUFF
     _pLast   = pl;
     _curve   = curve;
     _length2 = pf.SquareDistance( pl );
+    _line.SetLocation( pf );
+    _line.SetDirection( gp_Vec( pf, pl ));
     _chord2  = Max( _line.     SquareDistance( curve->Value( uf + 0.25 * ( ul - uf ))),
                     Max( _line.SquareDistance( curve->Value( uf + 0.5  * ( ul - uf ))),
                          _line.SquareDistance( curve->Value( uf + 0.75 * ( ul - uf )))));
     _chord2  = Max( tol, _chord2 );
     _chord   = Sqrt( _chord2 );
-    _line.SetLocation( pf );
-    _line.SetDirection( gp_Vec( pf, pl ));
 
     Bnd_Box bb;
     BndLib_Add3dCurve::Add( GeomAdaptor_Curve( curve, uf, ul ), tol, bb );
@@ -268,12 +283,12 @@ namespace // INTERNAL STUFF
       gp_Vec edge( _pFirst, _pLast );
       gp_Vec n1p ( _pFirst, point  );
       u = ( edge * n1p ) / _length2; // param [0,1] on the edge
-      if ( u < 0 )
+      if ( u < 0. )
       {
         if ( _pFirst.SquareDistance( point ) > _chord2 )
           return false;
       }
-      else if ( u > _chord )
+      else if ( u > 1. )
       {
         if ( _pLast.SquareDistance( point ) > _chord2 )
           return false;

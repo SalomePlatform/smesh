@@ -63,6 +63,43 @@ using namespace std;
   #define env_sep ':'
 #endif
 
+namespace
+{
+  // a structure used to nullify SMESH_Gen field of SMESH_Hypothesis,
+  // which is needed for SMESH_Hypothesis not deleted before ~SMESH_Gen()
+  struct _Hyp : public SMESH_Hypothesis
+  {
+    void NullifyGen()
+    {
+      _gen = 0;
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Fill a map of shapes with all sub-shape of a sub-mesh
+   */
+  //================================================================================
+
+  TopTools_IndexedMapOfShape * fillAllowed( SMESH_subMesh*               sm,
+                                            const bool                   toFill,
+                                            TopTools_IndexedMapOfShape * allowedSub )
+  {
+    if ( !toFill || !allowedSub )
+    {
+      return nullptr;
+    }
+    if ( allowedSub->IsEmpty() )
+    {
+      allowedSub->ReSize( sm->DependsOn().size() + 1 );
+      allowedSub->Add( sm->GetSubShape() );
+      for ( const auto & key_sm : sm->DependsOn() )
+        allowedSub->Add( key_sm.second->GetSubShape() );
+    }
+    return allowedSub;
+  }
+}
+
 //=============================================================================
 /*!
  *  Constructor
@@ -77,19 +114,6 @@ SMESH_Gen::SMESH_Gen()
   _hypId   = 0;
   _segmentation = _nbSegments = 10;
   _compute_canceled = false;
-}
-
-namespace
-{
-  // a structure used to nullify SMESH_Gen field of SMESH_Hypothesis,
-  // which is needed for SMESH_Hypothesis not deleted before ~SMESH_Gen()
-  struct _Hyp : public SMESH_Hypothesis
-  {
-    void NullifyGen()
-    {
-      _gen = 0;
-    }
-  };
 }
 
 //=============================================================================
@@ -138,11 +162,12 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
  */
 //=============================================================================
 
-bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
-                        const TopoDS_Shape &  aShape,
-                        const int             aFlags /*= COMPACT_MESH*/,
-                        const ::MeshDimension aDim /*=::MeshDim_3D*/,
-                        TSetOfInt*            aShapesId /*=0*/)
+bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
+                        const TopoDS_Shape &        aShape,
+                        const int                   aFlags /*= COMPACT_MESH*/,
+                        const ::MeshDimension       aDim /*=::MeshDim_3D*/,
+                        TSetOfInt*                  aShapesId /*=0*/,
+                        TopTools_IndexedMapOfShape* anAllowedSubShapes/*=0*/)
 {
   MEMOSTAT;
 
@@ -152,7 +177,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
   bool ret = true;
 
-  SMESH_subMesh *sm = aMesh.GetSubMesh(aShape);
+  SMESH_subMesh *sm, *shapeSM = aMesh.GetSubMesh(aShape);
 
   const bool includeSelf = true;
   const bool complexShapeFirst = true;
@@ -168,13 +193,17 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   if ( !aMesh.HasShapeToMesh() )
     computeEvent = SMESH_subMesh::COMPUTE_NOGEOM; // if several algos and no geometry
 
+  TopTools_IndexedMapOfShape *allowedSubShapes = anAllowedSubShapes, allowedSub;
+  if ( aShapeOnly && !allowedSubShapes )
+    allowedSubShapes = &allowedSub;
+
   if ( anUpward ) // is called from the below code in this method
   {
     // ===============================================
     // Mesh all the sub-shapes starting from vertices
     // ===============================================
 
-    smIt = sm->getDependsOnIterator(includeSelf, !complexShapeFirst);
+    smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);
     while ( smIt->more() )
     {
       SMESH_subMesh* smToCompute = smIt->next();
@@ -198,9 +227,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       {
         if (_compute_canceled)
           return false;
+        smToCompute->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
         setCurrentSubMesh( smToCompute );
         smToCompute->ComputeStateEngine( computeEvent );
-        setCurrentSubMesh( NULL );
+        setCurrentSubMesh( nullptr );
+        smToCompute->SetAllowedSubShapes( nullptr );
       }
 
       // we check all the sub-meshes here and detect if any of them failed to compute
@@ -233,7 +264,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     TopoDS_Shape algoShape;
     int prevShapeDim = -1, aShapeDim;
 
-    smIt = sm->getDependsOnIterator(includeSelf, complexShapeFirst);
+    smIt = shapeSM->getDependsOnIterator(includeSelf, complexShapeFirst);
     while ( smIt->more() )
     {
       SMESH_subMesh* smToCompute = smIt->next();
@@ -285,9 +316,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         {
           if (_compute_canceled)
             return false;
+          smToCompute->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
           setCurrentSubMesh( smToCompute );
           smToCompute->ComputeStateEngine( computeEvent );
-          setCurrentSubMesh( NULL );
+          setCurrentSubMesh( nullptr );
+          smToCompute->SetAllowedSubShapes( nullptr );
           if ( aShapesId )
             aShapesId->insert( smToCompute->GetId() );
         }
@@ -335,7 +368,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
           const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
           const int aShapeDim = GetShapeDim( aSubShape );
-          //if ( aSubShape.ShapeType() == TopAbs_VERTEX ) continue;
           if ( aShapeDim < 1 ) continue;
 
           // check for preview dimension limitations
@@ -350,11 +382,14 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
           if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( smToCompute, filter, true))
           {
             if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
+            TopTools_IndexedMapOfShape* localAllowed = allowedSubShapes;
+            if ( localAllowed && localAllowed->IsEmpty() )
+              localAllowed = 0; // prevent fillAllowed() with  aSubShape
+
             SMESH_Hypothesis::Hypothesis_Status status;
             if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
               // mesh a lower smToCompute starting from vertices
-              Compute( aMesh, aSubShape, aFlags | SHAPE_ONLY_UPWARD, aDim, aShapesId );
-              // Compute( aMesh, aSubShape, aShapeOnly, /*anUpward=*/true, aDim, aShapesId );
+              Compute( aMesh, aSubShape, aFlags | SHAPE_ONLY_UPWARD, aDim, aShapesId, localAllowed );
           }
         }
       }
@@ -373,9 +408,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
           if (_compute_canceled)
             return false;
+          sm->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
           setCurrentSubMesh( sm );
           sm->ComputeStateEngine( computeEvent );
           setCurrentSubMesh( NULL );
+          sm->SetAllowedSubShapes( nullptr );
           if ( aShapesId )
             aShapesId->insert( sm->GetId() );
         }
@@ -385,7 +422,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // -----------------------------------------------
     // mesh the rest sub-shapes starting from vertices
     // -----------------------------------------------
-    ret = Compute( aMesh, aShape, aFlags | UPWARD, aDim, aShapesId );
+    ret = Compute( aMesh, aShape, aFlags | UPWARD, aDim, aShapesId, allowedSubShapes );
   }
 
   MEMOSTAT;
@@ -399,7 +436,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     SMESH_MesherHelper aHelper( aMesh );
     if ( aHelper.IsQuadraticMesh() != SMESH_MesherHelper::LINEAR )
     {
-      aHelper.FixQuadraticElements( sm->GetComputeError() );
+      aHelper.FixQuadraticElements( shapeSM->GetComputeError() );
     }
   }
 

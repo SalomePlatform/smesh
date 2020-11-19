@@ -36,6 +36,7 @@
 #include "Utils_SALOME_Exception.hxx"
 
 #include <TopoDS_Shape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 
 #include <list>
 #include <map>
@@ -257,6 +258,12 @@ public:
   // check if _subMeshDS contains mesh elements unless _alwaysComputed==true
 
   /*!
+   * \brief Set sub-shapes that are allowed to compute at once by a multidimensional algo
+   */
+  void SetAllowedSubShapes( const TopTools_IndexedMapOfShape* subShapes )
+  { _allowedSubShapes = subShapes; }
+
+  /*!
    * \brief Allow algo->Compute() if a subshape of lower dim is meshed but
    *        none mesh entity is bound to it
    */
@@ -343,6 +350,8 @@ protected:
   // none mesh entity is bound to it. Eg StdMeshers_CompositeSegment_1D can
   // mesh several edges as a whole and leave some of them  without mesh entities
   bool                  _alwaysComputed;
+
+  const TopTools_IndexedMapOfShape* _allowedSubShapes; // allowed to be returned by getCollection()
 
 };
 

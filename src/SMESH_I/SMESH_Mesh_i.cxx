@@ -649,10 +649,11 @@ SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
+
+  const int prevNbMeshEnt = NbNodes() + NbElements();
+
   if ( _preMeshInfo )
     _preMeshInfo->ForgetOrLoad();
-
-  const int prevNbMeshEnt = _impl->NbNodes() + _impl->GetMeshDS()->NbElements();
 
   std::string error;
   SMESH_Hypothesis::Hypothesis_Status status = addHypothesis( aSubShape, anHyp, &error );

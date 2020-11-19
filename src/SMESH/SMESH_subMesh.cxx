@@ -110,6 +110,7 @@ SMESH_subMesh::SMESH_subMesh(int                  Id,
   }
   _computeCost = 0; // how costly is to compute this sub-mesh
   _realComputeCost = 0;
+  _allowedSubShapes = nullptr;
 }
 
 //=============================================================================
@@ -1478,11 +1479,14 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         if (_father->HasShapeToMesh() ) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {
-            if ( event == COMPUTE /*&&
-                 ( algo->NeedDiscreteBoundary() || algo->SupportSubmeshes() )*/)
-              shape = getCollection( gen, algo, subComputed, subFailed, algo->SubMeshesToCompute());
-            else
-              subComputed = SubMeshesComputed( & subFailed );
+            //  --- commented for bos#22320 to compute all sub-shapes at once if possible;
+            //  --- in case COMPUTE_SUBMESH, set of sub-shapes is limited
+            //  --- by calling SetAllowedSubShapes()
+            // if ( event == COMPUTE )
+            //   shape = getCollection( gen, algo, subComputed, subFailed, algo->SubMeshesToComput;
+            // else
+            //   subComputed = SubMeshesComputed( & subFailed );
+            shape = getCollection( gen, algo, subComputed, subFailed, algo->SubMeshesToCompute());
           }
           else {
             subComputed = SubMeshesComputed();
@@ -1610,8 +1614,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
             ((SMESHDS_Hypothesis*)hyps.front())->SaveTo( hypStr.Stream() );
             hypStr << " ";
           }
-          cout << _algo->GetName()
-               << " " << _father->GetSubMesh( subS.Current() )->GetId()
+          cout << _father->GetSubMesh( subS.Current() )->GetId()
+               << " " << ( ret ? "OK" : "FAIL" )
+               << " " << _algo->GetName()
                << " " << hypStr << endl;
         }
 #endif
@@ -1746,6 +1751,8 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         cleanDependsOn( algo ); // clean sub-meshes with event CLEAN
       break;
     case COMPUTE:               // nothing to do
+      break;
+    case COMPUTE_SUBMESH:       // nothing to do
       break;
     case COMPUTE_CANCELED:      // nothing to do
       break;
@@ -2139,6 +2146,8 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
     SMESH_subMesh* subMesh = smIt->next();
     const TopoDS_Shape&  S = subMesh->_subShape;
     if ( S.ShapeType() != this->_subShape.ShapeType() )
+      continue;
+    if ( _allowedSubShapes && !_allowedSubShapes->IsEmpty() && !_allowedSubShapes->Contains( S ))
       continue;
     if ( subMesh == this )
     {
