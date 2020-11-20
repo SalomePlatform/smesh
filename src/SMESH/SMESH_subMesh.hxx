@@ -257,6 +257,9 @@ public:
   bool IsMeshComputed() const;
   // check if _subMeshDS contains mesh elements unless _alwaysComputed==true
 
+  bool IsComputedPartially() const;
+  // check if any upper level sub-shape is not computed
+
   /*!
    * \brief Set sub-shapes that are allowed to compute at once by a multidimensional algo
    */

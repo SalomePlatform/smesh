@@ -1009,8 +1009,23 @@ void SMESH_Gen_i::UpdateIcons( SMESH::SMESH_Mesh_ptr theMesh )
         {
           SMESH::array_of_ElementType_var elemTypes = idSrc->GetTypes();
           isEmpty = ( elemTypes->length() == 0 );
+
+          if ( !isEmpty )
+          {
+            // check if all sub-shapes of sub-mesh on group are computed
+            // (pb: "Compute sub-mesh" menu is missing if a sub-mesh is partially computed)
+            SMESH::SMESH_subMesh_var subMesh = SMESH::SMESH_subMesh::_narrow( obj );
+            if ( !subMesh->_is_nil() )
+              if ( SMESH_subMesh* sm = mesh_i->GetImpl().GetSubMeshContaining( subMesh->GetId() ))
+                if ( sm->IsComputedPartially() )
+                {
+                  SetPixMap( so, "ICON_SMESH_TREE_MESH_PARTIAL" );
+                  continue;
+                }
+          }
         }
       }
+
       if ( isEmpty )
         SetPixMap( so, "ICON_SMESH_TREE_MESH_WARN");
       else if ( !isGroup )
@@ -1019,8 +1034,9 @@ void SMESH_Gen_i::UpdateIcons( SMESH::SMESH_Mesh_ptr theMesh )
         SetPixMap( so, "ICON_SMESH_TREE_GROUP_ON_FILTER" );
       else
         SetPixMap( so, "ICON_SMESH_TREE_GROUP" );
-    }
-  }
+
+    } // loop on sub-meshes or groups
+  } // loop on roots
 }
 
 //=======================================================================

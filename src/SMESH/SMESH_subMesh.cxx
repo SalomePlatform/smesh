@@ -272,6 +272,42 @@ bool SMESH_subMesh::IsMeshComputed() const
   return false;
 }
 
+//================================================================================
+/*!
+ * \brief Check if any upper level sub-shape is not computed.
+ *        Used to update a sub-mesh icon
+ */
+//================================================================================
+
+bool SMESH_subMesh::IsComputedPartially() const
+{
+  SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(/*includeSelf=*/true,
+                                                       /*SolidFirst=*/true);
+  bool allComputed = true;
+  TopAbs_ShapeEnum readyType = TopAbs_VERTEX; // max value
+  while ( smIt->more() && allComputed )
+  {
+    SMESH_subMesh* sm = smIt->next();
+
+    if ( sm->GetSubShape().ShapeType() > readyType )
+      break; // lower dimension -> stop
+    if ( sm->GetComputeState() != SMESH_subMesh::NOT_READY )
+      readyType = sm->GetSubShape().ShapeType();
+
+    switch ( sm->GetComputeState() )
+    {
+    case SMESH_subMesh::READY_TO_COMPUTE:
+    case SMESH_subMesh::FAILED_TO_COMPUTE:
+      allComputed = false;// sm->IsMeshComputed();
+      break;
+    case SMESH_subMesh::NOT_READY:
+    case SMESH_subMesh::COMPUTE_OK:
+      continue;
+    }
+  }
+  return !allComputed;
+}
+
 //=============================================================================
 /*!
  * Return true if all sub-meshes have been meshed
