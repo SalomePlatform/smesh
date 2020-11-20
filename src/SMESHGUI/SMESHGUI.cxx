@@ -113,6 +113,7 @@
 #include <LightApp_UpdateFlags.h>
 #include <QtxFontEdit.h>
 #include <QtxPopupMgr.h>
+#include <QtxInfoPanel.h>
 #include <SALOME_ListIO.hxx>
 #include <SUIT_Desktop.h>
 #include <SUIT_FileDlg.h>
@@ -5105,12 +5106,61 @@ bool SMESHGUI::reusableOperation( const int id )
   return ( id == SMESHOp::OpCompute || id == SMESHOp::OpPreCompute || id == SMESHOp::OpEvaluate || id == SMESHOp::OpRecompute ) ? false : SalomeApp_Module::reusableOperation( id );
 }
 
+namespace
+{
+  QString wrap(const QString& text, const QString& tag)
+  { return QString("<%1>%2</%3>").arg(tag).arg(text).arg(tag);}
+}
+
 bool SMESHGUI::activateModule( SUIT_Study* study )
 {
   bool res = SalomeApp_Module::activateModule( study );
 
   setMenuShown( true );
   setToolShown( true );
+
+  // Fill in Help Panel
+  SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( application() );
+  app->infoPanel()->setTitle(tr("INFO_WELCOME_TO_SMESH"));
+
+  int gb = app->infoPanel()->addGroup(tr("INFO_GRP_CREATE_MESH"));
+  QString lab;
+  QStringList items;
+  lab =       tr("INFO_DEFINE_ALGOS") + "<br/>";
+  lab = lab + tr("INFO_DEFINE_HYPOS") + "<br/>";
+  lab = lab + tr("INFO_COMPUTE") + "<br/>";
+  lab = lab + tr("INFO_REFINE") + ":";
+  items << wrap(tr("INFO_REFINE_LOCAL_SIZE"), "li")
+	<< wrap(tr("INFO_REFINE_SUBMESH"), "li");
+  lab = lab + wrap(items.join(""), "ul");
+  items.clear();
+
+  app->infoPanel()->addLabel(lab, gb);
+
+  gb = app->infoPanel()->addGroup(tr("INFO_GRP_IMPORT_MESH"));
+  items << wrap("UNV", "li")
+	<< wrap("MED", "li")
+	<< wrap("STL", "li")
+	<< wrap("CGNS", "li")
+	<< wrap("SAUV", "li")
+	<< wrap("GMF", "li");
+  lab = tr("INFO_AVAILABLE_FORMATS") + ":" + wrap(items.join(""), "ul");
+  items.clear();
+  
+  app->infoPanel()->addLabel(lab, gb);
+    
+  gb = app->infoPanel()->addGroup(tr("INFO_GRP_CHECK_MESH"));
+  lab = tr("INFO_DISPLAY") + "<br/>";
+  items << wrap(tr("INFO_QUALITY_AREA"), "li")
+	<< wrap(tr("INFO_QUALITY_VOLUME"), "li")
+	<< wrap(tr("INFO_QUALITY_ASPECT_RATION"), "li")
+	<< wrap("...", "li");
+  lab = lab + tr("INFO_QUALITY_INFO") + ":" + wrap(items.join(""), "ul");
+  items.clear();
+  lab = lab + tr("INFO_CLIPPING");
+  
+  app->infoPanel()->addLabel(lab, gb);
+  // << Help Panel
 
   // import Python module that manages SMESH plugins (need to be here because SalomePyQt API uses active module)
   PyGILState_STATE gstate = PyGILState_Ensure();
@@ -5230,6 +5280,7 @@ void SMESHGUI::windows( QMap<int, int>& aMap ) const
 {
   aMap.insert( SalomeApp_Application::WT_ObjectBrowser, Qt::LeftDockWidgetArea );
   aMap.insert( SalomeApp_Application::WT_NoteBook, Qt::LeftDockWidgetArea );
+  aMap.insert( SalomeApp_Application::WT_InfoPanel, Qt::RightDockWidgetArea);
 #ifndef DISABLE_PYCONSOLE
   aMap.insert( SalomeApp_Application::WT_PyConsole, Qt::BottomDockWidgetArea );
 #endif
