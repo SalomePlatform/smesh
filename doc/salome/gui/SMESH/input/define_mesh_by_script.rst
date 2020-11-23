@@ -15,7 +15,9 @@ meshes and to create 2D mesh by your python code. For this, you
 #. run your python code, which creates a 2D mesh,
 #. invoke **Compute** command, which computes a 3D mesh.
 
-.. warning:: **Use Edges to be Created Manually** and **Use Faces to be Created Manually** algorithms should be assigned *before* mesh generation by the Python code.
+  .. warning::
+     * **Use Edges to be Created Manually** and **Use Faces to be Created Manually** algorithms should be assigned *before* mesh generation by the Python code.
+     * Nodes and elements created in your script must be assigned to geometry entities by calling *SetMeshElementOnShape*, *SetNodeOnVertex*, *SetNodeOnEdge* etc. in order to be used by an algorithm of upper dimension.
 
 Consider trying a sample script demonstrating the usage of :ref:`Use Faces to be Created Manually <tui_use_existing_faces>` algorithm for construction of a 2D mesh using Python commands.
 

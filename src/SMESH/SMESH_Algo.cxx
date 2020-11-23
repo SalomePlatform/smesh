@@ -950,10 +950,9 @@ void SMESH_Algo::InitComputeError()
 {
   _error = COMPERR_OK;
   _comment.clear();
-  list<const SMDS_MeshElement*>::iterator elem = _badInputElements.begin();
-  for ( ; elem != _badInputElements.end(); ++elem )
-    if ( (*elem)->GetID() < 1 )
-      delete *elem;
+  for ( const SMDS_MeshElement* & elem : _badInputElements )
+    if ( !elem->IsNull() && elem->GetID() < 1 )
+      delete elem;
   _badInputElements.clear();
   _mesh = 0;
 
@@ -1015,6 +1014,7 @@ void SMESH_Algo::addBadInputElements(const SMESHDS_SubMesh* sm,
       SMDS_ElemIteratorPtr eIt = sm->GetElements();
       while ( eIt->more() ) addBadInputElement( eIt->next() );
     }
+    _mesh = sm->GetParent();
   }
 }
 

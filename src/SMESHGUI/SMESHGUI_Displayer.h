@@ -42,14 +42,16 @@ public:
   SMESHGUI_Displayer( SalomeApp_Application* );
   ~SMESHGUI_Displayer();
 
-  virtual SALOME_Prs*      buildPresentation( const QString&, SALOME_View* = 0 );
-  virtual bool             canBeDisplayed( const QString&, const QString& ) const;
+  virtual SALOME_Prs*      buildPresentation( const QString&, SALOME_View* = 0 ) override;
+  virtual bool             canBeDisplayed( const QString&, const QString& ) const override;
+  virtual void             Display( const QStringList&, const bool = true, SALOME_View* = 0) override;
 
 protected:
   SalomeApp_Study*         study() const;
 
 private:
   SalomeApp_Application*   myApp;
+  bool                     isNeedFitAll;
 };
 
 #endif // SMESHGUI_DISPLAYER_H
