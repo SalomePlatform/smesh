@@ -223,7 +223,7 @@ IF(WIN32)
     SET(SALOME_SMESH_ENABLE_MEFISTO ON)
     MESSAGE(STATUS "Build MEFISTO2D mesher using Fortran to C generator")
   ELSE(${F2C_FOUND})
-    MESSAGE(STATUS "Fortran to C generator is not found: MEFISTO2D mesher will be unavailable.")
+    MESSAGE(FATAL "Fortran to C generator is not found: MEFISTO2D mesher cannot be compiled! Please define F2C_ROOT_DIR !")
   ENDIF(${F2C_FOUND})  
 ENDIF(WIN32)
 
