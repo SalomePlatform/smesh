@@ -2414,18 +2414,19 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
 
 bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) const
 {
-  if ( !_mySubMeshOrder.size() || theListToSort.size() < 2)
+  if ( _mySubMeshOrder.empty() || theListToSort.size() < 2 )
     return true;
-  
-  bool res = false;
-  std::vector<SMESH_subMesh*> onlyOrderedList, smVec;
 
-  // collect all ordered submeshes in one list as pointers
+
+  // collect all ordered sub-meshes in smVec as pointers
   // and get their positions within theListToSort
+
+  std::vector<SMESH_subMesh*> smVec;
   typedef std::vector<SMESH_subMesh*>::iterator TPosInList;
-  std::map< int, TPosInList > sortedPos;
+  std::map< size_t, size_t > sortedPos; // index in theListToSort to order
   TPosInList smBeg = theListToSort.begin(), smEnd = theListToSort.end();
   TListOfListOfInt::const_iterator      listIdsIt = _mySubMeshOrder.begin();
+  bool needSort = false;
   for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++)
   {
     const TListOfInt& listOfId = *listIdsIt;
@@ -2452,27 +2453,46 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
     // find smVec items in theListToSort
     for ( size_t i = 0; i < smVec.size(); ++i )
     {
-      TPosInList smPos = find( smBeg, smEnd, smVec[i] );
-      if ( smPos != smEnd ) {
-        sortedPos[ std::distance( smBeg, smPos )] = smPos;
-        if ( sortedPos.size() > onlyOrderedList.size() )
-          onlyOrderedList.push_back( smVec[i] );
+      TPosInList smPos = find( smBeg, smEnd, smVec[i] ); // position in theListToSort
+      if ( smPos != smEnd )
+      {
+        size_t posInList = std::distance( smBeg, smPos );
+        size_t     order = sortedPos.size();
+        sortedPos.insert( std::make_pair( posInList, order ));
+        if ( posInList != order )
+          needSort = true;
       }
     }
   }
-  if (onlyOrderedList.size() < 2)
-    return res;
-  res = true;
+  if ( ! needSort )
+    return false;
 
-  std::vector<SMESH_subMesh*>::iterator onlyBIt = onlyOrderedList.begin();
-  std::vector<SMESH_subMesh*>::iterator onlyEIt = onlyOrderedList.end();
+  // set sm of sortedPos from theListToSort to front of orderedSM
+  // and the rest of theListToSort to orderedSM end
 
-  // iterate on ordered sub-meshes and insert them in detected positions
-  std::map< int, TPosInList >::iterator i_pos = sortedPos.begin();
-  for ( ; onlyBIt != onlyEIt; ++onlyBIt, ++i_pos )
-    *(i_pos->second) = *onlyBIt;
+  std::vector<SMESH_subMesh*> orderedSM;
+  orderedSM.reserve( theListToSort.size() );
+  orderedSM.resize( sortedPos.size() );
 
-  return res;
+  size_t iPrev = 0;
+  sortedPos.insert( std::make_pair( theListToSort.size(), sortedPos.size() ));
+  for ( const auto & pos_order : sortedPos )
+  {
+    const size_t& posInList = pos_order.first;
+    const size_t&     order = pos_order.second;
+    if ( order < sortedPos.size() - 1 )
+      orderedSM[ order ] = theListToSort[ posInList ];
+
+    if ( iPrev < posInList )
+      orderedSM.insert( orderedSM.end(),
+                        theListToSort.begin() + iPrev,
+                        theListToSort.begin() + posInList );
+    iPrev = posInList + 1;
+  }
+
+  theListToSort.swap( orderedSM );
+
+  return true;
 }
 
 //================================================================================

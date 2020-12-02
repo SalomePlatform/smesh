@@ -984,7 +984,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
                 }
                 else
                 {
-                  meshedFaces.push_back( prism.myBottom );
+                  suspectSourceFaces.push_back( prism.myBottom );
                   if ( prism.myAlgoSM && prism.myAlgoSM->GetAlgo() )
                     meshedFace2AlgoSM.Bind( prism.myBottom, prism.myAlgoSM );
                 }

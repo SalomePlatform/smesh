@@ -6493,7 +6493,7 @@ class SMESH_DimHyp
     TopTools_MapIteratorOfMapOfShape anItr( theToCheck );
     for (; !isShared && anItr.More(); anItr.Next() )
     {
-      const TopoDS_Shape aSubSh = anItr.Key();
+      const TopoDS_Shape& aSubSh = anItr.Key();
       // check for case when concurrent dimensions are same
       isShared = theToFind.Contains( aSubSh );
       // check for sub-shape with concurrent dimension

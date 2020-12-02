@@ -204,7 +204,7 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
 
 //=============================================================================
 /*!
- *
+ * Compute the mesh on the given shape
  */
 //=============================================================================
 
@@ -1606,7 +1606,8 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
 
 //=============================================================================
 /*!
- *
+ * Return FaceQuadStruct where sides ordered CCW, top and left sides
+ *        reversed to be co-directed with bottom and right sides
  */
 //=============================================================================
 

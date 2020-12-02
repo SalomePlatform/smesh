@@ -144,6 +144,11 @@
 #include <cstdlib>
 #include <memory>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/string.hpp>
+
 using namespace std;
 using SMESH::TPythonDump;
 using SMESH::TVar;
@@ -4790,7 +4795,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
             // store submesh order if any
             const TListOfListOfInt& theOrderIds = myLocMesh.GetMeshOrder();
-            if ( theOrderIds.size() ) {
+            const bool isNewOrederVersion = true; // old version saves ids, new one, entries
+            if ( !theOrderIds.empty() && !isNewOrederVersion ) { // keep old version for reference
               char order_list[ 30 ];
               strcpy( order_list, "Mesh Order" );
               // count number of submesh ids
@@ -4820,6 +4826,38 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               aDataset->CloseOnDisk();
               //
               delete[] smIDs;
+            }
+            if ( !theOrderIds.empty() && isNewOrederVersion )
+            {
+              // convert ids to entries
+              std::list< std::list< std::string > > orderEntryLists;
+              for ( const TListOfInt& idList : theOrderIds )
+              {
+                orderEntryLists.emplace_back();
+                std::list< std::string > & entryList = orderEntryLists.back();
+                for ( const int& id : idList )
+                {
+                  const TopoDS_Shape& shape = mySMESHDSMesh->IndexToShape( id );
+                  GEOM::GEOM_Object_var  go = ShapeToGeomObject( shape );
+                  SALOMEDS::SObject_var  so = ObjectToSObject( go );
+                  if ( !so->_is_nil() )
+                  {
+                    CORBA::String_var entry = so->GetID();
+                    entryList.emplace_back( entry.in() );
+                  }
+                }
+              }
+              // convert orderEntryLists to string
+              std::ostringstream ostream;
+              boost::archive::text_oarchive( ostream ) << orderEntryLists;
+              std::string orderEntryString = ostream.str();
+
+              // write HDF group
+              aSize[ 0 ] = orderEntryString.size() + 1;
+              aDataset = new HDFdataset( "MeshOrder_new", aTopGroup, HDF_STRING, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk((char*) orderEntryString.data() );
+              aDataset->CloseOnDisk();
             }
 
             // groups root sub-branch
@@ -5968,7 +6006,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
 
       // read Sub-Mesh ORDER if any
-      if ( aTopGroup->ExistInternalObject( "Mesh Order" )) {
+      if ( aTopGroup->ExistInternalObject( "Mesh Order" )) { // old version keeps ids
         aDataset = new HDFdataset( "Mesh Order", aTopGroup );
         aDataset->OpenOnDisk();
         size = aDataset->GetSize();
@@ -5985,6 +6023,37 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
         myNewMeshImpl->GetImpl().SetMeshOrder( anOrderIds );
         delete [] smIDs;
+      }
+      if ( aTopGroup->ExistInternalObject( "MeshOrder_new" )) // new version keeps entries
+      {
+        aDataset = new HDFdataset( "MeshOrder_new", aTopGroup );
+        aDataset->OpenOnDisk();
+        size = aDataset->GetSize();
+        std::string dataString; dataString.resize( size );
+        aDataset->ReadFromDisk((char*) dataString.data() );
+        aDataset->CloseOnDisk();
+
+        std::istringstream istream( dataString.data() );
+        boost::archive::text_iarchive archive( istream );
+        std::list< std::list< std::string > > orderEntryLists;
+        try {
+          archive >> orderEntryLists;
+        }
+        catch (...) {}
+
+        TListOfListOfInt anOrderIds;
+        for ( const std::list< std::string >& entryList : orderEntryLists )
+        {
+          anOrderIds.emplace_back();
+          for ( const std::string & entry : entryList )
+          {
+            GEOM::GEOM_Object_var go = GetGeomObjectByEntry( entry );
+            TopoDS_Shape       shape = GeomObjectToShape( go );
+            if ( SMESH_subMesh*   sm = myNewMeshImpl->GetImpl().GetSubMesh( shape ))
+              anOrderIds.back().emplace_back( sm->GetId() );
+          }
+        }
+        myNewMeshImpl->GetImpl().SetMeshOrder( anOrderIds );
       }
     } // loop on meshes
 
@@ -6045,7 +6114,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
     }
   }
-  pd << ""; // prevent optimizing pd out
 
   // creation of tree nodes for all data objects in the study
   // to support tree representation customization and drag-n-drop:
