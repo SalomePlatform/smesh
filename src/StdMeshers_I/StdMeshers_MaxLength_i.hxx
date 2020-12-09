@@ -49,13 +49,11 @@ public:
   virtual ~StdMeshers_MaxLength_i();
 
   // Set length
-  void SetLength( CORBA::Double theLength )
-    throw ( SALOME::SALOME_Exception );
+  void SetLength( CORBA::Double theLength );
   // Set precision
 
   // Sets preestimation flag
-  void SetUsePreestimatedLength( CORBA::Boolean toUse)
-    throw ( SALOME::SALOME_Exception );
+  void SetUsePreestimatedLength( CORBA::Boolean toUse);
 
   // Get length
   CORBA::Double GetLength();
@@ -82,12 +80,12 @@ public:
   // Methods for copying mesh definition to other geometry
 
   // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
-  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) const { return 0; }
+  virtual bool getObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) const { return 0; }
 
   // Set new geometry instead of that returned by getObjectsDependOn()
-  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) { return true; }
+  virtual bool setObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) { return true; }
  protected:
   virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };

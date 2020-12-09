@@ -18,7 +18,15 @@
 /* Defines                                                                                                      */
 /*----------------------------------------------------------*/
 
-#include "SMESH_DriverGMF.hxx"
+#ifdef WIN32
+ #if defined MESHDriverGMF_EXPORTS || defined MeshDriverGMF_EXPORTS
+  #define MESHDriverGMF_EXPORT __declspec( dllexport )
+ #else
+  #define MESHDriverGMF_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define MESHDriverGMF_EXPORT
+#endif
 
 #define GmfStrSiz 1024
 #define GmfMaxTyp 1000
@@ -33,7 +41,7 @@
 #define GmfFloat 1
 #define GmfDouble 2
 
-// see MeshGems/Docs/meshgems_formats_description.pdf
+/* see MeshGems/Docs/meshgems_formats_description.pdf */
 enum GmfKwdCod
 {
         GmfReserved1, \

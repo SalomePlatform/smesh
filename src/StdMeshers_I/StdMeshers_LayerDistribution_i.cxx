@@ -76,7 +76,6 @@ StdMeshers_LayerDistribution_i::~StdMeshers_LayerDistribution_i()
 //=============================================================================
 
 void StdMeshers_LayerDistribution_i::SetLayerDistribution(SMESH::SMESH_Hypothesis_ptr hyp1D)
-  throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {

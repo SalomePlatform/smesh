@@ -74,7 +74,6 @@ StdMeshers_ProjectionSource1D_i::~StdMeshers_ProjectionSource1D_i()
 //=============================================================================
 
 void StdMeshers_ProjectionSource1D_i::SetSourceEdge(GEOM::GEOM_Object_ptr edge)
-  throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {
@@ -98,7 +97,6 @@ void StdMeshers_ProjectionSource1D_i::SetSourceEdge(GEOM::GEOM_Object_ptr edge)
 
 void StdMeshers_ProjectionSource1D_i::SetVertexAssociation(GEOM::GEOM_Object_ptr sourceVertex,
                                                            GEOM::GEOM_Object_ptr targetVertex)
-  throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {
@@ -124,7 +122,6 @@ void StdMeshers_ProjectionSource1D_i::SetVertexAssociation(GEOM::GEOM_Object_ptr
 //=============================================================================
 
 void StdMeshers_ProjectionSource1D_i::SetSourceMesh(SMESH::SMESH_Mesh_ptr theMesh)
-  throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
 
@@ -306,7 +303,7 @@ void StdMeshers_ProjectionSource1D_i::LoadFrom( const char* theStream )
 
 bool
 StdMeshers_ProjectionSource1D_i::getObjectsDependOn( std::vector< std::string > & entryArray,
-                                                     std::vector< int >         & subIDArray ) const
+                                                     std::vector< int >         & /*subIDArray*/ ) const
 {
   for ( int i = 0; i < NB_SHAPES; ++i )
     entryArray.push_back( myShapeEntries[ i ]);
@@ -322,7 +319,7 @@ StdMeshers_ProjectionSource1D_i::getObjectsDependOn( std::vector< std::string > 
 
 bool
 StdMeshers_ProjectionSource1D_i::setObjectsDependOn( std::vector< std::string > & entryArray,
-                                                     std::vector< int >         & subIDArray )
+                                                     std::vector< int >         & /*subIDArray*/ )
 {
   TopoDS_Shape shapes[ NB_SHAPES ];
   for ( int i = 0; i < NB_SHAPES; ++i )

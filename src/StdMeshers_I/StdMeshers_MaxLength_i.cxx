@@ -70,7 +70,6 @@ StdMeshers_MaxLength_i::~StdMeshers_MaxLength_i()
  */
 //=============================================================================
 void StdMeshers_MaxLength_i::SetLength( CORBA::Double theLength )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {
@@ -91,7 +90,6 @@ void StdMeshers_MaxLength_i::SetLength( CORBA::Double theLength )
  */
 //=============================================================================
 void StdMeshers_MaxLength_i::SetUsePreestimatedLength( CORBA::Boolean toUse )
-  throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {

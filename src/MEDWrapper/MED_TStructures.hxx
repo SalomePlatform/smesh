@@ -930,7 +930,7 @@ namespace MED
                     const TGeom2Size& theGeom2Size,
                     const TGeom2NbGauss& theGeom2NbGauss,
                     TInt theNumDt,
-                    TInt theNumOrd,
+                    TInt /*theNumOrd*/,
                     TFloat theDt,
                     const std::string& theUnitDt,
                     const TGeom2Gauss& theGeom2Gauss)

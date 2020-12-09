@@ -92,7 +92,7 @@ public:
   protected: // methods of SMDS_ElementHolder; remove elements before mesh compacting or clearing
     virtual SMDS_ElemIteratorPtr getElements() { Clear(); return GetElements(); }
     virtual void tmpClear() {}
-    virtual void add( const SMDS_MeshElement* element ) {}
+    virtual void add( const SMDS_MeshElement* /*element*/ ) {}
     virtual void compact() {}
     virtual void clear() { Clear(); }
   };

@@ -81,7 +81,7 @@ namespace SMESH
     public:
       static OrientedPlane *New();
       static OrientedPlane *New(SVTK_ViewWindow* theViewWindow);
-      vtkTypeMacro (OrientedPlane, vtkPlane);
+      vtkTypeMacro (OrientedPlane, vtkPlane)
 
       QPointer<SVTK_ViewWindow> myViewWindow;
       SMESH::Orientation myRelativeOrientation;
@@ -135,7 +135,7 @@ namespace SMESH
 
   typedef std::vector<TPlane>               TPlaneVector;
   typedef std::vector<TPlaneData>           TPlaneDataVector;
-};
+}
 
 //=================================================================================
 // class    : SMESHGUI_ClippingDlg

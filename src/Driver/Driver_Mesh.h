@@ -63,8 +63,8 @@ class MESHDRIVER_EXPORT Driver_Mesh
   virtual void        SetMeshName(const std::string& theMeshName);
   virtual std::string GetMeshName() const;
 
-  virtual void        SetOption(const std::string& optionName,
-                                const std::string& optionValue) {}
+  virtual void        SetOption(const std::string& /*optionName*/,
+                                const std::string& /*optionValue*/) {}
 
   virtual Status Perform() = 0;
 

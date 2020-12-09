@@ -89,7 +89,7 @@ StdMeshers_Quadrangle_2D_i::~StdMeshers_Quadrangle_2D_i()
  */
 //=============================================================================
 
-bool StdMeshers_Quadrangle_2D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
+bool StdMeshers_Quadrangle_2D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int /*algoDim*/ )
 {
   return ::StdMeshers_Quadrangle_2D::IsApplicable( S, toCheckAll );
 }
@@ -134,7 +134,7 @@ StdMeshers_QuadFromMedialAxis_1D2D_i::~StdMeshers_QuadFromMedialAxis_1D2D_i()
 //================================================================================
 
 bool StdMeshers_QuadFromMedialAxis_1D2D_i::IsApplicable( const TopoDS_Shape &S,
-                                                         bool toCheckAll, int algoDim )
+                                                         bool toCheckAll, int /*algoDim*/ )
 {
   return ::StdMeshers_QuadFromMedialAxis_1D2D::IsApplicable( S, toCheckAll );
 }

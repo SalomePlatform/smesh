@@ -77,8 +77,8 @@ public:
   virtual const int* getUpCells(int cellId) = 0;
   virtual const unsigned char* getUpTypes(int cellId) = 0;
   virtual void getNodeIds(int cellId, std::set<int>& nodeSet) = 0;
-  virtual int getNodes(int cellId, int* nodevec) {return 0; }
-  virtual void getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes) {};
+  virtual int getNodes(int /*cellId*/, int* /*nodevec*/) {return 0; }
+  virtual void getOrderedNodesOfFace(int /*cellId*/, std::vector<vtkIdType>& /*orderedNodes*/) {};
   int getVtkCellId(int cellId)
   {
     return _vtkCellIds[cellId];

@@ -55,7 +55,7 @@ namespace SMESH
    */
   struct NotifyerAndWaiter
   {
-    virtual void OnBaseObjModified(NotifyerAndWaiter* obj, bool removed) {};
+    virtual void OnBaseObjModified(NotifyerAndWaiter* /*obj*/, bool /*removed*/) {};
     // specific reaction on modification of a base object
 
     void Modified( bool removed=false, NotifyerAndWaiter* who = 0);
@@ -822,13 +822,10 @@ namespace SMESH
 
     void                    SetElementType( ElementType theType );
     void                    SetPoint( CORBA::Double x, CORBA::Double y, CORBA::Double z );
-    void                    SetVertex( GEOM::GEOM_Object_ptr vertex )
-      throw (SALOME::SALOME_Exception);
-    void                    SetNode ( CORBA::Long nodeID )
-      throw (SALOME::SALOME_Exception);
+    void                    SetVertex( GEOM::GEOM_Object_ptr vertex );
+    void                    SetNode ( CORBA::Long nodeID );
     void                    SetThreshold ( const char* threshold,
-                                           SMESH::ConnectedElements::ThresholdType type )
-      throw (SALOME::SALOME_Exception);
+                                           SMESH::ConnectedElements::ThresholdType type );
     char*                   GetThreshold ( SMESH::ConnectedElements::ThresholdType& type );
 
   private:

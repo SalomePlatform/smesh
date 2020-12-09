@@ -3857,9 +3857,9 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
           }
           else {
             if ( isUPeriodic )
-              newUV.SetX( ElCLib::InPeriod( newUV.X(), u1, u2 ));
+              newUV.SetX( ElCLib::InPeriod( newUV.X(), u1, u2 )); // todo: u may be used unitialized
             if ( isVPeriodic )
-              newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 ));
+              newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 )); // todo: v may be used unitialized
             // check new UV
             // if ( posType != SMDS_TOP_3DSPACE )
             //   dist2 = pNode.SquareDistance( surface->Value( newUV.X(), newUV.Y() ));
@@ -5666,10 +5666,10 @@ makeNodesByNormal2D( SMESHDS_Mesh*                     mesh,
 //=======================================================================
 
 int SMESH_MeshEditor::ExtrusParam::
-makeNodesByNormal1D( SMESHDS_Mesh*                     mesh,
-                     const SMDS_MeshNode*              srcNode,
-                     std::list<const SMDS_MeshNode*> & newNodes,
-                     const bool                        makeMediumNodes)
+makeNodesByNormal1D( SMESHDS_Mesh*                     /*mesh*/,
+                     const SMDS_MeshNode*              /*srcNode*/,
+                     std::list<const SMDS_MeshNode*> & /*newNodes*/,
+                     const bool                        /*makeMediumNodes*/)
 {
   throw SALOME_Exception("Extrusion 1D by Normal not implemented");
   return 0;
@@ -6070,6 +6070,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
       if ( nbEdges > 0 )
         break;
     }
+    // fall through
     default:
     {
       for ( int di = -1; di <= 1; di += 2 )
@@ -7460,6 +7461,7 @@ public:
   //int& GroupID() const { return const_cast< int& >( myGroupID ); }
 
   ComparableElement( const ComparableElement& theSource ) // move copy
+  : boost::container::flat_set< int >()
   {
     ComparableElement& src = const_cast< ComparableElement& >( theSource );
     (int_set&) (*this ) = boost::move( src );
@@ -9216,7 +9218,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
 
 int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
                                      SMDS_ElemIteratorPtr theItr,
-                                     const int            theShapeID)
+                                     const int            /*theShapeID*/)
 {
   int nbElem = 0;
   SMESHDS_Mesh* meshDS = GetMeshDS();
@@ -10198,7 +10200,7 @@ namespace // automatically find theAffectedElems for DoubleNodes()
         if ( SMESH_MeshAlgos::FaceNormal( _elems[1], norm ))
           avgNorm += norm;
 
-        gp_XYZ bordDir( SMESH_NodeXYZ( _nodes[0] ) - SMESH_NodeXYZ( _nodes[1] ));
+        gp_XYZ bordDir( SMESH_NodeXYZ( _nodes[0] ) - SMESH_NodeXYZ( _nodes[1] )); // todo: compiler complains about zero-size array
         norm = bordDir ^ avgNorm;
       }
       else
@@ -11045,7 +11047,7 @@ double SMESH_MeshEditor::OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const
   try {
     return n2.AngleWithRef(n1, vref);
   }
-  catch ( Standard_Failure ) {
+  catch ( Standard_Failure& ) {
   }
   return Max( v1.Magnitude(), v2.Magnitude() );
 }

@@ -39,7 +39,7 @@ namespace MED
     bool myIsActive;
   public:
     PrefixPrinter(bool theIsActive = true);
-    ~PrefixPrinter();
+    ~PrefixPrinter() noexcept(false);
 
     static std::string GetPrefix();
   };

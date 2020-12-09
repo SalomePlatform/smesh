@@ -72,7 +72,7 @@ StdMeshers_FixedPoints1D_i::~StdMeshers_FixedPoints1D_i()
 //=============================================================================
 
 void StdMeshers_FixedPoints1D_i::SetNbSegments(const SMESH::long_array& listNbSeg) 
-     throw ( SALOME::SALOME_Exception )
+     
 {
   ASSERT( myBaseImpl );
   try {
@@ -98,7 +98,7 @@ void StdMeshers_FixedPoints1D_i::SetNbSegments(const SMESH::long_array& listNbSe
 //=============================================================================
 
 void StdMeshers_FixedPoints1D_i::SetPoints(const SMESH::double_array& listParams) 
-     throw ( SALOME::SALOME_Exception )
+     
 {
   ASSERT( myBaseImpl );
   try {

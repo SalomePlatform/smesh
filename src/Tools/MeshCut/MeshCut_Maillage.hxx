@@ -125,8 +125,7 @@ namespace MESHCUT
       void eliminationMailles(TYPE_MAILLE typeMaille, std::vector<int> listeMaillesSuppr);
 
       // acquisitionTYPE_inputMED appelée par inputMED
-      void
-          acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid, char maa[MED_NAME_SIZE + 1], med_int mdim);
+      void acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid, char maa[MED_NAME_SIZE + 1], med_int mdim);
 
       // void infoChamps(std::string type, med_entity_type MEM, med_geometry_type MGE, med_idt fid, char *maa,
       //                 char *nomChamp, med_field_type typeChamp, med_int nCompChamp, std::map<std::string, int> REFGAUSS);

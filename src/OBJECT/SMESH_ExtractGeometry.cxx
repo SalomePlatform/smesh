@@ -48,7 +48,7 @@ using namespace std;
 #endif
 
 
-vtkStandardNewMacro(SMESH_ExtractGeometry);
+vtkStandardNewMacro(SMESH_ExtractGeometry)
 
 
 SMESH_ExtractGeometry::SMESH_ExtractGeometry()

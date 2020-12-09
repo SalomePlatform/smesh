@@ -395,7 +395,7 @@ void SMESHGUI_NodesDlg::Init()
 // function : ValueChangedInSpinBox()
 // purpose  :
 //=================================================================================
-void SMESHGUI_NodesDlg::ValueChangedInSpinBox( double newValue )
+void SMESHGUI_NodesDlg::ValueChangedInSpinBox( double /*newValue*/ )
 {
   if ( !myMesh->_is_nil() ) {
     double vx = SpinBox_X->GetValue();

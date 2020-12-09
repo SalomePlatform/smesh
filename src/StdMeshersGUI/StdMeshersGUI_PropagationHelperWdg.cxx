@@ -355,11 +355,11 @@ void StdMeshersGUI_PropagationHelperWdg::updateList(bool enable)
       item->setData( Qt::UserRole, -1 );
     }
     else
-      for ( size_t i = 0; i < myChains.size(); ++i )
+      for ( int i = 0; i < (int)myChains.size(); ++i )
       {
         QString text = tr( "CHAIN_NUM_NB_EDGES" ).arg( i+1 ).arg( myChains[i].size() );
         item = new QListWidgetItem( text, myListWidget );
-        item->setData( Qt::UserRole, (int) i );
+        item->setData( Qt::UserRole, i );
       }
   }
   else
@@ -379,8 +379,8 @@ std::vector< int > * StdMeshersGUI_PropagationHelperWdg::getSelectedChain()
   std::vector< int > * chain = 0;
   if ( QListWidgetItem * item = myListWidget->currentItem() )
   {
-    size_t i = (size_t) item->data( Qt::UserRole ).toInt();
-    if ( 0 <= i && i < myChains.size() )
+    int i = item->data( Qt::UserRole ).toInt();
+    if ( 0 <= i && i < (int)myChains.size() )
       chain = & myChains[i];
   }
   return chain;

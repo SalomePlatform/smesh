@@ -87,7 +87,7 @@ StdMeshers_CartesianParameters3D_i::~StdMeshers_CartesianParameters3D_i()
 
 void StdMeshers_CartesianParameters3D_i::SetGrid(const SMESH::double_array& coords,
                                                  CORBA::Short               axis)
-  throw (SALOME::SALOME_Exception)
+  
 {
   std::vector<double> coordVec;//, yCoords, zCoords;
   _array2vec( coords, coordVec, );
@@ -111,7 +111,7 @@ void StdMeshers_CartesianParameters3D_i::SetGrid(const SMESH::double_array& coor
 //=============================================================================
 
 SMESH::double_array* StdMeshers_CartesianParameters3D_i::GetGrid(CORBA::Short axis)
-  throw (SALOME::SALOME_Exception)
+  
 {
   std::vector<double> coordVec;
   ASSERT( myBaseImpl );
@@ -135,7 +135,7 @@ SMESH::double_array* StdMeshers_CartesianParameters3D_i::GetGrid(CORBA::Short ax
 //=============================================================================
 
 void StdMeshers_CartesianParameters3D_i::SetSizeThreshold(CORBA::Double threshold)
-  throw (SALOME::SALOME_Exception)
+  
 {
   ASSERT( myBaseImpl );
   try {
@@ -172,7 +172,7 @@ CORBA::Double StdMeshers_CartesianParameters3D_i::GetSizeThreshold()
 void StdMeshers_CartesianParameters3D_i::SetGridSpacing(const SMESH::string_array& spaceFunctions,
                                                         const SMESH::double_array& internalPoints,
                                                         CORBA::Short               axis)
-  throw (SALOME::SALOME_Exception)
+  
 {
   std::vector<std::string> funVec;
   std::vector<double>      pointVec;
@@ -201,7 +201,7 @@ void StdMeshers_CartesianParameters3D_i::SetGridSpacing(const SMESH::string_arra
 void StdMeshers_CartesianParameters3D_i::GetGridSpacing(SMESH::string_array_out xSpaceFunctions,
                                                         SMESH::double_array_out xInternalPoints,
                                                         CORBA::Short            axis)
-  throw (SALOME::SALOME_Exception)
+  
 {
   ASSERT( myBaseImpl );
   try {
@@ -228,7 +228,7 @@ void StdMeshers_CartesianParameters3D_i::GetGridSpacing(SMESH::string_array_out 
 void StdMeshers_CartesianParameters3D_i::SetAxesDirs(const SMESH::DirStruct& xDir,
                                                      const SMESH::DirStruct& yDir,
                                                      const SMESH::DirStruct& zDir)
-  throw (SALOME::SALOME_Exception)
+  
 {
   double coords[9];
   coords[0] = xDir.PS.x;
@@ -440,7 +440,7 @@ ComputeOptimalAxesDirs(GEOM::GEOM_Object_ptr go,
                        SMESH::DirStruct&     xDir,
                        SMESH::DirStruct&     yDir,
                        SMESH::DirStruct&     zDir)
-  throw (SALOME::SALOME_Exception)
+  
 {
   TopoDS_Shape shape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( go );
   if ( shape.IsNull() )
@@ -471,7 +471,7 @@ StdMeshers_CartesianParameters3D_i::ComputeCoordinates(CORBA::Double            
                                                        const SMESH::string_array& spaceFuns,
                                                        const SMESH::double_array& points,
                                                        const char*                axisName )
-  throw (SALOME::SALOME_Exception)
+  
 {
   std::vector<std::string> xFuns;
   std::vector<double>      xPoints, coords;

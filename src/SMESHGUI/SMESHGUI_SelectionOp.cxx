@@ -195,7 +195,7 @@ void SMESHGUI_SelectionOp::onActivateObject( int id )
 // name     : onDeactivateObject
 // purpose  :
 //=================================================================================
-void SMESHGUI_SelectionOp::onDeactivateObject( int id )
+void SMESHGUI_SelectionOp::onDeactivateObject( int /*id*/ )
 {
   removeCustomFilters();
 }

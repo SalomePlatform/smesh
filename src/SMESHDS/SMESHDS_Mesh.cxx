@@ -273,7 +273,7 @@ bool SMESHDS_Mesh
 //purpose  :
 //=======================================================================
 
-void SMESHDS_Mesh::Renumber (const bool isNodes, const int startID, const int deltaID)
+void SMESHDS_Mesh::Renumber (const bool /*isNodes*/, const int /*startID*/, const int /*deltaID*/)
 {
   // TODO not possible yet to have node numbers not starting to O and continuous.
   if ( !this->IsCompacted() )
@@ -838,7 +838,7 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolume
 //purpose  : 
 //=======================================================================
 
-static void removeFromContainers (SMESHDS_Mesh*                         theMesh,
+static void removeFromContainers (SMESHDS_Mesh*                         /*theMesh*/,
                                   std::set<SMESHDS_GroupBase*>&         theGroups,
                                   std::vector<const SMDS_MeshElement*>& theElems)
 {

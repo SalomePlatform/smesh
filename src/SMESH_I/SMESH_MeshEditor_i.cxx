@@ -193,8 +193,8 @@ namespace MeshEditor_I {
     //!< Delete theNodeSearcher
     static void Delete()
     {
-      if ( theNodeSearcher )    delete theNodeSearcher;    theNodeSearcher    = 0;
-      if ( theElementSearcher ) delete theElementSearcher; theElementSearcher = 0;
+      if ( theNodeSearcher )    { delete theNodeSearcher; }    theNodeSearcher    = 0;
+      if ( theElementSearcher ) { delete theElementSearcher; } theElementSearcher = 0;
     }
     typedef map < int, SMESH_subMesh * > TDependsOnMap;
     //!< The meshod called by submesh: do my main job
@@ -523,7 +523,6 @@ TPreviewMesh * SMESH_MeshEditor_i::getPreviewMesh(SMDSAbs_ElementType previewEle
 //================================================================================
 
 SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   const bool hasBadElems = ( getEditor().GetError() && getEditor().GetError()->HasBadElems() );
@@ -617,7 +616,6 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
 //================================================================================
 
 SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedNodes()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::long_array_var myLastCreatedNodes = new SMESH::long_array();
@@ -640,7 +638,6 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedNodes()
 //================================================================================
 
 SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::long_array_var myLastCreatedElems = new SMESH::long_array();
@@ -660,7 +657,7 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
 //purpose  : Clears sequences of last created elements and nodes 
 //=======================================================================
 
-void SMESH_MeshEditor_i::ClearLastCreated() throw (SALOME::SALOME_Exception)
+void SMESH_MeshEditor_i::ClearLastCreated()
 {
   SMESH_TRY;
   getEditor().ClearLastCreated();
@@ -675,7 +672,6 @@ void SMESH_MeshEditor_i::ClearLastCreated() throw (SALOME::SALOME_Exception)
 //=======================================================================
 
 SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::ComputeError_var errOut = new SMESH::ComputeError;
@@ -787,7 +783,6 @@ CORBA::Long* SMESH_MeshEditor_i::GetTemporaryIDs( SMESH::SMESH_IDSource_ptr& idS
 
 CORBA::Boolean
 SMESH_MeshEditor_i::RemoveElements(const SMESH::long_array & IDsOfElements)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -817,7 +812,6 @@ SMESH_MeshEditor_i::RemoveElements(const SMESH::long_array & IDsOfElements)
 //=============================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::long_array & IDsOfNodes)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -845,7 +839,6 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::long_array & IDsOfNo
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::RemoveOrphanNodes()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -879,7 +872,6 @@ CORBA::Long SMESH_MeshEditor_i::RemoveOrphanNodes()
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::AddNode(CORBA::Double x,CORBA::Double y, CORBA::Double z)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -905,7 +897,6 @@ CORBA::Long SMESH_MeshEditor_i::AddNode(CORBA::Double x,CORBA::Double y, CORBA::
 
 CORBA::Long SMESH_MeshEditor_i::Add0DElement(CORBA::Long    IDOfNode,
                                              CORBA::Boolean DuplicateElements)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -935,7 +926,6 @@ CORBA::Long SMESH_MeshEditor_i::Add0DElement(CORBA::Long    IDOfNode,
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::AddBall(CORBA::Long IDOfNode, CORBA::Double diameter)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -965,7 +955,6 @@ CORBA::Long SMESH_MeshEditor_i::AddBall(CORBA::Long IDOfNode, CORBA::Double diam
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1009,7 +998,6 @@ CORBA::Long SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1058,7 +1046,6 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsOfNodes)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1094,7 +1081,6 @@ CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsO
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::AddQuadPolygonalFace (const SMESH::long_array & IDsOfNodes)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1130,7 +1116,6 @@ CORBA::Long SMESH_MeshEditor_i::AddQuadPolygonalFace (const SMESH::long_array & 
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNodes)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1191,7 +1176,6 @@ CORBA::Long SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNodes)
 //=============================================================================
 CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolume (const SMESH::long_array & IDsOfNodes,
                                                      const SMESH::long_array & Quantities)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1230,7 +1214,6 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolume (const SMESH::long_array & I
 //=============================================================================
 
 CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces (const SMESH::long_array & IdsOfFaces)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1278,7 +1261,6 @@ SMESH::SMESH_IDSource_ptr
 SMESH_MeshEditor_i::Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObject,
                                                const char*               theGroupName,
                                                CORBA::Boolean            theDuplicateElements)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1348,7 +1330,6 @@ SMESH_MeshEditor_i::Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObje
 //=============================================================================
 
 void SMESH_MeshEditor_i::SetNodeOnVertex(CORBA::Long NodeID, CORBA::Long VertexID)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
 
@@ -1383,7 +1364,6 @@ void SMESH_MeshEditor_i::SetNodeOnVertex(CORBA::Long NodeID, CORBA::Long VertexI
 
 void SMESH_MeshEditor_i::SetNodeOnEdge(CORBA::Long NodeID, CORBA::Long EdgeID,
                                        CORBA::Double paramOnEdge)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
 
@@ -1427,7 +1407,6 @@ void SMESH_MeshEditor_i::SetNodeOnEdge(CORBA::Long NodeID, CORBA::Long EdgeID,
 
 void SMESH_MeshEditor_i::SetNodeOnFace(CORBA::Long NodeID, CORBA::Long FaceID,
                                        CORBA::Double u, CORBA::Double v)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESHDS_Mesh * mesh = getMeshDS();
@@ -1472,7 +1451,6 @@ void SMESH_MeshEditor_i::SetNodeOnFace(CORBA::Long NodeID, CORBA::Long FaceID,
 //=============================================================================
 
 void SMESH_MeshEditor_i::SetNodeInVolume(CORBA::Long NodeID, CORBA::Long SolidID)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESHDS_Mesh * mesh = getMeshDS();
@@ -1503,7 +1481,6 @@ void SMESH_MeshEditor_i::SetNodeInVolume(CORBA::Long NodeID, CORBA::Long SolidID
 
 void SMESH_MeshEditor_i::SetMeshElementOnShape(CORBA::Long ElementID,
                                                CORBA::Long ShapeID)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESHDS_Mesh * mesh = getMeshDS();
@@ -1536,7 +1513,6 @@ void SMESH_MeshEditor_i::SetMeshElementOnShape(CORBA::Long ElementID,
 
 CORBA::Boolean SMESH_MeshEditor_i::InverseDiag(CORBA::Long NodeID1,
                                                CORBA::Long NodeID2)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1567,7 +1543,6 @@ CORBA::Boolean SMESH_MeshEditor_i::InverseDiag(CORBA::Long NodeID1,
 
 CORBA::Boolean SMESH_MeshEditor_i::DeleteDiag(CORBA::Long NodeID1,
                                               CORBA::Long NodeID2)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1599,7 +1574,6 @@ CORBA::Boolean SMESH_MeshEditor_i::DeleteDiag(CORBA::Long NodeID1,
 //=============================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::long_array & IDsOfElements)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1628,7 +1602,6 @@ CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::long_array & IDsOfEleme
 //=============================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theObject)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1665,7 +1638,6 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
                                            const SMESH::DirStruct&   theDirection,
                                            CORBA::Long               theFace,
                                            const SMESH::PointStruct& thePoint)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData(/*deleteSearchers=*/false);
@@ -1749,7 +1721,6 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
 CORBA::Long SMESH_MeshEditor_i::Reorient2DBy3D(const SMESH::ListOfIDSources& faceGroups,
                                                SMESH::SMESH_IDSource_ptr     volumeGroup,
                                                CORBA::Boolean                outsideNormal)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1800,7 +1771,6 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2DBy3D(const SMESH::ListOfIDSources& fac
 CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfElements,
                                               SMESH::NumericalFunctor_ptr Criterion,
                                               CORBA::Double               MaxAngle)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1849,7 +1819,6 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
 CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   theObject,
                                                     SMESH::NumericalFunctor_ptr Criterion,
                                                     CORBA::Double               MaxAngle)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1883,7 +1852,6 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
 
 CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfElements,
                                               SMESH::NumericalFunctor_ptr Criterion)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1921,7 +1889,6 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfE
 
 CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   theObject,
                                                     SMESH::NumericalFunctor_ptr Criterion)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1953,7 +1920,6 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   
 //================================================================================
 
 void SMESH_MeshEditor_i::QuadTo4Tri (SMESH::SMESH_IDSource_ptr theObject)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -1979,7 +1945,6 @@ void SMESH_MeshEditor_i::QuadTo4Tri (SMESH::SMESH_IDSource_ptr theObject)
 
 CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfElements,
                                               CORBA::Boolean            Diag13)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2009,7 +1974,6 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfEle
 
 CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr theObject,
                                                     CORBA::Boolean            Diag13)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2044,7 +2008,6 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr th
 
 CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
                                            SMESH::NumericalFunctor_ptr Criterion)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2077,7 +2040,6 @@ CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
 
 void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
                                                 CORBA::Short              methodFlags)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2115,7 +2077,6 @@ void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms( SMESH::SMESH_IDSource_ptr  el
                                                    const SMESH::DirStruct&    facetToSplitNormal,
                                                    CORBA::Short               methodFlags,
                                                    CORBA::Boolean             allDomains)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2176,7 +2137,6 @@ void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms( SMESH::SMESH_IDSource_ptr  el
 //================================================================================
 
 void SMESH_MeshEditor_i::SplitBiQuadraticIntoLinear(const SMESH::ListOfIDSources& theElems)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2212,7 +2172,6 @@ SMESH_MeshEditor_i::Smooth(const SMESH::long_array &              IDsOfElements,
                            CORBA::Long                            MaxNbOfIterations,
                            CORBA::Double                          MaxAspectRatio,
                            SMESH::SMESH_MeshEditor::Smooth_Method Method)
-  throw (SALOME::SALOME_Exception)
 {
   return smooth( IDsOfElements, IDsOfFixedNodes, MaxNbOfIterations,
                  MaxAspectRatio, Method, false );
@@ -2230,7 +2189,6 @@ SMESH_MeshEditor_i::SmoothParametric(const SMESH::long_array &              IDsO
                                      CORBA::Long                            MaxNbOfIterations,
                                      CORBA::Double                          MaxAspectRatio,
                                      SMESH::SMESH_MeshEditor::Smooth_Method Method)
-  throw (SALOME::SALOME_Exception)
 {
   return smooth( IDsOfElements, IDsOfFixedNodes, MaxNbOfIterations,
                  MaxAspectRatio, Method, true );
@@ -2248,7 +2206,6 @@ SMESH_MeshEditor_i::SmoothObject(SMESH::SMESH_IDSource_ptr              theObjec
                                  CORBA::Long                            MaxNbOfIterations,
                                  CORBA::Double                          MaxAspectRatio,
                                  SMESH::SMESH_MeshEditor::Smooth_Method Method)
-  throw (SALOME::SALOME_Exception)
 {
   return smoothObject (theObject, IDsOfFixedNodes, MaxNbOfIterations,
                        MaxAspectRatio, Method, false);
@@ -2266,7 +2223,6 @@ SMESH_MeshEditor_i::SmoothParametricObject(SMESH::SMESH_IDSource_ptr            
                                            CORBA::Long                            MaxNbOfIterations,
                                            CORBA::Double                          MaxAspectRatio,
                                            SMESH::SMESH_MeshEditor::Smooth_Method Method)
-  throw (SALOME::SALOME_Exception)
 {
   return smoothObject (theObject, IDsOfFixedNodes, MaxNbOfIterations,
                        MaxAspectRatio, Method, true);
@@ -2286,7 +2242,6 @@ SMESH_MeshEditor_i::smooth(const SMESH::long_array &              IDsOfElements,
                            CORBA::Double                          MaxAspectRatio,
                            SMESH::SMESH_MeshEditor::Smooth_Method Method,
                            bool                                   IsParametric)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2340,7 +2295,6 @@ SMESH_MeshEditor_i::smoothObject(SMESH::SMESH_IDSource_ptr              theObjec
                                  CORBA::Double                          MaxAspectRatio,
                                  SMESH::SMESH_MeshEditor::Smooth_Method Method,
                                  bool                                   IsParametric)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2374,7 +2328,6 @@ SMESH_MeshEditor_i::smoothObject(SMESH::SMESH_IDSource_ptr              theObjec
 //=============================================================================
 
 void SMESH_MeshEditor_i::RenumberNodes()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   // Update Python script
@@ -2392,7 +2345,6 @@ void SMESH_MeshEditor_i::RenumberNodes()
 //=============================================================================
 
 void SMESH_MeshEditor_i::RenumberElements()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   // Update Python script
@@ -2410,7 +2362,6 @@ void SMESH_MeshEditor_i::RenumberElements()
 //=======================================================================
 
 SMESH::ListOfGroups* SMESH_MeshEditor_i::getGroups(const std::list<int>* groupIDs)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   if ( !groupIDs )
@@ -2436,7 +2387,6 @@ SMESH_MeshEditor_i::RotationSweepObjects(const SMESH::ListOfIDSources & theNodes
                                          CORBA::Long                    theNbOfSteps,
                                          CORBA::Double                  theTolerance,
                                          const bool                     theMakeGroups)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2639,7 +2589,6 @@ SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNode
                                           const SMESH::double_array &    theBasePoint,
                                           const SMESH::double_array &    theAngles,
                                           CORBA::Boolean                 theAnglesVariation)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2722,7 +2671,6 @@ SMESH_MeshEditor_i::ExtrusionByNormal(const SMESH::ListOfIDSources& objects,
                                       CORBA::Boolean                useInputElemsOnly,
                                       CORBA::Boolean                makeGroups,
                                       CORBA::Short                  dim)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2799,7 +2747,6 @@ SMESH_MeshEditor_i::AdvancedExtrusion(const SMESH::long_array & theIDsOfElements
                                       CORBA::Long               theExtrFlags,
                                       CORBA::Double             theSewTolerance,
                                       CORBA::Boolean            theMakeGroups)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -2886,7 +2833,6 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
                                               const SMESH::double_array &    theScaleFactors,
                                               CORBA::Boolean                 theScalesVariation,
                                               SMESH::SMESH_MeshEditor::Extrusion_Error& theError)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -3111,7 +3057,6 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
                            CORBA::Boolean                      theCopy,
                            bool                                theMakeGroups,
                            ::SMESH_Mesh*                       theTargetMesh)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -3177,7 +3122,6 @@ void SMESH_MeshEditor_i::Mirror(const SMESH::long_array &           theIDsOfElem
                                 const SMESH::AxisStruct &           theAxis,
                                 SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
                                 CORBA::Boolean                      theCopy)
-  throw (SALOME::SALOME_Exception)
 {
   if ( !myIsPreviewMode ) {
     TPythonDump() << this << ".Mirror( "
@@ -3204,7 +3148,6 @@ void SMESH_MeshEditor_i::MirrorObject(SMESH::SMESH_IDSource_ptr           theObj
                                       const SMESH::AxisStruct &           theAxis,
                                       SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
                                       CORBA::Boolean                      theCopy)
-  throw (SALOME::SALOME_Exception)
 {
   if ( !myIsPreviewMode ) {
     TPythonDump() << this << ".MirrorObject( "
@@ -3230,7 +3173,6 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::MirrorMakeGroups(const SMESH::long_array&            theIDsOfElements,
                                      const SMESH::AxisStruct&            theMirror,
                                      SMESH::SMESH_MeshEditor::MirrorType theMirrorType)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
 
@@ -3260,7 +3202,6 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::MirrorObjectMakeGroups(SMESH::SMESH_IDSource_ptr           theObject,
                                            const SMESH::AxisStruct&            theMirror,
                                            SMESH::SMESH_MeshEditor::MirrorType theMirrorType)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
 
@@ -3291,7 +3232,6 @@ SMESH_MeshEditor_i::MirrorMakeMesh(const SMESH::long_array&            theIDsOfE
                                    SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
                                    CORBA::Boolean                      theCopyGroups,
                                    const char*                         theMeshName)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_Mesh_i* mesh_i;
   SMESH::SMESH_Mesh_var mesh;
@@ -3339,7 +3279,6 @@ SMESH_MeshEditor_i::MirrorObjectMakeMesh(SMESH::SMESH_IDSource_ptr           the
                                          SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
                                          CORBA::Boolean                      theCopyGroups,
                                          const char*                         theMeshName)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_Mesh_i* mesh_i;
   SMESH::SMESH_Mesh_var mesh;
@@ -3386,7 +3325,6 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
                               CORBA::Boolean            theCopy,
                               bool                      theMakeGroups,
                               ::SMESH_Mesh*             theTargetMesh)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -3440,7 +3378,6 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
 void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
                                    const SMESH::DirStruct &  theVector,
                                    CORBA::Boolean            theCopy)
-  throw (SALOME::SALOME_Exception)
 {
   if (!myIsPreviewMode) {
     TPythonDump() << this << ".Translate( "
@@ -3463,7 +3400,6 @@ void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
 void SMESH_MeshEditor_i::TranslateObject(SMESH::SMESH_IDSource_ptr theObject,
                                          const SMESH::DirStruct &  theVector,
                                          CORBA::Boolean            theCopy)
-  throw (SALOME::SALOME_Exception)
 {
   if (!myIsPreviewMode) {
     TPythonDump() << this << ".TranslateObject( "
@@ -3487,7 +3423,6 @@ void SMESH_MeshEditor_i::TranslateObject(SMESH::SMESH_IDSource_ptr theObject,
 SMESH::ListOfGroups*
 SMESH_MeshEditor_i::TranslateMakeGroups(const SMESH::long_array& theIDsOfElements,
                                         const SMESH::DirStruct&  theVector)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
 
@@ -3514,7 +3449,6 @@ SMESH_MeshEditor_i::TranslateMakeGroups(const SMESH::long_array& theIDsOfElement
 SMESH::ListOfGroups*
 SMESH_MeshEditor_i::TranslateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
                                               const SMESH::DirStruct&   theVector)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
 
@@ -3542,7 +3476,6 @@ SMESH_MeshEditor_i::TranslateMakeMesh(const SMESH::long_array& theIDsOfElements,
                                       const SMESH::DirStruct&  theVector,
                                       CORBA::Boolean           theCopyGroups,
                                       const char*              theMeshName)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_Mesh_i* mesh_i;
   SMESH::SMESH_Mesh_var mesh;
@@ -3589,7 +3522,6 @@ SMESH_MeshEditor_i::TranslateObjectMakeMesh(SMESH::SMESH_IDSource_ptr theObject,
                                             const SMESH::DirStruct&   theVector,
                                             CORBA::Boolean            theCopyGroups,
                                             const char*               theMeshName)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH_Mesh_i* mesh_i;
@@ -3639,7 +3571,6 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
                            CORBA::Boolean            theCopy,
                            bool                      theMakeGroups,
                            ::SMESH_Mesh*             theTargetMesh)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -3692,7 +3623,6 @@ void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
                                 const SMESH::AxisStruct & theAxis,
                                 CORBA::Double             theAngle,
                                 CORBA::Boolean            theCopy)
-  throw (SALOME::SALOME_Exception)
 {
   if (!myIsPreviewMode) {
     TPythonDump() << this << ".Rotate( "
@@ -3718,7 +3648,6 @@ void SMESH_MeshEditor_i::RotateObject(SMESH::SMESH_IDSource_ptr theObject,
                                       const SMESH::AxisStruct & theAxis,
                                       CORBA::Double             theAngle,
                                       CORBA::Boolean            theCopy)
-  throw (SALOME::SALOME_Exception)
 {
   if ( !myIsPreviewMode ) {
     TPythonDump() << this << ".RotateObject( "
@@ -3742,7 +3671,6 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::RotateMakeGroups(const SMESH::long_array& theIDsOfElements,
                                      const SMESH::AxisStruct& theAxis,
                                      CORBA::Double            theAngle)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
 
@@ -3772,7 +3700,6 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::RotateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
                                            const SMESH::AxisStruct&  theAxis,
                                            CORBA::Double             theAngle)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
 
@@ -3802,7 +3729,6 @@ SMESH_MeshEditor_i::RotateMakeMesh(const SMESH::long_array& theIDsOfElements,
                                    CORBA::Double            theAngleInRadians,
                                    CORBA::Boolean           theCopyGroups,
                                    const char*              theMeshName)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::SMESH_Mesh_var mesh;
@@ -3855,7 +3781,6 @@ SMESH_MeshEditor_i::RotateObjectMakeMesh(SMESH::SMESH_IDSource_ptr theObject,
                                          CORBA::Double             theAngleInRadians,
                                          CORBA::Boolean            theCopyGroups,
                                          const char*               theMeshName)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::SMESH_Mesh_var mesh;
@@ -3908,7 +3833,6 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
                           CORBA::Boolean             theCopy,
                           bool                       theMakeGroups,
                           ::SMESH_Mesh*              theTargetMesh)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -3983,7 +3907,6 @@ void SMESH_MeshEditor_i::Scale(SMESH::SMESH_IDSource_ptr  theObject,
                                const SMESH::PointStruct&  thePoint,
                                const SMESH::double_array& theScaleFact,
                                CORBA::Boolean             theCopy)
-  throw (SALOME::SALOME_Exception)
 {
   if ( !myIsPreviewMode ) {
     TPythonDump() << this << ".Scale( "
@@ -4005,7 +3928,6 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::ScaleMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
                                     const SMESH::PointStruct&  thePoint,
                                     const SMESH::double_array& theScaleFact)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
 
@@ -4032,7 +3954,6 @@ SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
                                   const SMESH::double_array& theScaleFact,
                                   CORBA::Boolean             theCopyGroups,
                                   const char*                theMeshName)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_Mesh_i* mesh_i;
   SMESH::SMESH_Mesh_var mesh;
@@ -4083,7 +4004,6 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theO
                                                   CORBA::Boolean            theCopyElements,
                                                   const char*               theMeshName,
                                                   SMESH::ListOfGroups_out   theGroups)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -4197,7 +4117,6 @@ void SMESH_MeshEditor_i::
 FindCoincidentNodes (CORBA::Double                  Tolerance,
                      SMESH::array_of_long_array_out GroupsOfNodes,
                      CORBA::Boolean                 SeparateCornersAndMedium)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -4222,7 +4141,6 @@ FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
                           CORBA::Double                  Tolerance,
                           SMESH::array_of_long_array_out GroupsOfNodes,
                           CORBA::Boolean                 SeparateCornersAndMedium)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -4254,7 +4172,6 @@ FindCoincidentNodesOnPartBut(const SMESH::ListOfIDSources&  theObjects,
                              SMESH::array_of_long_array_out theGroupsOfNodes,
                              const SMESH::ListOfIDSources&  theExceptSubMeshOrGroups,
                              CORBA::Boolean                 theSeparateCornersAndMedium)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -4291,7 +4208,6 @@ FindCoincidentNodesOnPartBut(const SMESH::ListOfIDSources&  theObjects,
 void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
                                      const SMESH::ListOfIDSources&     NodesToKeep,
                                      CORBA::Boolean                    AvoidMakingHoles)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -4351,7 +4267,6 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
 void SMESH_MeshEditor_i::FindEqualElements(const SMESH::ListOfIDSources&  theObjects,
                                            const SMESH::ListOfIDSources&  theExceptObjects,
                                            SMESH::array_of_long_array_out theGroupsOfElementsID)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -4411,7 +4326,6 @@ void SMESH_MeshEditor_i::FindEqualElements(const SMESH::ListOfIDSources&  theObj
 
 void SMESH_MeshEditor_i::MergeElements(const SMESH::array_of_long_array& theGroupsOfElementsID,
                                        const SMESH::ListOfIDSources&     theElementsToKeep)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -4466,7 +4380,6 @@ void SMESH_MeshEditor_i::MergeElements(const SMESH::array_of_long_array& theGrou
 //=======================================================================
 
 void SMESH_MeshEditor_i::MergeEqualElements()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -4490,7 +4403,6 @@ CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
                                             CORBA::Double x,
                                             CORBA::Double y,
                                             CORBA::Double z)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData(/*deleteSearchers=*/false);
@@ -4547,7 +4459,6 @@ CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
 CORBA::Long SMESH_MeshEditor_i::FindNodeClosestTo(CORBA::Double x,
                                                   CORBA::Double y,
                                                   CORBA::Double z)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   theSearchersDeleter.Set( myMesh ); // remove theNodeSearcher if mesh is other
@@ -4574,7 +4485,6 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
                                                        CORBA::Double y,
                                                        CORBA::Double z,
                                                        CORBA::Long   theNodeID)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   // We keep theNodeSearcher until any mesh modification:
@@ -4652,7 +4562,6 @@ SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
                                                            CORBA::Double      y,
                                                            CORBA::Double      z,
                                                            SMESH::ElementType type)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::long_array_var res = new SMESH::long_array;
@@ -4688,7 +4597,6 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
                                              CORBA::Double             y,
                                              CORBA::Double             z,
                                              SMESH::ElementType        type)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::long_array_var res = new SMESH::long_array;
@@ -4761,7 +4669,6 @@ CORBA::Long SMESH_MeshEditor_i::ProjectPoint(CORBA::Double             x,
                                              SMESH::ElementType        type,
                                              SMESH::SMESH_IDSource_ptr meshObject,
                                              SMESH::double_array_out   projecton)
-  throw (SALOME::SALOME_Exception)
 {
   if ( CORBA::is_nil( meshObject ))
     THROW_SALOME_CORBA_EXCEPTION("NULL meshObject", SALOME::BAD_PARAM);
@@ -4822,7 +4729,6 @@ CORBA::Long SMESH_MeshEditor_i::ProjectPoint(CORBA::Double             x,
 CORBA::Short SMESH_MeshEditor_i::GetPointState(CORBA::Double x,
                                                CORBA::Double y,
                                                CORBA::Double z)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   theSearchersDeleter.Set( myMesh );
@@ -4841,7 +4747,6 @@ CORBA::Short SMESH_MeshEditor_i::GetPointState(CORBA::Double x,
 //=======================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::IsManifold()
-  throw (SALOME::SALOME_Exception)
 {
   bool isManifold = true;
 
@@ -4862,7 +4767,6 @@ CORBA::Boolean SMESH_MeshEditor_i::IsManifold()
 //=======================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::IsCoherentOrientation2D()
-  throw (SALOME::SALOME_Exception)
 {
   bool isGoodOri = true;
 
@@ -4891,7 +4795,6 @@ SMESH::array_of_long_array*
 SMESH_MeshEditor_i::Get1DBranches( SMESH::SMESH_IDSource_ptr      theEdges,
                                    CORBA::Long                    theStartNode,
                                    SMESH::array_of_long_array_out theNodeGroups )
-  throw (SALOME::SALOME_Exception)
 {
   if ( CORBA::is_nil( theEdges ))
     THROW_SALOME_CORBA_EXCEPTION("Get1DBranches(): NULL group given", SALOME::BAD_PARAM);
@@ -4938,7 +4841,6 @@ SMESH_MeshEditor_i::Get1DBranches( SMESH::SMESH_IDSource_ptr      theEdges,
 
 SMESH::ListOfEdges* SMESH_MeshEditor_i::FindSharpEdges(CORBA::Double  theAngle,
                                                        CORBA::Boolean theAddExisting)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH::ListOfEdges_var resultEdges = new SMESH::ListOfEdges;
   SMESH_TRY;
@@ -4989,7 +4891,6 @@ SMESH::ListOfEdges* SMESH_MeshEditor_i::FindSharpEdges(CORBA::Double  theAngle,
 //=======================================================================
 
 SMESH::ListOfFreeBorders* SMESH_MeshEditor_i::FindFreeBorders(CORBA::Boolean closedOnly)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH::ListOfFreeBorders_var resBorders = new SMESH::ListOfFreeBorders;
   SMESH_TRY;
@@ -5020,7 +4921,6 @@ SMESH::ListOfFreeBorders* SMESH_MeshEditor_i::FindFreeBorders(CORBA::Boolean clo
 SMESH::SMESH_Group_ptr 
 SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole,
                              const char*              theGroupName)
-  throw (SALOME::SALOME_Exception)
 {
   initData();
 
@@ -5216,7 +5116,6 @@ CORBA::Short SMESH_MeshEditor_i::
 SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
                          CORBA::Boolean                      createPolygons,
                          CORBA::Boolean                      createPolyhedra)
-  throw (SALOME::SALOME_Exception)
 {
   CORBA::Short nbSewed = 0;
 
@@ -5385,7 +5284,6 @@ SMESH_MeshEditor_i::SewFreeBorders(CORBA::Long FirstNodeID1,
                                    CORBA::Long LastNodeID2,
                                    CORBA::Boolean CreatePolygons,
                                    CORBA::Boolean CreatePolyedrs)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -5449,7 +5347,6 @@ SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID1,
                                           CORBA::Long LastNodeID1,
                                           CORBA::Long FirstNodeID2,
                                           CORBA::Long SecondNodeID2)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -5509,7 +5406,6 @@ SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
                                     CORBA::Long LastNodeIDOnSide,
                                     CORBA::Boolean CreatePolygons,
                                     CORBA::Boolean CreatePolyedrs)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -5571,7 +5467,6 @@ SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                                     CORBA::Long NodeID1OfSide2ToMerge,
                                     CORBA::Long NodeID2OfSide1ToMerge,
                                     CORBA::Long NodeID2OfSide2ToMerge)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -5627,7 +5522,6 @@ SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
 
 CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
                                                    const SMESH::long_array& newIDs)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -5665,7 +5559,6 @@ CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
 void SMESH_MeshEditor_i::convertToQuadratic(CORBA::Boolean            theForce3d,
                                             CORBA::Boolean            theToBiQuad,
                                             SMESH::SMESH_IDSource_ptr theObject)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -5697,7 +5590,6 @@ void SMESH_MeshEditor_i::convertToQuadratic(CORBA::Boolean            theForce3d
 //=======================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::ConvertFromQuadratic()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -5717,7 +5609,6 @@ CORBA::Boolean SMESH_MeshEditor_i::ConvertFromQuadratic()
 //=======================================================================
 
 void SMESH_MeshEditor_i::ConvertToQuadratic(CORBA::Boolean theForce3d)
-  throw (SALOME::SALOME_Exception)
 {
   convertToQuadratic( theForce3d, false );
   TPythonDump() << this << ".ConvertToQuadratic("<<theForce3d<<")";
@@ -5731,7 +5622,6 @@ void SMESH_MeshEditor_i::ConvertToQuadratic(CORBA::Boolean theForce3d)
 
 void SMESH_MeshEditor_i::ConvertToQuadraticObject(CORBA::Boolean            theForce3d,
                                                   SMESH::SMESH_IDSource_ptr theObject)
-  throw (SALOME::SALOME_Exception)
 {
   convertToQuadratic( theForce3d, false, theObject );
   TPythonDump() << this << ".ConvertToQuadraticObject("<<theForce3d<<", "<<theObject<<")";
@@ -5745,7 +5635,6 @@ void SMESH_MeshEditor_i::ConvertToQuadraticObject(CORBA::Boolean            theF
 
 void SMESH_MeshEditor_i::ConvertToBiQuadratic(CORBA::Boolean            theForce3d,
                                               SMESH::SMESH_IDSource_ptr theObject)
-  throw (SALOME::SALOME_Exception)
 {
   convertToQuadratic( theForce3d, true, theObject );
   TPythonDump() << this << ".ConvertToBiQuadratic("<<theForce3d<<", "<<theObject<<")";
@@ -5758,7 +5647,6 @@ void SMESH_MeshEditor_i::ConvertToBiQuadratic(CORBA::Boolean            theForce
 //================================================================================
 
 void SMESH_MeshEditor_i::ConvertFromQuadraticObject(SMESH::SMESH_IDSource_ptr theObject)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -5952,7 +5840,6 @@ bool SMESH_MeshEditor_i::idSourceToSet(SMESH::SMESH_IDSource_ptr  theIDSource,
 SMESH::SMESH_Group_ptr
 SMESH_MeshEditor_i::DoubleElements(SMESH::SMESH_IDSource_ptr theElements,
                                    const char*               theGroupName)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH::SMESH_Group_var newGroup;
 
@@ -6020,7 +5907,6 @@ SMESH_MeshEditor_i::DoubleElements(SMESH::SMESH_IDSource_ptr theElements,
 
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodes( const SMESH::long_array& theNodes,
                                                 const SMESH::long_array& theModifiedElems )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -6060,7 +5946,6 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodes( const SMESH::long_array& theNode
 
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNode( CORBA::Long              theNodeId,
                                                const SMESH::long_array& theModifiedElems )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::long_array_var aNodes = new SMESH::long_array;
@@ -6092,7 +5977,6 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNode( CORBA::Long              theNodeI
 
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(SMESH::SMESH_GroupBase_ptr theNodes,
                                                    SMESH::SMESH_GroupBase_ptr theModifiedElems )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   if ( CORBA::is_nil( theNodes ) && theNodes->GetType() != SMESH::NODE )
@@ -6131,7 +6015,6 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(SMESH::SMESH_GroupBase_ptr th
 SMESH::SMESH_Group_ptr
 SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
                                         SMESH::SMESH_GroupBase_ptr theModifiedElems )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::SMESH_Group_var aNewGroup;
@@ -6187,7 +6070,6 @@ SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
 
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups(const SMESH::ListOfGroups& theNodes,
                                                     const SMESH::ListOfGroups& theModifiedElems )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -6243,7 +6125,6 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups(const SMESH::ListOfGroups& t
 SMESH::SMESH_Group_ptr
 SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
                                          const SMESH::ListOfGroups& theModifiedElems )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH::SMESH_Group_var aNewGroup;
 
@@ -6287,7 +6168,6 @@ SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElem( const SMESH::long_array& theElems,
                                                    const SMESH::long_array& theNodesNot,
                                                    const SMESH::long_array& theAffectedElems )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -6328,7 +6208,6 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElem( const SMESH::long_array& theE
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemInRegion ( const SMESH::long_array& theElems,
                                                             const SMESH::long_array& theNodesNot,
                                                             GEOM::GEOM_Object_ptr    theShape )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -6369,7 +6248,6 @@ CORBA::Boolean
 SMESH_MeshEditor_i::DoubleNodeElemGroup(SMESH::SMESH_GroupBase_ptr theElems,
                                         SMESH::SMESH_GroupBase_ptr theNodesNot,
                                         SMESH::SMESH_GroupBase_ptr theAffectedElems)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   if ( CORBA::is_nil( theElems ) && theElems->GetType() == SMESH::NODE )
@@ -6414,7 +6292,6 @@ SMESH::SMESH_Group_ptr
 SMESH_MeshEditor_i::DoubleNodeElemGroupNew(SMESH::SMESH_GroupBase_ptr theElems,
                                            SMESH::SMESH_GroupBase_ptr theNodesNot,
                                            SMESH::SMESH_GroupBase_ptr theAffectedElems)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump pyDump;
   SMESH::ListOfGroups_var twoGroups = DoubleNodeElemGroup2New( theElems,
@@ -6451,7 +6328,6 @@ SMESH_MeshEditor_i::DoubleNodeElemGroup2New(SMESH::SMESH_GroupBase_ptr theElems,
                                             SMESH::SMESH_GroupBase_ptr theAffectedElems,
                                             CORBA::Boolean             theElemGroupNeeded,
                                             CORBA::Boolean             theNodeGroupNeeded)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::SMESH_Group_var aNewElemGroup, aNewNodeGroup;
@@ -6536,7 +6412,6 @@ CORBA::Boolean
 SMESH_MeshEditor_i::DoubleNodeElemGroupInRegion(SMESH::SMESH_GroupBase_ptr theElems,
                                                 SMESH::SMESH_GroupBase_ptr theNodesNot,
                                                 GEOM::GEOM_Object_ptr      theShape )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   if ( CORBA::is_nil( theElems ) && theElems->GetType() == SMESH::NODE )
@@ -6609,7 +6484,6 @@ CORBA::Boolean
 SMESH_MeshEditor_i::DoubleNodeElemGroups(const SMESH::ListOfGroups& theElems,
                                          const SMESH::ListOfGroups& theNodesNot,
                                          const SMESH::ListOfGroups& theAffectedElems)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -6651,7 +6525,6 @@ SMESH::SMESH_Group_ptr
 SMESH_MeshEditor_i::DoubleNodeElemGroupsNew(const SMESH::ListOfGroups& theElems,
                                             const SMESH::ListOfGroups& theNodesNot,
                                             const SMESH::ListOfGroups& theAffectedElems)
-  throw (SALOME::SALOME_Exception)
 {
   TPythonDump pyDump;
   SMESH::ListOfGroups_var twoGroups = DoubleNodeElemGroups2New( theElems,
@@ -6688,7 +6561,6 @@ SMESH_MeshEditor_i::DoubleNodeElemGroups2New(const SMESH::ListOfGroups& theElems
                                              const SMESH::ListOfGroups& theAffectedElems,
                                              CORBA::Boolean             theElemGroupNeeded,
                                              CORBA::Boolean             theNodeGroupNeeded)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::SMESH_Group_var aNewElemGroup, aNewNodeGroup;
@@ -6769,7 +6641,6 @@ CORBA::Boolean
 SMESH_MeshEditor_i::DoubleNodeElemGroupsInRegion(const SMESH::ListOfGroups& theElems,
                                                  const SMESH::ListOfGroups& theNodesNot,
                                                  GEOM::GEOM_Object_ptr      theShape )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -6812,7 +6683,6 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theElems,
                                                 const SMESH::ListOfGroups& theNodesNot,
                                                 GEOM::GEOM_Object_ptr      theShape )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   SMESH::ListOfGroups_var aListOfGroups = new SMESH::ListOfGroups();
@@ -6912,7 +6782,6 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
 //================================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -6954,7 +6823,6 @@ CORBA::Boolean
 SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
                                                   CORBA::Boolean             createJointElems,
                                                   CORBA::Boolean             onAllBoundaries )
-  throw (SALOME::SALOME_Exception)
 {
   bool isOK = false;
 
@@ -7012,7 +6880,6 @@ SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& the
 
 CORBA::Boolean
 SMESH_MeshEditor_i::CreateFlatElementsOnFacesGroups( const SMESH::ListOfGroups& theGroupsOfFaces )
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -7065,7 +6932,6 @@ void SMESH_MeshEditor_i::CreateHoleSkin(CORBA::Double                  radius,
                                         const char*                    groupName,
                                         const SMESH::double_array&     theNodesCoords,
                                         SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
 
@@ -7133,7 +6999,6 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
                                      CORBA::Boolean            toCopyElements,
                                      CORBA::Boolean            toCopyExistingBondary,
                                      SMESH::SMESH_Group_out    group)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -7230,7 +7095,6 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
                                                      const SMESH::ListOfIDSources& groups,
                                                      SMESH::SMESH_Mesh_out mesh,
                                                      SMESH::SMESH_Group_out group)
-  throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
@@ -7385,7 +7249,6 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
 
 void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
                                       const char*                theGroupName)
-  throw (SALOME::SALOME_Exception)
 {
   if ( theSegments.length() == 0 )
     THROW_SALOME_CORBA_EXCEPTION("No segments given", SALOME::BAD_PARAM );
@@ -7511,7 +7374,6 @@ void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
 
 SMESH::ListOfEdges* SMESH_MeshEditor_i::MakeSlot(SMESH::SMESH_GroupBase_ptr theSegments,
                                                  CORBA::Double              theWidth)
-  throw (SALOME::SALOME_Exception)
 {
   if ( CORBA::is_nil( theSegments ) ||
        theSegments->GetType() != SMESH::EDGE )

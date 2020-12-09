@@ -76,7 +76,6 @@ StdMeshers_Deflection1D_i::~StdMeshers_Deflection1D_i()
 //=============================================================================
 
 void StdMeshers_Deflection1D_i::SetDeflection( CORBA::Double theValue )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {
@@ -138,7 +137,7 @@ CORBA::Boolean StdMeshers_Deflection1D_i::IsDimSupported( SMESH::Dimension type 
  */
 //================================================================================
 
-std::string StdMeshers_Deflection1D_i::getMethodOfParameter(const int paramIndex,
+std::string StdMeshers_Deflection1D_i::getMethodOfParameter(const int /*paramIndex*/,
                                                             int       /*nbVars*/) const
 {
   return "SetDeflection";

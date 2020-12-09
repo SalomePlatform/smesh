@@ -56,14 +56,13 @@ public:
 
   // Set length
   // * OBSOLETE *. Avoid such a way of interface design
-  void SetLength( CORBA::Double theLength, CORBA::Boolean theIsStart )
-    throw ( SALOME::SALOME_Exception );
+  void SetLength( CORBA::Double theLength, CORBA::Boolean theIsStart );
 
   // Sets <start segment length> parameter value
-  void SetStartLength( CORBA::Double length) throw (SALOME::SALOME_Exception);
+  void SetStartLength( CORBA::Double length);
 
   // Sets <end segment length> parameter value
-  void SetEndLength( CORBA::Double length) throw (SALOME::SALOME_Exception);
+  void SetEndLength( CORBA::Double length);
 
   // Get length
   CORBA::Double GetLength(CORBA::Boolean theIsStart);

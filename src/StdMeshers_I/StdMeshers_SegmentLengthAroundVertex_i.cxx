@@ -74,7 +74,6 @@ StdMeshers_SegmentLengthAroundVertex_i::~StdMeshers_SegmentLengthAroundVertex_i(
 //=============================================================================
 
 void StdMeshers_SegmentLengthAroundVertex_i::SetLength( CORBA::Double theLength )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {

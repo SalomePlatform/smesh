@@ -56,7 +56,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   static SMESH_Actor* New() { return NULL;}
 
  public:
-  vtkTypeMacro(SMESH_Actor,SALOME_Actor);
+  vtkTypeMacro(SMESH_Actor,SALOME_Actor)
   static SMESH_Actor* New(TVisualObjPtr theVisualObj, 
                           const char* theEntry, 
                           const char* theName,

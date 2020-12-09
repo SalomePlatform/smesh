@@ -88,8 +88,8 @@ SMESH::ListOfHypothesisName* SMESH_Algo_i::GetCompatibleHypothesis()
  */
 //================================================================================
 
-bool SMESH_Algo_i::getObjectsDependOn( std::vector< std::string > & entryArray,
-                                       std::vector< int >         & subIDArray ) const
+bool SMESH_Algo_i::getObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                       std::vector< int >         & /*subIDArray*/ ) const
 {
   return false;
 }
@@ -100,8 +100,8 @@ bool SMESH_Algo_i::getObjectsDependOn( std::vector< std::string > & entryArray,
  */
 //================================================================================
 
-bool SMESH_Algo_i::setObjectsDependOn( std::vector< std::string > & entryArray,
-                                       std::vector< int >         & subIDArray )
+bool SMESH_Algo_i::setObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                       std::vector< int >         & /*subIDArray*/ )
 {
   return true;
 }

@@ -336,7 +336,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 }
 
 void SMDS_UnstructuredGrid::copyNodes(vtkPoints *       newPoints,
-                                      std::vector<int>& idNodesOldToNew,
+                                      std::vector<int>& /*idNodesOldToNew*/,
                                       int&              alreadyCopied,
                                       int               start,
                                       int               end)
@@ -410,7 +410,7 @@ void SMDS_UnstructuredGrid::CleanDownwardConnectivity()
  *  Downward connectivity is no more valid if vtkUnstructuredGrid is modified.
  *
  */
-void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
+void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool /*withEdges*/)
 {
   MESSAGE("SMDS_UnstructuredGrid::BuildDownwardConnectivity");CHRONO(2);
   // TODO calcul partiel sans edges
@@ -482,6 +482,7 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
   GuessSize[VTK_QUADRATIC_HEXAHEDRON]    = nbQuadHexa;
   GuessSize[VTK_TRIQUADRATIC_HEXAHEDRON] = nbQuadHexa;
   GuessSize[VTK_HEXAGONAL_PRISM]         = nbHexPrism;
+  (void)GuessSize; // unused in Release mode
 
   _downArray[VTK_LINE]                   ->allocate(nbLineGuess);
   _downArray[VTK_QUADRATIC_EDGE]         ->allocate(nbQuadEdgeGuess);

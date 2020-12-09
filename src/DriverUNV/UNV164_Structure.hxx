@@ -88,7 +88,7 @@ namespace UNV164
   MESHDRIVERUNV_EXPORT void
   Write(std::ofstream& out_stream );
 
-};
+}
 
 
 #endif

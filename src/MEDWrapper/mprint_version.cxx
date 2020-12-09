@@ -43,6 +43,6 @@ int main (int argc, char **argv)
     minor = release = -1;
   }
 
-  printf("%d.%d.%d\n", major, minor, release);
+  printf("%d.%d.%d\n", (int)major, (int)minor, (int)release);
   return 0;
 }

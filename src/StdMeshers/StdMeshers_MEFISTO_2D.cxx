@@ -677,7 +677,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
  */
 //=============================================================================
 
-void StdMeshers_MEFISTO_2D::ComputeScaleOnFace(SMESH_Mesh &        aMesh,
+void StdMeshers_MEFISTO_2D::ComputeScaleOnFace(SMESH_Mesh &        /*aMesh*/,
                                                const TopoDS_Face & aFace,
                                                double &            scalex,
                                                double &            scaley)

@@ -78,7 +78,7 @@ void Maillage::afficheMailles(TYPE_MAILLE tm)
     }
 }
 
-void Maillage::listeMaillesType(TYPE_MAILLE tm)
+void Maillage::listeMaillesType(TYPE_MAILLE /*tm*/)
 {
   cout << "La fonction \"Restitution des mailles par type\" est obsolète " << endl;
 
@@ -854,7 +854,7 @@ void Maillage::inputMED(std::string fichierMED)
 }
 
 void Maillage::acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid, char maa[MED_NAME_SIZE + 1],
-                                        med_int mdim)
+                                        med_int /*mdim*/)
 {
 
   //  int taille, numeromaille, numeroFamille;
@@ -1595,7 +1595,7 @@ TYPE_MAILLE Maillage::TYPE(int nglobal)
   return resultat;
 }
 
-int Maillage::NLOCAL(int nglobal, TYPE_MAILLE tm)
+int Maillage::NLOCAL(int nglobal, TYPE_MAILLE /*tm*/)
 {
   // Attention, les num. globaux commencent à 1, les num. locaux à 0
   int nPOI1 = EFFECTIFS_TYPES[POI1];

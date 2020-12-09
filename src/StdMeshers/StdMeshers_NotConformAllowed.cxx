@@ -81,7 +81,7 @@ istream & StdMeshers_NotConformAllowed::LoadFrom(istream & load)
  */
 //=============================================================================
 
-ostream & operator << (ostream & save, StdMeshers_NotConformAllowed & hyp)
+ostream & operator << (ostream & save, StdMeshers_NotConformAllowed & /*hyp*/)
 {
   return save;
 }
@@ -92,7 +92,7 @@ ostream & operator << (ostream & save, StdMeshers_NotConformAllowed & hyp)
  */
 //=============================================================================
 
-istream & operator >> (istream & load, StdMeshers_NotConformAllowed & hyp)
+istream & operator >> (istream & load, StdMeshers_NotConformAllowed & /*hyp*/)
 {
   return load;
 }

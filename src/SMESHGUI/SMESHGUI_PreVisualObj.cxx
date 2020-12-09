@@ -35,7 +35,7 @@ SMDS_Mesh* SMESHGUI_PreVisualObj::GetMesh() const
   return myMesh;
 }
 
-bool SMESHGUI_PreVisualObj::Update( int theIsClear = true )
+bool SMESHGUI_PreVisualObj::Update( int /*theIsClear*/)
 {
   return false;
 }

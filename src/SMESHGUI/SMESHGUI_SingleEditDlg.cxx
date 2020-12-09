@@ -172,7 +172,7 @@ QWidget* SMESHGUI_SingleEditDlg::createButtonFrame (QWidget* theParent)
 // name    : isValid()
 // Purpose : Verify validity of input data
 //=======================================================================
-bool SMESHGUI_SingleEditDlg::isValid (const bool theMess) const
+bool SMESHGUI_SingleEditDlg::isValid (const bool /*theMess*/) const
 {
   int id1, id2;
   return getNodeIds(myEdge->text(), id1, id2);
@@ -333,7 +333,7 @@ static bool findTriangles (const SMDS_MeshNode *    theNode1,
 //function : onTextChange()
 //purpose  :
 //=======================================================================
-void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
+void SMESHGUI_SingleEditDlg::onTextChange (const QString& /*theNewText*/)
 {
   if (myBusy) return;
   BusyLocker lock(myBusy);

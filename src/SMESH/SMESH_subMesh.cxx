@@ -1445,6 +1445,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
       loadDependentMeshes();
       ComputeSubMeshStateEngine( SUBMESH_LOADED );
       //break;
+      // fall through
     case CHECK_COMPUTE_STATE:
       if ( IsMeshComputed() )
         _computeState = COMPUTE_OK;
@@ -1496,6 +1497,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         }
         break;
       }
+      // fall through
     case COMPUTE:
     case COMPUTE_SUBMESH:
       {
@@ -1763,6 +1765,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
       loadDependentMeshes();
       ComputeSubMeshStateEngine( SUBMESH_LOADED );
       //break;
+      // fall through
     case CHECK_COMPUTE_STATE:
       if ( IsMeshComputed() )
         _computeState = COMPUTE_OK;
@@ -2149,7 +2152,7 @@ void SMESH_subMesh::removeSubMeshElementsAndNodes()
 //           meshed at once along with _subShape
 //=======================================================================
 
-TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
+TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * /*theGen*/,
                                           SMESH_Algo* theAlgo,
                                           bool &      theSubComputed,
                                           bool &      theSubFailed,

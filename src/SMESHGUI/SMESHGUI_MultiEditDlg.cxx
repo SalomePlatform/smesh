@@ -369,7 +369,6 @@ SMESH::NumericalFunctor_ptr SMESHGUI_MultiEditDlg::getNumericalFunctor()
     aNF = aFilterMgr->CreateMultiConnection2D();
   else if (myComboBoxFunctor->currentText() == tr("MIN_DIAG_ELEMENTS"))
     aNF = aFilterMgr->CreateMaxElementLength2D();
-  else;
 
   return aNF._retn();
 }

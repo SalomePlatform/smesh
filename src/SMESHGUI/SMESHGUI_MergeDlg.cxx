@@ -1621,7 +1621,7 @@ void SMESHGUI_MergeDlg::onSelectKeep()
 //           IDs to groups or vice versa
 //=======================================================================
 
-void SMESHGUI_MergeDlg::onKeepSourceChanged(int isGroup)
+void SMESHGUI_MergeDlg::onKeepSourceChanged(int /*isGroup*/)
 {
   KeepList->clear();
   SelectKeepButton->click();

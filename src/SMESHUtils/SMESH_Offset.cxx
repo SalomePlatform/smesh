@@ -552,7 +552,7 @@ namespace
 
   bool getTranslatedPosition( const SMDS_MeshNode*         theNewNode,
                               const double                 theOffset,
-                              const double                 theTol,
+                              const double                 /*theTol*/,
                               const double                 theSign,
                               const std::vector< gp_XYZ >& theFaceNormals,
                               SMDS_Mesh&                   theSrcMesh,
@@ -2358,7 +2358,7 @@ namespace
    */
   //================================================================================
 
-  void CutFace::Dump() const
+  void CutFace::Dump() const // todo: unused in release mode
   {
     std::cout << std::endl << "INI F " << myInitFace->GetID() << std::endl;
     for ( size_t i = 0; i < myLinks.size(); ++i )
@@ -2497,7 +2497,7 @@ namespace
    */
   //================================================================================
 
-  void CutFace::AddPoint( const CutLink& p1, const CutLink& p2, double tol ) const
+  void CutFace::AddPoint( const CutLink& p1, const CutLink& p2, double /*tol*/ ) const
   {
     if ( myInitFace->GetNodeIndex( p1.IntNode() ) >= 0 ||
          myInitFace->GetNodeIndex( p2.IntNode() ) >= 0 )
@@ -2756,7 +2756,7 @@ namespace
       // add links connecting internal loops with the boundary ones
 
       // find a pair of closest nodes
-      const SMDS_MeshNode *closestNode1, *closestNode2;
+      const SMDS_MeshNode *closestNode1 = 0, *closestNode2 = 0;
       double minDist = 1e100;
       for ( size_t iE = 0; iE < loop.myLinks.size(); ++iE )
       {
@@ -2779,10 +2779,12 @@ namespace
         }
       }
 
-      size_t i = myLinks.size();
-      myLinks.resize( i + 2 );
-      myLinks[ i   ].Set( closestNode1, closestNode2 );
-      myLinks[ i+1 ].Set( closestNode2, closestNode1 );
+      if ( closestNode1 && closestNode2 ) {
+        size_t i = myLinks.size();
+        myLinks.resize( i + 2 );
+        myLinks[ i   ].Set( closestNode1, closestNode2 );
+        myLinks[ i+1 ].Set( closestNode2, closestNode1 );
+      }
     }
 
     return true;
@@ -2918,7 +2920,7 @@ namespace
                              const double                 theSign,
                              const std::vector< gp_XYZ >& theNormals,
                              std::vector< EdgePart >&     theCutOffLinks,
-                             TLinkMap&                    theCutOffCoplanarLinks) const
+                             TLinkMap&                    /*theCutOffCoplanarLinks*/) const
   {
     EdgePart sideEdge;
     boost::container::flat_set< const SMDS_MeshElement* > checkedCoplanar;

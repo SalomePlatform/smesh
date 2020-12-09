@@ -113,7 +113,7 @@ namespace UNV2420
         const std::string& part_name); // can store a mesh name
   //    const TDataSet&    theDataSet);
 
-};
+}
 
 
 #endif

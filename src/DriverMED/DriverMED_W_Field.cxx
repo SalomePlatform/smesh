@@ -156,7 +156,7 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
   else
     _dblValues.reserve( nbElems * nbComps );
 
-  return nbElems * nbComps;
+  return nbElems && nbComps;
 }
 
 //================================================================================

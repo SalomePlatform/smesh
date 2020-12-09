@@ -78,7 +78,7 @@ typedef struct
 
 static int GmfIniFlg=0;
 static GmfMshSct *GmfMshTab[ MaxMsh + 1 ];
-// see MeshGems/Docs/meshgems_formats_description.pdf
+/* see MeshGems/Docs/meshgems_formats_description.pdf */
 static const char *GmfKwdFmt[ GmfMaxKwd + 1 ][4] = 
 {       {"Reserved", "", "", ""},
         {"MeshVersionFormatted", "", "", "i"},
@@ -875,7 +875,7 @@ void GmfSetLin(int MshIdx, int KwdCod, ...)
                         {
                                 for(i=0;i<kwd->SolSiz;i++)
                                         if(kwd->fmt[i] == 'r')
-                                                fprintf(msh->hdl, "%.15lg ", va_arg(VarArg, double));
+                                                fprintf(msh->hdl, "%.15lg ", va_arg(VarArg, double)); /* todo: ISO C90 does not support the '%lg' gnu_printf format */
                                         else if(kwd->fmt[i] == 'n') {
                                                 nb_repeat = va_arg(VarArg, int);
                                                 fprintf(msh->hdl, "%d ", nb_repeat);
@@ -936,7 +936,7 @@ void GmfSetLin(int MshIdx, int KwdCod, ...)
 
                         if(msh->typ & Asc)
                                 for(j=0;j<kwd->SolSiz;j++)
-                                        fprintf(msh->hdl, "%.15lg ", DblSolTab[j]);
+                                        fprintf(msh->hdl, "%.15lg ", DblSolTab[j]); /* todo: ISO C90 does not support the '%lg' gnu_printf format */
                         else
                                 RecBlk(msh, (unsigned char *)DblSolTab, kwd->NmbWrd);
                 }
@@ -1064,7 +1064,7 @@ static int ScaKwdTab(GmfMshSct *msh)
                         {
                                 /* Search which kwd code this string is associated with, 
                                         then get its header and save the current position in file (just before the data) */
-                                // printf("libmesh ScaKwdTab %s\n", str);
+                                /* printf("libmesh ScaKwdTab %s\n", str); */
                                 for(KwdCod=1; KwdCod<= GmfMaxKwd; KwdCod++)
                                         if(!strcmp(str, GmfKwdFmt[ KwdCod ][0]))
                                         {
@@ -1191,7 +1191,7 @@ static void ExpFmt(GmfMshSct *msh, int KwdCod)
 
         i = kwd->SolSiz = kwd->NmbWrd = 0;
 
-        while(i < strlen(InpFmt))
+        while(i < (int)strlen(InpFmt))
         {
                 chr = InpFmt[ i++ ];
 

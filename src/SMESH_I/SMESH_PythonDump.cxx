@@ -367,7 +367,7 @@ namespace SMESH
 
   TPythonDump&
   TPythonDump::
-  operator<<(SMESH::FilterManager_i* theArg)
+  operator<<(SMESH::FilterManager_i* /*theArg*/)
   {
     myStream<<"aFilterManager";
     return *this;
@@ -448,13 +448,13 @@ namespace SMESH
 
   TPythonDump&
   TPythonDump::
-  operator<<(SMESH::Measurements_i* theArg)
+  operator<<(SMESH::Measurements_i* /*theArg*/)
   {
     myStream<<"aMeasurements";
     return *this;
   }
 
-  TPythonDump& TPythonDump:: operator<<(SMESH_Gen_i* theArg)
+  TPythonDump& TPythonDump:: operator<<(SMESH_Gen_i* /*theArg*/)
   {
     myStream << SMESHGenName(); return *this;
   }
@@ -671,6 +671,8 @@ namespace SMESH
   {
 #ifdef _DEBUG_
     std::cout << "Exception in SMESH_Gen_i::DumpPython(): " << text << std::endl;
+#else
+    (void)text; // todo: unused in release mode
 #endif
   }
 

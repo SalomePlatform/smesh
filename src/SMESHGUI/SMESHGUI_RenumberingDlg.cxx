@@ -385,7 +385,7 @@ void SMESHGUI_RenumberingDlg::ActivateThisDialog()
 // function : enterEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RenumberingDlg::enterEvent(QEvent* e)
+void SMESHGUI_RenumberingDlg::enterEvent(QEvent* /*e*/)
 {
   if (GroupConstructors->isEnabled())
     return;

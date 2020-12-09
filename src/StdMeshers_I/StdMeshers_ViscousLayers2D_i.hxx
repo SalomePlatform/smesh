@@ -47,21 +47,21 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers2D_i:
   // Destructor
   virtual ~StdMeshers_ViscousLayers2D_i();
 
-  void SetIgnoreEdges(const SMESH::long_array& edgeIDs) throw ( SALOME::SALOME_Exception );
+  void SetIgnoreEdges(const SMESH::long_array& edgeIDs);
   SMESH::long_array* GetIgnoreEdges();
 
   void SetEdges(const SMESH::long_array& edgeIDs, 
-                CORBA::Boolean           toIgnore) throw (SALOME::SALOME_Exception);
+                CORBA::Boolean           toIgnore);
   SMESH::long_array* GetEdges();
   CORBA::Boolean     GetIsToIgnoreEdges();
 
-  void SetTotalThickness(::CORBA::Double thickness) throw ( SALOME::SALOME_Exception );
+  void SetTotalThickness(::CORBA::Double thickness);
   ::CORBA::Double GetTotalThickness();
 
-  void SetNumberLayers(::CORBA::Short nb) throw ( SALOME::SALOME_Exception );
+  void SetNumberLayers(::CORBA::Short nb);
   ::CORBA::Short GetNumberLayers();
 
-  void SetStretchFactor(::CORBA::Double factor) throw ( SALOME::SALOME_Exception );
+  void SetStretchFactor(::CORBA::Double factor);
   ::CORBA::Double GetStretchFactor();
 
   void SetGroupName(const char* name);

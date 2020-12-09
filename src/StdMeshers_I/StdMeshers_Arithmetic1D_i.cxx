@@ -77,7 +77,6 @@ StdMeshers_Arithmetic1D_i::~StdMeshers_Arithmetic1D_i()
 
 void StdMeshers_Arithmetic1D_i::SetLength(CORBA::Double theLength,
                                           CORBA::Boolean theIsStart )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {
@@ -101,7 +100,6 @@ void StdMeshers_Arithmetic1D_i::SetLength(CORBA::Double theLength,
 //=============================================================================
 
 void StdMeshers_Arithmetic1D_i::SetStartLength( CORBA::Double length)
-  throw (SALOME::SALOME_Exception)
 {
   SetLength( length, true );
 }
@@ -113,7 +111,6 @@ void StdMeshers_Arithmetic1D_i::SetStartLength( CORBA::Double length)
 //=============================================================================
 
 void StdMeshers_Arithmetic1D_i::SetEndLength( CORBA::Double length)
-  throw (SALOME::SALOME_Exception)
 {
   SetLength( length, false );
 }
@@ -166,7 +163,7 @@ CORBA::Boolean StdMeshers_Arithmetic1D_i::IsDimSupported( SMESH::Dimension type 
 //================================================================================
 
 std::string StdMeshers_Arithmetic1D_i::getMethodOfParameter(const int paramIndex,
-                                                            int       nbVars) const
+                                                            int       /*nbVars*/) const
 {
   return paramIndex == 0 ? "SetStartLength" : "SetEndLength";
 }

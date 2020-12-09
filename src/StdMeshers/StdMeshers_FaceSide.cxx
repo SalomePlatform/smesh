@@ -1176,6 +1176,8 @@ void StdMeshers_FaceSide::dump(const char* msg) const
     MESSAGE_ADD ( "\tF: "<<myFirst[i]<< " L: "<< myLast[i] );
     MESSAGE_END ( "\tnormPar: "<<myNormPar[i]<<endl );
   }
+#else
+  (void)msg; // unused in release mode
 #endif
 }
 

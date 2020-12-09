@@ -75,7 +75,6 @@ StdMeshers_LocalLength_i::~StdMeshers_LocalLength_i()
  */
 //=============================================================================
 void StdMeshers_LocalLength_i::SetLength( CORBA::Double theLength )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {
@@ -98,7 +97,6 @@ void StdMeshers_LocalLength_i::SetLength( CORBA::Double theLength )
  */
 //=============================================================================
 void StdMeshers_LocalLength_i::SetPrecision( CORBA::Double thePrecision )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {

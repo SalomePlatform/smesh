@@ -573,7 +573,7 @@ void SMESHGUI_RevolutionDlg::ClickOnHelp()
 // function : onAngleTextChange()
 // purpose  :
 //=======================================================================
-void SMESHGUI_RevolutionDlg::onAngleTextChange (const QString& theNewText)
+void SMESHGUI_RevolutionDlg::onAngleTextChange (const QString& /*theNewText*/)
 {
   bool isNumber;
   SpinBox_Angle->text().toDouble( &isNumber );

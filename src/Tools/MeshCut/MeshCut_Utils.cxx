@@ -437,7 +437,7 @@ int MESHCUT::codeGMSH(std::string type)
 
 std::string MESHCUT::floatEnsight(float x)
 {
-  char buf[12];
+  char buf[20];
   string s;
   if (x < 0.0)
     sprintf(buf, "%1.5E", x);

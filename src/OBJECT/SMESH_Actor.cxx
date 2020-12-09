@@ -1914,7 +1914,7 @@ int SMESH_ActorDef::RenderTranslucentGeometry(vtkViewport *vp)
 }
 
 
-void SMESH_ActorDef::Render(vtkRenderer *ren)
+void SMESH_ActorDef::Render(vtkRenderer* /*ren*/)
 {
   vtkMTimeType aTime = myTimeStamp->GetMTime();
   vtkMTimeType anObjTime = myVisualObj->GetUnstructuredGrid()->GetMTime();

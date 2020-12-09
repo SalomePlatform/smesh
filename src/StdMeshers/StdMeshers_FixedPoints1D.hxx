@@ -41,11 +41,9 @@ public:
   StdMeshers_FixedPoints1D(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_FixedPoints1D();
 
-  void SetPoints(const std::vector<double>& listParams)
-    throw(SALOME_Exception);
+  void SetPoints(const std::vector<double>& listParams);
 
-  void SetNbSegments(const std::vector<int>& listNbSeg) 
-    throw(SALOME_Exception);
+  void SetNbSegments(const std::vector<int>& listNbSeg) ;
 
   const std::vector<double>& GetPoints() const { return _params; }
 

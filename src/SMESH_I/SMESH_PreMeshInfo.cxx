@@ -72,7 +72,7 @@ namespace
    */
   //================================================================================
 
-  void meshInfoLoaded( SMESH_Mesh_i* mesh )
+  void meshInfoLoaded( SMESH_Mesh_i* /*mesh*/ )
   {
     theMeshCounter++;
   }
@@ -82,7 +82,7 @@ namespace
    */
   //================================================================================
 
-  void filesNoMoreNeeded(SMESH_Mesh_i* mesh,
+  void filesNoMoreNeeded(SMESH_Mesh_i* /*mesh*/,
                          std::string   medFile,
                          std::string   hdfFile)
   {

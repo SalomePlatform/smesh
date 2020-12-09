@@ -434,6 +434,7 @@ namespace // INTERNAL STUFF
         case TopAbs_EDGE:
           if ( SMESH_Algo::isDegenerated( TopoDS::Edge( sm->GetSubShape() )))
             continue;
+          // fall through
         case TopAbs_FACE:
           _subM.insert( sm );
           if ( !sm->IsEmpty() )

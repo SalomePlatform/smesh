@@ -77,7 +77,7 @@ static int MYDEBUG = 0;
 using namespace std;
 
 
-vtkStandardNewMacro(SMESH_DeviceActor);
+vtkStandardNewMacro(SMESH_DeviceActor)
 
 
 SMESH_DeviceActor
@@ -410,7 +410,7 @@ SMESH_DeviceActor
       aNbCells = 0;
       for(; anIter != aValues.end(); anIter++){
         const Length2D::Value& aValue = *anIter;
-        int aNode[2] = {
+        vtkIdType aNode[2] = {
           myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
           myVisualObj->GetNodeVTKId(aValue.myPntId[1])
         };
@@ -475,7 +475,7 @@ SMESH_DeviceActor
       aNbCells = 0;
       for(; anIter != aValues.end(); anIter++){
         const MultiConnection2D::Value& aValue = (*anIter).first;
-        int aNode[2] = {
+        vtkIdType aNode[2] = {
           myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
           myVisualObj->GetNodeVTKId(aValue.myPntId[1])
         };
@@ -573,7 +573,7 @@ SMESH_DeviceActor
     FreeEdges::TBorders::const_iterator anIter = aBorders.begin();
     for(; anIter != aBorders.end(); anIter++){
       const FreeEdges::Border& aBorder = *anIter;
-      int aNode[2] = {
+      vtkIdType aNode[2] = {
         myVisualObj->GetNodeVTKId(aBorder.myPntId[0]),
         myVisualObj->GetNodeVTKId(aBorder.myPntId[1])
       };

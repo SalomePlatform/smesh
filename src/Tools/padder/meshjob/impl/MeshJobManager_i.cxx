@@ -673,6 +673,7 @@ std::vector<std::string> * MeshJobManager_i::_getResourceNames() {
       LOG("resource["<<i<<"] = "<<aResourceName);
       resourceDefinition = _resourcesManager->GetResourceDefinition(aResourceName);
       LOG("protocol["<<i<<"] = "<<resourceDefinition->protocol);
+      (void)resourceDefinition; // unused in release mode
     }
   }
 
