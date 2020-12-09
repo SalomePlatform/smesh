@@ -28,8 +28,8 @@
 static int MYDEBUG = 0;
 static int MYVALUEDEBUG = 0;
 #else
-static int MYDEBUG = 0;
-static int MYVALUEDEBUG = 0;
+static int MYDEBUG = 0;      // todo: unused in release mode
+static int MYVALUEDEBUG = 0; // todo: unused in release mode
 #endif
 
 namespace MED
@@ -178,7 +178,7 @@ namespace MED
 
   //---------------------------------------------------------------
   TEntity2FamilySet
-  GetEntity2FamilySet(const PWrapper& theWrapper,
+  GetEntity2FamilySet(const PWrapper& /*theWrapper*/,
                       const TEntity2TGeom2ElemInfo& theEntity2TGeom2ElemInfo,
                       const TFamilyInfoSet& theFamilyInfoSet)
   {

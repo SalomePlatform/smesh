@@ -73,7 +73,6 @@ StdMeshers_LengthFromEdges_i::~StdMeshers_LengthFromEdges_i()
 //=============================================================================
 
 void StdMeshers_LengthFromEdges_i::SetMode( CORBA::Long theMode )
-  throw (SALOME::SALOME_Exception)
 {
   ASSERT( myBaseImpl );
   try {

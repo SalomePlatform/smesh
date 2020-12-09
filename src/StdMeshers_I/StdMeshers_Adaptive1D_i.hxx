@@ -53,20 +53,20 @@ class STDMESHERS_I_EXPORT StdMeshers_Adaptive1D_i:
   /*!
    * Sets minimal allowed segment length
    */
-  void SetMinSize( CORBA::Double minSegLen ) throw (SALOME::SALOME_Exception);
+  void SetMinSize( CORBA::Double minSegLen );
   CORBA::Double GetMinSize();
 
   /*!
    * Sets maximal allowed segment length
    */
-  void SetMaxSize( CORBA::Double maxSegLen ) throw (SALOME::SALOME_Exception);
+  void SetMaxSize( CORBA::Double maxSegLen );
   CORBA::Double GetMaxSize();
 
   /*!
    * Sets <deflection> parameter value, 
    * i.e. a maximal allowed distance between a segment and an edge.
    */
-  void SetDeflection( CORBA::Double theLength ) throw (SALOME::SALOME_Exception);
+  void SetDeflection( CORBA::Double theLength );
   CORBA::Double GetDeflection();
 
 
@@ -85,10 +85,10 @@ class STDMESHERS_I_EXPORT StdMeshers_Adaptive1D_i:
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 
   // Methods for copying mesh definition to other geometry
-  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) const { return false; }
-  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) { return true; }
+  virtual bool getObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) const { return false; }
+  virtual bool setObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) { return true; }
 };
 
 #endif

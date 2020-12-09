@@ -63,7 +63,7 @@ namespace SMDS {
   template <typename VALUE>
   struct PassAllValueFilter
   {
-    bool operator()(const VALUE& t ) { return true; }
+    bool operator()(const VALUE& /*t*/ ) { return true; }
   };
 
   template <typename VALUE>

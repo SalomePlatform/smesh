@@ -336,6 +336,6 @@ namespace StdMeshers_ProjectionUtils
   TopoDS_Edge GetBoundaryEdge(const TopoDS_Shape&       edgeContainer,
                               const SMESH_Mesh&         mesh,
                               std::list< TopoDS_Edge >* allBndEdges = 0 );
-};
+}
 
 #endif

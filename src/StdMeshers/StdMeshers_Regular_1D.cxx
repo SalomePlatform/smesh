@@ -540,7 +540,7 @@ void StdMeshers_Regular_1D::SetEventListener(SMESH_subMesh* subMesh)
  */
 //=============================================================================
 
-void StdMeshers_Regular_1D::SubmeshRestored(SMESH_subMesh* subMesh)
+void StdMeshers_Regular_1D::SubmeshRestored(SMESH_subMesh* /*subMesh*/)
 {
 }
 

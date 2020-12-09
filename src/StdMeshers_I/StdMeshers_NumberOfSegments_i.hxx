@@ -54,50 +54,38 @@ public:
   virtual ~StdMeshers_NumberOfSegments_i();
 
   // Builds point distribution according to passed function
-  SMESH::double_array* BuildDistributionExpr( const char*, CORBA::Long, CORBA::Long )
-    throw ( SALOME::SALOME_Exception );
-  SMESH::double_array* BuildDistributionTab( const SMESH::double_array&, CORBA::Long, CORBA::Long )
-    throw ( SALOME::SALOME_Exception );
+  SMESH::double_array* BuildDistributionExpr( const char*, CORBA::Long, CORBA::Long );
+  SMESH::double_array* BuildDistributionTab( const SMESH::double_array&, CORBA::Long, CORBA::Long );
 
   // Set number of segments
-  void SetNumberOfSegments( CORBA::Long theSegmentsNumber )
-    throw ( SALOME::SALOME_Exception );
+  void SetNumberOfSegments( CORBA::Long theSegmentsNumber );
   // Get number of segments
   CORBA::Long GetNumberOfSegments();
 
   // Set distribution type
-  void SetDistrType(CORBA::Long typ)
-    throw ( SALOME::SALOME_Exception );
+  void SetDistrType(CORBA::Long typ);
   // Get distribution type
   CORBA::Long GetDistrType();
 
   // Set scalar factor
-  void SetScaleFactor( CORBA::Double theScaleFactor )
-    throw ( SALOME::SALOME_Exception );
+  void SetScaleFactor( CORBA::Double theScaleFactor );
   // Get scalar factor
-  CORBA::Double GetScaleFactor()
-    throw ( SALOME::SALOME_Exception );
+  CORBA::Double GetScaleFactor();
 
   // Set table function for distribution DT_TabFunc
-  void SetTableFunction(const SMESH::double_array& table)
-    throw ( SALOME::SALOME_Exception );
+  void SetTableFunction(const SMESH::double_array& table);
   // Get table function for distribution DT_TabFunc
-  SMESH::double_array* GetTableFunction()
-    throw ( SALOME::SALOME_Exception );
+  SMESH::double_array* GetTableFunction();
 
   // Set expression function for distribution DT_ExprFunc
-  void SetExpressionFunction(const char* expr)
-    throw ( SALOME::SALOME_Exception );
+  void SetExpressionFunction(const char* expr);
   // Get expression function for distribution DT_ExprFunc
-  char* GetExpressionFunction()
-    throw ( SALOME::SALOME_Exception );
+  char* GetExpressionFunction();
 
   // Set the exponent mode on/off
-  void SetConversionMode( CORBA::Long conv )
-    throw ( SALOME::SALOME_Exception );
+  void SetConversionMode( CORBA::Long conv );
   // Returns true if the exponent mode is set
-  CORBA::Long ConversionMode()
-    throw ( SALOME::SALOME_Exception );
+  CORBA::Long ConversionMode();
 
   // Get implementation
   ::StdMeshers_NumberOfSegments* GetImpl();

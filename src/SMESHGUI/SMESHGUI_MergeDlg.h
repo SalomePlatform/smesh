@@ -72,7 +72,7 @@ namespace SMESH
 //=================================================================================
 class SMESHGUI_EXPORT SMESHGUI_MergeDlg : public QDialog
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   SMESHGUI_MergeDlg( SMESHGUI*, int );

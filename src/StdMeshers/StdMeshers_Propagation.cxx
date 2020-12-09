@@ -588,6 +588,7 @@ namespace {
           clearPropagationChain( subMesh );
         }
         // return; -- hyp is modified any way
+        // fall through
       default:
         //case SMESH_subMesh::MODIF_HYP: // hyp modif
         // clear mesh in a chain

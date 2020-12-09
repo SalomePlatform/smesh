@@ -49,8 +49,8 @@ class STDMESHERS_I_EXPORT StdMeshers_Geometric1D_i:
   StdMeshers_Geometric1D_i( PortableServer::POA_ptr thePOA,
                             ::SMESH_Gen*            theGenImpl );
 
-  void SetStartLength(CORBA::Double length) throw(SALOME::SALOME_Exception);
-  void SetCommonRatio(CORBA::Double factor) throw(SALOME::SALOME_Exception);
+  void SetStartLength(CORBA::Double length);
+  void SetCommonRatio(CORBA::Double factor);
 
   CORBA::Double GetStartLength();
   CORBA::Double GetCommonRatio();

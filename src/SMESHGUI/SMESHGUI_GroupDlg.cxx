@@ -767,7 +767,7 @@ void SMESHGUI_GroupDlg::updateButtons()
 // function : onNameChanged()
 // purpose  :
 //=================================================================================
-void SMESHGUI_GroupDlg::onNameChanged (const QString& text)
+void SMESHGUI_GroupDlg::onNameChanged (const QString& /*text*/)
 {
   myOldName = myName->text();
   updateButtons();
@@ -814,7 +814,7 @@ void SMESHGUI_GroupDlg::onGrpTypeChanged (int id)
 // function : onColorChanged()
 // purpose  : Color button management
 //=================================================================================
-void SMESHGUI_GroupDlg::onColorChanged(QColor theColor)
+void SMESHGUI_GroupDlg::onColorChanged(QColor /*theColor*/)
 {
   updateButtons();
 }

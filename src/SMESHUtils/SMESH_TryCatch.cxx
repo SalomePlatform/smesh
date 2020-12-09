@@ -30,6 +30,7 @@ void SMESH::throwSalomeEx(const char* txt)
 
 void SMESH::doNothing(const char* txt)
 {
+  (void)txt; // unused in release mode
   MESSAGE( txt << " " << __FILE__ << ": " << __LINE__ );
 }
 

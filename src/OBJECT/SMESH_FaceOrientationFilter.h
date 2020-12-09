@@ -33,7 +33,7 @@ class VTKViewer_CellCenters;
 class SMESHOBJECT_EXPORT SMESH_FaceOrientationFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro( SMESH_FaceOrientationFilter, vtkPolyDataAlgorithm );
+  vtkTypeMacro( SMESH_FaceOrientationFilter, vtkPolyDataAlgorithm )
 
   /*!Create a new SMESH_FaceOrientationFilter.*/
   static SMESH_FaceOrientationFilter *New();

@@ -76,7 +76,6 @@ StdMeshers_AutomaticLength_i::~StdMeshers_AutomaticLength_i()
 //=============================================================================
 
 void StdMeshers_AutomaticLength_i::SetFineness( CORBA::Double theFineness )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {

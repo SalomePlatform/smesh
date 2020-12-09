@@ -76,7 +76,6 @@ StdMeshers_MaxElementVolume_i::~StdMeshers_MaxElementVolume_i()
 //=============================================================================
 
 void StdMeshers_MaxElementVolume_i::SetMaxElementVolume( CORBA::Double theVolume )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {

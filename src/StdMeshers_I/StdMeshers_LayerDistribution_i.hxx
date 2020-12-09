@@ -58,8 +58,7 @@ public:
    * \brief Sets  1D hypothesis specifying distribution of layers
     * \param hyp1D - 1D hypothesis
    */
-  void SetLayerDistribution(SMESH::SMESH_Hypothesis_ptr hyp1D)
-    throw ( SALOME::SALOME_Exception );
+  void SetLayerDistribution(SMESH::SMESH_Hypothesis_ptr hyp1D);
 
   /*!
    * \brief Returns 1D hypothesis specifying distribution of layers
@@ -82,12 +81,12 @@ public:
   // Methods for copying mesh definition to other geometry
 
   // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
-  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) const { return 0; }
+  virtual bool getObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) const { return 0; }
 
   // Set new geometry instead of that returned by getObjectsDependOn()
-  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) { return true; }
+  virtual bool setObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) { return true; }
 protected:
   // restore myMethod2VarParams by parameters stored in an old study
   virtual void setOldParameters (const char* theParameters);

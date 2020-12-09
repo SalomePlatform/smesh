@@ -284,7 +284,7 @@ void SMESH_NoteBook::ReplaceVariables()
         const char* varIndexPtr = cmdStr.ToCString() + pos;
         if ( '0' <= *varIndexPtr && *varIndexPtr <= '9' )
           varIndex = atoi( varIndexPtr );
-        if ( 0 <= varIndex && varIndex < vars.size() && !vars[varIndex].empty() )
+        if ( 0 <= (int)varIndex && varIndex < vars.size() && !vars[varIndex].empty() )
         {
           // replace '$VarIndex$' either by var name of var value
           const char var0    = vars[varIndex][0];

@@ -41,7 +41,7 @@ class SMESHOBJECT_EXPORT SMESH_SVTKActor : public SVTK_Actor {
 public:
   static SMESH_SVTKActor* New();
 
-  vtkTypeMacro(SMESH_SVTKActor, SVTK_Actor);
+  vtkTypeMacro(SMESH_SVTKActor, SVTK_Actor)
 
   void SetBallScale(double theSize);
   void SetBallSize(float theSize);

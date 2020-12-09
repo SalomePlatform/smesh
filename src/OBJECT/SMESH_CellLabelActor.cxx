@@ -44,7 +44,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellData.h>
 
-vtkStandardNewMacro(SMESH_CellLabelActor);
+vtkStandardNewMacro(SMESH_CellLabelActor)
 
 /*!
   Constructor.
@@ -205,7 +205,7 @@ void SMESH_CellLabelActor::UpdateLabels()
 
 
 void SMESH_CellLabelActor::ProcessEvents(vtkObject* vtkNotUsed(theObject),
-                                         unsigned long theEvent,
+                                         unsigned long /*theEvent*/,
                                          void* theClientData,
                                          void* vtkNotUsed(theCallData))
 {

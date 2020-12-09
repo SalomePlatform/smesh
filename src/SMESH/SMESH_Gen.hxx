@@ -42,6 +42,7 @@
 #include <string>
 
 #include <TopoDS_Shape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 
 class SMESHDS_Document;
 class SMESH_Algo;
@@ -66,8 +67,7 @@ public:
   SMESH_Gen();
   ~SMESH_Gen();
 
-  SMESH_Mesh* CreateMesh(bool theIsEmbeddedMode)
-    throw(SALOME_Exception);
+  SMESH_Mesh* CreateMesh(bool theIsEmbeddedMode);
 
   enum ComputeFlags
   {
@@ -83,13 +83,15 @@ public:
    *  \param aFlags - ComputeFlags. By default compute the whole mesh and compact at the end.
    *  \param aDim - upper level dimension of the mesh computation (for preview)
    *  \param aShapesId - list of shapes with computed mesh entities (elements or nodes)
+   *  \param anAllowedSubShapes - shapes to mesh only. Mesh all if empty or nullptr
    *  \retval bool - true if none sub-mesh failed to compute
    */
-  bool Compute(::SMESH_Mesh &        aMesh,
-               const TopoDS_Shape &  aShape,
-               const int             aFlags = COMPACT_MESH,
-               const ::MeshDimension aDim=::MeshDim_3D,
-               TSetOfInt*            aShapesId=0);
+  bool Compute(::SMESH_Mesh &              aMesh,
+               const TopoDS_Shape &        aShape,
+               const int                   aFlags = COMPACT_MESH,
+               const ::MeshDimension       aDim=::MeshDim_3D,
+               TSetOfInt*                  aShapesId=0,
+               TopTools_IndexedMapOfShape* anAllowedSubShapes=0);
 
   void PrepareCompute(::SMESH_Mesh &        aMesh,
                       const TopoDS_Shape &  aShape);

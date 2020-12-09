@@ -499,8 +499,8 @@ ItemDelegate::ItemDelegate( QObject* parent ) : QItemDelegate( parent )
 */
 QWidget* StdMeshersGUI_QuadrangleParamCreator::
 ItemDelegate::createEditor( QWidget*                    parent,
-                            const QStyleOptionViewItem& option,
-                            const QModelIndex&          index ) const
+                            const QStyleOptionViewItem& /*option*/,
+                            const QModelIndex&          /*index*/ ) const
 {
   SMESHGUI_SpinBox* sb = new SMESHGUI_SpinBox( parent );
   sb->RangeStepAndValidator( COORD_MIN, COORD_MAX, 10 );

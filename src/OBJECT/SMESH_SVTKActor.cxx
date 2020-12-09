@@ -43,7 +43,7 @@
 
 #include <Utils_SALOME_Exception.hxx>
 
-vtkStandardNewMacro(SMESH_SVTKActor);
+vtkStandardNewMacro(SMESH_SVTKActor)
 
 /*!
   Constructor

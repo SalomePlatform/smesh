@@ -169,14 +169,12 @@ public:
 
   // Create hypothesis/algorithm of given type
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const char* theHypType,
-                                                const char* theLibName)
-    throw ( SALOME::SALOME_Exception );
+                                                const char* theLibName);
 
   SMESH::SMESH_Hypothesis_ptr CreateHypothesisByAverageLength( const char*    theHypType,
                                                                const char*    theLibName,
                                                                CORBA::Double  theAverageLength,
-                                                               CORBA::Boolean theQuadDominated)
-    throw ( SALOME::SALOME_Exception );
+                                                               CORBA::Boolean theQuadDominated);
 
   // Return hypothesis of given type holding parameter values of the existing mesh
   SMESH::SMESH_Hypothesis_ptr
@@ -184,8 +182,7 @@ public:
                                   const char*                 theLibName,
                                   SMESH::SMESH_Mesh_ptr       theMesh,
                                   GEOM::GEOM_Object_ptr       theGeom,
-                                  const SMESH::HypInitParams& theWay)
-    throw ( SALOME::SALOME_Exception );
+                                  const SMESH::HypInitParams& theWay);
 
   /*
    * Returns True if a hypothesis is assigned to a sole sub-mesh in a current Study
@@ -200,11 +197,11 @@ public:
    * Sets number of segments per diagonal of boundary box of geometry by which
    * default segment length of appropriate 1D hypotheses is defined
    */
-  void SetBoundaryBoxSegmentation( CORBA::Long theNbSegments ) throw ( SALOME::SALOME_Exception );
+  void SetBoundaryBoxSegmentation( CORBA::Long theNbSegments );
   /*!
    * \brief Sets default number of segments per edge
    */
-  void SetDefaultNbSegments(CORBA::Long theNbSegments) throw ( SALOME::SALOME_Exception );
+  void SetDefaultNbSegments(CORBA::Long theNbSegments);
 
   /*!
     Set an option value
@@ -222,48 +219,39 @@ public:
 
 
   // Create empty mesh on a shape
-  SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
-    throw ( SALOME::SALOME_Exception );
+  SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject );
 
   // Create empty mesh
-  SMESH::SMESH_Mesh_ptr CreateEmptyMesh()
-    throw ( SALOME::SALOME_Exception );
+  SMESH::SMESH_Mesh_ptr CreateEmptyMesh();
 
   //  Create a mesh and import data from an UNV file
-  SMESH::SMESH_Mesh_ptr CreateMeshesFromUNV( const char* theFileName )
-    throw ( SALOME::SALOME_Exception );
+  SMESH::SMESH_Mesh_ptr CreateMeshesFromUNV( const char* theFileName );
 
   //  Create mesh(es) and import data from MED file
   SMESH::mesh_array* CreateMeshesFromMED( const char* theFileName,
-                                          SMESH::DriverMED_ReadStatus& theStatus )
-    throw ( SALOME::SALOME_Exception );
+                                          SMESH::DriverMED_ReadStatus& theStatus );
 
   //  Create mesh(es) and import data from MED file
   SMESH::mesh_array* CreateMeshesFromSAUV( const char* theFileName,
-                                           SMESH::DriverMED_ReadStatus& theStatus )
-    throw ( SALOME::SALOME_Exception );
+                                           SMESH::DriverMED_ReadStatus& theStatus );
 
   //  Create a mesh and import data from a STL file
-  SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName )
-    throw ( SALOME::SALOME_Exception );
+  SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName );
 
   //  Create mesh(es) and import data from CGNS file
   SMESH::mesh_array* CreateMeshesFromCGNS( const char* theFileName,
-                                           SMESH::DriverMED_ReadStatus& theStatus )
-    throw ( SALOME::SALOME_Exception );
+                                           SMESH::DriverMED_ReadStatus& theStatus );
 
   //  Create a mesh and import data from a GMF file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromGMF( const char*             theFileName,
                                              CORBA::Boolean          theMakeRequiredGroups,
-                                             SMESH::ComputeError_out theError)
-    throw ( SALOME::SALOME_Exception );
+                                             SMESH::ComputeError_out theError);
 
   // Copy a part of mesh
   SMESH::SMESH_Mesh_ptr CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
                                  const char*               meshName,
                                  CORBA::Boolean            toCopyGroups,
-                                 CORBA::Boolean            toKeepIDs)
-    throw ( SALOME::SALOME_Exception );
+                                 CORBA::Boolean            toKeepIDs);
 
   // Create a mesh by copying definitions of another mesh to a given geometry
   CORBA::Boolean CopyMeshWithGeom( SMESH::SMESH_Mesh_ptr       sourceMesh,
@@ -276,13 +264,11 @@ public:
                                    SMESH::ListOfGroups_out     newGroups,
                                    SMESH::submesh_array_out    newSubmeshes,
                                    SMESH::ListOfHypothesis_out newHypotheses,
-                                   SMESH::string_array_out     invalidEntries)
-    throw ( SALOME::SALOME_Exception );
+                                   SMESH::string_array_out     invalidEntries);
 
     // Compute mesh on a shape
   CORBA::Boolean Compute( SMESH::SMESH_Mesh_ptr theMesh,
-                          GEOM::GEOM_Object_ptr theShapeObject )
-    throw ( SALOME::SALOME_Exception );
+                          GEOM::GEOM_Object_ptr theShapeObject );
 
   // Cancel Compute mesh on a shape
   void CancelCompute( SMESH::SMESH_Mesh_ptr theMesh,
@@ -292,8 +278,7 @@ public:
    * \brief Return errors of mesh computation
    */
   SMESH::compute_error_array* GetComputeErrors(SMESH::SMESH_Mesh_ptr theMesh,
-                                               GEOM::GEOM_Object_ptr  theShapeObject )
-    throw ( SALOME::SALOME_Exception );
+                                               GEOM::GEOM_Object_ptr  theShapeObject );
 
   /*!
    * Evaluate mesh on a shape and
@@ -301,13 +286,11 @@ public:
    * Result array of number enityties
    */
   SMESH::long_array* Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
-                              GEOM::GEOM_Object_ptr theShapeObject)
-    throw ( SALOME::SALOME_Exception );
+                              GEOM::GEOM_Object_ptr theShapeObject);
 
   // Returns true if mesh contains enough data to be computed
   CORBA::Boolean IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
-                                   GEOM::GEOM_Object_ptr theShapeObject )
-    throw ( SALOME::SALOME_Exception );
+                                   GEOM::GEOM_Object_ptr theShapeObject );
 
   /*!
    * Calculate Mesh as preview till indicated dimension on shape
@@ -317,40 +300,33 @@ public:
   SMESH::MeshPreviewStruct* Precompute( SMESH::SMESH_Mesh_ptr theMesh,
                                         GEOM::GEOM_Object_ptr theSubObject,
                                         SMESH::Dimension      theDimension,
-                                        SMESH::long_array&    theShapesId )
-    throw ( SALOME::SALOME_Exception );
+                                        SMESH::long_array&    theShapesId );
 
   // Returns errors of hypotheses definition
   SMESH::algo_error_array* GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh,
-                                         GEOM::GEOM_Object_ptr theSubObject )
-    throw ( SALOME::SALOME_Exception );
+                                         GEOM::GEOM_Object_ptr theSubObject );
 
   // Return mesh elements preventing computation of a subshape
   SMESH::MeshPreviewStruct* GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
-                                                 CORBA::Short          theSubShapeID )
-    throw ( SALOME::SALOME_Exception );
+                                                 CORBA::Short          theSubShapeID );
 
   // Create groups of elements preventing computation of a sub-shape
   SMESH::ListOfGroups* MakeGroupsOfBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
                                                      CORBA::Short          theSubShapeID,
-                                                     const char*           theGroupName)
-    throw ( SALOME::SALOME_Exception );
+                                                     const char*           theGroupName);
 
   // Get sub-shapes unique ID's list
   SMESH::long_array* GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
-                                     const SMESH::object_array& theListOfSubShape )
-    throw ( SALOME::SALOME_Exception );
+                                     const SMESH::object_array& theListOfSubShape );
 
   // Return geometrical object the given element is built on. Publish it in study.
   GEOM::GEOM_Object_ptr GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
                                                   CORBA::Long            theElementID,
-                                                  const char*            theGeomName)
-    throw ( SALOME::SALOME_Exception );
+                                                  const char*            theGeomName);
 
   // Return geometrical object the given element is built on. Don't publish it in study.
   GEOM::GEOM_Object_ptr FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
-                                                   CORBA::Long            theElementID)
-    throw ( SALOME::SALOME_Exception );
+                                                   CORBA::Long            theElementID);
 
   // Concatenate the given meshes into one mesh
   SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::ListOfIDSources& meshesArray,
@@ -358,16 +334,14 @@ public:
                                           CORBA::Boolean                mergeNodesAndElements,
                                           CORBA::Double                 mergeTolerance,
                                           CORBA::Boolean                commonGroups,
-                                          SMESH::SMESH_Mesh_ptr         meshToAppendTo)
-    throw ( SALOME::SALOME_Exception );
+                                          SMESH::SMESH_Mesh_ptr         meshToAppendTo);
 
   // Concatenate the given meshes into one mesh
   SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::ListOfIDSources& meshesArray,
                                     CORBA::Boolean                uniteIdenticalGroups,
                                     CORBA::Boolean                mergeNodesAndElements,
                                     CORBA::Double                 mergeTolerance,
-                                    SMESH::SMESH_Mesh_ptr         meshToAppendTo)
-    throw ( SALOME::SALOME_Exception );
+                                    SMESH::SMESH_Mesh_ptr         meshToAppendTo);
 
   // Concatenate the given meshes into one mesh
   // Create the groups of all elements from initial meshes
@@ -375,8 +349,7 @@ public:
                                               CORBA::Boolean                uniteIdenticalGroups,
                                               CORBA::Boolean                mergeNodesAndElements,
                                               CORBA::Double                 mergeTolerance,
-                                              SMESH::SMESH_Mesh_ptr         meshToAppendTo)
-    throw ( SALOME::SALOME_Exception );
+                                              SMESH::SMESH_Mesh_ptr         meshToAppendTo);
 
   // Get version of MED format being used.
   char* GetMEDFileVersion();
@@ -447,19 +420,18 @@ public:
   // Publish object in the study
   SALOMEDS::SObject_ptr PublishInStudy( SALOMEDS::SObject_ptr theSObject,
                                         CORBA::Object_ptr     theObject,
-                                        const char*           theName )
-    throw ( SALOME::SALOME_Exception );
+                                        const char*           theName );
 
   // Copy-paste methods - returns true if object can be copied to the clipboard
-  CORBA::Boolean CanCopy( SALOMEDS::SObject_ptr theObject ) { return false; }
+  CORBA::Boolean CanCopy( SALOMEDS::SObject_ptr /*theObject*/ ) { return false; }
   // Copy-paste methods - copy object to the clipboard
-  SALOMEDS::TMPFile* CopyFrom( SALOMEDS::SObject_ptr theObject, CORBA::Long& theObjectID ) { return NULL; }
+  SALOMEDS::TMPFile* CopyFrom( SALOMEDS::SObject_ptr /*theObject*/, CORBA::Long& /*theObjectID*/ ) { return NULL; }
   // Copy-paste methods - returns true if object can be pasted from the clipboard
-  CORBA::Boolean CanPaste( const char* theComponentName, CORBA::Long theObjectID ) { return false; }
+  CORBA::Boolean CanPaste( const char* /*theComponentName*/, CORBA::Long /*theObjectID*/ ) { return false; }
   // Copy-paste methods - paste object from the clipboard
-  SALOMEDS::SObject_ptr PasteInto( const SALOMEDS::TMPFile& theStream,
-                                   CORBA::Long              theObjectID,
-                                   SALOMEDS::SObject_ptr    theObject ) {
+  SALOMEDS::SObject_ptr PasteInto( const SALOMEDS::TMPFile& /*theStream*/,
+                                   CORBA::Long              /*theObjectID*/,
+                                   SALOMEDS::SObject_ptr    /*theObject*/ ) {
     SALOMEDS::SObject_var aResultSO;
     return aResultSO._retn();
   }
@@ -637,14 +609,12 @@ private:
   // Get hypothesis creator
   GenericHypothesisCreator_i* getHypothesisCreator( const char*  theHypName,
                                                     const char*  theLibName,
-                                                    std::string& thePlatformLibName)
-  throw ( SALOME::SALOME_Exception );
+                                                    std::string& thePlatformLibName);
   // Create hypothesis of given type
   SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,
                                                 const char* theLibName);
   // Create empty mesh on shape
-  SMESH::SMESH_Mesh_ptr createMesh()
-    throw ( SALOME::SALOME_Exception );
+  SMESH::SMESH_Mesh_ptr createMesh();
 
   // Check mesh icon
   bool isGeomModifIcon( SMESH::SMESH_Mesh_ptr mesh );

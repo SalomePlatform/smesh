@@ -164,9 +164,9 @@ namespace
       return &theEdgeMarker;
     }
     //! Clear edge sumbesh if something happens on face
-    void ProcessEvent(const int          event,
+    void ProcessEvent(const int          /*event*/,
                       const int          eventType,
-                      SMESH_subMesh*     faceSubMesh,
+                      SMESH_subMesh*     /*faceSubMesh*/,
                       EventListenerData* edgesHolder,
                       const SMESH_Hypothesis*  /*hyp*/)
     {
@@ -402,9 +402,9 @@ namespace
    */
   //================================================================================
 
-  bool isCornerInsideCircle(const StdMeshers_FaceSidePtr& CircSide,
-                            const StdMeshers_FaceSidePtr& LinSide1,
-                            const StdMeshers_FaceSidePtr& LinSide2)
+  bool isCornerInsideCircle(const StdMeshers_FaceSidePtr& /*CircSide*/,
+                            const StdMeshers_FaceSidePtr& /*LinSide1*/,
+                            const StdMeshers_FaceSidePtr& /*LinSide2*/)
   {
     // if ( CircSide && LinSide1 && LinSide2 )
     // {
@@ -439,7 +439,7 @@ namespace
   {
     // find the center and a point most distant from it
 
-    double maxDist = 0, normPar;
+    double maxDist = 0, normPar = 0;
     gp_XY uv1, uv2;
     for ( int i = 0; i < 32; ++i )
     {
@@ -1279,4 +1279,4 @@ bool StdMeshers_RadialQuadrangle_1D2D::IsApplicable( const TopoDS_Shape & aShape
   }
   if( toCheckAll && nbFoundFaces != 0 ) return true;
   return false;
-};
+}

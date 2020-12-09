@@ -75,7 +75,6 @@ StdMeshers_NumberOfLayers_i::~StdMeshers_NumberOfLayers_i()
 //=============================================================================
 
 void StdMeshers_NumberOfLayers_i::SetNumberOfLayers(CORBA::Long numberOfLayers)
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {

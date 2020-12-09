@@ -52,10 +52,8 @@ public:
   // (additionally it is neecessary to check orientation of edges and
   // create list of reversed edges if it is needed) and sets numbers
   // of segments between given points (default values are equals 1)
-  void SetPoints(const SMESH::double_array& listParams) 
-    throw ( SALOME::SALOME_Exception );
-  void SetNbSegments(const SMESH::long_array& listNbSeg) 
-    throw ( SALOME::SALOME_Exception );
+  void SetPoints(const SMESH::double_array& listParams);
+  void SetNbSegments(const SMESH::long_array& listNbSeg);
 
   // Returns list of point's parameters
   SMESH::double_array* GetPoints();

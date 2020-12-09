@@ -206,8 +206,8 @@ namespace VISCOUS_3D
     virtual void ProcessEvent(const int                       event,
                               const int                       eventType,
                               SMESH_subMesh*                  subMesh,
-                              SMESH_subMeshEventListenerData* data,
-                              const SMESH_Hypothesis*         hyp)
+                              SMESH_subMeshEventListenerData* /*data*/,
+                              const SMESH_Hypothesis*         /*hyp*/)
     {
       if (( SMESH_subMesh::COMPUTE_EVENT       == eventType ) &&
           ( SMESH_subMesh::CHECK_COMPUTE_STATE != event &&
@@ -1091,7 +1091,7 @@ namespace VISCOUS_3D
                              Handle(ShapeAnalysis_Surface)& surface,
                              const TopoDS_Face&             F,
                              SMESH_MesherHelper&            helper);
-    bool smoothComplexEdge( _SolidData&                    data,
+    bool smoothComplexEdge( _SolidData&                     data,
                             Handle(ShapeAnalysis_Surface)& surface,
                             const TopoDS_Face&             F,
                             SMESH_MesherHelper&            helper);
@@ -1376,8 +1376,8 @@ std::istream & StdMeshers_ViscousLayers::LoadFrom(std::istream & load)
   }
   return load;
 } // --------------------------------------------------------------------------------
-bool StdMeshers_ViscousLayers::SetParametersByMesh(const SMESH_Mesh*   theMesh,
-                                                   const TopoDS_Shape& theShape)
+bool StdMeshers_ViscousLayers::SetParametersByMesh(const SMESH_Mesh*   /*theMesh*/,
+                                                   const TopoDS_Shape& /*theShape*/)
 {
   // TODO
   return false;
@@ -3953,7 +3953,7 @@ gp_XYZ _ViscousBuilder::getFaceNormal(const SMDS_MeshNode* node,
 
 bool _ViscousBuilder::getFaceNormalAtSingularity( const gp_XY&        uv,
                                                   const TopoDS_Face&  face,
-                                                  SMESH_MesherHelper& helper,
+                                                  SMESH_MesherHelper& /*helper*/,
                                                   gp_Dir&             normal )
 {
   BRepAdaptor_Surface surface( face );
@@ -5312,7 +5312,9 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
   } // loop on data._edgesOnShape
 
   if ( !is1stBlocked )
+  {
     dumpFunctionEnd();
+  }
 
   if ( closestFace && le )
   {
@@ -5525,7 +5527,7 @@ void _ViscousBuilder::makeOffsetSurface( _EdgesOnShape& eos, SMESH_MesherHelper&
 
     eos._offsetSurf = new ShapeAnalysis_Surface( surf );
   }
-  catch ( Standard_Failure )
+  catch ( Standard_Failure& )
   {
   }
 }
@@ -5627,8 +5629,9 @@ void _ViscousBuilder::putOnOffsetSurface( _EdgesOnShape&            eos,
                  << "_InfStep" << infStep << "_" << smooStep );
     for ( ; i < eos._edges.size(); ++i )
     {
-      if ( eos._edges[i]->Is( _LayerEdge::MARKED ))
+      if ( eos._edges[i]->Is( _LayerEdge::MARKED )) {
         dumpMove( eos._edges[i]->_nodes.back() );
+      }
     }
     dumpFunctionEnd();
   }
@@ -6086,10 +6089,10 @@ bool _Smoother1D::smoothAnalyticEdge( _SolidData&                    data,
  */
 //================================================================================
 
-bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
+bool _Smoother1D::smoothComplexEdge( _SolidData&                    /*data*/,
                                      Handle(ShapeAnalysis_Surface)& surface,
                                      const TopoDS_Face&             F,
-                                     SMESH_MesherHelper&            helper)
+                                     SMESH_MesherHelper&            /*helper*/)
 {
   if ( _offPoints.empty() )
     return false;
@@ -6746,7 +6749,7 @@ void _SolidData::AddShapesToSmooth( const set< _EdgesOnShape* >& eosToSmooth,
  */
 //================================================================================
 
-void _ViscousBuilder::limitMaxLenByCurvature( _SolidData& data, SMESH_MesherHelper& helper )
+void _ViscousBuilder::limitMaxLenByCurvature( _SolidData& data, SMESH_MesherHelper& /*helper*/ )
 {
   // find intersection of neighbor _LayerEdge's to limit _maxLen
   // according to local curvature (IPAL52648)
@@ -6798,9 +6801,9 @@ void _ViscousBuilder::limitMaxLenByCurvature( _SolidData& data, SMESH_MesherHelp
 
 void _ViscousBuilder::limitMaxLenByCurvature( _LayerEdge*    e1,
                                               _LayerEdge*    e2,
-                                              _EdgesOnShape& eos1,
-                                              _EdgesOnShape& eos2,
-                                              const bool     isSmoothable )
+                                              _EdgesOnShape& /*eos1*/,
+                                              _EdgesOnShape& /*eos2*/,
+                                              const bool     /*isSmoothable*/ )
 {
   if (( e1->_nodes[0]->GetPosition()->GetDim() !=
         e2->_nodes[0]->GetPosition()->GetDim() ) &&
@@ -7119,7 +7122,7 @@ void _ViscousBuilder::findEdgesToUpdateNormalNearConvexFace( _ConvexFace &      
 bool _ViscousBuilder::updateNormals( _SolidData&         data,
                                      SMESH_MesherHelper& helper,
                                      int                 stepNb,
-                                     double              stepSize)
+                                     double              /*stepSize*/)
 {
   updateNormalsOfC1Vertices( data );
 
@@ -7284,7 +7287,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
       _LayerEdge*    edge = e2neIt->first;
       _LayerEdge& newEdge = e2neIt->second;
       _EdgesOnShape*  eos = data.GetShapeEdges( edge );
-      if ( edge->Is( _LayerEdge::BLOCKED && newEdge._maxLen > edge->_len ))
+      if ( edge->Is( _LayerEdge::BLOCKED ) && newEdge._maxLen > edge->_len )
         continue;
 
       // Check if a new _normal is OK:
@@ -7459,7 +7462,7 @@ bool _ViscousBuilder::isNewNormalOk( _SolidData&   data,
 //================================================================================
 
 bool _ViscousBuilder::updateNormalsOfSmoothed( _SolidData&         data,
-                                               SMESH_MesherHelper& helper,
+                                               SMESH_MesherHelper& /*helper*/,
                                                const int           nbSteps,
                                                const double        stepSize )
 {
@@ -8917,7 +8920,7 @@ int _LayerEdge::Smooth(const int step, const bool isConcaveFace, bool findBest )
 //================================================================================
 
 void _LayerEdge::ChooseSmooFunction( const set< TGeomID >& concaveVertices,
-                                     const TNode2Edge&     n2eMap)
+                                     const TNode2Edge&     /*n2eMap*/)
 {
   if ( _smooFunction ) return;
 
@@ -9110,7 +9113,7 @@ gp_XYZ _LayerEdge::smoothAngular()
       else
         norm += cross;
     }
-    catch (Standard_Failure) { // if |cross| == 0.
+    catch (Standard_Failure&) { // if |cross| == 0.
     }
   }
   gp_XYZ vec = newPos - pN;
@@ -11512,7 +11515,7 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
 bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
                                            _EdgesOnShape&         eos,
                                            SMESH_MesherHelper&    helper,
-                                           const SMESHDS_SubMesh* faceSubMesh)
+                                           const SMESHDS_SubMesh* /*faceSubMesh*/)
 {
   const SMDS_MeshNode* srcNode = edge._nodes[0];
   const SMDS_MeshNode* tgtNode = edge._nodes.back();
@@ -11801,7 +11804,7 @@ void _ViscousBuilder::fixBadFaces(const TopoDS_Face&          F,
  */
 //================================================================================
 
-bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& surface,
+bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& /*surface*/,
                                  const TopoDS_Face&    F,
                                  _EdgesOnShape&        eos,
                                  SMESH_MesherHelper&   helper )

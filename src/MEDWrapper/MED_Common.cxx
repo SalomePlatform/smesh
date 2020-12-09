@@ -65,8 +65,8 @@ namespace MED
 
   TInt
   GetNbConn(EGeometrieElement typmai,
-            EEntiteMaillage typent,
-            TInt mdim)
+            EEntiteMaillage /*typent*/,
+            TInt /*mdim*/)
   {
     return typmai % 100;
   }

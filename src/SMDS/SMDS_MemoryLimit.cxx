@@ -33,7 +33,7 @@
 #include <iostream>
 #endif
 
-int main (int argc, char ** argv)
+int main ()
 {
   // To better understand what is going on here, consult bug [SALOME platform 0019911]
 #if !defined WIN32 && !defined __APPLE__

@@ -1504,9 +1504,12 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
   SMESH_MesherHelper helper( *GetMesh() );
   helper.SetElementsOnShape( true );
 
-  SMDS_ElemIteratorPtr faceIt;
-  if ( theElems.empty() ) faceIt = GetMeshDS()->elementsIterator(SMDSAbs_Face);
-  else                    faceIt = SMESHUtils::elemSetIterator( theElems );
+  // get standalone groups of faces
+  vector< SMDS_MeshGroup* > allFaceGroups, faceGroups;
+  for ( SMESHDS_GroupBase* grBase : GetMeshDS()->GetGroups() )
+    if ( SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>( grBase ))
+      if ( group->GetType() == SMDSAbs_Face && !group->IsEmpty() )
+        allFaceGroups.push_back( & group->SMDSGroup() );
 
   bool   checkUV;
   gp_XY  uv [9]; uv[8] = gp_XY(0,0);
@@ -1516,6 +1519,10 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
   TopoDS_Face                    F;
   Handle(Geom_Surface)           surface;
   TopLoc_Location                loc;
+
+  SMDS_ElemIteratorPtr faceIt;
+  if ( theElems.empty() ) faceIt = GetMeshDS()->elementsIterator(SMDSAbs_Face);
+  else                    faceIt = SMESHUtils::elemSetIterator( theElems );
 
   while ( faceIt->more() )
   {
@@ -1593,12 +1600,18 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
       myLastCreatedNodes.push_back( nCentral );
     }
 
-    // create 4 triangles
-
     helper.SetIsQuadratic  ( nodes.size() > 4 );
     helper.SetIsBiQuadratic( nodes.size() == 9 );
     if ( helper.GetIsQuadratic() )
       helper.AddTLinks( static_cast< const SMDS_MeshFace*>( quad ));
+
+    // select groups to update
+    faceGroups.clear();
+    for ( SMDS_MeshGroup* group : allFaceGroups )
+      if ( group->Remove( quad ))
+        faceGroups.push_back( group );
+
+    // create 4 triangles
 
     GetMeshDS()->RemoveFreeElement( quad, subMeshDS, /*fromGroups=*/false );
 
@@ -1607,8 +1620,9 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
       SMDS_MeshElement* tria = helper.AddFace( nodes[ i ],
                                                nodes[(i+1)%4],
                                                nCentral );
-      ReplaceElemInGroups( tria, quad, GetMeshDS() );
       myLastCreatedElems.push_back( tria );
+      for ( SMDS_MeshGroup* group : faceGroups )
+        group->Add( tria );
     }
   }
 }
@@ -3843,9 +3857,9 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
           }
           else {
             if ( isUPeriodic )
-              newUV.SetX( ElCLib::InPeriod( newUV.X(), u1, u2 ));
+              newUV.SetX( ElCLib::InPeriod( newUV.X(), u1, u2 )); // todo: u may be used unitialized
             if ( isVPeriodic )
-              newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 ));
+              newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 )); // todo: v may be used unitialized
             // check new UV
             // if ( posType != SMDS_TOP_3DSPACE )
             //   dist2 = pNode.SquareDistance( surface->Value( newUV.X(), newUV.Y() ));
@@ -5652,10 +5666,10 @@ makeNodesByNormal2D( SMESHDS_Mesh*                     mesh,
 //=======================================================================
 
 int SMESH_MeshEditor::ExtrusParam::
-makeNodesByNormal1D( SMESHDS_Mesh*                     mesh,
-                     const SMDS_MeshNode*              srcNode,
-                     std::list<const SMDS_MeshNode*> & newNodes,
-                     const bool                        makeMediumNodes)
+makeNodesByNormal1D( SMESHDS_Mesh*                     /*mesh*/,
+                     const SMDS_MeshNode*              /*srcNode*/,
+                     std::list<const SMDS_MeshNode*> & /*newNodes*/,
+                     const bool                        /*makeMediumNodes*/)
 {
   throw SALOME_Exception("Extrusion 1D by Normal not implemented");
   return 0;
@@ -6056,6 +6070,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
       if ( nbEdges > 0 )
         break;
     }
+    // fall through
     default:
     {
       for ( int di = -1; di <= 1; di += 2 )
@@ -7446,6 +7461,7 @@ public:
   //int& GroupID() const { return const_cast< int& >( myGroupID ); }
 
   ComparableElement( const ComparableElement& theSource ) // move copy
+  : boost::container::flat_set< int >()
   {
     ComparableElement& src = const_cast< ComparableElement& >( theSource );
     (int_set&) (*this ) = boost::move( src );
@@ -9202,7 +9218,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
 
 int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
                                      SMDS_ElemIteratorPtr theItr,
-                                     const int            theShapeID)
+                                     const int            /*theShapeID*/)
 {
   int nbElem = 0;
   SMESHDS_Mesh* meshDS = GetMeshDS();
@@ -10184,7 +10200,7 @@ namespace // automatically find theAffectedElems for DoubleNodes()
         if ( SMESH_MeshAlgos::FaceNormal( _elems[1], norm ))
           avgNorm += norm;
 
-        gp_XYZ bordDir( SMESH_NodeXYZ( _nodes[0] ) - SMESH_NodeXYZ( _nodes[1] ));
+        gp_XYZ bordDir( SMESH_NodeXYZ( _nodes[0] ) - SMESH_NodeXYZ( _nodes[1] )); // todo: compiler complains about zero-size array
         norm = bordDir ^ avgNorm;
       }
       else
@@ -11031,7 +11047,7 @@ double SMESH_MeshEditor::OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const
   try {
     return n2.AngleWithRef(n1, vref);
   }
-  catch ( Standard_Failure ) {
+  catch ( Standard_Failure& ) {
   }
   return Max( v1.Magnitude(), v2.Magnitude() );
 }

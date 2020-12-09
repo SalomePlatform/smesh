@@ -97,7 +97,7 @@ namespace {
       return max(theMeshDS[0]->ShapeToIndex(S), theMeshDS[1]->ShapeToIndex(S) );
     return long(S.TShape().operator->());
   }
-  void show_shape( TopoDS_Shape v, const char* msg ) // debug
+  void show_shape( TopoDS_Shape v, const char* msg ) // debug // todo: unused in release mode
   {
     if ( v.IsNull() ) cout << msg << " NULL SHAPE" << endl;
     else if (v.ShapeType() == TopAbs_VERTEX) {
@@ -106,7 +106,7 @@ namespace {
     else {
       cout << msg << " "; TopAbs::Print((v).ShapeType(),cout) <<" "<<shapeIndex((v))<<endl;}
   }
-  void show_list( const char* msg, const list< TopoDS_Edge >& l ) // debug
+  void show_list( const char* msg, const list< TopoDS_Edge >& l ) // debug // todo: unused in release mode
   {
     cout << msg << " ";
     list< TopoDS_Edge >::const_iterator e = l.begin();
@@ -131,6 +131,8 @@ namespace {
       show_shape( TopoDS_Shape(), "avoid warning: show_shape() defined but not used");
       show_list( "avoid warning: show_list() defined but not used", list< TopoDS_Edge >() );
     }
+#else
+    (void)shape; // unused in release mode
 #endif
     return false;
   }

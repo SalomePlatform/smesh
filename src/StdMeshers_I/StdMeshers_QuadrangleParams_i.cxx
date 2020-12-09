@@ -207,7 +207,6 @@ StdMeshers::QuadType StdMeshers_QuadrangleParams_i::GetQuadType()
 
 void StdMeshers_QuadrangleParams_i::SetEnforcedNodes(const GEOM::ListOfGO&     theVertices,
                                                      const SMESH::nodes_array& thePoints)
-  throw ( SALOME::SALOME_Exception )
 {
   try {
     std::vector< TopoDS_Shape > shapes;

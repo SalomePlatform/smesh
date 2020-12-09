@@ -418,7 +418,7 @@ namespace
    */
   //================================================================================
 
-  void bndSegsToMesh( const vector< vector< BndSeg > >& bndSegsPerEdge )
+  void bndSegsToMesh( const vector< vector< BndSeg > >& /*bndSegsPerEdge*/ )
   {
 #ifdef _MYDEBUG_
     if ( !getenv("bndSegsToMesh")) return;

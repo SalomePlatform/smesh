@@ -278,7 +278,7 @@ namespace {
   //================================================================================
 
   bool getBoundaryNodes ( SMESH_subMesh*                        sm,
-                          const TopoDS_Face&                    face,
+                          const TopoDS_Face&                    /*face*/,
                           map< double, const SMDS_MeshNode* > & u2nodes,
                           set< const SMDS_MeshNode* > &         seamNodes)
   {
@@ -975,13 +975,13 @@ namespace {
    */
   //================================================================================
 
-  bool projectQuads(const TopoDS_Face&                 tgtFace,
-                    const TopoDS_Face&                 srcFace,
-                    const TSideVector&                 tgtWires,
-                    const TSideVector&                 srcWires,
-                    const TAssocTool::TShapeShapeMap&  shape2ShapeMap,
-                    TAssocTool::TNodeNodeMap&          src2tgtNodes,
-                    const bool                         is1DComputed)
+  bool projectQuads(const TopoDS_Face&                 /*tgtFace*/,
+                    const TopoDS_Face&                 /*srcFace*/,
+                    const TSideVector&                 /*tgtWires*/,
+                    const TSideVector&                 /*srcWires*/,
+                    const TAssocTool::TShapeShapeMap&  /*shape2ShapeMap*/,
+                    TAssocTool::TNodeNodeMap&          /*src2tgtNodes*/,
+                    const bool                         /*is1DComputed*/)
   {
     // SMESH_Mesh * tgtMesh = tgtWires[0]->GetMesh();
     // SMESH_Mesh * srcMesh = srcWires[0]->GetMesh();
@@ -1562,7 +1562,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
       // mapper changed, no more "mapper puts on a seam edge nodes from 2 edges"
       if ( isSeam && ! getBoundaryNodes ( sm, tgtFace, u2nodesOnSeam, seamNodes ))
-        ;//RETURN_BAD_RESULT("getBoundaryNodes() failed");
+      {
+        //RETURN_BAD_RESULT("getBoundaryNodes() failed");
+      }
 
       SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
       while ( nIt->more() )

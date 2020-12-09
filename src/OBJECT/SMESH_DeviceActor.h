@@ -61,7 +61,7 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   friend class SMESH_ActorDef;
 
  public:
-  vtkTypeMacro(SMESH_DeviceActor,vtkLODActor);
+  vtkTypeMacro(SMESH_DeviceActor,vtkLODActor)
   static SMESH_DeviceActor* New();
 
   void SetStoreClippingMapping(bool theStoreMapping);

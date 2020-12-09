@@ -222,6 +222,10 @@ SMESHGUI_EXPORT
 
   SMESHGUI_EXPORT
   void UpdateActorsAfterUpdateStudy();
+
+  SMESHGUI_EXPORT
+  bool NoSmeshActors(SUIT_ViewWindow *theWnd=nullptr);
+
 };
 
 #endif // SMESHGUI_VTKUTILS_H

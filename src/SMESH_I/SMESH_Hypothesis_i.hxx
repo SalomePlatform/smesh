@@ -131,10 +131,10 @@ public:
   // method used to convert variable parameters stored in an old study
   // into myMethod2VarParams. It should return a method name for an index of
   // variable parameters. Index is countered from zero
-  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const { return ""; }
+  virtual std::string getMethodOfParameter(const int /*paramIndex*/, int /*nbVars*/) const { return ""; }
 
   // method intended to remove explicit treatment of Netgen hypotheses from SMESH_NoteBook
-  virtual int getParamIndex(const TCollection_AsciiString& method, int nbVars) const { return -1; }
+  virtual int getParamIndex(const TCollection_AsciiString& /*method*/, int /*nbVars*/) const { return -1; }
 };
 
 // ======================================================
@@ -152,7 +152,7 @@ public:
   virtual std::string GetModuleName() = 0;
 
   // Check if an algorithm is applicable to a shape
-  virtual bool IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
+  virtual bool IsApplicable( const TopoDS_Shape &S, bool /*toCheckAll*/, int algoDim )
   {
     return IsShapeOfDim( S, algoDim );
   }

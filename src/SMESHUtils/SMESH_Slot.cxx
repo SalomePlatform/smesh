@@ -483,7 +483,7 @@ namespace
 
   const Segment* findTooCloseSegment( const IntPoint&        p,
                                       const double           minDist,
-                                      const double           tol,
+                                      const double           /*tol*/,
                                       const Segment*         curSegment,
                                       const SMDS_MeshNode*   curNode,
                                       const TSegmentsOfNode& segmentsOfNode )

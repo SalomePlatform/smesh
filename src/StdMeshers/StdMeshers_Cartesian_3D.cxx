@@ -191,10 +191,10 @@ namespace
     bool    _hasInternalFaces;
   public:
     virtual ~Solid() {}
-    virtual bool Contains( TGeomID subID ) const { return true; }
-    virtual bool ContainsAny( const vector< TGeomID>& subIDs ) const { return true; }
+    virtual bool Contains( TGeomID /*subID*/ ) const { return true; }
+    virtual bool ContainsAny( const vector< TGeomID>& /*subIDs*/ ) const { return true; }
     virtual TopAbs_Orientation Orientation( const TopoDS_Shape& s ) const { return s.Orientation(); }
-    virtual bool IsOutsideOriented( TGeomID faceID ) const { return true; }
+    virtual bool IsOutsideOriented( TGeomID /*faceID*/ ) const { return true; }
     void SetID( TGeomID id ) { _id = id; }
     TGeomID ID() const { return _id; }
     void SetHasInternalFaces( bool has ) { _hasInternalFaces = has; }
@@ -2219,6 +2219,8 @@ namespace
     }
 #ifdef _DEBUG_
     _cellID = cellID;
+#else
+    (void)cellID; // unused in release mode
 #endif
   }
 
@@ -2561,7 +2563,7 @@ namespace
         case 3: // at a corner
         {
           _Node& node = _hexNodes[ subEntity - SMESH_Block::ID_FirstV ];
-          if ( node.Node() > 0 )
+          if ( node.Node() != 0 )
           {
             if ( node._intPoint )
               node._intPoint->Add( _eIntPoints[ iP ]->_faceIDs, _eIntPoints[ iP ]->_node );
@@ -3501,7 +3503,7 @@ namespace
         continue;
 
       // perform intersection
-      E_IntersectPoint* eip, *vip;
+      E_IntersectPoint* eip, *vip = 0; // todo: vip must be explicitly initialized to avoid warning (see below)
       for ( int iDirZ = 0; iDirZ < 3; ++iDirZ )
       {
         GridPlanes& planes = pln[ iDirZ ];
@@ -3602,7 +3604,7 @@ namespace
             vip = _grid->Add( ip );
           if ( isInternal && !sameV )
             vip->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
-          if ( !addIntersection( vip, hexes, ijk, d000 ) && !sameV )
+          if ( !addIntersection( vip, hexes, ijk, d000 ) && !sameV ) // todo: vip must be explicitly initialized to avoid warning (see above)
             _grid->Remove( vip );
           ip._shapeID = edgeID;
         }
@@ -4759,6 +4761,8 @@ namespace
     cout << "BUG: not shared link. IKJ = ( "<< _i << " " << _j << " " << _k << " )" << endl
          << "n1 (" << p1.X() << ", "<< p1.Y() << ", "<< p1.Z() << " )" << endl
          << "n2 (" << p2.X() << ", "<< p2.Y() << ", "<< p2.Z() << " )" << endl;
+#else
+    (void)link; // unused in release mode
 #endif
     return false;
   }
@@ -5409,7 +5413,7 @@ namespace
                   if ( allQuads )
                   {
                     // set side nodes as this: bottom, top, top, ...
-                    int iTop, iBot; // side indices
+                    int iTop = 0, iBot = 0; // side indices
                     for ( int iS = 0; iS < 6; ++iS )
                     {
                       if ( vol->_names[ iS ] == SMESH_Block::ID_Fxy0 )
@@ -5908,9 +5912,9 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
  */
 //=============================================================================
 
-bool StdMeshers_Cartesian_3D::Evaluate(SMESH_Mesh &         theMesh,
-                                       const TopoDS_Shape & theShape,
-                                       MapShapeNbElems&     theResMap)
+bool StdMeshers_Cartesian_3D::Evaluate(SMESH_Mesh &         /*theMesh*/,
+                                       const TopoDS_Shape & /*theShape*/,
+                                       MapShapeNbElems&     /*theResMap*/)
 {
   // TODO
 //   std::vector<int> aResVec(SMDSEntity_Last);
@@ -5964,11 +5968,11 @@ namespace
     // --------------------------------------------------------------------------------
     // unsetting _alwaysComputed flag if "Cartesian_3D" was removed
     //
-    virtual void ProcessEvent(const int          event,
+    virtual void ProcessEvent(const int          /*event*/,
                               const int          eventType,
                               SMESH_subMesh*     subMeshOfSolid,
-                              SMESH_subMeshEventListenerData* data,
-                              const SMESH_Hypothesis*         hyp = 0)
+                              SMESH_subMeshEventListenerData* /*data*/,
+                              const SMESH_Hypothesis*         /*hyp*/ = 0)
     {
       if ( eventType == SMESH_subMesh::COMPUTE_EVENT )
       {

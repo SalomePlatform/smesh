@@ -65,131 +65,100 @@ public:
 
   // --- CORBA
 
-  void SetShape( GEOM::GEOM_Object_ptr theShapeObject )
-    throw (SALOME::SALOME_Exception);
+  void SetShape( GEOM::GEOM_Object_ptr theShapeObject );
 
-  CORBA::Boolean HasShapeToMesh()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Boolean HasShapeToMesh();
 
-  GEOM::GEOM_Object_ptr GetShapeToMesh()
-    throw (SALOME::SALOME_Exception);
+  GEOM::GEOM_Object_ptr GetShapeToMesh();
 
-  virtual void ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
-    throw (SALOME::SALOME_Exception);
+  virtual void ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom);
 
-  CORBA::Boolean IsLoaded()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Boolean IsLoaded();
 
-  void Load()
-    throw (SALOME::SALOME_Exception);
+  void Load();
 
-  void Clear()
-    throw (SALOME::SALOME_Exception);
+  void Clear();
 
-  void ClearSubMesh(CORBA::Long ShapeID)
-    throw (SALOME::SALOME_Exception);
+  void ClearSubMesh(CORBA::Long ShapeID);
 
   SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
                                          SMESH::SMESH_Hypothesis_ptr anHyp,
-                                         CORBA::String_out           anErrorText)
-    throw (SALOME::SALOME_Exception);
+                                         CORBA::String_out           anErrorText);
 
   SMESH::Hypothesis_Status RemoveHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
-                                            SMESH::SMESH_Hypothesis_ptr anHyp)
-    throw (SALOME::SALOME_Exception);
+                                            SMESH::SMESH_Hypothesis_ptr anHyp);
 
-  SMESH::ListOfHypothesis* GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape)
-    throw (SALOME::SALOME_Exception);
+  SMESH::ListOfHypothesis* GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape);
 
-  SMESH::submesh_array* GetSubMeshes()
-    throw (SALOME::SALOME_Exception);
+  SMESH::submesh_array* GetSubMeshes();
 
-  SMESH::SMESH_subMesh_ptr GetSubMesh(GEOM::GEOM_Object_ptr aSubShape, const char* theName)
-    throw (SALOME::SALOME_Exception);
+  SMESH::SMESH_subMesh_ptr GetSubMesh(GEOM::GEOM_Object_ptr aSubShape, const char* theName);
 
-  void RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
-    throw (SALOME::SALOME_Exception);
+  void RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh );
 
-  SMESH::SMESH_Group_ptr CreateGroup( SMESH::ElementType theElemType, const char* theName )
-    throw (SALOME::SALOME_Exception);
+  SMESH::SMESH_Group_ptr CreateGroup( SMESH::ElementType theElemType, const char* theName );
 
   SMESH::SMESH_GroupOnGeom_ptr CreateGroupFromGEOM(SMESH::ElementType    theElemType,
                                                    const char*           theName,
-                                                   GEOM::GEOM_Object_ptr theGeomObj )
-    throw (SALOME::SALOME_Exception);
+                                                   GEOM::GEOM_Object_ptr theGeomObj );
 
   SMESH::SMESH_GroupOnFilter_ptr CreateGroupFromFilter(SMESH::ElementType theElemType,
                                                        const char*        theName,
-                                                       SMESH::Filter_ptr  theFilter )
-    throw (SALOME::SALOME_Exception);
+                                                       SMESH::Filter_ptr  theFilter );
 
-  void RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
-    throw (SALOME::SALOME_Exception);
+  void RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup );
 
-  void RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup )
-    throw (SALOME::SALOME_Exception);
+  void RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup );
 
-  SMESH::ListOfGroups* GetGroups()
-    throw (SALOME::SALOME_Exception);
+  SMESH::ListOfGroups* GetGroups();
 
-  CORBA::Long NbGroups()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbGroups();
 
   SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1,
                                       SMESH::SMESH_GroupBase_ptr theGroup2,
-                                      const char* theName )
-    throw (SALOME::SALOME_Exception);
+                                      const char* theName );
 
   SMESH::SMESH_Group_ptr UnionListOfGroups( const SMESH::ListOfGroups& theGroups,
-                                            const char* theName)
-    throw (SALOME::SALOME_Exception);
+                                            const char* theName);
 
   SMESH::SMESH_Group_ptr IntersectGroups( SMESH::SMESH_GroupBase_ptr theGroup1,
                                           SMESH::SMESH_GroupBase_ptr theGroup2,
-                                          const char* theName )
-    throw (SALOME::SALOME_Exception);
+                                          const char* theName );
 
   SMESH::SMESH_Group_ptr IntersectListOfGroups( const SMESH::ListOfGroups&  theGroups,
-                                                const char* theName )
-    throw (SALOME::SALOME_Exception);
+                                                const char* theName );
 
   SMESH::SMESH_Group_ptr CutGroups( SMESH::SMESH_GroupBase_ptr theGroup1,
                                     SMESH::SMESH_GroupBase_ptr theGroup2,
-                                    const char* theName )
-    throw (SALOME::SALOME_Exception);
+                                    const char* theName );
 
   SMESH::SMESH_Group_ptr CutListOfGroups( const SMESH::ListOfGroups& theMainGroups,
                                           const SMESH::ListOfGroups& theToolGroups,
-                                          const char* theName )
-    throw (SALOME::SALOME_Exception);
+                                          const char* theName );
 
   SMESH::SMESH_Group_ptr CreateDimGroup( const SMESH::ListOfIDSources& theGroups,
                                          SMESH::ElementType            theElemType,
                                          const char*                   theName,
                                          SMESH::NB_COMMON_NODES_ENUM   theNbCommonNodes,
-                                         CORBA::Boolean                theUnderlyingOnly )
-    throw (SALOME::SALOME_Exception);
+                                         CORBA::Boolean                theUnderlyingOnly );
 
   SMESH::ListOfGroups* FaceGroupsSeparatedByEdges( CORBA::Double  theSharpAngle,
                                                    CORBA::Boolean theCreateEdges,
-                                                   CORBA::Boolean theUseExistingEdges )
-    throw (SALOME::SALOME_Exception);
+                                                   CORBA::Boolean theUseExistingEdges );
 
-  SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupBase_ptr theGroupOn )
-    throw (SALOME::SALOME_Exception);
+  SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupBase_ptr theGroupOn );
 
-  SMESH::log_array* GetLog(CORBA::Boolean clearAfterGet)
-    throw (SALOME::SALOME_Exception);
+  SMESH::log_array* GetLog(CORBA::Boolean clearAfterGet);
 
-  SMESH::SMESH_MeshEditor_ptr GetMeshEditor() throw (SALOME::SALOME_Exception);
+  SMESH::SMESH_MeshEditor_ptr GetMeshEditor();
 
-  SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer() throw (SALOME::SALOME_Exception);
+  SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer();
 
-  CORBA::Boolean HasModificationsToDiscard() throw (SALOME::SALOME_Exception);
+  CORBA::Boolean HasModificationsToDiscard();
 
-  void ClearLog() throw (SALOME::SALOME_Exception);
+  void ClearLog();
 
-  CORBA::Long GetId() throw (SALOME::SALOME_Exception);
+  CORBA::Long GetId();
 
   // --- C++ interface
 
@@ -198,35 +167,28 @@ public:
 
   SMESH_Gen_i* GetGen() { return _gen_i; }
 
-  int ImportUNVFile( const char* theFileName )
-    throw (SALOME::SALOME_Exception);
+  int ImportUNVFile( const char* theFileName );
 
-  int ImportSTLFile( const char* theFileName )
-    throw (SALOME::SALOME_Exception);
+  int ImportSTLFile( const char* theFileName );
 
   SMESH::ComputeError* ImportGMFFile( const char* theFileName,
-                                      bool        theMakeRequiredGroups)
-    throw (SALOME::SALOME_Exception);
+                                      bool        theMakeRequiredGroups);
 
   /*!
    * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value
    */
-  SMESH::DriverMED_ReadStatus ImportMEDFile( const char* theFileName, const char* theMeshName )
-    throw (SALOME::SALOME_Exception);
+  SMESH::DriverMED_ReadStatus ImportMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::DriverMED_ReadStatus ImportCGNSFile( const char*  theFileName,
                                               const int    theMeshIndex,
-                                              std::string& theMeshName)
-    throw (SALOME::SALOME_Exception);
+                                              std::string& theMeshName);
 
   /*!
    *  Auto color
    */
-  void SetAutoColor(CORBA::Boolean theAutoColor)
-    throw (SALOME::SALOME_Exception);
+  void SetAutoColor(CORBA::Boolean theAutoColor);
 
-  CORBA::Boolean GetAutoColor()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Boolean GetAutoColor();
 
   /*! Check group names for duplications.
    *  Consider maximum group name length stored in MED file.
@@ -248,20 +210,20 @@ public:
                   CORBA::Boolean     auto_groups,
                   CORBA::Long        version,
                   CORBA::Boolean     overwrite,
-                  CORBA::Boolean     autoDimension = true) throw (SALOME::SALOME_Exception);
+                  CORBA::Boolean     autoDimension = true);
 
-  void ExportSAUV( const char* file, CORBA::Boolean auto_groups ) throw (SALOME::SALOME_Exception);
+  void ExportSAUV( const char* file, CORBA::Boolean auto_groups );
 
-  void ExportDAT( const char* file ) throw (SALOME::SALOME_Exception);
-  void ExportUNV( const char* file ) throw (SALOME::SALOME_Exception);
-  void ExportSTL( const char* file, bool isascii ) throw (SALOME::SALOME_Exception);
+  void ExportDAT( const char* file );
+  void ExportUNV( const char* file );
+  void ExportSTL( const char* file, bool isascii );
   void ExportCGNS(SMESH::SMESH_IDSource_ptr meshPart,
                   const char*               file,
                   CORBA::Boolean            overwrite,
-                  CORBA::Boolean            groupElemsByType) throw (SALOME::SALOME_Exception);
+                  CORBA::Boolean            groupElemsByType);
   void ExportGMF(SMESH::SMESH_IDSource_ptr meshPart,
                  const char*               file,
-                 CORBA::Boolean            withRequiredGroups) throw (SALOME::SALOME_Exception);
+                 CORBA::Boolean            withRequiredGroups);
 
   void ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,
@@ -271,151 +233,111 @@ public:
                        CORBA::Boolean            autoDim,
                        const GEOM::ListOfFields& fields,
                        const char*               geomAssocFields,
-                       CORBA::Double             ZTolerance) throw (SALOME::SALOME_Exception);
+                       CORBA::Double             ZTolerance);
   void ExportPartToDAT(SMESH::SMESH_IDSource_ptr meshPart,
-                       const char*               file) throw (SALOME::SALOME_Exception);
+                       const char*               file);
   void ExportPartToUNV(SMESH::SMESH_IDSource_ptr meshPart,
-                       const char*               file) throw (SALOME::SALOME_Exception);
+                       const char*               file);
   void ExportPartToSTL(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,
-                       CORBA::Boolean            isascii) throw (SALOME::SALOME_Exception);
+                       CORBA::Boolean            isascii);
 
   CORBA::Double GetComputeProgress();
 
-  CORBA::Long NbNodes()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbNodes();
 
-  CORBA::Long NbElements()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbElements();
 
-  CORBA::Long Nb0DElements()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long Nb0DElements();
 
-  CORBA::Long NbBalls()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbBalls();
 
-  CORBA::Long NbEdges()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbEdges();
 
-  CORBA::Long NbEdgesOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbEdgesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbFaces()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbFaces();
 
-  CORBA::Long NbFacesOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbFacesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbTriangles()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbTriangles();
 
-  CORBA::Long NbTrianglesOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbTrianglesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbBiQuadTriangles()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbBiQuadTriangles();
 
-  CORBA::Long NbQuadrangles()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbQuadrangles();
 
-  CORBA::Long NbQuadranglesOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbQuadranglesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbBiQuadQuadrangles()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbBiQuadQuadrangles();
 
-  CORBA::Long NbPolygons()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbPolygons();
 
-  CORBA::Long NbPolygonsOfOrder(SMESH::ElementOrder order = SMESH::ORDER_ANY)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbPolygonsOfOrder(SMESH::ElementOrder order = SMESH::ORDER_ANY);
 
-  CORBA::Long NbVolumes()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbVolumes();
 
-  CORBA::Long NbVolumesOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbVolumesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbTetras()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbTetras();
 
-  CORBA::Long NbTetrasOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbTetrasOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbHexas()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbHexas();
 
-  CORBA::Long NbHexasOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbHexasOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbTriQuadraticHexas()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbTriQuadraticHexas();
 
-  CORBA::Long NbPyramids()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbPyramids();
 
-  CORBA::Long NbPyramidsOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbPyramidsOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbPrisms()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbPrisms();
 
-  CORBA::Long NbPrismsOfOrder(SMESH::ElementOrder order)
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbPrismsOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbHexagonalPrisms()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbHexagonalPrisms();
 
-  CORBA::Long NbPolyhedrons()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbPolyhedrons();
 
-  CORBA::Long NbSubMesh()
-    throw (SALOME::SALOME_Exception);
+  CORBA::Long NbSubMesh();
 
-  SMESH::long_array* GetElementsId()
-    throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetElementsId();
 
-  SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
-    throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType );
 
-  SMESH::long_array* GetNodesId()
-    throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetNodesId();
 
-  SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
-    throw (SALOME::SALOME_Exception);
+  SMESH::ElementType GetElementType( CORBA::Long id, bool iselem );
 
-  SMESH::EntityType GetElementGeomType( CORBA::Long id )
-    throw (SALOME::SALOME_Exception);
+  SMESH::EntityType GetElementGeomType( CORBA::Long id );
 
-  SMESH::GeometryType GetElementShape( CORBA::Long id )
-    throw (SALOME::SALOME_Exception);
+  SMESH::GeometryType GetElementShape( CORBA::Long id );
 
   /*!
    * Returns ID of elements for given submesh
    */
-  SMESH::long_array* GetSubMeshElementsId(CORBA::Long ShapeID)
-    throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetSubMeshElementsId(CORBA::Long ShapeID);
 
   /*!
    * Returns ID of nodes for given submesh
    * If param all==true - returns all nodes, else -
    * returns only nodes on shapes.
    */
-  SMESH::long_array* GetSubMeshNodesId(CORBA::Long ShapeID, CORBA::Boolean all)
-    throw (SALOME::SALOME_Exception);
+  SMESH::long_array* GetSubMeshNodesId(CORBA::Long ShapeID, CORBA::Boolean all);
 
   /*!
    * Returns type of elements for given submesh
    */
-  SMESH::ElementType GetSubMeshElementType(CORBA::Long ShapeID)
-    throw (SALOME::SALOME_Exception);
+  SMESH::ElementType GetSubMeshElementType(CORBA::Long ShapeID);
 
   char* Dump();
 
   // Create groups of elements preventing computation of a sub-shape
   SMESH::ListOfGroups* MakeGroupsOfBadInputElements( int         theSubShapeID,
-                                                     const char* theGroupName)
-    throw (SALOME::SALOME_Exception);
+                                                     const char* theGroupName);
 
   // ===================================================
   // Internal methods not available through CORBA

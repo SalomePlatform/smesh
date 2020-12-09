@@ -1152,7 +1152,7 @@ const SMESHGUI_FilterTable* SMESHGUI_FilterLibraryDlg::GetTable() const
 // name    : SMESHGUI_FilterLibraryDlg::onEntityTypeChanged
 // Purpose : SLOT. Called when entiyt type changed
 //=======================================================================
-void SMESHGUI_FilterLibraryDlg::onEntityTypeChanged(const int theType)
+void SMESHGUI_FilterLibraryDlg::onEntityTypeChanged(const int /*theType*/)
 {
   if (myLibrary->_is_nil())
     return;
@@ -1244,6 +1244,7 @@ void SMESHGUI_FilterLibraryDlg::onSelectionDone()
   case SMESH::FT_BelongToMeshGroup: // get a group name and IOR
     {
       myTable->SetThreshold(aRow, anIO->getName() );
+      break;
     }
   default: // get a GEOM object
     {

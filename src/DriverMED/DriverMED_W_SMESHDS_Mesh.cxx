@@ -112,7 +112,7 @@ void DriverMED_W_SMESHDS_Mesh::AddAllSubMeshes()
   myAllSubMeshes = true;
 }
 
-void DriverMED_W_SMESHDS_Mesh::AddSubMesh(SMESHDS_SubMesh* theSubMesh, int theID)
+void DriverMED_W_SMESHDS_Mesh::AddSubMesh(SMESHDS_SubMesh* theSubMesh, int /*theID*/)
 {
   mySubMeshes.push_back( theSubMesh );
 }
@@ -379,7 +379,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       if ( myAutoDimension && aMeshDimension < 3 )
       {
         SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
-        double aBounds[6];
+        double aBounds[6] = {0.,0.,0.,0.,0.,0.};
         if(aNodesIter->more()){
           const SMDS_MeshNode* aNode = aNodesIter->next();
           aBounds[0] = aBounds[1] = aNode->X();

@@ -89,20 +89,48 @@ enum { ID_BOT_FACE = SMESH_Block::ID_Fxy0,
        BOTTOM_EDGE = 0, TOP_EDGE, V0_EDGE, V1_EDGE, // edge IDs in face
        NB_WALL_FACES = 4 }; //
 
-namespace {
-
+namespace
+{
+  //=======================================================================
+  /*!
+   * \brief Auxiliary mesh
+   */
+  struct TmpMesh: public SMESH_Mesh
+  {
+    TmpMesh() {
+      _isShapeToMesh = (_id = 0);
+      _myMeshDS  = new SMESHDS_Mesh( _id, true );
+    }
+  };
   //=======================================================================
   /*!
    * \brief Quadrangle algorithm
    */
-  struct TQuadrangleAlgo : public StdMeshers_Quadrangle_2D
+  class TQuadrangleAlgo : public StdMeshers_Quadrangle_2D
   {
+    typedef NCollection_DataMap< TopoDS_Face, FaceQuadStruct::Ptr > TFace2QuadMap;
+    TFace2QuadMap myFace2QuadMap;
+
     TQuadrangleAlgo(SMESH_Gen* gen)
       : StdMeshers_Quadrangle_2D( gen->GetANewId(), gen)
     {
     }
-    static StdMeshers_Quadrangle_2D* instance( SMESH_Algo*         fatherAlgo,
-                                               SMESH_MesherHelper* helper=0)
+  public:
+
+    //================================================================================
+    // Clear data of TQuadrangleAlgo at destruction
+    struct Cleaner
+    {
+      TQuadrangleAlgo* myAlgo;
+
+      Cleaner(TQuadrangleAlgo* algo): myAlgo( algo ){}
+      ~Cleaner() { myAlgo->reset(); }
+    };
+
+    //================================================================================
+    // Return TQuadrangleAlgo singleton
+    static TQuadrangleAlgo* instance( SMESH_Algo*         fatherAlgo,
+                                      SMESH_MesherHelper* helper=0)
     {
       static TQuadrangleAlgo* algo = new TQuadrangleAlgo( fatherAlgo->GetGen() );
       if ( helper &&
@@ -118,7 +146,124 @@ namespace {
 
       return algo;
     }
+
+    //================================================================================
+    // Clear collected data
+    void reset()
+    {
+      StdMeshers_Quadrangle_2D::myQuadList.clear();
+      StdMeshers_Quadrangle_2D::myHelper = nullptr;
+      StdMeshers_Quadrangle_2D::myProxyMesh.reset();
+      myFace2QuadMap.Clear();
+    }
+
+    //================================================================================
+    /*!
+     * \brief Return FaceQuadStruct if a given FACE can be meshed by StdMeshers_Quadrangle_2D
+     */
+    FaceQuadStruct::Ptr CheckNbEdges(SMESH_Mesh&         theMesh,
+                                     const TopoDS_Shape& theShape )
+    {
+      const TopoDS_Face& face = TopoDS::Face( theShape );
+      if ( myFace2QuadMap.IsBound( face ))
+        return myFace2QuadMap.Find( face );
+
+      FaceQuadStruct::Ptr &  resultQuad = * myFace2QuadMap.Bound( face, FaceQuadStruct::Ptr() );
+
+      FaceQuadStruct::Ptr quad =
+        StdMeshers_Quadrangle_2D::CheckNbEdges( theMesh, face, /*considerMesh=*/false, myHelper );
+      if ( quad )
+      {
+        // check if the quadrangle mesh would be valid
+
+        // check existing 1D mesh
+        // int nbSegments[4], i = 0;
+        // for ( FaceQuadStruct::Side & side : quad->side )
+        //   nbSegments[ i++ ] = side.grid->NbSegments();
+        // if ( nbSegments[0] > 0 && nbSegments[2] > 0 && nbSegments[0] != nbSegments[2] ||
+        //      nbSegments[1] > 0 && nbSegments[3] > 0 && nbSegments[1] != nbSegments[3] )
+        //   return resultQuad;
+
+        int nbEdges = 0;
+        for ( FaceQuadStruct::Side & side : quad->side )
+          nbEdges += side.grid->NbEdges();
+        if ( nbEdges == 4 )
+          return resultQuad = quad;
+
+        TmpMesh mesh;
+        mesh.ShapeToMesh( face );
+        SMESHDS_Mesh* meshDS = mesh.GetMeshDS();
+        SMESH_MesherHelper helper( mesh );
+        helper.SetSubShape( face );
+        helper.SetElementsOnShape( true );
+
+        // create nodes on all VERTEX'es
+        for ( TopExp_Explorer vert( face, TopAbs_VERTEX ); vert.More(); vert.Next() )
+          mesh.GetSubMesh( vert.Current() )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+
+        FaceQuadStruct::Ptr tmpQuad( new FaceQuadStruct() );
+        tmpQuad->side.resize( 4 );
+
+        // divide quad sides into halves at least
+        const SMDS_MeshNode* node;
+        for ( int iDir = 0; iDir < 2; ++iDir )
+        {
+          StdMeshers_FaceSidePtr sides[2] = { quad->side[iDir], quad->side[iDir+2] };
+          std::map< double, const SMDS_MeshNode* > nodes[2];
+          for ( int iS : { 0, 1 } )
+          {
+            node = SMESH_Algo::VertexNode( sides[iS]->FirstVertex(), meshDS );
+            nodes[iS].insert( std::make_pair( 0, node ));
+            double curLen = 0;
+            for ( int iE = 1; iE < sides[iS]->NbEdges(); ++iE )
+            {
+              curLen += sides[iS]->EdgeLength( iE - 1 );
+              double u = curLen / sides[iS]->Length();
+              node = SMESH_Algo::VertexNode( sides[iS]->FirstVertex( iE ), meshDS );
+              nodes[iS  ].insert( std::make_pair( u, node ));
+              nodes[1-iS].insert( std::make_pair( u, nullptr ));
+            }
+            nodes[iS].insert( std::make_pair( 0.5, nullptr ));
+            node = SMESH_Algo::VertexNode( sides[iS]->LastVertex(), meshDS );
+            nodes[iS].insert( std::make_pair( 1, node ));
+          }
+
+          for ( int iS : { 0, 1 } )
+          {
+            UVPtStructVec sideNodes;
+            sideNodes.reserve( nodes[ iS ].size() );
+            for ( auto & u_node : nodes[ iS ])
+            {
+              if ( !u_node.second )
+              {
+                gp_Pnt p = sides[iS]->Value3d( u_node.first );
+                u_node.second = meshDS->AddNode( p.X(), p.Y(), p.Z() );
+                TopoDS_Edge edge;
+                double param = sides[iS]->Parameter( u_node.first, edge );
+                meshDS->SetNodeOnEdge( u_node.second, edge, param );
+              }
+              sideNodes.push_back( u_node.second );
+              sideNodes.back().SetUV( helper.GetNodeUV( face, u_node.second ));
+            }
+            tmpQuad->side[ iS ? iDir+2 : iDir ] = StdMeshers_FaceSide::New( sideNodes, face );
+          }
+        }
+        StdMeshers_Quadrangle_2D::myCheckOri = true;
+        StdMeshers_Quadrangle_2D::myQuadList.clear();
+        StdMeshers_Quadrangle_2D::myQuadList.push_back( tmpQuad );
+        StdMeshers_Quadrangle_2D::myHelper = &helper;
+        if ( StdMeshers_Quadrangle_2D::computeQuadDominant( mesh, face, tmpQuad ) &&
+             StdMeshers_Quadrangle_2D::check())
+        {
+          resultQuad = quad;
+        }
+        StdMeshers_Quadrangle_2D::myQuadList.clear();
+        StdMeshers_Quadrangle_2D::myHelper = nullptr;
+      }
+      return resultQuad;
+    }
   };
+
   //=======================================================================
   /*!
    * \brief Algorithm projecting 1D mesh
@@ -400,7 +545,7 @@ namespace {
 
   int removeQuasiQuads(list< SMESH_subMesh* >&   notQuadSubMesh,
                        SMESH_MesherHelper*       helper,
-                       StdMeshers_Quadrangle_2D* quadAlgo)
+                       TQuadrangleAlgo*          quadAlgo)
   {
     int nbRemoved = 0;
     //SMESHDS_Mesh* mesh = notQuadSubMesh.front()->GetFather()->GetMeshDS();
@@ -450,7 +595,7 @@ namespace {
   //================================================================================
 
   int countNbSides( const Prism_3D::TPrismTopo & thePrism,
-                    vector<int> &                nbUnitePerEdge,
+                    vector<int> &                /*nbUnitePerEdge*/,
                     vector< double > &           edgeLength)
   {
     int nbEdges = thePrism.myNbEdgesInWires.front();  // nb outer edges
@@ -530,6 +675,22 @@ namespace {
 
   //================================================================================
   /*!
+   * \brief Count EDGEs ignoring degenerated ones
+   */
+  //================================================================================
+
+  int CountEdges( const TopoDS_Face& face )
+  {
+    int nbE = 0;
+    for ( TopExp_Explorer edgeExp( face, TopAbs_EDGE ); edgeExp.More(); edgeExp.Next() )
+      if ( !SMESH_Algo::isDegenerated( TopoDS::Edge( edgeExp.Current() )))
+        ++nbE;
+
+    return nbE;
+  }
+
+  //================================================================================
+  /*!
    * \brief Set/get wire index to FaceQuadStruct
    */
   //================================================================================
@@ -557,8 +718,11 @@ namespace {
       cout << "mesh.AddNode( " << p[i].X() << ", "<< p[i].Y() << ", "<< p[i].Z() << ") # " << i <<" " ;
       SMESH_Block::DumpShapeID( i, cout ) << endl;
     }
+#else
+    (void)p; // unused in release mode
 #endif
   }
+
 } // namespace
 
 //=======================================================================
@@ -598,8 +762,8 @@ StdMeshers_Prism_3D::~StdMeshers_Prism_3D()
 //purpose  :
 //=======================================================================
 
-bool StdMeshers_Prism_3D::CheckHypothesis(SMESH_Mesh&                          aMesh,
-                                          const TopoDS_Shape&                  aShape,
+bool StdMeshers_Prism_3D::CheckHypothesis(SMESH_Mesh&                          /*aMesh*/,
+                                          const TopoDS_Shape&                  /*aShape*/,
                                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   // no hypothesis
@@ -617,6 +781,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   SMESH_MesherHelper helper( theMesh );
   myHelper = &helper;
   myPrevBottomSM = 0;
+  TQuadrangleAlgo::Cleaner quadCleaner( TQuadrangleAlgo::instance( this ));
 
   int nbSolids = helper.Count( theShape, TopAbs_SOLID, /*skipSame=*/false );
   if ( nbSolids < 1 )
@@ -628,7 +793,6 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   // look for meshed FACEs ("source" FACEs) that must be prism bottoms
   list< TopoDS_Face > meshedFaces, notQuadMeshedFaces, notQuadFaces;
   const bool meshHasQuads = ( theMesh.NbQuadrangles() > 0 );
-  //StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this );
   for ( int iF = 1; iF <= faceToSolids.Extent(); ++iF )
   {
     const TopoDS_Face& face = TopoDS::Face( faceToSolids.FindKey( iF ));
@@ -687,6 +851,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   }
 
   TopTools_MapOfShape meshedSolids;
+  NCollection_DataMap< TopoDS_Shape, SMESH_subMesh* > meshedFace2AlgoSM;
   list< Prism_3D::TPrismTopo > meshedPrism;
   list< TopoDS_Face > suspectSourceFaces;
   TopTools_ListIteratorOfListOfShape solidIt;
@@ -710,14 +875,22 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
         {
           prism.Clear();
           prism.myBottom = face;
+          if ( meshedFace2AlgoSM.IsBound( face ))
+            prism.myAlgoSM = meshedFace2AlgoSM.Find( face );
           if ( !initPrism( prism, solid, selectBottom ) ||
                !compute( prism ))
             return false;
 
           SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( prism.myTop );
-          if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ))
+          if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ) ||
+               !myHelper->IsStructured( theMesh.GetSubMesh( prism.myTop )))
           {
             meshedFaces.push_front( prism.myTop );
+            if ( prism.myAlgoSM  && prism.myAlgoSM->GetAlgo() )
+            {
+              meshedFace2AlgoSM.Bind( prism.myTop,    prism.myAlgoSM );
+              meshedFace2AlgoSM.Bind( prism.myBottom, prism.myAlgoSM );
+            }
           }
           else
           {
@@ -752,9 +925,18 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
               solidList.Remove( solidIt );
               continue; // already computed prism
             }
-            if ( myHelper->IsBlock( solid )) {
-              solidIt.Next();
-              continue; // too trivial
+            if ( myHelper->IsBlock( solid ))
+            {
+              bool isStructBase = true;
+              if ( prismIt->myAlgoSM )
+                isStructBase = ( myHelper->IsSameElemGeometry( prismIt->myAlgoSM->GetSubMeshDS(),
+                                                               SMDSGeom_QUADRANGLE ) &&
+                                 myHelper->IsStructured(prismIt->myAlgoSM ));
+              if ( isStructBase )
+              {
+                solidIt.Next();
+                continue; // too trivial
+              }
             }
             // find a source FACE of the SOLID: it's a FACE sharing a bottom EDGE with wFace
             const TopoDS_Edge& wEdge = (*wQuad)->side[ QUAD_TOP_SIDE ].grid->Edge(0);
@@ -773,27 +955,41 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
                 }
               prism.Clear();
               prism.myBottom = candidateF;
+              prism.myAlgoSM = prismIt->myAlgoSM;
               mySetErrorToSM = false;
               if ( !myHelper->IsSubShape( candidateF, prismIt->myShape3D ) &&
                    myHelper ->IsSubShape( candidateF, solid ) &&
                    !myHelper->GetMesh()->GetSubMesh( candidateF )->IsMeshComputed() &&
                    initPrism( prism, solid, /*selectBottom=*/false ) &&
                    !myHelper->GetMesh()->GetSubMesh( prism.myTop )->IsMeshComputed() &&
-                   !myHelper->GetMesh()->GetSubMesh( prism.myBottom )->IsMeshComputed() &&
-                   project2dMesh( sourceF, prism.myBottom ))
+                   !myHelper->GetMesh()->GetSubMesh( prism.myBottom )->IsMeshComputed() )
               {
-                mySetErrorToSM = true;
-                if ( !compute( prism ))
-                  return false;
-                SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( prism.myTop );
-                if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ))
+                if ( project2dMesh( sourceF, prism.myBottom ))
                 {
-                  meshedFaces.push_front( prism.myTop );
-                  meshedFaces.push_front( prism.myBottom );
-                  selectBottom = false;
+                  mySetErrorToSM = true;
+                  if ( !compute( prism ))
+                    return false;
+                  SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( prism.myTop );
+                  if ( !myHelper->IsSameElemGeometry( smDS, SMDSGeom_QUADRANGLE ))
+                  {
+                    meshedFaces.push_front( prism.myTop );
+                    meshedFaces.push_front( prism.myBottom );
+                    selectBottom = false;
+                    if ( prism.myAlgoSM  && prism.myAlgoSM->GetAlgo() )
+                    {
+                      meshedFace2AlgoSM.Bind( prism.myTop, prism.myAlgoSM );
+                      meshedFace2AlgoSM.Bind( prism.myBottom, prism.myAlgoSM );
+                    }
+                  }
+                  meshedPrism.push_back( prism );
+                  meshedSolids.Add( solid );
                 }
-                meshedPrism.push_back( prism );
-                meshedSolids.Add( solid );
+                else
+                {
+                  suspectSourceFaces.push_back( prism.myBottom );
+                  if ( prism.myAlgoSM && prism.myAlgoSM->GetAlgo() )
+                    meshedFace2AlgoSM.Bind( prism.myBottom, prism.myAlgoSM );
+                }
               }
               InitComputeError();
             }
@@ -846,7 +1042,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
             allSubMeComputed = smIt->next()->IsMeshComputed();
           if ( allSubMeComputed )
           {
-            faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+            faceSM->ComputeStateEngine( SMESH_subMesh::COMPUTE_SUBMESH );
             if ( !faceSM->IsEmpty() ) {
               meshedFaces.push_front( face ); // higher priority
               selectBottom = true;
@@ -919,7 +1115,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
 
   SMESH_Mesh* mesh = myHelper->GetMesh();
 
-  StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
+  TQuadrangleAlgo* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
 
   TopTools_MapOfShape faceMap;
   TopTools_IndexedDataMapOfShapeListOfShape edgeToFaces;
@@ -1400,8 +1596,9 @@ bool StdMeshers_Prism_3D::computeBase(const Prism_3D::TPrismTopo& thePrism)
   {
     // find any applicable algorithm assigned to any FACE of the main shape
     std::vector< TopoDS_Shape > faces;
-    if ( myPrevBottomSM &&
-         myPrevBottomSM->GetAlgo()->IsApplicableToShape( thePrism.myBottom, /*all=*/false ))
+    if ( thePrism.myAlgoSM && thePrism.myAlgoSM->GetAlgo() )
+      faces.push_back( thePrism.myAlgoSM->GetSubShape() );
+    if ( myPrevBottomSM && myPrevBottomSM->GetAlgo() )
       faces.push_back( myPrevBottomSM->GetSubShape() );
 
     TopExp_Explorer faceIt( mesh->GetShapeToMesh(), TopAbs_FACE );
@@ -1426,7 +1623,7 @@ bool StdMeshers_Prism_3D::computeBase(const Prism_3D::TPrismTopo& thePrism)
           while ( smIt->more() && subOK )
           {
             SMESH_subMesh* sub = smIt->next();
-            sub->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+            sub->ComputeStateEngine( SMESH_subMesh::COMPUTE_SUBMESH );
             subOK = sub->IsMeshComputed();
           }
           if ( !subOK )
@@ -1434,22 +1631,30 @@ bool StdMeshers_Prism_3D::computeBase(const Prism_3D::TPrismTopo& thePrism)
         }
         try {
           OCC_CATCH_SIGNALS;
+
+          Hypothesis_Status status;
+          algo->CheckHypothesis( *mesh, faces[i], status );
           algo->InitComputeError();
-          algo->Compute( *mesh, botSM->GetSubShape() );
+          if ( algo->Compute( *mesh, botSM->GetSubShape() ))
+          {
+            myPrevBottomSM = thePrism.myAlgoSM = mesh->GetSubMesh( faces[i] );
+            break;
+          }
         }
         catch (...) {
         }
       }
     }
   }
+  else
+  {
+    myPrevBottomSM = thePrism.myAlgoSM = botSM;
+  }
 
   if ( botSM->IsEmpty() )
     return error( COMPERR_BAD_INPUT_MESH,
                   TCom( "No mesher defined to compute the base face #")
                   << shapeID( thePrism.myBottom ));
-
-  if ( botSM->GetAlgo() )
-    myPrevBottomSM = botSM;
 
   return true;
 }
@@ -1465,8 +1670,8 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
   SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
   DBGOUT( endl << "COMPUTE Prism " << meshDS->ShapeToIndex( thePrism.myShape3D ));
 
-  TProjction1dAlgo*      projector1D = TProjction1dAlgo::instance( this );
-  StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
+  TProjction1dAlgo* projector1D = TProjction1dAlgo::instance( this );
+  TQuadrangleAlgo*     quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
 
   // SMESH_HypoFilter hyp1dFilter( SMESH_HypoFilter::IsAlgo(),/*not=*/true);
   // hyp1dFilter.And( SMESH_HypoFilter::HasDim( 1 ));
@@ -2674,6 +2879,9 @@ bool StdMeshers_Prism_3D::allVerticalEdgesStraight( const Prism_3D::TPrismTopo& 
 bool StdMeshers_Prism_3D::project2dMesh(const TopoDS_Face& theSrcFace,
                                         const TopoDS_Face& theTgtFace)
 {
+  if ( CountEdges( theSrcFace ) != CountEdges( theTgtFace ))
+    return false;
+
   TProjction2dAlgo* projector2D = TProjction2dAlgo::instance( this );
   projector2D->myHyp.SetSourceFace( theSrcFace );
   bool ok = projector2D->Compute( *myHelper->GetMesh(), theTgtFace );
@@ -2705,7 +2913,7 @@ bool StdMeshers_Prism_3D::project2dMesh(const TopoDS_Face& theSrcFace,
  */
 //================================================================================
 
-bool StdMeshers_Prism_3D::setFaceAndEdgesXYZ( const int faceID, const gp_XYZ& params, int z )
+bool StdMeshers_Prism_3D::setFaceAndEdgesXYZ( const int faceID, const gp_XYZ& params, int /*z*/ )
 {
   // find base and top edges of the face
   enum { BASE = 0, TOP, LEFT, RIGHT };
@@ -3339,6 +3547,7 @@ namespace Prism_3D
     myBottomEdges.clear();
     myNbEdgesInWires.clear();
     myWallQuads.clear();
+    myAlgoSM = nullptr;
   }
 
   //================================================================================
@@ -4166,7 +4375,9 @@ void StdMeshers_PrismAsBlock::faceGridToPythonDump(const SMESH_Block::TShapeID f
            << n << ", " << n+1 << ", "
            << n+nb+2 << ", " << n+nb+1 << "]) " << endl;
     }
-
+#else
+  (void)face; // unused in release mode
+  (void)nb;   // unused in release mode
 #endif
 }
 
@@ -4641,7 +4852,7 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
       column = & ( myParamToColumnMap->rbegin()->second );
     else
       column = & ( myParamToColumnMap->begin()->second );
-    if ( column->size() > 0 )
+    if ( column->size() > 1 )
       edge = myHelper.GetSubShapeByNode( (*column)[ 1 ], meshDS );
     if ( edge.IsNull() || edge.ShapeType() == TopAbs_VERTEX )
       node = column->front();
@@ -4786,6 +4997,8 @@ void StdMeshers_PrismAsBlock::TSideFace::dumpNodes(int nbNodes) const
   TVerticalEdgeAdaptor* vSide1 = (TVerticalEdgeAdaptor*) VertiCurve(1);
   cout << "Verti side 1: "; vSide1->dumpNodes(nbNodes); cout << endl;
   delete hSize0; delete hSize1; delete vSide0; delete vSide1;
+#else
+  (void)nbNodes; // unused in release mode
 #endif
 }
 
@@ -4832,6 +5045,8 @@ void StdMeshers_PrismAsBlock::TVerticalEdgeAdaptor::dumpNodes(int nbNodes) const
     cout << (*myNodeColumn)[i]->GetID() << " ";
   if ( nbNodes < (int) myNodeColumn->size() )
     cout << myNodeColumn->back()->GetID();
+#else
+  (void)nbNodes; // unused in release mode
 #endif
 }
 
@@ -4890,6 +5105,8 @@ void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) con
   side->GetColumns( u , col, col2 );
   if ( n != col->second[ i ] )
     cout << col->second[ i ]->GetID();
+#else
+  (void)nbNodes; // unused in release mode
 #endif
 }
 

@@ -1142,7 +1142,7 @@ bool SMESH_Block::findUVByHalfDivision( const gp_Pnt&             thePoint,
 //================================================================================
 
 bool SMESH_Block::findUVAround( const gp_Pnt&             thePoint,
-                                const gp_XY&              theUV,
+                                const gp_XY&              /*theUV*/,
                                 const SMESH_Block::TFace& tface,
                                 gp_XYZ&                   theParams,
                                 int                       nbGetWorstLimit )

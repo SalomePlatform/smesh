@@ -26,7 +26,7 @@
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
 #else
-static int MYDEBUG = 0;
+static int MYDEBUG = 0; // todo: unused in release mode
 #endif
 
 int MED::PrefixPrinter::myCounter = 0;
@@ -39,7 +39,7 @@ MED::PrefixPrinter::PrefixPrinter(bool theIsActive):
   MSG(MYDEBUG,"MED::PrefixPrinter::PrefixPrinter(...)- "<<myCounter);
 }
 
-MED::PrefixPrinter::~PrefixPrinter()
+MED::PrefixPrinter::~PrefixPrinter() noexcept(false)
 {
   if(myIsActive){
     myCounter--;

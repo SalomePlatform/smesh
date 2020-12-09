@@ -946,7 +946,7 @@ void SMESH_MeshAlgos::FindFreeBorders(SMDS_Mesh&       theMesh,
       ++cnt;
     bordNodes.resize( cnt + 1 );
 
-    BEdge* beLast;
+    BEdge* beLast = 0;
     for ( be = borders[i], cnt = 0;
           be && cnt < bordNodes.size()-1;
           be = be->myNext, ++cnt )
@@ -954,6 +954,7 @@ void SMESH_MeshAlgos::FindFreeBorders(SMDS_Mesh&       theMesh,
       bordNodes[ cnt ] = be->myBNode1->Node();
       beLast = be;
     }
-    bordNodes.back() = beLast->myBNode2->Node();
+    if ( beLast )
+      bordNodes.back() = beLast->myBNode2->Node();
   }
 }

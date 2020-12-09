@@ -78,7 +78,6 @@ StdMeshers_StartEndLength_i::~StdMeshers_StartEndLength_i()
 
 void StdMeshers_StartEndLength_i::SetLength(CORBA::Double theLength,
                                             CORBA::Boolean theIsStart )
-     throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
   try {
@@ -102,7 +101,6 @@ void StdMeshers_StartEndLength_i::SetLength(CORBA::Double theLength,
 //=============================================================================
 
 void StdMeshers_StartEndLength_i::SetStartLength( CORBA::Double length)
-  throw (SALOME::SALOME_Exception)
 {
   SetLength( length, true );
 }
@@ -114,7 +112,6 @@ void StdMeshers_StartEndLength_i::SetStartLength( CORBA::Double length)
 //=============================================================================
 
 void StdMeshers_StartEndLength_i::SetEndLength( CORBA::Double length)
-  throw (SALOME::SALOME_Exception)
 {
   SetLength( length, false );
 }

@@ -882,7 +882,7 @@ void SMESHGUI_MeshOp::availableHyps( const int       theDim,
                                      THypDataList&   theDataList,
                                      HypothesisData* thePrevAlgoData,
                                      HypothesisData* theNextAlgoData,
-                                     const QString&  theMeshType)
+                                     const QString&  /*theMeshType*/)
 {
   theDataList.clear();
   theHyps.clear();
@@ -1434,7 +1434,7 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
  *   1 = accepted
  */
 //================================================================================
-void SMESHGUI_MeshOp::onHypoEdited( int result )
+void SMESHGUI_MeshOp::onHypoEdited( int /*result*/ )
 {
   int obj = myDlg->getActiveObject();
   onActivateObject( obj ); // Issue 0020170. Restore filters
@@ -2975,7 +2975,7 @@ void SMESHGUI_MeshOp::updateHypoSets()
  * \param theIndex - Index of current type of mesh
  */
 //================================================================================
-void SMESHGUI_MeshOp::onAlgoSetByMeshType( const int theTabIndex, const int theIndex )
+void SMESHGUI_MeshOp::onAlgoSetByMeshType( const int /*theTabIndex*/, const int /*theIndex*/ )
 {
   setFilteredAlgoData();
 }

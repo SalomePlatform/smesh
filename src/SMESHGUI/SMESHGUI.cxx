@@ -2759,7 +2759,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         OCC_CATCH_SIGNALS;
         SMESH::UpdateView();
       }
-      catch (std::bad_alloc) { // PAL16774 (Crash after display of many groups)
+      catch (std::bad_alloc&) { // PAL16774 (Crash after display of many groups)
         SMESH::OnVisuException();
       }
       catch (...) { // PAL16774 (Crash after display of many groups)
@@ -2864,7 +2864,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpCreateSubMesh:
     if ( warnOnGeomModif() )
       break; // action forbiden as geometry modified
-
+    // fall through
   case SMESHOp::OpCreateMesh:
   case SMESHOp::OpCompute:
   case SMESHOp::OpComputeSubMesh:
@@ -3961,7 +3961,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
  *
  */
 //=============================================================================
-bool SMESHGUI::OnMousePress( QMouseEvent * pe, SUIT_ViewWindow * wnd )
+bool SMESHGUI::OnMousePress( QMouseEvent * /*pe*/, SUIT_ViewWindow * /*wnd*/ )
 {
   return false;
 }
@@ -3971,7 +3971,7 @@ bool SMESHGUI::OnMousePress( QMouseEvent * pe, SUIT_ViewWindow * wnd )
  *
  */
 //=============================================================================
-bool SMESHGUI::OnMouseMove( QMouseEvent * pe, SUIT_ViewWindow * wnd )
+bool SMESHGUI::OnMouseMove( QMouseEvent * /*pe*/, SUIT_ViewWindow * /*wnd*/ )
 {
   return true;
 }
@@ -3981,7 +3981,7 @@ bool SMESHGUI::OnMouseMove( QMouseEvent * pe, SUIT_ViewWindow * wnd )
  *
  */
 //=============================================================================
-bool SMESHGUI::OnKeyPress( QKeyEvent * pe, SUIT_ViewWindow * wnd )
+bool SMESHGUI::OnKeyPress( QKeyEvent * /*pe*/, SUIT_ViewWindow * /*wnd*/ )
 {
   return true;
 }
@@ -5270,7 +5270,7 @@ void SMESHGUI::addActorAsObserver( SMESH_Actor* theActor )
 void SMESHGUI::ProcessEvents( vtkObject* theObject,
                               unsigned long theEvent,
                               void* theClientData,
-                              void* theCallData )
+                              void* /*theCallData*/ )
 {
   if( SMESHGUI* aSMESHGUI = reinterpret_cast<SMESHGUI*>( theClientData ) ) {
     if( theObject && (int) theEvent == SMESH::DeleteActorEvent ) {

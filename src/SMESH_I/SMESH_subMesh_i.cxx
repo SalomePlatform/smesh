@@ -141,7 +141,6 @@ bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
 //=============================================================================
 
 CORBA::Long SMESH_subMesh_i::GetNumberOfElements()
-  throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
 
@@ -172,7 +171,6 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfElements()
 //=============================================================================
 
 CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
-  throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
 
@@ -220,7 +218,6 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
 //=============================================================================
 
 SMESH::long_array* SMESH_subMesh_i::GetElementsId()
-  throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
 
@@ -265,7 +262,6 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsId()
 //=============================================================================
 
 SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theElemType )
-    throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
 
@@ -351,7 +347,6 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
 //=============================================================================
   
 SMESH::long_array* SMESH_subMesh_i::GetNodesId()
-  throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
 
@@ -366,7 +361,6 @@ SMESH::long_array* SMESH_subMesh_i::GetNodesId()
 //=============================================================================
   
 SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetFather()
-  throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   return _mesh_i->_this();
@@ -389,7 +383,6 @@ CORBA::Long SMESH_subMesh_i::GetId()
 //=======================================================================
 
 GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
-     throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   GEOM::GEOM_Object_var aShapeObj;
@@ -428,7 +421,6 @@ SMESH::long_array* SMESH_subMesh_i::GetIDs()
  */
 //=============================================================================
 SMESH::ElementType SMESH_subMesh_i::GetElementType( const CORBA::Long id, const bool iselem )
-  throw (SALOME::SALOME_Exception)
 {
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -607,7 +599,6 @@ SMESH_Invalid_subMesh_i::SMESH_Invalid_subMesh_i( PortableServer::POA_ptr thePOA
 //=======================================================================
 
 GEOM::GEOM_Object_ptr SMESH_Invalid_subMesh_i::GetSubShape()
-  throw (SALOME::SALOME_Exception)
 {
   return GEOM::GEOM_Object::_duplicate( _geom );
 }

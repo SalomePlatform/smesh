@@ -46,7 +46,7 @@ class SMESHGUI_MeshEditPreview;
 
 class SMESHGUI_EXPORT SMESHGUI_MinDistance : public QWidget
 {
-  Q_OBJECT;
+  Q_OBJECT
 
   enum { NoTgt, FirstTgt, SecondTgt };
   enum { OriginTgt, NodeTgt, ElementTgt, ObjectTgt };
@@ -95,7 +95,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_BoundingBox : public QWidget
 {
-  Q_OBJECT;
+  Q_OBJECT
 
   enum { ObjectsSrc, NodesSrc, ElementsSrc };
   
@@ -141,7 +141,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_BasicProperties : public QWidget
 {
-  Q_OBJECT;
+  Q_OBJECT
   
 public:
   //! Property type
@@ -172,7 +172,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_Angle : public QWidget
 {
-  Q_OBJECT;
+  Q_OBJECT
   
 public:
 
@@ -206,7 +206,7 @@ private:
 
 class SMESHGUI_EXPORT SMESHGUI_MeasureDlg : public QDialog
 { 
-  Q_OBJECT;
+  Q_OBJECT
 
   enum { NodeMode, ElemMode };
 

@@ -201,7 +201,7 @@ int SMDS_MeshVolume::GetNodeIndex( const SMDS_MeshNode* node ) const
   }
   return -1;
 }
-bool SMDS_MeshVolume::ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes)
+bool SMDS_MeshVolume::ChangeNodes(const SMDS_MeshNode* /*nodes*/[], const int /*nbNodes*/)
 {
   return false;
 }

@@ -40,7 +40,7 @@ class SMDS_EXPORT SMDS_PolygonalFaceOfNodes : public SMDS_CellOfNodes
   virtual SMDSAbs_GeometryType GetGeomType()  const { return SMDSGeom_POLYGON; }
   virtual bool IsPoly() const { return true; }
   virtual bool IsQuadratic() const { return false; }
-  virtual bool IsMediumNode(const SMDS_MeshNode* node) const { return false; }
+  virtual bool IsMediumNode(const SMDS_MeshNode* /*node*/) const { return false; }
   virtual int  NbCornerNodes() const { return NbNodes(); }
 
   virtual int NbNodes() const;

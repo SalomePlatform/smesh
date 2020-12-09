@@ -106,6 +106,7 @@ namespace Prism_3D
     std::list< int >         myNbEdgesInWires;
 
     bool                     myNotQuadOnTop;
+    mutable SMESH_subMesh*   myAlgoSM; // sub-mesh with algo which computed myBottom
 
     size_t NbWires() const { return myNbEdgesInWires.size(); }
 

@@ -196,7 +196,7 @@ class SMESH_I_EXPORT SMESH_GroupOnFilter_i:
   static SMESH_PredicatePtr GetPredicate( SMESH::Filter_ptr );
 
   // CORBA interface implementation
-  void SetFilter(SMESH::Filter_ptr theFilter) throw (SALOME::SALOME_Exception);
+  void SetFilter(SMESH::Filter_ptr theFilter);
   SMESH::Filter_ptr GetFilter();
   virtual CORBA::Boolean IsUpToDate();
   virtual SMESH::long_array* GetListOfID();

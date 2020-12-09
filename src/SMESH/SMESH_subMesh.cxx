@@ -110,6 +110,7 @@ SMESH_subMesh::SMESH_subMesh(int                  Id,
   }
   _computeCost = 0; // how costly is to compute this sub-mesh
   _realComputeCost = 0;
+  _allowedSubShapes = nullptr;
 }
 
 //=============================================================================
@@ -269,6 +270,42 @@ bool SMESH_subMesh::IsMeshComputed() const
   }
 
   return false;
+}
+
+//================================================================================
+/*!
+ * \brief Check if any upper level sub-shape is not computed.
+ *        Used to update a sub-mesh icon
+ */
+//================================================================================
+
+bool SMESH_subMesh::IsComputedPartially() const
+{
+  SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(/*includeSelf=*/true,
+                                                       /*SolidFirst=*/true);
+  bool allComputed = true;
+  TopAbs_ShapeEnum readyType = TopAbs_VERTEX; // max value
+  while ( smIt->more() && allComputed )
+  {
+    SMESH_subMesh* sm = smIt->next();
+
+    if ( sm->GetSubShape().ShapeType() > readyType )
+      break; // lower dimension -> stop
+    if ( sm->GetComputeState() != SMESH_subMesh::NOT_READY )
+      readyType = sm->GetSubShape().ShapeType();
+
+    switch ( sm->GetComputeState() )
+    {
+    case SMESH_subMesh::READY_TO_COMPUTE:
+    case SMESH_subMesh::FAILED_TO_COMPUTE:
+      allComputed = false;// sm->IsMeshComputed();
+      break;
+    case SMESH_subMesh::NOT_READY:
+    case SMESH_subMesh::COMPUTE_OK:
+      continue;
+    }
+  }
+  return !allComputed;
 }
 
 //=============================================================================
@@ -1408,6 +1445,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
       loadDependentMeshes();
       ComputeSubMeshStateEngine( SUBMESH_LOADED );
       //break;
+      // fall through
     case CHECK_COMPUTE_STATE:
       if ( IsMeshComputed() )
         _computeState = COMPUTE_OK;
@@ -1459,6 +1497,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         }
         break;
       }
+      // fall through
     case COMPUTE:
     case COMPUTE_SUBMESH:
       {
@@ -1478,11 +1517,14 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         if (_father->HasShapeToMesh() ) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {
-            if ( event == COMPUTE /*&&
-                 ( algo->NeedDiscreteBoundary() || algo->SupportSubmeshes() )*/)
-              shape = getCollection( gen, algo, subComputed, subFailed, algo->SubMeshesToCompute());
-            else
-              subComputed = SubMeshesComputed( & subFailed );
+            //  --- commented for bos#22320 to compute all sub-shapes at once if possible;
+            //  --- in case COMPUTE_SUBMESH, set of sub-shapes is limited
+            //  --- by calling SetAllowedSubShapes()
+            // if ( event == COMPUTE )
+            //   shape = getCollection( gen, algo, subComputed, subFailed, algo->SubMeshesToComput;
+            // else
+            //   subComputed = SubMeshesComputed( & subFailed );
+            shape = getCollection( gen, algo, subComputed, subFailed, algo->SubMeshesToCompute());
           }
           else {
             subComputed = SubMeshesComputed();
@@ -1610,8 +1652,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
             ((SMESHDS_Hypothesis*)hyps.front())->SaveTo( hypStr.Stream() );
             hypStr << " ";
           }
-          cout << _algo->GetName()
-               << " " << _father->GetSubMesh( subS.Current() )->GetId()
+          cout << _father->GetSubMesh( subS.Current() )->GetId()
+               << " " << ( ret ? "OK" : "FAIL" )
+               << " " << _algo->GetName()
                << " " << hypStr << endl;
         }
 #endif
@@ -1722,6 +1765,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
       loadDependentMeshes();
       ComputeSubMeshStateEngine( SUBMESH_LOADED );
       //break;
+      // fall through
     case CHECK_COMPUTE_STATE:
       if ( IsMeshComputed() )
         _computeState = COMPUTE_OK;
@@ -1746,6 +1790,8 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         cleanDependsOn( algo ); // clean sub-meshes with event CLEAN
       break;
     case COMPUTE:               // nothing to do
+      break;
+    case COMPUTE_SUBMESH:       // nothing to do
       break;
     case COMPUTE_CANCELED:      // nothing to do
       break;
@@ -2106,7 +2152,7 @@ void SMESH_subMesh::removeSubMeshElementsAndNodes()
 //           meshed at once along with _subShape
 //=======================================================================
 
-TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
+TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * /*theGen*/,
                                           SMESH_Algo* theAlgo,
                                           bool &      theSubComputed,
                                           bool &      theSubFailed,
@@ -2139,6 +2185,8 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
     SMESH_subMesh* subMesh = smIt->next();
     const TopoDS_Shape&  S = subMesh->_subShape;
     if ( S.ShapeType() != this->_subShape.ShapeType() )
+      continue;
+    if ( _allowedSubShapes && !_allowedSubShapes->IsEmpty() && !_allowedSubShapes->Contains( S ))
       continue;
     if ( subMesh == this )
     {

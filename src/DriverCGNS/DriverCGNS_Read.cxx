@@ -134,12 +134,12 @@ namespace
       ids[2] = ids[0] + _sizeX + 1;
       ids[3] = ids[0] + ( k==_sizeZ ? _sizeX : 1);
     }
-    void IEdgeNodes( int i, int j, int k, cgsize_t* ids ) const // edge perpendiculaire to X (2D)
+    void IEdgeNodes( int i, int j, int /*k*/, cgsize_t* ids ) const // edge perpendiculaire to X (2D)
     {
       ids[0] = NodeID( i, j, 0 );
       ids[1] = ids[0] + _sizeX;
     }
-    void JEdgeNodes( int i, int j, int k, cgsize_t* ids ) const
+    void JEdgeNodes( int i, int j, int /*k*/, cgsize_t* ids ) const
     {
       ids[0] = NodeID( i, j, 0 );
       ids[1] = ids[0] + 1;
@@ -187,7 +187,7 @@ namespace
     }
     gp_XYZ Next()
     {
-      gp_XYZ res( _cur[0], _cur[1], _cur[2] );
+      gp_XYZ res( _cur[0], _cur[1], _cur[2] ); // todo: _cur can be used uninitialized
       for ( int i = 0; i < _dim; ++i )
       {
         _cur[i] += _dir[i];
@@ -207,7 +207,7 @@ namespace
         size *= _dir[i]*(_end[i]-_beg[i]);
       return size;
     }
-    gp_XYZ Begin() const { return gp_XYZ( _beg[0], _beg[1], _beg[2] ); }
+    gp_XYZ Begin() const { return gp_XYZ( _beg[0], _beg[1], _beg[2] ); }  // todo: _beg can be used uninitialized
     //gp_XYZ End() const { return gp_XYZ( _end[0]-1, _end[1]-1, _end[2]-1 ); }
   };
 
@@ -297,7 +297,7 @@ namespace
               }
 
             // fill nodeReplacementMap
-            TPointRangeIterator rangeIt1( range, _meshDim );
+            TPointRangeIterator rangeIt1( range, _meshDim );  // todo: rangeIt1: _end[i], _dir[i], _beg[i], _cur[i] may be used uninitialized
             TPointRangeIterator rangeIt2( donorRange, _meshDim );
             gp_XYZ begin1 = rangeIt1.Begin(), begin2 = rangeIt2.Begin(), index1, index2;
             if ( &zone2 == this )

@@ -54,8 +54,7 @@ public:
   virtual ~StdMeshers_Deflection1D_i();
 
   // Set deflection
-  void SetDeflection( CORBA::Double theLength )
-    throw ( SALOME::SALOME_Exception );
+  void SetDeflection( CORBA::Double theLength );
   // Get deflection
   CORBA::Double GetDeflection();
 
@@ -66,10 +65,10 @@ public:
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 
   // Methods for copying mesh definition to other geometry
-  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) const { return false; }
-  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) { return true; }
+  virtual bool getObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) const { return false; }
+  virtual bool setObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) { return true; }
  protected:
   virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };

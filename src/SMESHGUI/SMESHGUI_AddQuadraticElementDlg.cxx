@@ -1274,7 +1274,7 @@ void SMESHGUI_AddQuadraticElementDlg::enterEvent (QEvent*)
 // purpose  :
 //=================================================================================
 
-void SMESHGUI_AddQuadraticElementDlg::onReverse (int state)
+void SMESHGUI_AddQuadraticElementDlg::onReverse (int /*state*/)
 {
   mySimulation->SetVisibility(false);
   displaySimulation();
@@ -1449,7 +1449,7 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
 // purpose  :
 //=================================================================================
 
-void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCol )
+void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int /*theRow*/, int /*theCol*/ )
 {
   myCurrentLineEdit = 0;
   displaySimulation();
@@ -1461,7 +1461,7 @@ void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCo
 // purpose  :
 //=================================================================================
 
-void SMESHGUI_AddQuadraticElementDlg::onCellTextChange(int theRow, int theCol)
+void SMESHGUI_AddQuadraticElementDlg::onCellTextChange(int /*theRow*/, int /*theCol*/)
 {
   myCurrentLineEdit = 0;
   displaySimulation();

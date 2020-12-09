@@ -55,8 +55,8 @@ class SMESH_EXPORT SMESH_subMeshEventListener
   virtual      ~SMESH_subMeshEventListener() {}
   bool         IsDeletable() const { return myIsDeletable; }
   const char*  GetName()     const { return myName; }
-  virtual void BeforeDelete(SMESH_subMesh*                  subMesh,
-                            SMESH_subMeshEventListenerData* data)
+  virtual void BeforeDelete(SMESH_subMesh*                  /*subMesh*/,
+                            SMESH_subMeshEventListenerData* /*data*/)
   {}
   /*!
    * \brief Do something on a certain event

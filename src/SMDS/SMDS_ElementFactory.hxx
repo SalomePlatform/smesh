@@ -231,7 +231,7 @@ struct _RangeSet
    * \brief Return ranges of indices (from,to) of elements having a given value
    */
   bool GetIndices( const attr_t theValue, TIndexRanges & theIndices,
-                   const attr_t* theMinValue = 0, const attr_t* theMaxValue = 0) const
+                   const attr_t* /*theMinValue*/ = 0, const attr_t* /*theMaxValue*/ = 0) const
   {
     bool isFound = false;
 
@@ -417,7 +417,7 @@ public:
   { min = false; max = true; return myUsedRanges; }
 
   //! Return ranges of elements assigned to sub-shapes and min/max of sub-shape IDs
-  const TSubIDRangeSet& GetSubIDRangesMinMax( int& min, int& max ) const
+  const TSubIDRangeSet& GetSubIDRangesMinMax( int& /*min*/, int& /*max*/ ) const
   { /*min = myMinSubID; max = myMaxSubID;*/ return mySubIDRanges; }
 
   //! Minimize allocated memory

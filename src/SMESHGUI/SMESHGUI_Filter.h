@@ -55,7 +55,7 @@ namespace SMESH
     FirstEntityTypeFilter   = FirstGeometryTypeFilter + SMDSGeom_NONE,
     LastFilter              = FirstEntityTypeFilter   + SMDSEntity_Last
   };
-};
+}
 
 /*
   Class       : SMESHGUI_Filter

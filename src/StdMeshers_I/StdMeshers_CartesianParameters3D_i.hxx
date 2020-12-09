@@ -56,15 +56,15 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
    * it's size is \athreshold times less than the size of the initial hexahedron. 
    * threshold must be > 1.0
    */
-  void SetSizeThreshold(CORBA::Double threshold) throw (SALOME::SALOME_Exception);
+  void SetSizeThreshold(CORBA::Double threshold);
   CORBA::Double GetSizeThreshold();
 
   /*!
    * \brief Set node coordinates along an axis (counterd from zero)
    */
   void SetGrid(const SMESH::double_array& coords,
-               CORBA::Short               axis) throw (SALOME::SALOME_Exception);
-  SMESH::double_array* GetGrid(CORBA::Short axis) throw (SALOME::SALOME_Exception);
+               CORBA::Short               axis);
+  SMESH::double_array* GetGrid(CORBA::Short axis);
 
   /*!
    * \brief Set grid spacing along an axis
@@ -77,17 +77,17 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
    */
   void SetGridSpacing(const SMESH::string_array& spaceFunctions,
                       const SMESH::double_array& internalPoints,
-                      CORBA::Short               axis) throw (SALOME::SALOME_Exception);
+                      CORBA::Short               axis);
 
   void GetGridSpacing(SMESH::string_array_out xSpaceFunctions,
                       SMESH::double_array_out xInternalPoints,
-                      CORBA::Short            axis) throw (SALOME::SALOME_Exception);
+                      CORBA::Short            axis);
   /*!
    * Set custom direction of axes
    */
   void SetAxesDirs(const SMESH::DirStruct& x,
                    const SMESH::DirStruct& y,
-                   const SMESH::DirStruct& z) throw (SALOME::SALOME_Exception);
+                   const SMESH::DirStruct& z);
   void GetAxesDirs(SMESH::DirStruct& x,
                    SMESH::DirStruct& y,
                    SMESH::DirStruct& z);
@@ -139,7 +139,7 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
                               CORBA::Boolean        isOrthogonal,
                               SMESH::DirStruct&     x,
                               SMESH::DirStruct&     y,
-                              SMESH::DirStruct&     z) throw (SALOME::SALOME_Exception);
+                              SMESH::DirStruct&     z);
   /*!
    * \brief Compute node coordinates by spacing functions
    *  \param x0 - lower coordinate
@@ -152,8 +152,7 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
                                           CORBA::Double              x1,
                                           const SMESH::string_array& spaceFuns,
                                           const SMESH::double_array& points,
-                                          const char*                axisName )
-    throw (SALOME::SALOME_Exception);
+                                          const char*                axisName );
 
   // Get implementation
   ::StdMeshers_CartesianParameters3D* GetImpl();
@@ -163,10 +162,10 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
 
 
   // Methods for copying mesh definition to other geometry
-  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) const { return false; }
-  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
-                                   std::vector< int >         & subIDArray ) { return true; }
+  virtual bool getObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) const { return false; }
+  virtual bool setObjectsDependOn( std::vector< std::string > & /*entryArray*/,
+                                   std::vector< int >         & /*subIDArray*/ ) { return true; }
 };
 
 #endif

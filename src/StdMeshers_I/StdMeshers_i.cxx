@@ -85,12 +85,12 @@ namespace SMESH {
   class ApplicableToAny
   {
   public:
-    static bool IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
+    static bool IsApplicable( const TopoDS_Shape &S, bool /*toCheckAll*/, int algoDim )
     {
       return GenericHypothesisCreator_i::IsShapeOfDim( S, algoDim );
     }
   };
-};
+}
 
 template <class T, class TIsApplicable = SMESH::ApplicableToAny>
 class StdHypothesisCreator_i : public HypothesisCreator_i< T >
@@ -256,7 +256,6 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_PolygonPerFace_2D_i>;
     else if (strcmp(aHypName, "PolyhedronPerSolid_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_PolyhedronPerSolid_3D_i>;
-    else ;
 
     return aCreator;
   }

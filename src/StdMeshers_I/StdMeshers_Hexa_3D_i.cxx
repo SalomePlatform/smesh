@@ -86,7 +86,7 @@ StdMeshers_Hexa_3D_i::~StdMeshers_Hexa_3D_i()
  */
 //=============================================================================
 
-bool StdMeshers_Hexa_3D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
+bool StdMeshers_Hexa_3D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int /*algoDim*/ )
 {
   return ::StdMeshers_Hexa_3D::IsApplicable( S, toCheckAll );
 }

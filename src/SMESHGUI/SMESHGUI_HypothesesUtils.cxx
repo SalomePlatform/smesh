@@ -592,7 +592,7 @@ namespace SMESH
 
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis(const QString& aHypType,
                                                const QString& aHypName,
-                                               const bool isAlgo)
+                                               const bool /*isAlgo*/)
   {
     if(MYDEBUG) MESSAGE("Create " << aHypType.toLatin1().data() <<
                         " with name " << aHypName.toLatin1().data());

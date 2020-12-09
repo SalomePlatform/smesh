@@ -760,7 +760,7 @@ void
 #endif
 #endif
  qualitetrte( R3 *mnpxyd,
-                   Z & mosoar, Z & mxsoar, Z *mnsoar,
+                   Z & mosoar, Z & /*mxsoar*/, Z *mnsoar,
                    Z & moartr, Z & mxartr, Z *mnartr,
                    Z & nbtria, R & quamoy, R & quamin )
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
