@@ -359,7 +359,7 @@ namespace
     {
       SMESH_MeshAlgos::PolySegment& polySeg = mySegments[ iSeg ];
 
-      if ( ( polySeg.myXYZ[0] - polySeg.myXYZ[1] ).SquareModulus() == 0 )
+      if (( polySeg.myXYZ[0] - polySeg.myXYZ[1] ).SquareModulus() == 0 )
       {
         myPaths[ iSeg ].AddPoint( polySeg.myXYZ[0] );
         myPaths[ iSeg ].AddPoint( polySeg.myXYZ[1] );

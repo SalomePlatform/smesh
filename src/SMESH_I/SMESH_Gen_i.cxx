@@ -6346,7 +6346,6 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
   SMESH_TRY;
 
   std::string aPlatformLibName;
-  //typedef GenericHypothesisCreator_i* (*GetHypothesisCreator)(const char*);
   GenericHypothesisCreator_i* aCreator =
     getHypothesisCreator(theAlgoType, theLibName, aPlatformLibName);
   if (aCreator)

@@ -123,8 +123,9 @@ StdMeshers::blockcs_array*  StdMeshers_BlockRenumber_i::GetBlocksOrientation()
  */
 //================================================================================
 
-bool StdMeshers_BlockRenumber_i::getObjectsDependOn( std::vector< std::string > & entryArray,
-                                                     std::vector< int >         & subIDArray ) const
+bool
+StdMeshers_BlockRenumber_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                                std::vector< int >         & /*subIDArray*/ ) const
 {
   const std::vector< StdMeshers_BlockCS >& bcsVec =
     const_cast<StdMeshers_BlockRenumber_i*>(this)->GetImpl()->GetBlocksOrientation();
@@ -145,7 +146,7 @@ bool StdMeshers_BlockRenumber_i::getObjectsDependOn( std::vector< std::string > 
 //================================================================================
 
 bool StdMeshers_BlockRenumber_i::setObjectsDependOn( std::vector< std::string > & entryArray,
-                                                     std::vector< int >         & subIDArray )
+                                                     std::vector< int >         & /*subIDArray*/ )
 {
   std::vector< StdMeshers_BlockCS > bcsVec( entryArray.size() / 3 );
   for ( size_t i = 0; i + 2 < entryArray.size(); i += 3 )

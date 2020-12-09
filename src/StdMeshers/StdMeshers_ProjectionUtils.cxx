@@ -123,17 +123,19 @@ namespace {
 
   bool storeShapeForDebug(const TopoDS_Shape& shape)
   {
+    bool toShow;
 #ifdef _DEBUG_
     const char* type[] ={"COMPOUND","COMPSOLID","SOLID","SHELL","FACE","WIRE","EDGE","VERTEX"};
     BRepTools::Write( shape, SMESH_Comment("/tmp/") << type[shape.ShapeType()] << "_"
                       << shape.TShape().operator->() << ".brep");
-    if ( !theMeshDS[0] ) {
-      show_shape( TopoDS_Shape(), "avoid warning: show_shape() defined but not used");
+    toShow = !theMeshDS[0]; // no show
+#else
+    toShow = theMeshDS[0]; // no show
+#endif
+    if ( toShow ) {
+      show_shape( shape, "avoid warning: show_shape() defined but not used");
       show_list( "avoid warning: show_list() defined but not used", list< TopoDS_Edge >() );
     }
-#else
-    (void)shape; // unused in release mode
-#endif
     return false;
   }
   
@@ -540,8 +542,10 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   //       b) find association of a couple of vertices and recall self.
   //
 
+#ifdef _DEBUG_
   theMeshDS[0] = theMesh1->GetMeshDS(); // debug
   theMeshDS[1] = theMesh2->GetMeshDS();
+#endif
 
   // =================================================================================
   // 1) Is it the case of associating a group member -> another group? (PAL16202, 16203)

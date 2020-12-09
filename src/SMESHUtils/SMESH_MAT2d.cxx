@@ -418,8 +418,10 @@ namespace
    */
   //================================================================================
 
-  void bndSegsToMesh( const vector< vector< BndSeg > >& /*bndSegsPerEdge*/ )
+  void bndSegsToMesh( const vector< vector< BndSeg > >& bndSegsPerEdge )
   {
+    if ( bndSegsPerEdge.empty() )
+      return;
 #ifdef _MYDEBUG_
     if ( !getenv("bndSegsToMesh")) return;
     map< const TVDVertex *, int > v2Node;

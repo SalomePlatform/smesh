@@ -28,8 +28,8 @@
 static int MYDEBUG = 0;
 static int MYVALUEDEBUG = 0;
 #else
-static int MYDEBUG = 0;      // todo: unused in release mode
-static int MYVALUEDEBUG = 0; // todo: unused in release mode
+// static int MYDEBUG = 0;
+// static int MYVALUEDEBUG = 0;
 #endif
 
 namespace MED

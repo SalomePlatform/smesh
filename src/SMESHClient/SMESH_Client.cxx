@@ -745,34 +745,34 @@ namespace
   //=======================================================================
   //function : ChangePolyhedronNodes
   //=======================================================================
-  inline void ChangePolyhedronNodes (SMDS_Mesh* /*theMesh*/,
-                                     SMESH::log_array_var& /*theSeq*/,
-                                     CORBA::Long /*theId*/)
+  inline void ChangePolyhedronNodes (SMDS_Mesh*            theMesh,
+                                     SMESH::log_array_var& theSeq,
+                                     CORBA::Long           theId)
   {
-    // const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    // CORBA::Long iind = 0, aNbElems = theSeq[theId].number;
+    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
+    CORBA::Long iind = 0, aNbElems = theSeq[theId].number;
 
-    // for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++)
-    // {
-    //   // find element
-    //   const SMDS_MeshElement* elem = FindElement(theMesh, anIndexes[iind++]);
-    //   // nb nodes
-    //   int nbNodes = anIndexes[iind++];
-    //   // nodes
-    //   std::vector<const SMDS_MeshNode*> aNodes (nbNodes);
-    //   for (int iNode = 0; iNode < nbNodes; iNode++) {
-    //     aNodes[iNode] = FindNode(theMesh, anIndexes[iind++]);
-    //   }
-    //   // nb faces
-    //   int nbFaces = anIndexes[iind++];
-    //   // quantities
-    //   std::vector<int> quantities (nbFaces);
-    //   for (int iFace = 0; iFace < nbFaces; iFace++) {
-    //     quantities[iFace] = anIndexes[iind++];
-    //   }
-    //   // change
-    //   theMesh->ChangePolyhedronNodes(elem, aNodes, quantities);
-    // }
+    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++)
+    {
+      // find element
+      const SMDS_MeshElement* elem = FindElement(theMesh, anIndexes[iind++]);
+      // nb nodes
+      int nbNodes = anIndexes[iind++];
+      // nodes
+      std::vector<const SMDS_MeshNode*> aNodes (nbNodes);
+      for (int iNode = 0; iNode < nbNodes; iNode++) {
+        aNodes[iNode] = FindNode(theMesh, anIndexes[iind++]);
+      }
+      // nb faces
+      int nbFaces = anIndexes[iind++];
+      // quantities
+      std::vector<int> quantities (nbFaces);
+      for (int iFace = 0; iFace < nbFaces; iFace++) {
+        quantities[iFace] = anIndexes[iind++];
+      }
+      // change
+      theMesh->ChangePolyhedronNodes(elem, aNodes, quantities);
+    }
   }
 }
 
