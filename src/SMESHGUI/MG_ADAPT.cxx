@@ -1175,9 +1175,16 @@ void MgAdapt::restorefams(MEDCoupling::MEDFileMesh* fileMesh) const
     std::vector<family>::const_iterator fIt = famVec.begin();
 
     for (; fIt!=famVec.end(); ++fIt)
-    {
-        std::string givenFamNameFromMeshGemConverter = fileMesh->getFamilyNameGivenId( fIt->_famId );
-        fileMesh->changeFamilyName(givenFamNameFromMeshGemConverter, fIt->_famName);
+    {	
+		try  // safety : FAMILY could be lost P2-->P1
+        {
+			std::string givenFamNameFromMeshGemConverter = fileMesh->getFamilyNameGivenId( fIt->_famId );
+            fileMesh->changeFamilyName(givenFamNameFromMeshGemConverter, fIt->_famName);
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr<<e.what();
+        }  
     }
 }
 

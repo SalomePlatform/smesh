@@ -373,6 +373,118 @@
         <translation>Remesh with MG_Adapt</translation>
     </message>
     <message>
+        <source>Args</source>
+        <translation>Arguments</translation>
+    </message>
+    <message>
+        <source>MeshOut</source>
+        <translation>Mesh Out</translation>
+    </message>
+    <message>
+        <source>MeshIn</source>
+        <translation>Mesh In</translation>
+    </message>
+    <message>
+        <source>MEDFile</source>
+        <translation>MED file</translation>
+    </message>
+    <message>
+        <source>Browser</source>
+        <translation>Browser</translation>
+    </message>
+    <message>
+        <source>Publish_MG_ADAPT</source>
+        <translation>Publish</translation>
+    </message>
+<message>
+        <source>SIZE_MAP_FIELD</source>
+        <translation>Size map field</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_FIELD_NAME</source>
+        <translation>Field Name</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_MED_FILE_1</source>
+        <translation>This MED file cannot be read.</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_MED_FILE_2</source>
+        <translation>No mesh in this MED file.</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_MED_FILE_3</source>
+        <translation>More than one mesh in this MED file.</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_MED_FILE_4</source>
+        <translation>The mesh in this MED file cannot be read.</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_MED_FILE_5</source>
+        <translation>No field in this MED file.</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_MED_FILE_6</source>
+        <translation>The field(s) in this MED file cannot be read.</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_ERROR</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_CH_ST</source>
+        <translation>Chosen time step</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_RANK</source>
+        <translation>Rank</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_TSTP</source>
+        <translation>Time step </translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_NO_T_ST</source>
+        <translation>No time step</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_L_ST</source>
+        <translation>Last time step</translation>
+    </message>
+    <message>
+        <source>MeshName</source>
+        <translation>Mesh name</translation>
+    </message>
+    <message>
+        <source>LOCAL_MG_ADAPT</source>
+        <translation>local</translation>
+    </message>
+    <message>
+        <source>BACKGRND_MG_ADAPT</source>
+        <translation>Background</translation>
+    </message>
+    <message>
+        <source>CNST_MG_ADAPT</source>
+        <translation>Constant</translation>
+    </message>
+    <message>
+        <source>MED_FILE_BCKG</source>
+        <translation>MED file background size map</translation>
+    </message>
+    <message>
+        <source>VALUE_MG_ADAPT</source>
+        <translation>Value</translation>
+    </message>
+    <message>
+        <source>SIZE_MAP_DEF</source>
+        <translation>size map definition</translation>
+    </message>
+    <message>
+        <source>ADVOP</source>
+        <translation>Advanced Options</translation>
+    </message>
+    <message>
         <source>MEN_CONV_TO_QUAD</source>
         <translation>Convert to/from quadratic</translation>
     </message>
@@ -2990,6 +3102,30 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Publication of the OUT mesh</translation>
     </message>
     <message>
+        <source>OPTION_VALUE_COLUMN</source>
+        <translation>Option</translation>
+    </message>
+    <message>
+        <source>OPTION_NAME_COLUMN</source>
+        <translation>Value</translation>
+    </message>
+    <message>
+        <source>compute_ridges</source>
+        <translation>Compute ridges</translation>
+    </message>
+    <message>
+        <source>max_memory</source>
+        <translation>Maximum memory (Mb)</translation>
+    </message>
+    <message>
+        <source>Adaption</source>
+        <translation>adaptation</translation>
+    </message>
+    <message>
+        <source>components</source>
+        <translation>Components</translation>
+    </message>
+    <message>
         <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP</source>
         <translation>Size map</translation>
     </message>
@@ -3002,16 +3138,44 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Background</translation>
     </message>
     <message>
+        <source>ADAPT_PREF_MG_ADAPT_MED_SIZE_MAP_BACKGROUND</source>
+        <translation>MED file background size map</translation>
+    </message>
+    <message>
         <source>ADAPT_PREF_MG_ADAPT_TIME_STEP</source>
         <translation>Time step</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_NO_TIME_STEP</source>
+        <translation>No time step</translation>
     </message>
     <message>
         <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_LAST</source>
         <translation>Last</translation>
     </message>
     <message>
+        <source>ADAPT_PREF_MG_ADAPT_AR</source>
+        <translation>Arguments</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_ADVOP</source>
+        <translation>Advanced Options</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_LAST_STEP</source>
+        <translation>Last time step</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_C_STEP</source>
+        <translation>Chosen time step</translation>
+    </message>
+    <message>
         <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_C</source>
         <translation>Value</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_SELECT_FILE_0</source>
+        <translation>MG-ADAPT select file</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>
