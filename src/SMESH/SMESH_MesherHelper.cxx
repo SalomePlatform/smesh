@@ -4132,30 +4132,30 @@ namespace { // Structures used by FixQuadraticElements()
    */
   //================================================================================
 
-  bool QFace::IsSpoiled(const QLink* bentLink ) const // todo: unused
-  {
-    // code is valid for convex faces only
-    gp_XYZ gc(0,0,0);
-    for ( TIDSortedNodeSet::const_iterator n = begin(); n != end(); ++n )
-      gc += XYZ( *n ) / double( size() );
-    for ( size_t i = 0; i < _sides.size(); ++i )
-    {
-      if ( _sides[i] == bentLink ) continue;
-      gp_Vec linkNorm = _normal ^ gp_Vec( XYZ(_sides[i]->node1()), XYZ(_sides[i]->node2()));
-      gp_Vec vecOut( gc, _sides[i]->MiddlePnt() );
-      if ( linkNorm * vecOut < 0 )
-        linkNorm.Reverse();
-      double mag2 = linkNorm.SquareMagnitude();
-      if ( mag2 > numeric_limits<double>::min() )
-        linkNorm /= sqrt( mag2 );
-      gp_Vec vecBent    ( _sides[i]->MiddlePnt(), bentLink->MediumPnt());
-      gp_Vec vecStraight( _sides[i]->MiddlePnt(), bentLink->MiddlePnt());
-      if ( vecBent * linkNorm > -0.1*vecStraight.Magnitude() )
-        return true;
-    }
-    return false;
+  // bool QFace::IsSpoiled(const QLink* bentLink ) const
+  // {
+  //   // code is valid for convex faces only
+  //   gp_XYZ gc(0,0,0);
+  //   for ( TIDSortedNodeSet::const_iterator n = begin(); n != end(); ++n )
+  //     gc += XYZ( *n ) / double( size() );
+  //   for ( size_t i = 0; i < _sides.size(); ++i )
+  //   {
+  //     if ( _sides[i] == bentLink ) continue;
+  //     gp_Vec linkNorm = _normal ^ gp_Vec( XYZ(_sides[i]->node1()), XYZ(_sides[i]->node2()));
+  //     gp_Vec vecOut( gc, _sides[i]->MiddlePnt() );
+  //     if ( linkNorm * vecOut < 0 )
+  //       linkNorm.Reverse();
+  //     double mag2 = linkNorm.SquareMagnitude();
+  //     if ( mag2 > numeric_limits<double>::min() )
+  //       linkNorm /= sqrt( mag2 );
+  //     gp_Vec vecBent    ( _sides[i]->MiddlePnt(), bentLink->MediumPnt());
+  //     gp_Vec vecStraight( _sides[i]->MiddlePnt(), bentLink->MiddlePnt());
+  //     if ( vecBent * linkNorm > -0.1*vecStraight.Magnitude() )
+  //       return true;
+  //   }
+  //   return false;
 
-  }
+  // }
 
   //================================================================================
   /*!

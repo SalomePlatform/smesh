@@ -3857,9 +3857,9 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
           }
           else {
             if ( isUPeriodic )
-              newUV.SetX( ElCLib::InPeriod( newUV.X(), u1, u2 )); // todo: u may be used unitialized
+              newUV.SetX( ElCLib::InPeriod( newUV.X(), u1, u2 ));
             if ( isVPeriodic )
-              newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 )); // todo: v may be used unitialized
+              newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 ));
             // check new UV
             // if ( posType != SMDS_TOP_3DSPACE )
             //   dist2 = pNode.SquareDistance( surface->Value( newUV.X(), newUV.Y() ));
