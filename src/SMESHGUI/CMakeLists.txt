@@ -46,6 +46,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_BINARY_DIR}
   ${PROJECT_BINARY_DIR}/idl
   ${PROJECT_BINARY_DIR}/src/ADAPTGUI
+  ${MEDCOUPLING_INCLUDE_DIRS}
 )
 
 # additional preprocessor / compiler flags
@@ -78,6 +79,7 @@ SET(_link_LIBRARIES
   ADAPTGUI
   ADAPTImpl
   ADAPTEngine
+  ${MEDCoupling_medloader}
 )
 
 # --- headers ---
@@ -151,6 +153,8 @@ SET(_moc_HEADERS
   SMESHGUI_IdPreview.h
   SMESHGUI_PreVisualObj.h
   SMESHGUI_AdaptDlg.h
+  SMESHGUI_MG_ADAPTDRIVER.h
+  MG_ADAPTGUI.hxx # to replace in ../ADAPTGUI/
 )
 
 # header files / no moc processing
@@ -173,6 +177,7 @@ SET(_other_HEADERS
   SMESHGUI_FileValidator.h
   SMESHGUI_SelectionProxy.h
   SMESH_SMESHGUI.hxx
+  MG_ADAPT.hxx # to replace in ../ADAPT/
 )
 
 # header files / to install
@@ -267,6 +272,9 @@ SET(_other_SOURCES
   SMESHGUI_PreVisualObj.cxx
   SMESHGUI_IdPreview.cxx
   SMESHGUI_AdaptDlg.cxx
+  SMESHGUI_MG_ADAPTDRIVER.cxx
+  MG_ADAPTGUI.cxx # to replace in ../ADAPTGUI/
+  MG_ADAPT.cxx # to replace in ../ADAPT/
 )
 
 # sources / to compile
