@@ -429,8 +429,8 @@ bool MgAdapt::setAll()
     }
 
     setSizeMapFile(mapfile);
-    int rank;
-    int tmst;
+    med_int rank;
+    med_int tmst;
     if (data->myUseNoTimeStep)
     {
         rank = MED_NO_IT;
@@ -446,7 +446,7 @@ bool MgAdapt::setAll()
         rank = data->myRank;
         tmst  = data->myTimeStep;
     }
-    setRankTimeStep(tmst, rank);
+    setRankTimeStep((int)tmst, (int)rank);
 
     /* Advanced options */
     setWorkingDir(data->myWorkingDir);
@@ -1233,13 +1233,13 @@ MgAdapt::Status MgAdapt::addMessage(const std::string& msg,
 
 
 // =======================================================================
-void MgAdapt::getTimeStepInfos(std::string aFile, int& numdt, int& numit)
+void MgAdapt::getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit)
 // =======================================================================
 {
 // Il faut voir si plusieurs maillages
 
 
-    med_err erreur = 0 ;
+    herr_t erreur = 0 ;
     med_idt medIdt ;
 
 
@@ -1278,7 +1278,7 @@ void MgAdapt::getTimeStepInfos(std::string aFile, int& numdt, int& numit)
     }
 
     med_float dt;
-    int tmp_numdt, tmp_numit;
+    med_int tmp_numdt, tmp_numit;
 
     med_int step = data->myUseLastTimeStep ? nbofcstp : data->myTimeStep+1;
     //~myPrint("step ", step);

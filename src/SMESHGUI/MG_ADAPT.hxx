@@ -318,7 +318,7 @@ private :
     void storeGroupsAndFams(MEDCoupling::MEDFileMesh* fileMesh);
     void restoreGroupsAndFams(MEDCoupling::MEDFileMesh* fileMesh) const;
     void convertMeshFile(std::string& meshFormatIn, std::vector< std::string>& solFieldFileNames) const ;
-    void getTimeStepInfos(std::string aFile, int& numdt, int& numit);
+    void getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit);
     Status addMessage(const std::string& msg, const bool isFatal = false);
     med_idt openMedFile(const std::string aFile) ;
     bool isFileExist(std::string& fName) const;
