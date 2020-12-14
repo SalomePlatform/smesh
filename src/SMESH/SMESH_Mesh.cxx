@@ -2432,6 +2432,7 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
         smVec.push_back( sm );
         if ( sm->GetSubMeshDS() && sm->GetSubMeshDS()->IsComplexSubmesh() )
         {
+          smVec.reserve( smVec.size() + sm->GetSubMeshDS()->NbSubMeshes() );
           SMESHDS_SubMeshIteratorPtr smdsIt = sm->GetSubMeshDS()->GetSubMeshIterator();
           while ( smdsIt->more() )
           {
