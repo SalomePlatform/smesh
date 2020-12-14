@@ -318,6 +318,8 @@ private :
     void storeGroupsAndFams(MEDCoupling::MEDFileMesh* fileMesh);
     void restoreGroupsAndFams(MEDCoupling::MEDFileMesh* fileMesh) const;
     void convertMeshFile(std::string& meshFormatIn, std::vector< std::string>& solFieldFileNames) const ;
+    void buildConstantSizeMapSolFile(const std::string& solFormatFieldFileName, const int dim, const int version, const mcIdType nbNodes) const;
+    void buildBackGroundMeshAndSolFiles(const std::vector<std::string>& fieldFileNames, const std::string& meshFormatsizeMapFile) const;
     void getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit);
     Status addMessage(const std::string& msg, const bool isFatal = false);
     med_idt openMedFile(const std::string aFile) ;

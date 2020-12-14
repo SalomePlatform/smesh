@@ -730,16 +730,16 @@ std::string MgAdapt::getCommandToRun()
     cmd+= " --in "+ meshIn;
     meshFormatOutputMesh = getFileName()+".mesh";
     cmd+= " --out "+ meshFormatOutputMesh;
-    if (useLocalMap) cmd+= " --sizemap "+ solFileIn;
-    else if (useBackgroundMap)
+    if (useLocalMap || useConstantValue) cmd+= " --sizemap "+ solFileIn;
+    else //  (useBackgroundMap)
     {
         cmd+= " --background_mesh "+ sizeMapIn ;
         cmd+= " --background_sizemap "+ solFileIn;
     }
-    else
-    {
-        // constant value TODO
-    }
+    //~else
+    //~{
+        //~// constant value TODO
+    //~}
 
     if (verbosityLevel != defaultVerboseLevel())
     {
@@ -1048,25 +1048,7 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
 
         meshFormatsizeMapFile = getFileName();
         meshFormatsizeMapFile += ".mesh";
-        MEDCoupling::MCAuto<MEDCoupling::MEDFileData> tmpMfd = MEDCoupling::MEDFileData::New(sizeMapFile);
-        MEDCoupling::MEDFileFields* tmpFields = tmpMfd->getFields();
-        MEDCoupling::MEDFileAnyTypeFieldMultiTS* fts = tmpFields->getFieldWithName(fieldName);
-        MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS>  fts1 = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>(fts);
-        MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeField1TS> f = fts1->getTimeStep(timeStep, rank);
-        MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::MEDFileFieldMultiTS::New();
-        tmFts->pushBackTimeStep(f);
-
-        MEDCoupling::MCAuto<MEDCoupling::MEDFileFields> tmp_fields = MEDCoupling::MEDFileFields::New();
-        tmp_fields->pushField(tmFts);
-
-
-        tmpMfd->setFields( tmp_fields );
-        MeshFormatWriter tmpWriter;
-        tmpWriter.setMeshFileName(meshFormatsizeMapFile);
-        tmpWriter.setFieldFileNames( fieldFileNames);
-        tmpWriter.setMEDFileDS(tmpMfd);
-        tmpWriter.write();
-
+	    buildBackGroundMeshAndSolFiles(fieldFileNames, meshFormatsizeMapFile);
 
     }
     else if(useLocalMap)
@@ -1084,19 +1066,12 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
 
     else
     {
-        MEDCoupling::MEDCouplingMesh* mesh = fileMesh->getMeshAtLevel(1); // nodes mesh
-        MEDCoupling::MEDCouplingFieldDouble* fieldOnNodes=MEDCoupling::MEDCouplingFieldDouble::New(MEDCoupling::ON_NODES,MEDCoupling::NO_TIME);
-        fieldOnNodes->setName("MyScalarFieldOnNodeNoTime");
-        fieldOnNodes->setMesh(mesh);
-        mesh->decrRef(); // no more need of mesh because mesh has been attached to fieldOnNodes
-        MEDCoupling::DataArrayDouble *array=MEDCoupling::DataArrayDouble::New();
-        array->alloc(fieldOnNodes->getMesh()->getNumberOfNodes(),1);//Implicitly fieldOnNodes will be a 1 component field.
-        array->fillWithValue(constantValue);
-        fieldOnNodes->setArray(array);
-        array->decrRef();
-        // fieldOnNodes is now usable
-        // ...
-        // fieldOnNodes is no more useful h
+        MEDCoupling::MCAuto<MEDCoupling::MEDCouplingMesh> mesh = fileMesh->getMeshAtLevel(1); // nodes mesh
+        MEDCoupling::MCAuto<MEDCoupling::MEDCouplingUMesh> umesh = mesh->buildUnstructured(); // nodes mesh
+        int dim  =  umesh->getSpaceDimension();
+        int version =  sizeof(double) < 8 ? 1 : 2;
+        mcIdType nbNodes =  umesh->getNumberOfNodes();
+        buildConstantSizeMapSolFile(solFormatFieldFileName, dim, version, nbNodes);
 
     }
 
@@ -1199,6 +1174,43 @@ void MgAdapt::restoreGroups(MEDCoupling::MEDFileMesh* fileMesh) const
     }
 
     fileMesh->setGroupInfo(info);
+}
+
+void MgAdapt::buildConstantSizeMapSolFile(const std::string& solFormatFieldFileName, const int dim, const int version, const mcIdType nbNodes) const
+{
+	MeshFormat::Localizer loc;
+    MeshFormat::MeshFormatParser writer;
+    int fileId = writer.GmfOpenMesh( solFormatFieldFileName.c_str(), GmfWrite, version, dim);
+    int typTab[] = {GmfSca};
+    writer.GmfSetKwd(fileId, MeshFormat::GmfSolAtVertices, (int)nbNodes, 1, typTab);
+    for (mcIdType i = 0; i<nbNodes; i++) 
+    {
+		double valTab[1] = {constantValue};
+		writer.GmfSetLin( fileId, MeshFormat::GmfSolAtVertices, valTab);
+	}
+    writer.GmfCloseMesh(fileId);
+}
+
+void MgAdapt::buildBackGroundMeshAndSolFiles(const std::vector<std::string>& fieldFileNames, const std::string& meshFormatsizeMapFile) const
+{
+    MEDCoupling::MCAuto<MEDCoupling::MEDFileData> tmpMfd = MEDCoupling::MEDFileData::New(sizeMapFile);
+	MEDCoupling::MEDFileFields* tmpFields = tmpMfd->getFields();
+	MEDCoupling::MEDFileAnyTypeFieldMultiTS* fts = tmpFields->getFieldWithName(fieldName);
+	MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS>  fts1 = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>(fts);
+	MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeField1TS> f = fts1->getTimeStep(timeStep, rank);
+	MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::MEDFileFieldMultiTS::New();
+	tmFts->pushBackTimeStep(f);
+
+	MEDCoupling::MCAuto<MEDCoupling::MEDFileFields> tmp_fields = MEDCoupling::MEDFileFields::New();
+	tmp_fields->pushField(tmFts);
+
+
+	tmpMfd->setFields( tmp_fields );
+	MeshFormatWriter tmpWriter;
+	tmpWriter.setMeshFileName(meshFormatsizeMapFile);
+	tmpWriter.setFieldFileNames( fieldFileNames);
+	tmpWriter.setMEDFileDS(tmpMfd);
+	tmpWriter.write();	
 }
 // =======================================================================
 med_idt MgAdapt::openMedFile(const std::string aFile)
