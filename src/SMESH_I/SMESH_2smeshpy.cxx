@@ -33,8 +33,11 @@
 #include <SALOMEDS_wrap.hxx>
 #include <utilities.h>
 
+#include <Basics_OCCTVersion.hxx>
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
+#if OCC_VERSION_LARGE < 0x07050000
 #include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
+#endif
 
 #include "SMESH_Gen_i.hxx"
 /* SALOME headers that include CORBA headers that include windows.h

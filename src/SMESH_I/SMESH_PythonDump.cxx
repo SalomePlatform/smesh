@@ -33,12 +33,16 @@
 #include "SMESH_MeshEditor_i.hxx"
 
 #include <Basics_Utils.hxx>
+#include <Basics_OCCTVersion.hxx>
 #include <SALOMEDS_wrap.hxx>
 
 #include <LDOMParser.hxx>
-#include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
 #include <TColStd_HSequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+
+#if OCC_VERSION_LARGE < 0x07050000
+#include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
+#endif
 
 #include <cstring>
 
