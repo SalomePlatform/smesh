@@ -947,6 +947,7 @@ MgAdaptAdvWidget::MgAdaptAdvWidget( QWidget* parent, std::vector <std::string>* 
 
     connect( myOptionTable, SIGNAL( itemChanged(QTreeWidgetItem *, int)), SLOT( itemChanged(QTreeWidgetItem *, int )));
     connect( addBtn,                     SIGNAL( clicked() ),       this, SLOT( onAddOption() ) );
+    connect(workingDirectoryPushButton, SIGNAL(pressed()),  this, SLOT(_onWorkingDirectoryPushButton()));
 }
 
 MgAdaptAdvWidget::~MgAdaptAdvWidget()
@@ -1119,6 +1120,11 @@ void MgAdaptAdvWidget::setupWidget()
 
     // QMetaObject::connectSlotsByName(this);
 
+}
+void MgAdaptAdvWidget::_onWorkingDirectoryPushButton()
+{
+    QString aDirName=QFileDialog::getExistingDirectory ();
+    if (!(aDirName.isEmpty()))workingDirectoryLineEdit->setText(aDirName);
 }
 
 namespace

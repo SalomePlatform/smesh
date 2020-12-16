@@ -280,6 +280,8 @@ public slots:
 
     void                onAddOption();
     void itemChanged(QTreeWidgetItem * tblRow, int column);
+private slots:
+    void _onWorkingDirectoryPushButton();
 
 };
 

@@ -37,6 +37,17 @@
 #include <cstring>
 #include <boost/filesystem.hpp>
 
+
+static std::string removeFile(std::string fileName, int& notOk)
+{
+	std::string errStr;
+	notOk = std::remove(fileName.c_str());
+	if (notOk) errStr = ToComment(" \n error while removing file : ")
+                 << fileName;
+    else errStr= ToComment("\n file : ")<< fileName << " succesfully deleted! \n ";      
+    
+    return errStr; 
+}
 namespace
 {
 struct GET_DEFAULT // struct used to get default value from GetOptionValue()
@@ -484,7 +495,9 @@ throw (std::invalid_argument)
 
     if (op_val->second != optionValue)
     {
-        const char* ptr = optionValue.c_str();
+		
+		std::string lowerOptionValue = toLowerStr(optionValue);
+        const char* ptr = lowerOptionValue.c_str();
         // strip white spaces
         while (ptr[0] == ' ')
             ptr++;
@@ -497,7 +510,7 @@ throw (std::invalid_argument)
         if (i == 0) {
             // empty string
         } else if (_charOptions.count(optionName)) {
-            // do not check strings
+            // do not check strings 
         } else if (_doubleOptions.count(optionName)) {
             // check if value is double
             toDbl(ptr, &typeOk);
@@ -582,6 +595,18 @@ throw (std::invalid_argument)
 }
 //================================================================================
 /*!
+ * \brief Converts a string to a lower 
+ */
+//================================================================================
+std::string MgAdapt::toLowerStr(const std::string& str)
+{
+    std::string s = str;
+	for ( size_t i = 0; i <= s.size(); ++i )
+        s[i] = tolower( s[i] );
+    return s;
+}
+//================================================================================
+/*!
  * \brief Converts a string to a bool
  */
 //================================================================================
@@ -662,7 +687,7 @@ std::string MgAdapt::getCommandToRun(MgAdapt* hyp)
 
 int MgAdapt::compute(std::string& errStr)
 {
-    std::string cmd= getCommandToRun();
+    std::string cmd = getCommandToRun();
     int err = 0;
     execCmd( cmd.c_str(), err ); // run
 
@@ -675,6 +700,7 @@ int MgAdapt::compute(std::string& errStr)
     {
         convertMeshFile(meshFormatOutputMesh, solFormatOutput);
     }
+    //~if (!err) cleanUp();
     return err;
 }
 
@@ -682,8 +708,19 @@ void MgAdapt::execCmd( const char* cmd, int& err)
 {
     err = 1;
     std::array <char, 128> buffer;
-    std:: ofstream logStream;
-    logStream.open(logFile);
+    std::streambuf* buf;
+	outFileStream fileStream;
+    if (printLogInFile)
+    {
+		fileStream.open(logFile);
+		buf = fileStream.rdbuf();
+	}
+	else
+	{
+	   buf = std::cout.rdbuf();	
+	}
+	std::ostream logStream(buf);
+	
     std::unique_ptr <FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose );
     if(!pipe)
     {
@@ -693,8 +730,33 @@ void MgAdapt::execCmd( const char* cmd, int& err)
     {
         logStream<<buffer.data() ;
     }
-    logStream.close();
     err = 0;
+}
+
+void MgAdapt::cleanUp()
+{
+	int notOk;
+	std::string errStr;
+	if(removeOnSuccess) tmpFilesToBeDeleted.push_back(logFile);
+	
+	std::vector< std::string>::iterator it = tmpFilesToBeDeleted.begin();
+	for (; it!=tmpFilesToBeDeleted.end(); ++it)
+	{
+		errStr=removeFile(*it, notOk);
+		if (notOk)
+		{
+			appendMsgToLogFile(errStr);
+		}
+		
+	}
+}
+
+void MgAdapt::appendMsgToLogFile(std::string& msg)
+{
+	std::ofstream logStream;	
+	logStream.open(logFile, std::ofstream::out | std::ofstream::app);
+	logStream<< msg;
+    logStream.close();	
 }
 //================================================================================
 /*!
@@ -717,6 +779,8 @@ std::string MgAdapt::getCommandToRun()
         errStr = ToComment(" failed to find .mesh or .sol file from converter ")<< strerror( errno );
         return errStr;
     }
+    tmpFilesToBeDeleted.push_back(meshIn);
+    tmpFilesToBeDeleted.push_back(solFileIn);
     if(useBackgroundMap && !isFileExist(sizeMapIn))
     {
 
@@ -724,8 +788,7 @@ std::string MgAdapt::getCommandToRun()
         return errStr;
 
     }
-    meshFormatOutputMesh = meshIn;
-    solFormatOutput.push_back(solFileIn);
+
 
     cmd+= " --in "+ meshIn;
     meshFormatOutputMesh = getFileName()+".mesh";
@@ -735,12 +798,22 @@ std::string MgAdapt::getCommandToRun()
     {
         cmd+= " --background_mesh "+ sizeMapIn ;
         cmd+= " --background_sizemap "+ solFileIn;
+		tmpFilesToBeDeleted.push_back(sizeMapIn);
     }
     //~else
     //~{
         //~// constant value TODO
     //~}
-
+    /* sizemap file is not adapted in case of only surface adaptation see MeshGems docs */
+    std::string adapOp   = "adaptation";
+    std::string adpOpVal = getOptionValue(adapOp);
+    std::string surfaceAdapt = "surface";
+    if(surfaceAdapt != adpOpVal )
+    {
+		std::string solFileOut = getFileName()+".sol";
+        cmd+= " --write_sizemap "+ solFileOut;
+		solFormatOutput.push_back(solFileOut);
+	} 
     if (verbosityLevel != defaultVerboseLevel())
     {
 
@@ -1298,7 +1371,8 @@ void MgAdapt::getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit
     if ( erreur < 0 )
     {
 
-        //~addMessage( ToComment(" error: error while reading field last time step ") << nomcha << " in file " << aFile , /*fatal=*/true );
+        //~addMessage( ToComment(" error: error while reading field ") << nomcha << "step (numdt, numit) = " <<"("<< numdt<< ", " \
+        numit<< ")" <<" in file " << aFile , /*fatal=*/true );
         return;
     }
 

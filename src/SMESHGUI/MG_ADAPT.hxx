@@ -60,7 +60,10 @@ struct MgAdaptHypothesisData
 
 };
 
-
+class outFileStream : public std::ofstream{
+public:
+    ~outFileStream(){close();} //to close file at dtor
+};
 
 /*!
  * \brief Class to generate string from any type
@@ -211,6 +214,7 @@ public:
     static double toDbl(const std::string&, bool* isOk = 0) throw (std::invalid_argument);
     static bool toBool(const std::string&, bool* isOk = 0) throw (std::invalid_argument);
     static int toInt(const std::string&, bool* isOk = 0 ) throw (std::invalid_argument);
+    static std::string toLowerStr(const std::string& str);
 
 
     /*  default values */
@@ -308,6 +312,7 @@ private :
     std::vector< std::string> solFormatOutput;
     std::vector <group> groupVec;
     std::vector <family> famVec;
+    std::vector< std::string> tmpFilesToBeDeleted;
 
     /* convert MED-->.mesh format */
     void convertMedFile(std::string& meshIn,std::string& solFileIn,  std::string& sizeMapIn)  ;
@@ -325,6 +330,8 @@ private :
     med_idt openMedFile(const std::string aFile) ;
     bool isFileExist(std::string& fName) const;
     void execCmd( const char* cmd, int& err);
+    void cleanUp();
+    void appendMsgToLogFile(std::string& msg);
 };
 
 
