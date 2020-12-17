@@ -17,7 +17,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/
 // file : MG_ADAPT.cxx
 
 #include "MG_ADAPT.hxx"
@@ -35,8 +35,8 @@
 #include <unistd.h>
 #include <TCollection_AsciiString.hxx>
 #include <cstring>
+#include <cstdlib>
 #include <boost/filesystem.hpp>
-
 
 static std::string removeFile(std::string fileName, int& notOk)
 {
@@ -1226,7 +1226,8 @@ void MgAdapt::restorefams(MEDCoupling::MEDFileMesh* fileMesh) const
     {	
 		try  // safety : FAMILY could be lost P2-->P1
         {
-			std::string givenFamNameFromMeshGemConverter = fileMesh->getFamilyNameGivenId( fIt->_famId );
+			std::string givenFamNameFromMeshGemConverter = fileMesh->getFamilyNameGivenId( std::abs(fIt->_famId) );
+            fileMesh->changeFamilyId(std::abs(fIt->_famId), fIt->_famId);
             fileMesh->changeFamilyName(givenFamNameFromMeshGemConverter, fIt->_famName);
         }
         catch (const std::exception& e)
