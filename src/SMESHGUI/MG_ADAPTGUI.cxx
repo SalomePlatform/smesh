@@ -764,7 +764,8 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFilebuttonClicked()
     *myFileInDir = myFileInfo.path();
     *myFileOutDir = myFileInfo.path();
     selectMedFileLineEdit->setText(myFileInfo.fileName());
-    selectOutMedFileLineEdit->setText(myFileInfo.fileName());
+    QString outF = QString( remove_extension(myFileInfo.fileName().toStdString() ).c_str() )+QString(".adapt.med");
+    selectOutMedFileLineEdit->setText(outF);
     onLocalSelected(myFileInfo.filePath());
 
 }
@@ -1368,6 +1369,10 @@ std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)
     return ListeChamp;
 }
 
-
+std::string remove_extension(const std::string& filename) {
+    size_t lastdot = filename.find_last_of(".");
+    if (lastdot == std::string::npos) return filename;
+    return filename.substr(0, lastdot); 
+}
 
 

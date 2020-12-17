@@ -97,6 +97,7 @@ std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage = true);
 QString lireNomMaillage(QString aFile);
 QString lireNomMaillage2(med_idt medIdt,int meshId);
 med_idt OuvrirFichier(QString aFile);
+std::string remove_extension(const std::string& filename);
 
 //=================================================================================
 // class    : SMESHGUI_MgAdaptDlg
