@@ -339,6 +339,13 @@ void SMESHGUI_MG_ADAPTDRIVER::selectionChanged()
         myArgs->aBrowserObject->setText( aString );
         myArgs->meshNameLineEdit->setText( aString );
         myArgs->selectOutMedFileLineEdit->setText(aString+QString(".med"));
+        ADAPTATION_MODE aMode;
+        int nbVolumes = myMesh->NbVolumes();
+        int nbFaces = myMesh->NbFaces();
+        if(nbFaces > 0 && nbVolumes > 0) aMode = ADAPTATION_MODE::BOTH;
+        else if(nbFaces > 0) aMode = ADAPTATION_MODE::SURFACE;
+        else aMode = ADAPTATION_MODE::VOLUME;
+        emit myArgs->meshDimSignal(aMode);
     }
 
 }

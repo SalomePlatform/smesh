@@ -94,11 +94,17 @@ class QFileDialog;
 
 
 std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage = true);
-QString lireNomMaillage(QString aFile);
-QString lireNomMaillage2(med_idt medIdt,int meshId);
+QString lireNomMaillage(QString aFile, med_int& meshDim);
+QString lireNomMaillage2(med_idt medIdt,int meshId, med_int& meshDim);
 med_idt OuvrirFichier(QString aFile);
 std::string remove_extension(const std::string& filename);
 
+
+enum ADAPTATION_MODE{
+	SURFACE, // surface adaption when meshDim == 2
+	VOLUME, //  
+	BOTH   
+};
 //=================================================================================
 // class    : SMESHGUI_MgAdaptDlg
 // purpose  :
@@ -156,6 +162,7 @@ public:
     SMESHGUI_MgAdaptArguments( QWidget* parent);
     ~SMESHGUI_MgAdaptArguments();
     void setMode( const Mode, const SIZEMAP );
+    med_int getMeshDim() const;
 
     QString* myFileInDir;
     QString* myFileOutDir;
@@ -210,6 +217,7 @@ public:
 signals:
     void updateSelection();
     void toExportMED(const char *);
+    void meshDimSignal(ADAPTATION_MODE aMode);
 public slots:
 
 protected slots:
@@ -233,7 +241,7 @@ private:
 
     QString getMedFileName(bool avertir);
     LightApp_SelectionMgr* selMgr ;
-
+	med_int meshDim;
     std::map<QString, int> myFieldList;
 
 
@@ -281,8 +289,14 @@ public slots:
 
     void                onAddOption();
     void itemChanged(QTreeWidgetItem * tblRow, int column);
+    void onMeshDimChanged(ADAPTATION_MODE aMode);
 private slots:
     void _onWorkingDirectoryPushButton();
+private:
+    void setOptionValue(QString& option, QString& value);
+    std::map<QString, QTreeWidgetItem *> optionTreeWidgetItem;
+    
+    QTreeWidgetItem* getNewQTreeWidgetItem(QTreeWidget* table, const char* option, QString& name, bool isCustom);
 
 };
 

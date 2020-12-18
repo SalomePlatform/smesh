@@ -177,6 +177,7 @@ void  SMESHGUI_MgAdaptDlg::buildDlg()
     connect(cancelBtn,     SIGNAL(clicked()),                    this, SLOT(reject()));
     connect(buttonApply,     SIGNAL(clicked()),                     this,SLOT(clickOnApply()));
     connect(buttonApplyAndClose,     SIGNAL(clicked()),                     this,SLOT(clickOnOk()));
+    connect(myArgs, SIGNAL(meshDimSignal(ADAPTATION_MODE)), myAdvOpt, SLOT( onMeshDimChanged(ADAPTATION_MODE))  );
 }
 
 
@@ -471,7 +472,7 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
         *myFileSizeMapDir = SUIT_FileDlg::getLastVisitedPath();
     }
 
-
+	meshDim = 0;
     // Mesh in
     aMeshIn = new QGroupBox( tr( "MeshIn" ), this );
     aMedfile       = new QRadioButton( tr( "MEDFile" ),    aMeshIn );
@@ -741,7 +742,7 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFilebuttonClicked()
     QString fileName = getMedFileName(false);
     if(fileName != QString::null)
     {
-        QString aMeshName = lireNomMaillage(fileName.trimmed());
+        QString aMeshName = lireNomMaillage(fileName.trimmed(), meshDim);
         if (aMeshName == QString::null )
         {
             QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
@@ -751,6 +752,8 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFilebuttonClicked()
         else
         {
             meshNameLineEdit->setText(aMeshName);
+            ADAPTATION_MODE aMode = meshDim == 3 ? ADAPTATION_MODE::BOTH : ADAPTATION_MODE::SURFACE; // and when dimesh 3 without 2D mesh?
+            emit meshDimSignal(aMode);
         }
 
     }
@@ -764,7 +767,8 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFilebuttonClicked()
     *myFileInDir = myFileInfo.path();
     *myFileOutDir = myFileInfo.path();
     selectMedFileLineEdit->setText(myFileInfo.fileName());
-    QString outF = QString( remove_extension(myFileInfo.fileName().toStdString() ).c_str() )+QString(".adapt.med");
+    QString outF = fileName == QString::null ? myFileInfo.fileName() :
+    QString( remove_extension(myFileInfo.fileName().toStdString() ).c_str() )+ QString(".adapt.med");
     selectOutMedFileLineEdit->setText(outF);
     onLocalSelected(myFileInfo.filePath());
 
@@ -786,7 +790,7 @@ void SMESHGUI_MgAdaptArguments::onLocalSelected(QString filePath)
         // fill field name Combobox
         fieldNameCmb->clear();
         std::map<QString, int>::const_iterator it;
-        for ( it=myFieldList.begin() ; it != myFieldList.end(); it++)
+        for ( it = myFieldList.begin() ; it != myFieldList.end(); it++)
         {
             fieldNameCmb->insertItem(0,QString(it->first));
             int typeStepInField = it->second > 2 ?  2 : it->second ;
@@ -923,7 +927,10 @@ void SMESHGUI_MgAdaptArguments::clear()
     meshNameLineEdit->clear();
     selectOutMedFileLineEdit->clear();
 }
-
+med_int SMESHGUI_MgAdaptArguments::getMeshDim() const
+{
+	return meshDim;
+}
 QWidget* ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &o, const QModelIndex &index) const
 {
     bool editable = index.data( EDITABLE_ROLE ).toInt();
@@ -957,12 +964,7 @@ MgAdaptAdvWidget::~MgAdaptAdvWidget()
 
 void MgAdaptAdvWidget::AddOption( const char* option, bool isCustom )
 {
-    QTreeWidget * table = myOptionTable;
-    //table->setExpanded( true );
 
-    QTreeWidgetItem * row = new QTreeWidgetItem( table );
-    row->setData( NAME_COL, EDITABLE_ROLE, int( isCustom && !option ));
-    row->setFlags( row->flags() | Qt::ItemIsEditable );
 
     QString name, value;
     bool isDefault = false;
@@ -977,6 +979,23 @@ void MgAdaptAdvWidget::AddOption( const char* option, bool isCustom )
             isDefault = !name_value_type[2].toInt();
 
     }
+	QTreeWidget* table = myOptionTable;
+    //table->setExpanded( true );
+
+    QTreeWidgetItem* row;
+    if (optionTreeWidgetItem.size())
+    {
+		std::map<QString, QTreeWidgetItem *>::iterator it = optionTreeWidgetItem.find(name);
+		if(it != optionTreeWidgetItem.end()) return; // option exist
+		else
+		{
+			row = getNewQTreeWidgetItem(table, option, name, isCustom); 
+		} 
+	}
+	else 
+	{
+		row = getNewQTreeWidgetItem(table, option, name, isCustom); 
+	}
     row->setText( 0, tr( name.toLatin1().constData() ));
     row->setText( 1, tr( value.toLatin1().constData() ));
     row->setCheckState( 0, isDefault ? Qt::Unchecked : Qt::Checked);
@@ -989,6 +1008,17 @@ void MgAdaptAdvWidget::AddOption( const char* option, bool isCustom )
         myOptionTable->editItem( row, NAME_COL );
     }
 }
+
+QTreeWidgetItem* MgAdaptAdvWidget::getNewQTreeWidgetItem(QTreeWidget* table, const char* option, QString& name, bool isCustom)
+{
+	QTreeWidgetItem* row = new QTreeWidgetItem( table );
+	row->setData( NAME_COL, EDITABLE_ROLE, int( isCustom && !option ));
+	row->setFlags( row->flags() | Qt::ItemIsEditable );
+	optionTreeWidgetItem.insert(std::pair <QString, QTreeWidgetItem*> (name, row)); 
+	
+	return row;
+}
+
 void MgAdaptAdvWidget::onAddOption()
 {
     AddOption( NULL, true );
@@ -1005,7 +1035,7 @@ void MgAdaptAdvWidget::GetOptionAndValue( QTreeWidgetItem * tblRow,
 }
 
 
-void MgAdaptAdvWidget::itemChanged(QTreeWidgetItem * tblRow, int column)
+void MgAdaptAdvWidget::itemChanged(QTreeWidgetItem* tblRow, int column)
 {
     if ( tblRow )
     {
@@ -1127,7 +1157,50 @@ void MgAdaptAdvWidget::_onWorkingDirectoryPushButton()
     QString aDirName=QFileDialog::getExistingDirectory ();
     if (!(aDirName.isEmpty()))workingDirectoryLineEdit->setText(aDirName);
 }
+void MgAdaptAdvWidget::onMeshDimChanged(ADAPTATION_MODE aMode)
+{
+	/* default adaptation mode
+	 * assume that if meshDim == 2 -->adaptation surface
+	 * if meshDim == 3 and  if there is not 2D mesh -->VOLUME
+	 * else BOTH 
+	 */
+	 
+	 QString adaptation("adaptation"), value;
+	 switch(aMode)
+	 {
+	 case ADAPTATION_MODE::SURFACE:
+	 {   	
+	     value ="surface";		 
+	     setOptionValue(adaptation, value);
+	     break;
+	 }
+	 case ADAPTATION_MODE::BOTH :
+	 {
+		 value = "both";	 
+		 setOptionValue(adaptation, value);
+		 break;
+	 }
+	 case ADAPTATION_MODE::VOLUME :
+	 {
+		 value = "volume"; 
+		 setOptionValue(adaptation, value);
+		 break;
+	 }
+	 } 
+}
+void MgAdaptAdvWidget::setOptionValue(QString& option, QString& value)
+{	 
 
+	std::map<QString, QTreeWidgetItem *>::iterator it = optionTreeWidgetItem.find(option);
+	if (it != optionTreeWidgetItem.end())
+	{
+		it->second->setText( 0, tr( option.toLatin1().constData() ));
+		it->second->setText( 1, tr( value.toLatin1().constData() ));
+		it->second->setCheckState( 0,  Qt::Checked );
+		it->second->setData( NAME_COL, PARAM_NAME, option );
+        myOptionTable->editItem( it->second, NAME_COL );
+	}
+}
 namespace
 {
 bool isEditable( const QModelIndex& index )
@@ -1215,7 +1288,7 @@ med_idt OuvrirFichier(QString aFile)
 
 // ======================================================
 // ========================================================
-QString lireNomMaillage(QString aFile)
+QString lireNomMaillage(QString aFile, med_int& meshdim)
 {
     QString nomMaillage = QString::null ;
     int erreur = 0 ;
@@ -1244,7 +1317,7 @@ QString lireNomMaillage(QString aFile)
         return nomMaillage;
     }
 
-    nomMaillage = lireNomMaillage2(medIdt,1);
+    nomMaillage = lireNomMaillage2(medIdt,1, meshdim);
     // Fermeture du fichier
     if ( medIdt > 0 ) MEDfileClose(medIdt);
 
@@ -1253,11 +1326,11 @@ QString lireNomMaillage(QString aFile)
 
 // =======================================================================
 // =======================================================================
-QString lireNomMaillage2(med_idt medIdt,int meshId)
+QString lireNomMaillage2(med_idt medIdt,int meshId, med_int& meshdim )
 {
     QString NomMaillage=QString::null;
     char meshname[MED_NAME_SIZE+1];
-    med_int spacedim,meshdim;
+    med_int spacedim;
     med_mesh_type meshtype;
     char descriptionription[MED_COMMENT_SIZE+1];
     char dtunit[MED_SNAME_SIZE+1];
