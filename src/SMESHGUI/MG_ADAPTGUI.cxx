@@ -693,7 +693,7 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFileBackgroundbutton()
             {
                 fieldNameCmb->insertItem(0,QString(it->first));
                 int typeStepInField = it->second > 2 ?  2 : it->second ;
-                timeStepGroupChanged(typeStepInField, true, it->second-1);
+                timeStepGroupChanged(typeStepInField, true);
             }
 
         }
@@ -794,7 +794,7 @@ void SMESHGUI_MgAdaptArguments::onLocalSelected(QString filePath)
         {
             fieldNameCmb->insertItem(0,QString(it->first));
             int typeStepInField = it->second > 2 ?  2 : it->second ;
-            timeStepGroupChanged(typeStepInField, true, it->second-1);
+            timeStepGroupChanged(typeStepInField, true);
         }
 
     }

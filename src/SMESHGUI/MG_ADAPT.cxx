@@ -1366,9 +1366,18 @@ void MgAdapt::getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit
     med_float dt;
     med_int tmp_numdt, tmp_numit;
 
-    med_int step = data->myUseLastTimeStep ? nbofcstp : data->myTimeStep+1;
+    //~med_int step = data->myUseLastTimeStep ? nbofcstp : data->myTimeStep+1;
     //~myPrint("step ", step);
-    erreur = MEDfieldComputingStepInfo 	( medIdt, nomcha, step, &tmp_numdt, &tmp_numit, &dt );
+	erreur = MEDfieldComputingStepInfo 	( medIdt, nomcha, 1, &numdt, &numit, &dt );
+    for(med_int step = 1; step <= nbofcstp; step++ )
+    {
+		erreur = MEDfieldComputingStepInfo 	( medIdt, nomcha, step, &tmp_numdt, &tmp_numit, &dt );
+		if(tmp_numdt > numdt)
+		{
+		    numdt = tmp_numdt;
+			numit = tmp_numit;	    
+		} 
+	}
     if ( erreur < 0 )
     {
 
@@ -1377,8 +1386,6 @@ void MgAdapt::getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit
         return;
     }
 
-    numdt = tmp_numdt;
-    numit = tmp_numit;
 
 
     // Fermeture du fichier
