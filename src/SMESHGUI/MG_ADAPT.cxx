@@ -1105,7 +1105,7 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
 {
 
     std::vector<std::string> fieldFileNames;
-    MeshFormatWriter writer;
+    MEDCoupling::MeshFormatWriter writer;
     MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(medFileIn);
     MEDCoupling::MEDFileMeshes* meshes = mfd->getMeshes();
     MEDCoupling::MEDFileMesh* fileMesh = meshes->getMeshAtPos(0); // ok only one mesh in file!
@@ -1159,7 +1159,7 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
 
 void MgAdapt::convertMeshFile(std::string& meshFormatIn, std::vector< std::string>& solFieldFileNames) const
 {
-    MeshFormatReader reader(meshFormatIn, solFieldFileNames);
+    MEDCoupling::MeshFormatReader reader(meshFormatIn, solFieldFileNames);
 
     MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = reader.loadInMedFileDS();
     // write MED
@@ -1280,7 +1280,7 @@ void MgAdapt::buildBackGroundMeshAndSolFiles(const std::vector<std::string>& fie
 
 
 	tmpMfd->setFields( tmp_fields );
-	MeshFormatWriter tmpWriter;
+	MEDCoupling::MeshFormatWriter tmpWriter;
 	tmpWriter.setMeshFileName(meshFormatsizeMapFile);
 	tmpWriter.setFieldFileNames( fieldFileNames);
 	tmpWriter.setMEDFileDS(tmpMfd);
