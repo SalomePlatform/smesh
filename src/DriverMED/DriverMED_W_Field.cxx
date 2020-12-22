@@ -119,7 +119,7 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
         if ( _nbElemsByGeom.size() == 1 )
           _nbElemsByGeom.push_back( std::make_pair( SMDSEntity_0D, 0));
         _nbElemsByGeom.push_back( std::make_pair( SMDSEntity_Node,
-                                             nodes.size() + _nbElemsByGeom.back().second ));
+                                                  nodes.size() + _nbElemsByGeom.back().second ));
       }
     }
 

@@ -127,7 +127,7 @@ bool StdMeshers_BlockRenumber::IsSolidIncluded( SMESH_Mesh&         mesh,
 //=======================================================================
 
 SMESH_ComputeErrorPtr StdMeshers_BlockRenumber::CheckHypothesis(SMESH_Mesh&         aMesh,
-                                                                const TopoDS_Shape& aShape) const
+                                                                const TopoDS_Shape& /*shape*/) const
 {
   SMESH_Comment errorTxt;
   for ( size_t i = 0; i < _blockCS.size() &&  errorTxt.empty(); ++i )
@@ -313,7 +313,7 @@ namespace boost {
     //=======================================================================
 
     template<class Archive>
-    void serialize(Archive & ar, StdMeshers_BlockCS & blockCS, const unsigned int version)
+    void serialize(Archive & ar, StdMeshers_BlockCS & blockCS, const unsigned int /*version*/)
     {
       ar & blockCS._solid;
       ar & blockCS._vertex000;

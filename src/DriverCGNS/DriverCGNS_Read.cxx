@@ -165,9 +165,9 @@ namespace
     int _beg[3], _end[3], _cur[3], _dir[3], _dim;
     bool _more;
   public:
-    TPointRangeIterator( const cgsize_t* range, int dim ):_dim(dim)
+    TPointRangeIterator( const cgsize_t* range, int dim ):
+      _beg{0,0,0}, _end{0,0,0}, _cur{0,0,0}, _dir{0,0,0}, _dim(dim), _more(false)
     {
-      _more = false;
       for ( int i = 0; i < dim; ++i )
       {
         _beg[i] = range[i];
@@ -178,8 +178,6 @@ namespace
         if ( _end[i] - _beg[i] )
           _more = true;
       }
-//       for ( int i = dim; i < 3; ++i )
-//         _cur[i] = _beg[i] = _end[i] = _dir[i] = 0;
     }
     bool More() const
     {
@@ -187,7 +185,7 @@ namespace
     }
     gp_XYZ Next()
     {
-      gp_XYZ res( _cur[0], _cur[1], _cur[2] ); // todo: _cur can be used uninitialized
+      gp_XYZ res( _cur[0], _cur[1], _cur[2] );
       for ( int i = 0; i < _dim; ++i )
       {
         _cur[i] += _dir[i];
@@ -207,7 +205,7 @@ namespace
         size *= _dir[i]*(_end[i]-_beg[i]);
       return size;
     }
-    gp_XYZ Begin() const { return gp_XYZ( _beg[0], _beg[1], _beg[2] ); }  // todo: _beg can be used uninitialized
+    gp_XYZ Begin() const { return gp_XYZ( _beg[0], _beg[1], _beg[2] ); }
     //gp_XYZ End() const { return gp_XYZ( _end[0]-1, _end[1]-1, _end[2]-1 ); }
   };
 
@@ -297,7 +295,7 @@ namespace
               }
 
             // fill nodeReplacementMap
-            TPointRangeIterator rangeIt1( range, _meshDim );  // todo: rangeIt1: _end[i], _dir[i], _beg[i], _cur[i] may be used uninitialized
+            TPointRangeIterator rangeIt1( range, _meshDim );
             TPointRangeIterator rangeIt2( donorRange, _meshDim );
             gp_XYZ begin1 = rangeIt1.Begin(), begin2 = rangeIt2.Begin(), index1, index2;
             if ( &zone2 == this )

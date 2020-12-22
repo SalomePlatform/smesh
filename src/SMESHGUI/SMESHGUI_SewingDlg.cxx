@@ -1555,7 +1555,7 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
         mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
         if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
           aViewWindow->highlight( myActor->getIO(), true, true );
-        
+
         if      (send == LineEdit1)
           myOk1 = true;
         else if (send == LineEdit2)
@@ -1577,22 +1577,22 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
 
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
-      bool isEvenOneExists = false;
+      bool atLeastOneExists = false;
 
       for (int i = 0; i < aListId.count(); i++) {
         const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-        if (e) 
+        if (e)
+        {
           newIndices.Add(e->GetID());
-        
-        if (!isEvenOneExists)
-          isEvenOneExists = true;
+          atLeastOneExists = true;
+        }
       }
-      
+
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
         aViewWindow->highlight( myActor->getIO(), true, true );
-      
-      if (isEvenOneExists) {
+
+      if (atLeastOneExists) {
         if (send == LineEdit1)
           myOk1 = true;
         else if(send == LineEdit4)

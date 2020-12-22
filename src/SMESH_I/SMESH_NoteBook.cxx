@@ -286,7 +286,7 @@ void SMESH_NoteBook::ReplaceVariables()
           varIndex = atoi( varIndexPtr );
         if ( 0 <= (int)varIndex && varIndex < vars.size() && !vars[varIndex].empty() )
         {
-          // replace '$VarIndex$' either by var name of var value
+          // replace '$VarIndex$' either by var name or var value
           const char var0    = vars[varIndex][0];
           const bool isValue = (( '0' <= var0 && var0 <= '9' ) || var0 == '-');
           if ( isValue ) // remove TVar::Quote() as well

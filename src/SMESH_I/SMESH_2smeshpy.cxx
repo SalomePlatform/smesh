@@ -33,8 +33,11 @@
 #include <SALOMEDS_wrap.hxx>
 #include <utilities.h>
 
+#include <Basics_OCCTVersion.hxx>
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
+#if OCC_VERSION_LARGE < 0x07050000
 #include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
+#endif
 
 #include "SMESH_Gen_i.hxx"
 /* SALOME headers that include CORBA headers that include windows.h
@@ -931,7 +934,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           Threshold = SMESH + types[ iGeom ];
 #ifdef _DEBUG_
         // is types complete? (compilation failure means that enum GeometryType changed)
-        int _asrt[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 2 : -1 ]; _asrt[0]=_asrt[1]; // _asrt[1] may be used uninitialized => replace this with static_assert?
+        static_assert( sizeof(types) / sizeof(const char*) == nbTypes,
+                       "Update names of GeometryType's!!!" );
 #endif
       }
       if (Type == "SMESH.FT_EntityType")
@@ -951,7 +955,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           Threshold = SMESH + types[ iGeom ];
 #ifdef _DEBUG_
         // is 'types' complete? (compilation failure means that enum EntityType changed)
-        int _asrt[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 2 : -1 ]; _asrt[0]=_asrt[1]; // _asrt[1] may be used uninitialized => replace this with static_assert?
+        static_assert( sizeof(types) / sizeof(const char*) == nbTypes,
+                       "Update names of EntityType's!!!" );
 #endif
       }
     }
