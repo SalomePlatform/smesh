@@ -120,45 +120,45 @@ public:
     void buildModel();
     void setData( MgAdaptHypothesisData*);
 
-    void setMedFileIn(std::string);
+    void setMedFileIn(std::string fileName);
     std::string getMedFileIn();
 
-    void setMedFileOut(std::string);
+    void setMedFileOut(std::string fileOut);
     std::string getMedFileOut();
 
-    void setMeshName(std::string);
+    void setMeshName(std::string name);
     std::string getMeshName();
 
-    void setMeshNameOut(std::string);
+    void setMeshNameOut(std::string  name);
     std::string getMeshNameOut();
 
-    void setMeshOutMed(bool);
+    void setMeshOutMed(bool mybool);
     bool getMeshOutMed();
 
-    void setPublish(bool);
+    void setPublish(bool mybool);
     bool getPublish();
 
-    void setFieldName(std::string);
+    void setFieldName(std::string myFieldName);
     std::string getFieldName();
 
-    void setTimeStep(int);
+    void setTimeStep(int time);
     int getTimeStep() const;
 
-    void setRankTimeStep(int, int );
+    void setRankTimeStep(int time, int myRank);
     int getRank();
 
     void setLogFile(std::string);
     std::string getLogFile();
 
-    void setVerbosityLevel(int);
+    void setVerbosityLevel(int verbosity);
     int getVerbosityLevel();
 
-    void setRemoveOnSuccess(bool);
+    void setRemoveOnSuccess(bool mybool);
     bool getRemoveOnSuccess();
 
     MgAdaptHypothesisData* getData() const;
 
-    void setUseLocalMap(bool);
+    void setUseLocalMap(bool mybool);
     bool getUseLocalMap();
 
     void setUseBackgroundMap(bool);
@@ -168,7 +168,7 @@ public:
     bool getUseConstantValue();
 
     void setConstantValue(double);
-    bool getConstantValue();
+    double getConstantValue() const;
 
     void setSizeMapFile(std::string);
     std::string getSizeMapFile();

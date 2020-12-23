@@ -370,7 +370,7 @@ void MgAdapt::setConstantValue(double cnst)
 {
     constantValue = cnst;
 }
-bool MgAdapt::getConstantValue()
+double MgAdapt::getConstantValue() const
 {
     return constantValue;
 }
