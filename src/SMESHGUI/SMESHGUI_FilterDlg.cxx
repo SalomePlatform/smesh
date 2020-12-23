@@ -3728,7 +3728,7 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& th
 //=======================================================================
 SMESH::Filter::Criterion SMESHGUI_FilterDlg::createCriterion()
 {
-   SMESH::Filter::Criterion aCriterion;
+  SMESH::Filter::Criterion aCriterion;
 
   aCriterion.Type          = SMESH::FT_Undefined;
   aCriterion.Compare       = SMESH::FT_Undefined;
@@ -3751,7 +3751,7 @@ SMESH::Filter::Criterion SMESHGUI_FilterDlg::createCriterion()
 void SMESHGUI_FilterDlg::onSelectionDone()
 {
   const SALOME_ListIO& aList = mySelector->StoredIObjects();
-  if ( myMesh->_is_nil() && aList.Extent()>0 )
+  if ( myMesh->_is_nil() && aList.Extent() > 0 )
   {
     myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(aList.First());
     if ( !(myMesh->_is_nil()) ) {

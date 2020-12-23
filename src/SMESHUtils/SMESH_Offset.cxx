@@ -2022,6 +2022,8 @@ namespace SMESH_MeshAlgos
 #ifdef _DEBUG_
             std::cerr << "BAD tria" << std::endl;
             cf.Dump();
+#else
+            if ( i < 0 ) cf.Dump(); // avoid "CutFace::Dump() unused in release mode"
 #endif
             continue;
           }
@@ -2358,7 +2360,7 @@ namespace
    */
   //================================================================================
 
-  void CutFace::Dump() const // todo: unused in release mode
+  void CutFace::Dump() const
   {
     std::cout << std::endl << "INI F " << myInitFace->GetID() << std::endl;
     for ( size_t i = 0; i < myLinks.size(); ++i )
@@ -2779,12 +2781,10 @@ namespace
         }
       }
 
-      if ( closestNode1 && closestNode2 ) {
-        size_t i = myLinks.size();
-        myLinks.resize( i + 2 );
-        myLinks[ i   ].Set( closestNode1, closestNode2 );
-        myLinks[ i+1 ].Set( closestNode2, closestNode1 );
-      }
+      size_t i = myLinks.size();
+      myLinks.resize( i + 2 );
+      myLinks[ i   ].Set( closestNode1, closestNode2 );
+      myLinks[ i+1 ].Set( closestNode2, closestNode1 );
     }
 
     return true;

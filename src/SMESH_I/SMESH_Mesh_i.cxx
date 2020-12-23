@@ -6584,10 +6584,13 @@ void findConcurrents(const SMESH_DimHyp* theDimHyp,
 }
 
 //-----------------------------------------------------------------------------
-void unionLists(TListOfInt&       theListOfId,
+bool unionLists(TListOfInt&       theListOfId,
                 TListOfListOfInt& theListOfListOfId,
                 const int         theIndx )
 {
+  bool changed = false;
+  if ( theListOfId.empty() )
+    return changed;
   TListOfListOfInt::iterator it = theListOfListOfId.begin();
   for ( int i = 0; it != theListOfListOfId.end(); it++, i++ )
   {
@@ -6603,11 +6606,15 @@ void unionLists(TListOfInt&       theListOfId,
     TListOfInt::iterator it2 = otherListOfId.begin();
     for ( ; it2 != otherListOfId.end(); it2++ ) {
       if ( find( theListOfId.begin(), theListOfId.end(), (*it2) ) == theListOfId.end() )
+      {
         theListOfId.push_back(*it2);
+        changed = true;
+      }
     }
     // clear source list
     otherListOfId.clear();
   }
+  return changed;
 }
 //-----------------------------------------------------------------------------
 
@@ -6691,10 +6698,15 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
   TListOfListOfInt allConurrent = findConcurrentSubMeshes();
   anOrder.splice( anOrder.end(), allConurrent );
 
-  int listIndx = 0;
-  TListOfListOfInt::iterator listIt = anOrder.begin();
-  for(; listIt != anOrder.end(); listIt++, listIndx++ )
-    unionLists( *listIt,  anOrder, listIndx + 1 );
+  bool changed;
+  do {
+    changed = false;
+    TListOfListOfInt::iterator listIt = anOrder.begin();
+    for ( int listIndx = 1; listIt != anOrder.end(); listIt++, listIndx++ )
+      if ( unionLists( *listIt,  anOrder, listIndx ))
+        changed = true;
+  }
+  while ( changed );
 
   // convert submesh ids into interface instances
   //  and dump command into python

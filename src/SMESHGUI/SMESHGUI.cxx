@@ -4740,7 +4740,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpCompute,           OB, mesh, "&& selcount=1 && hasAlgo && isComputable" );
-  createPopupItem( SMESHOp::OpRecompute,         OB, mesh, "&& selcount=1 && hasAlgo && " + isNotEmpty );
+  createPopupItem( SMESHOp::OpRecompute,         OB, mesh, "&& selcount=1 && hasAlgo && (" + isNotEmpty + " || hasErrors )");
   createPopupItem( SMESHOp::OpShowErrors,        OB, mesh, "&& selcount=1 && hasErrors" );
   createPopupItem( SMESHOp::OpComputeSubMesh,    OB, subMesh, "&& selcount=1 && hasAlgo && isComputable" );
   createPopupItem( SMESHOp::OpPreCompute,        OB, mesh, "&& selcount=1 && hasAlgo && isPreComputable" );

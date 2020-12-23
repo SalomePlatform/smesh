@@ -487,7 +487,7 @@ void StdMeshersGUI_BlockRenumberCreator::onRemoveBtnClick()
  */
 //================================================================================
 
-bool StdMeshersGUI_BlockRenumberCreator::checkParams( QString& msg ) const
+bool StdMeshersGUI_BlockRenumberCreator::checkParams( QString& /*msg*/ ) const
 {
   return true;
 }

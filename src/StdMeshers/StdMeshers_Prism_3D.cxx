@@ -1841,6 +1841,8 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
           mesh->GetSubMesh( v )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
           const SMDS_MeshNode* n = SMESH_Algo::VertexNode( v, meshDS );
           newNodes[ is2ndV ? newNodes.size()-1 : 0 ] = (SMDS_MeshNode*) n;
+          if ( !n )
+            return toSM( error( TCom("No node on vertex #") << meshDS->ShapeToIndex( v )));
         }
 
         // compute nodes on target EDGEs

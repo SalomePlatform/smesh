@@ -3629,7 +3629,7 @@ static bool getClosestUV (Extrema_GenExtPS& projector,
 {
   projector.Perform( point );
   if ( projector.IsDone() ) {
-    double u, v, minVal = DBL_MAX;
+    double u = 0, v = 0, minVal = DBL_MAX;
     for ( int i = projector.NbExt(); i > 0; i-- )
       if ( projector.SquareDistance( i ) < minVal ) {
         minVal = projector.SquareDistance( i );
@@ -3857,9 +3857,9 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
           }
           else {
             if ( isUPeriodic )
-              newUV.SetX( ElCLib::InPeriod( newUV.X(), u1, u2 )); // todo: u may be used unitialized
+              newUV.SetX( ElCLib::InPeriod( newUV.X(), u1, u2 ));
             if ( isVPeriodic )
-              newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 )); // todo: v may be used unitialized
+              newUV.SetY( ElCLib::InPeriod( newUV.Y(), v1, v2 ));
             // check new UV
             // if ( posType != SMDS_TOP_3DSPACE )
             //   dist2 = pNode.SquareDistance( surface->Value( newUV.X(), newUV.Y() ));
@@ -7461,10 +7461,10 @@ public:
   //int& GroupID() const { return const_cast< int& >( myGroupID ); }
 
   ComparableElement( const ComparableElement& theSource ) // move copy
-  : boost::container::flat_set< int >()
+    : int_set()
   {
     ComparableElement& src = const_cast< ComparableElement& >( theSource );
-    (int_set&) (*this ) = boost::move( src );
+    (int_set&) (*this ) = std::move( src );
     myElem    = src.myElem;
     mySumID   = src.mySumID;
     myGroupID = src.myGroupID;
@@ -10200,7 +10200,7 @@ namespace // automatically find theAffectedElems for DoubleNodes()
         if ( SMESH_MeshAlgos::FaceNormal( _elems[1], norm ))
           avgNorm += norm;
 
-        gp_XYZ bordDir( SMESH_NodeXYZ( _nodes[0] ) - SMESH_NodeXYZ( _nodes[1] )); // todo: compiler complains about zero-size array
+        gp_XYZ bordDir( SMESH_NodeXYZ( this->_nodes[0] ) - SMESH_NodeXYZ( this->_nodes[1] ));
         norm = bordDir ^ avgNorm;
       }
       else

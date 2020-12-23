@@ -338,12 +338,13 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
 
     std::vector< SMESH_subMesh* > smVec;
     for ( aShapeDim = 0; aShapeDim < 4; ++aShapeDim )
+      smVec.insert( smVec.end(),
+                    smWithAlgoSupportingSubmeshes[aShapeDim].begin(),
+                    smWithAlgoSupportingSubmeshes[aShapeDim].end() );
     {
       // ------------------------------------------------
       // sort list of sub-meshes according to mesh order
       // ------------------------------------------------
-      smVec.assign( smWithAlgoSupportingSubmeshes[ aShapeDim ].begin(),
-                    smWithAlgoSupportingSubmeshes[ aShapeDim ].end() );
       aMesh.SortByMeshOrder( smVec );
 
       // ------------------------------------------------------------
@@ -354,20 +355,29 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       for ( size_t i = 0; i < smVec.size(); ++i )
       {
         sm = smVec[i];
+        if ( sm->GetComputeState() != SMESH_subMesh::READY_TO_COMPUTE)
+          continue;
+
+        const TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();
 
         // get a shape the algo is assigned to
         if ( !GetAlgo( sm, & algoShape ))
           continue; // strange...
 
         // look for more local algos
-        smIt = sm->getDependsOnIterator(!includeSelf, !complexShapeFirst);
+        if ( SMESH_subMesh* algoSM = aMesh.GetSubMesh( algoShape ))
+          smIt = algoSM->getDependsOnIterator(!includeSelf, !complexShapeFirst);
+        else
+          smIt = sm->getDependsOnIterator(!includeSelf, !complexShapeFirst);
+
         while ( smIt->more() )
         {
           SMESH_subMesh* smToCompute = smIt->next();
 
           const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
           const int aShapeDim = GetShapeDim( aSubShape );
-          if ( aShapeDim < 1 ) continue;
+          if ( aShapeDim < 1 || aSubShape.ShapeType() == shapeType )
+            continue;
 
           // check for preview dimension limitations
           if ( aShapesId && GetShapeDim( aSubShape.ShapeType() ) > (int)aDim )
@@ -391,22 +401,15 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
               Compute( aMesh, aSubShape, aFlags | SHAPE_ONLY_UPWARD, aDim, aShapesId, localAllowed );
           }
         }
-      }
-      // --------------------------------
-      // apply the all-dimensional algos
-      // --------------------------------
-      for ( size_t i = 0; i < smVec.size(); ++i )
-      {
-        sm = smVec[i];
-        if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+        // --------------------------------
+        // apply the all-dimensional algo
+        // --------------------------------
         {
-          const TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();
+          if (_compute_canceled)
+            return false;
           // check for preview dimension limitations
           if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
             continue;
-
-          if (_compute_canceled)
-            return false;
           sm->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
           setCurrentSubMesh( sm );
           sm->ComputeStateEngine( computeEvent );
@@ -416,7 +419,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
             aShapesId->insert( sm->GetId() );
         }
       }
-    } // loop on shape dimensions
+    }
 
     // -----------------------------------------------
     // mesh the rest sub-shapes starting from vertices
@@ -1074,15 +1077,18 @@ std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
       xmlPath += sep + plugin + ".xml";
       bool fileOK;
 #ifdef WIN32
-#ifdef UNICODE
+  #ifdef UNICODE
       const wchar_t* path = Kernel_Utils::decode_s(xmlPath);
-#else
+  #else
       const char* path = xmlPath.c_str();
-#endif
+  #endif
+
       fileOK = (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
-#ifdef UNICODE
+
+  #ifdef UNICODE
       delete path;
-#endif
+  #endif
+
 #else
       fileOK = (access(xmlPath.c_str(), F_OK) == 0);
 #endif

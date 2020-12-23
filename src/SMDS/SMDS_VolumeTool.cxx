@@ -1488,10 +1488,10 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   case QUAD_TETRA:
     {
       switch ( minInd ) {
-      case 0: if( maxInd==4 ||  maxInd==6 ||  maxInd==7 ) return true; // fall through
-      case 1: if( maxInd==4 ||  maxInd==5 ||  maxInd==8 ) return true; // fall through
-      case 2: if( maxInd==5 ||  maxInd==6 ||  maxInd==9 ) return true; // fall through
-      case 3: if( maxInd==7 ||  maxInd==8 ||  maxInd==9 ) return true; // fall through
+      case 0: return ( maxInd==4 ||  maxInd==6 ||  maxInd==7 );
+      case 1: return ( maxInd==4 ||  maxInd==5 ||  maxInd==8 );
+      case 2: return ( maxInd==5 ||  maxInd==6 ||  maxInd==9 );
+      case 3: return ( maxInd==7 ||  maxInd==8 ||  maxInd==9 );
       default:;
       }
       break;
@@ -1499,14 +1499,14 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   case QUAD_HEXA:
     {
       switch ( minInd ) {
-      case 0: if( maxInd==8  ||  maxInd==11 ||  maxInd==16 ) return true; // fall through
-      case 1: if( maxInd==8  ||  maxInd==9  ||  maxInd==17 ) return true; // fall through
-      case 2: if( maxInd==9  ||  maxInd==10 ||  maxInd==18 ) return true; // fall through
-      case 3: if( maxInd==10 ||  maxInd==11 ||  maxInd==19 ) return true; // fall through
-      case 4: if( maxInd==12 ||  maxInd==15 ||  maxInd==16 ) return true; // fall through
-      case 5: if( maxInd==12 ||  maxInd==13 ||  maxInd==17 ) return true; // fall through
-      case 6: if( maxInd==13 ||  maxInd==14 ||  maxInd==18 ) return true; // fall through
-      case 7: if( maxInd==14 ||  maxInd==15 ||  maxInd==19 ) return true; // fall through
+      case 0: return ( maxInd==8  ||  maxInd==11 ||  maxInd==16 );
+      case 1: return ( maxInd==8  ||  maxInd==9  ||  maxInd==17 );
+      case 2: return ( maxInd==9  ||  maxInd==10 ||  maxInd==18 );
+      case 3: return ( maxInd==10 ||  maxInd==11 ||  maxInd==19 );
+      case 4: return ( maxInd==12 ||  maxInd==15 ||  maxInd==16 );
+      case 5: return ( maxInd==12 ||  maxInd==13 ||  maxInd==17 );
+      case 6: return ( maxInd==13 ||  maxInd==14 ||  maxInd==18 );
+      case 7: return ( maxInd==14 ||  maxInd==15 ||  maxInd==19 );
       default:;
       }
       break;
@@ -1514,11 +1514,11 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   case QUAD_PYRAM:
     {
       switch ( minInd ) {
-      case 0: if( maxInd==5 ||  maxInd==8  ||  maxInd==9  ) return true; // fall through
-      case 1: if( maxInd==5 ||  maxInd==6  ||  maxInd==10 ) return true; // fall through
-      case 2: if( maxInd==6 ||  maxInd==7  ||  maxInd==11 ) return true; // fall through
-      case 3: if( maxInd==7 ||  maxInd==8  ||  maxInd==12 ) return true; // fall through
-      case 4: if( maxInd==9 ||  maxInd==10 ||  maxInd==11 ||  maxInd==12 ) return true;
+      case 0: return ( maxInd==5 ||  maxInd==8  ||  maxInd==9  );
+      case 1: return ( maxInd==5 ||  maxInd==6  ||  maxInd==10 );
+      case 2: return ( maxInd==6 ||  maxInd==7  ||  maxInd==11 );
+      case 3: return ( maxInd==7 ||  maxInd==8  ||  maxInd==12 );
+      case 4: return ( maxInd==9 ||  maxInd==10 ||  maxInd==11 ||  maxInd==12 );
       default:;
       }
       break;
@@ -1526,12 +1526,12 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   case QUAD_PENTA:
     {
       switch ( minInd ) {
-      case 0: if( maxInd==6  ||  maxInd==8  ||  maxInd==12 ) return true; // fall through
-      case 1: if( maxInd==6  ||  maxInd==7  ||  maxInd==13 ) return true; // fall through
-      case 2: if( maxInd==7  ||  maxInd==8  ||  maxInd==14 ) return true; // fall through
-      case 3: if( maxInd==9  ||  maxInd==11 ||  maxInd==12 ) return true; // fall through
-      case 4: if( maxInd==9  ||  maxInd==10 ||  maxInd==13 ) return true; // fall through
-      case 5: if( maxInd==10 ||  maxInd==11 ||  maxInd==14 ) return true; // fall through
+      case 0: return ( maxInd==6  ||  maxInd==8  ||  maxInd==12 );
+      case 1: return ( maxInd==6  ||  maxInd==7  ||  maxInd==13 );
+      case 2: return ( maxInd==7  ||  maxInd==8  ||  maxInd==14 );
+      case 3: return ( maxInd==9  ||  maxInd==11 ||  maxInd==12 );
+      case 4: return ( maxInd==9  ||  maxInd==10 ||  maxInd==13 );
+      case 5: return ( maxInd==10 ||  maxInd==11 ||  maxInd==14 );
       default:;
       }
       break;
