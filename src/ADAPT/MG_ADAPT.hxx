@@ -161,28 +161,28 @@ public:
     void setUseLocalMap(bool mybool);
     bool getUseLocalMap();
 
-    void setUseBackgroundMap(bool);
+    void setUseBackgroundMap(bool mybool);
     bool getUseBackgroundMap();
 
-    void setUseConstantValue(bool);
+    void setUseConstantValue(bool mybool);
     bool getUseConstantValue();
 
-    void setConstantValue(double);
+    void setConstantValue(double cnst);
     double getConstantValue() const;
 
-    void setSizeMapFile(std::string);
+    void setSizeMapFile(std::string mapFile);
     std::string getSizeMapFile();
 
-    void setFromMedFile(bool);
+    void setFromMedFile(bool mybool);
     bool isFromMedFile();
 
-    void setKeepWorkingFiles(bool);
+    void setKeepWorkingFiles(bool mybool);
     bool getKeepWorkingFiles();
 
-    void setPrintLogInFile(bool);
+    void setPrintLogInFile(bool mybool);
     bool getPrintLogInFile();
 
-    void setWorkingDir(std::string);
+    void setWorkingDir(std::string dir);
     std::string getWorkingDir() const;
 
 
@@ -192,9 +192,9 @@ public:
     int compute(std::string& errStr);
     std::string getFileName() const;
     static std::string getExeName();
-    void copyMgAdaptHypothesisData( MgAdaptHypothesisData* ) ;
+    void copyMgAdaptHypothesisData( MgAdaptHypothesisData* from) ;
 
-    void checkDirPath(std::string& );
+    void checkDirPath(std::string& dirPath);
 
 
 

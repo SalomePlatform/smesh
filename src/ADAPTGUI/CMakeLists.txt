@@ -39,6 +39,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_BINARY_DIR}/adm_local/unix
   ${PROJECT_SOURCE_DIR}/src/ADAPT
   ${PROJECT_SOURCE_DIR}/src/ADAPT_I
+  ${MEDCOUPLING_INCLUDE_DIRS}
 )
 
 # additional preprocessor / compiler flags
@@ -56,6 +57,7 @@ SET(_link_LIBRARIES
   ${GUI_SalomeApp}
   ${SMESH_SalomeIDLSMESH}
   ADAPTEngine
+  ${MEDCoupling_medloader}
 )
 
 # --- resources ---
@@ -112,6 +114,7 @@ SET(_moc_HEADERS
   MonCreateYACS.h
   MonEditYACS.h
   MonEditFile.h
+  MG_ADAPTGUI.hxx
 )
 
 # header files / uic wrappings
@@ -160,6 +163,7 @@ SET(_other_SOURCES
   MonEditYACS.cxx
   MonEditFile.cxx
   HomardQtCommun.cxx
+  MG_ADAPTGUI.cxx
 )
 
 # sources / to compile

@@ -21,6 +21,7 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
+  ${MEDCOUPLING_INCLUDE_DIRS}
 )
 
 # additional preprocessor / compiler flags
@@ -31,6 +32,7 @@ ADD_DEFINITIONS(
 # libraries to link to
 SET(_link_LIBRARIES
   ${KERNEL_SALOMELocalTrace}
+  ${MEDCoupling_medloader}
 )
 
 # --- headers ---
@@ -48,6 +50,7 @@ SET(ADAPTImpl_HEADERS
   HOMARD_YACS.hxx
   HomardDriver.hxx
   YACSDriver.hxx
+  MG_ADAPT.hxx
 )
 
 # --- sources ---
@@ -64,6 +67,7 @@ SET(ADAPTImpl_SOURCES
   HOMARD_YACS.cxx
   HomardDriver.cxx
   YACSDriver.cxx
+  MG_ADAPT.cxx
 )
 
 # --- rules ---
