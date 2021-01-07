@@ -4558,6 +4558,10 @@ Il ne peut pas être supprimé.</translation>
         <source>SMESH_HEX_PRISM</source>
         <translation>Prisme hexagonal</translation>
     </message>
+    <message>
+        <source>Generate mesh from CAD model or import mesh</source>
+        <translation type="unfinished">Generate mesh from CAD model or import mesh</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_FieldSelectorWdg</name>
@@ -5005,6 +5009,74 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_PREVIEW_CHUNK_SIZE</source>
         <translation>Taille des blocs pour la prévisualisation des sous-shapes</translation>
+    </message>
+    <message>
+        <source>INFO_WELCOME_TO_SMESH</source>
+        <translation type="unfinished">Welcome to Mesh</translation>
+    </message>
+    <message>
+        <source>INFO_GRP_CREATE_MESH</source>
+        <translation type="unfinished">Create mesh</translation>
+    </message>
+    <message>
+        <source>INFO_DEFINE_ALGOS</source>
+        <translation type="unfinished">Choose algorithms</translation>
+    </message>
+    <message>
+        <source>INFO_DEFINE_HYPOS</source>
+        <translation type="unfinished">Define hypotheses</translation>
+    </message>
+    <message>
+        <source>INFO_COMPUTE</source>
+        <translation type="unfinished">Compute</translation>
+    </message>
+    <message>
+        <source>INFO_REFINE</source>
+        <translation type="unfinished">Add refinements</translation>
+    </message>
+    <message>
+        <source>INFO_REFINE_LOCAL_SIZE</source>
+        <translation type="unfinished">via local sizes with some hypotheses</translation>
+    </message>
+    <message>
+        <source>INFO_REFINE_SUBMESH</source>
+        <translation type="unfinished">via sub-meshes</translation>
+    </message>
+    <message>
+        <source>INFO_GRP_IMPORT_MESH</source>
+        <translation type="unfinished">Import mesh</translation>
+    </message>
+    <message>
+        <source>INFO_AVAILABLE_FORMATS</source>
+        <translation type="unfinished">Available formats</translation>
+    </message>
+    <message>
+        <source>INFO_GRP_CHECK_MESH</source>
+        <translation type="unfinished"> Check mesh quality</translation>
+    </message>
+    <message>
+        <source>INFO_DISPLAY</source>
+        <translation type="unfinished">Display mesh</translation>
+    </message>
+    <message>
+        <source>INFO_QUALITY_INFO</source>
+        <translation type="unfinished">Display some quality criteria</translation>
+    </message>
+    <message>
+        <source>INFO_QUALITY_AREA</source>
+        <translation type="unfinished">area</translation>
+    </message>
+    <message>
+        <source>INFO_QUALITY_VOLUME</source>
+        <translation type="unfinished">volume</translation>
+    </message>
+    <message>
+        <source>INFO_QUALITY_ASPECT_RATION</source>
+        <translation type="unfinished">aspect ration</translation>
+    </message>
+    <message>
+        <source>INFO_CLIPPING</source>
+        <translation type="unfinished">Add clipping planes</translation>
     </message>
 </context>
 <context>
