@@ -37,6 +37,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/SMESHDS
   ${PROJECT_SOURCE_DIR}/src/SMDS
   ${PROJECT_SOURCE_DIR}/src/SMESHUtils
+  ${MEDCOUPLING_INCLUDE_DIRS}
 )
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
@@ -55,6 +56,7 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeGenericObj}
   ${SMESH_SalomeIDLSMESH}
   ${SMESH_SMESHEngine}
+  ${MEDCoupling_medloader}
   ADAPTFrontTrack
   ADAPTImpl
   SMESHimpl
@@ -73,6 +75,7 @@ SET(ADAPTEngine_HEADERS
   HOMARD_YACS_i.hxx
   HomardMedCommun.h
   HOMARD_i.hxx
+  MG_ADAPT_i.cxx
 )
 
 # --- sources ---
@@ -87,6 +90,7 @@ SET(ADAPTEngine_SOURCES
   HOMARD_Boundary_i.cxx
   HOMARD_YACS_i.cxx
   HomardMedCommun.cxx
+  MG_ADAPT_i.cxx
 )
 
 # --- rules ---

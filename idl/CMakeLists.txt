@@ -43,6 +43,7 @@ SET(SalomeIDLSMESH_IDLSOURCES
   HOMARD_Iteration.idl
   HOMARD_YACS.idl
   HOMARD_Zone.idl
+  MG_ADAPT.idl
 )
 
 SET(_idl_include_dirs
