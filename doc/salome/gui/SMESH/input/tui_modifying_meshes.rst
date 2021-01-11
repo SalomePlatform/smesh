@@ -308,7 +308,7 @@ If there is no shared faces between the group \#n and the group \#p in the list,
 All the flat elements are gathered into the group named "joints3D" (or "joints2D" in 2D situation).
 The flat element of the multiple junctions between the simple junction are stored in a group named "jointsMultiples".
 
-This example represents an iron cable (a thin cylinder) in a concrete bloc (a big cylinder).
+This example represents an iron cable (a thin cylinder) in a concrete block (a big cylinder).
 The big cylinder is defined by two geometric volumes.
 
 .. literalinclude:: ../../../examples/generate_flat_elements.py

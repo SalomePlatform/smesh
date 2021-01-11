@@ -1159,7 +1159,7 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
   // algorithm parameter
   if (algo)
   {
-    // look trough hypotheses used by algo
+    // look through hypotheses used by algo
     const SMESH_HypoFilter* hypoKind;
     if (( hypoKind = algo->GetCompatibleHypoFilter( !hyp->IsAuxiliary() ))) {
       std::list <const SMESHDS_Hypothesis * > usedHyps;

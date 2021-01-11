@@ -1927,7 +1927,7 @@ namespace
       }
       for ( int variant = 0; variant < nbVariants && method._nbSplits == 0; ++variant )
       {
-        // check method compliancy with adjacent tetras,
+        // check method compliance with adjacent tetras,
         // all found splits must be among facets of tetras described by this method
         method = TSplitMethod( nbTet, connVariants[variant] );
         if ( hasAdjacentSplits && method._nbSplits > 0 )
@@ -2126,7 +2126,7 @@ namespace
       // there are adjacent prism
       for ( int variant = 0; variant < nbVariants; ++variant )
       {
-        // check method compliancy with adjacent prisms,
+        // check method compliance with adjacent prisms,
         // the found prism facets must be among facets of prisms described by current method
         method._nbSplits     = nbSplits;
         method._nbCorners    = 6;

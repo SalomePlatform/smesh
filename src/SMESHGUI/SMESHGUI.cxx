@@ -2864,7 +2864,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpMeshOrder:
   case SMESHOp::OpCreateSubMesh:
     if ( warnOnGeomModif() )
-      break; // action forbiden as geometry modified
+      break; // action forbidden as geometry modified
     // fall through
   case SMESHOp::OpCreateMesh:
   case SMESHOp::OpCompute:
@@ -2916,7 +2916,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( isStudyLocked() )
         break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
 
       /*Standard_Boolean aRes;
       SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IObject);
@@ -2948,7 +2948,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( isStudyLocked() )
         break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
 
       EmitSignalDeactivateDialog();
       SMESHGUI_MultiEditDlg* aDlg = NULL;
@@ -2968,7 +2968,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SmoothingDlg( this ) )->show();
@@ -2982,7 +2982,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if (isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ExtrusionDlg ( this ) )->show();
@@ -2995,7 +2995,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if (isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ExtrusionAlongPathDlg( this ) )->show();
@@ -3008,7 +3008,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RevolutionDlg( this ) )->show();
@@ -3023,7 +3023,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( isStudyLocked() )
         break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd )
       {
         EmitSignalDeactivateDialog();
@@ -3041,7 +3041,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpCreateGeometryGroup:
     {
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       startOperation( theCommandID );
       break;
     }
@@ -3055,7 +3055,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       EmitSignalDeactivateDialog();
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
 
@@ -3084,7 +3084,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       EmitSignalDeactivateDialog();
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -3163,7 +3163,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       EmitSignalDeactivateDialog();
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -3262,7 +3262,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( isStudyLocked() )
         break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
 
       EmitSignalDeactivateDialog();
 
@@ -3284,7 +3284,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( isStudyLocked() )
         break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
 
       EmitSignalDeactivateDialog();
       SMESHGUI_GroupOpDlg* aDlg = new SMESHGUI_DimGroupDlg( this );
@@ -3298,7 +3298,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( isStudyLocked() )
         break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
 
       EmitSignalDeactivateDialog();
       SMESHGUI_FaceGroupsSeparatedByEdgesDlg* aDlg = new SMESHGUI_FaceGroupsSeparatedByEdgesDlg( this );
@@ -3359,7 +3359,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
@@ -3406,7 +3406,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       SUIT_OverrideCursor wc;
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -3439,7 +3439,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         SMDSAbs_EntityType type = SMDSEntity_Edge;
@@ -3467,7 +3467,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_CreatePolyhedralVolumeDlg( this ) )->show();
@@ -3492,7 +3492,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         SMDSAbs_EntityType type = SMDSEntity_Last;
@@ -3525,7 +3525,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RemoveNodesDlg( this ) )->show();
@@ -3540,7 +3540,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RemoveElementsDlg( this ) )->show();
@@ -3556,7 +3556,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
     if(isStudyLocked()) break;
     if ( warnOnGeomModif() )
-      break; // action forbiden as geometry modified
+      break; // action forbidden as geometry modified
 
     SALOME_ListIO selected;
     if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
@@ -3597,7 +3597,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       SALOME_ListIO selected;
       if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
         aSel->selectedObjects( selected );
@@ -3638,7 +3638,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RenumberingDlg( this, 0 ) )->show();
@@ -3654,7 +3654,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RenumberingDlg( this, 1 ) )->show();
@@ -3670,7 +3670,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_TranslationDlg( this ) )->show();
@@ -3685,7 +3685,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RotationDlg( this ) )->show();
@@ -3700,7 +3700,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SymmetryDlg( this ) )->show();
@@ -3715,7 +3715,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ScaleDlg( this ) )->show();
@@ -3731,7 +3731,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_OffsetDlg( this ) )->show();
@@ -3747,7 +3747,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SewingDlg( this ) )->show();
@@ -3762,7 +3762,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_MergeDlg( this, 0 ) )->show();
@@ -3777,7 +3777,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if (isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_MergeDlg( this, 1 ) )->show();
@@ -3790,7 +3790,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpMoveNode: // MAKE MESH PASS THROUGH POINT
     if ( warnOnGeomModif() )
-      break; // action forbiden as geometry modified
+      break; // action forbidden as geometry modified
     startOperation( SMESHOp::OpMoveNode );
     break;
 
@@ -3798,7 +3798,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(isStudyLocked()) break;
       if ( warnOnGeomModif() )
-        break; // action forbiden as geometry modified
+        break; // action forbidden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_DuplicateNodesDlg( this ) )->show();
@@ -3812,7 +3812,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpElem0DOnElemNodes: // 0D_ON_ALL_NODES
     if ( warnOnGeomModif() )
-      break; // action forbiden as geometry modified
+      break; // action forbidden as geometry modified
     startOperation( SMESHOp::OpElem0DOnElemNodes );
     break;
 

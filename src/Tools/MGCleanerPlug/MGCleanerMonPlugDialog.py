@@ -368,7 +368,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     for slig in reversed(text.split(separator)):
       lig=slig.strip()
       #print "load ResumeData",lig
-      if lig=="": continue #skip blanck lines
+      if lig=="": continue #skip blank lines
       if lig[0]=="#": break
       try:
         tit,value=lig.split("=")

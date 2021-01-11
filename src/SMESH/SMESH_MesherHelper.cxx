@@ -2972,7 +2972,7 @@ bool SMESH_MesherHelper::IsReversedSubMesh (const TopoDS_Face& theFace)
   if ( !aSubMeshDSFace )
     return isReversed;
 
-  // find an element on a bounday of theFace
+  // find an element on a boundary of theFace
   SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
   const SMDS_MeshNode* nn[2];
   while ( iteratorElem->more() ) // loop on elements on theFace

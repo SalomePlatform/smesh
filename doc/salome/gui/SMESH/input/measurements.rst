@@ -27,7 +27,7 @@ The following targets are supported:
 * **Node:** single mesh node;
 * **Element:** single mesh element (not available in this version);
 * **Object:** mesh, sub-mesh or group object (not available in this version);
-* **Origin:** origin of the global co-ordinate system.
+* **Origin:** origin of the global coordinate system.
 
 The result will be shown in the bottom area of the dialog. In addition, a simple preview will be shown in the 3D viewer.
 
