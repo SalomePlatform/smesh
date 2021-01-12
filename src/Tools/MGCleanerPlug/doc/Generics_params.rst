@@ -9,7 +9,7 @@ These options are not meshing options but allow the user to configure control pa
 
 - **File**
 
-  You can change the file used to store your favorite remeshing hypothesis. see paragraph :ref:`hypothesis-label` for further informations.
+  You can change the file used to store your favorite remeshing hypothesis. see paragraph :ref:`hypothesis-label` for further information.
 
 .. image:: images/Generic.png
    :align: center

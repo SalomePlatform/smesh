@@ -114,7 +114,7 @@ SMESH_Pattern_i::SMESH_Pattern_i( SMESH_Gen_i* theGen_i ):
 
 CORBA::Boolean SMESH_Pattern_i::LoadFromFile(const char* theFileContents)
 {
-  // remove some gabage from the end
+  // remove some garbage from the end
   TCollection_AsciiString patternDescription = (char*) theFileContents;
   int pos = patternDescription.Length();
   while (! isdigit( patternDescription.Value( pos )))

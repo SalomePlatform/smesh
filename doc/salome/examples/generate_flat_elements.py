@@ -1,6 +1,6 @@
 # Double nodes on groups boundaries
 
-# This example represents an iron cable (a thin cylinder) in a concrete bloc (a big cylinder).
+# This example represents an iron cable (a thin cylinder) in a concrete block (a big cylinder).
 # The big cylinder is defined by two geometric volumes.
 
 

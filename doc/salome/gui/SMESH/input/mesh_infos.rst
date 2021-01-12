@@ -79,7 +79,7 @@ The user can either input the ID of a node or element he wants to analyze direct
 If **Show IDs** is activated, IDs of selected nodes or elements are displayed in the 3D viewer.
 
 .. note::
-	The information about the groups, to which the node or element belongs, can be shown in a short or in a detailed form. By default, for performance rasons, this information is shown in a short form (group names only). The detailed information on groups can be switched on via :ref:`Show details on groups in element information tab <group_detail_info_pref>` option of :ref:`mesh_preferences_page`.
+	The information about the groups, to which the node or element belongs, can be shown in a short or in a detailed form. By default, for performance reasons, this information is shown in a short form (group names only). The detailed information on groups can be switched on via :ref:`Show details on groups in element information tab <group_detail_info_pref>` option of :ref:`mesh_preferences_page`.
 
 .. _mesh_addition_info_anchor:
 
