@@ -4052,9 +4052,9 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theO
     if ( *theMeshName && mesh_var->NbFaces() == 0 )
     {
       // new mesh empty, remove it
-      SALOMEDS::Study_var          study = SMESH_Gen_i::getStudyServant();
+      SALOMEDS::Study_var          study = SMESH_Gen_i::GetSMESHGen()->getStudyServant();
       SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
-      SALOMEDS::SObject_wrap      meshSO = SMESH_Gen_i::ObjectToSObject( mesh_var );
+      SALOMEDS::SObject_wrap      meshSO = SMESH_Gen_i::GetSMESHGen()->ObjectToSObject( mesh_var );
       builder->RemoveObjectWithChildren( meshSO );
       THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME::INTERNAL_ERROR);
     }

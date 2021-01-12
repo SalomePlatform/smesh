@@ -707,7 +707,7 @@ void SMESH_NoteBook::ReplaceVariables()
         // dumped calls due to the fix of
         // issue 0021364:: Dump of netgen parameters has duplicate lines
         SMESH_Gen_i *          aGen = SMESH_Gen_i::GetSMESHGen();
-        SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::getStudyServant()->FindObjectID( (*it).first.ToCString() );
+        SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::GetSMESHGen()->getStudyServant()->FindObjectID( (*it).first.ToCString() );
         CORBA::Object_var       obj = aGen->SObjectToObject( sobj );
         if ( SMESH_Hypothesis_i* h = SMESH::DownCast< SMESH_Hypothesis_i*>( obj ))
         {
@@ -744,7 +744,7 @@ void SMESH_NoteBook::InitObjectMap()
   if(!aGen)
     return;
   
-  SALOMEDS::Study_var aStudy = SMESH_Gen_i::getStudyServant();
+  SALOMEDS::Study_var aStudy = SMESH_Gen_i::GetSMESHGen()->getStudyServant();
   if(aStudy->_is_nil())
     return;
   
@@ -953,7 +953,7 @@ bool SMESH_NoteBook::GetReal(const TCollection_AsciiString& theVarName, double& 
 {
   bool ok = false;
 
-  SALOMEDS::Study_ptr aStudy = SMESH_Gen_i::getStudyServant();
+  SALOMEDS::Study_ptr aStudy = SMESH_Gen_i::GetSMESHGen()->getStudyServant();
   if(aStudy->_is_nil())
     return ok;
 
