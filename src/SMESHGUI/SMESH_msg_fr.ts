@@ -3101,11 +3101,11 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>STB_CONNECTION</source>
-        <translation>Frontières sur connexion multiples</translation>
+        <translation>Frontières sur connexions multiples</translation>
     </message>
     <message>
         <source>STB_CONNECTION_2D</source>
-        <translation>Frontières sur connexion multiples 2D</translation>
+        <translation>Frontières sur connexions multiples 2D</translation>
     </message>
     <message>
         <source>STB_CONSTRUCT_GROUP</source>
