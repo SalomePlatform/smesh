@@ -101,10 +101,10 @@ class SMESH_OrientedIndexer : public SMESH_Indexer
 public:
   enum OriFlags //!< transformation types
     {
-      REV_X = 1, REV_Y = 2, SWAP_XY = 4, MAX_ORI = REV_X|REV_Y|SWAP_XY
+      NO_TRSF = 0, REV_X = 1, REV_Y = 2, SWAP_XY = 4, MAX_ORI = REV_X|REV_Y|SWAP_XY
     };
 
-  SMESH_OrientedIndexer( const SMESH_Indexer& indexer, const int oriFlags ):
+  SMESH_OrientedIndexer( const SMESH_Indexer& indexer, const int oriFlags = NO_TRSF):
     TFather( indexer._xSize, indexer._ySize ),
     _xRevFun( (oriFlags & REV_X) ? & reverse : & lazy ),
     _yRevFun( (oriFlags & REV_Y) ? & reverse : & lazy ),

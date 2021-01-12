@@ -2972,7 +2972,7 @@ bool SMESH_MesherHelper::IsReversedSubMesh (const TopoDS_Face& theFace)
   if ( !aSubMeshDSFace )
     return isReversed;
 
-  // find an element on a bounday of theFace
+  // find an element on a boundary of theFace
   SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
   const SMDS_MeshNode* nn[2];
   while ( iteratorElem->more() ) // loop on elements on theFace
@@ -3769,7 +3769,7 @@ namespace { // Structures used by FixQuadraticElements()
   /*!
    * \brief Dump QLink and QFace
    */
-  ostream& operator << (ostream& out, const QLink& l)  // todo: unused in release mode
+  ostream& operator << (ostream& out, const QLink& l)
   {
     out <<"QLink nodes: "
         << l.node1()->GetID() << " - "
@@ -3777,7 +3777,7 @@ namespace { // Structures used by FixQuadraticElements()
         << l.node2()->GetID() << endl;
     return out;
   }
-  ostream& operator << (ostream& out, const QFace& f)  // todo: unused in release mode
+  ostream& operator << (ostream& out, const QFace& f)
   {
     out <<"QFace nodes: "/*<< &f << "  "*/;
     for ( TIDSortedNodeSet::const_iterator n = f.begin(); n != f.end(); ++n )
@@ -3791,7 +3791,7 @@ namespace { // Structures used by FixQuadraticElements()
 
   //================================================================================
   /*!
-   * \brief Construct QFace from QLinks 
+   * \brief Construct QFace from QLinks
    */
   //================================================================================
 
@@ -3808,7 +3808,7 @@ namespace { // Structures used by FixQuadraticElements()
       gp_Vec v1( XYZ( l1->node2()), XYZ( l1->node1()));
       gp_Vec v2( XYZ( l2->node1()), XYZ( l2->node2()));
       if ( l1->node1() != l2->node1() && l1->node2() != l2->node2() )
-        v1.Reverse(); 
+        v1.Reverse();
       _normal += v1 ^ v2;
     }
     double normSqSize = _normal.SquareMagnitude();
@@ -3819,8 +3819,9 @@ namespace { // Structures used by FixQuadraticElements()
 
 #ifdef _DEBUG_
     _face = face;
-#endif
+#else
     (void)face; // unused in release mode
+#endif
   }
   //================================================================================
   /*!
@@ -4131,30 +4132,30 @@ namespace { // Structures used by FixQuadraticElements()
    */
   //================================================================================
 
-  bool QFace::IsSpoiled(const QLink* bentLink ) const // todo: unused
-  {
-    // code is valid for convex faces only
-    gp_XYZ gc(0,0,0);
-    for ( TIDSortedNodeSet::const_iterator n = begin(); n != end(); ++n )
-      gc += XYZ( *n ) / double( size() );
-    for ( size_t i = 0; i < _sides.size(); ++i )
-    {
-      if ( _sides[i] == bentLink ) continue;
-      gp_Vec linkNorm = _normal ^ gp_Vec( XYZ(_sides[i]->node1()), XYZ(_sides[i]->node2()));
-      gp_Vec vecOut( gc, _sides[i]->MiddlePnt() );
-      if ( linkNorm * vecOut < 0 )
-        linkNorm.Reverse();
-      double mag2 = linkNorm.SquareMagnitude();
-      if ( mag2 > numeric_limits<double>::min() )
-        linkNorm /= sqrt( mag2 );
-      gp_Vec vecBent    ( _sides[i]->MiddlePnt(), bentLink->MediumPnt());
-      gp_Vec vecStraight( _sides[i]->MiddlePnt(), bentLink->MiddlePnt());
-      if ( vecBent * linkNorm > -0.1*vecStraight.Magnitude() )
-        return true;
-    }
-    return false;
+  // bool QFace::IsSpoiled(const QLink* bentLink ) const
+  // {
+  //   // code is valid for convex faces only
+  //   gp_XYZ gc(0,0,0);
+  //   for ( TIDSortedNodeSet::const_iterator n = begin(); n != end(); ++n )
+  //     gc += XYZ( *n ) / double( size() );
+  //   for ( size_t i = 0; i < _sides.size(); ++i )
+  //   {
+  //     if ( _sides[i] == bentLink ) continue;
+  //     gp_Vec linkNorm = _normal ^ gp_Vec( XYZ(_sides[i]->node1()), XYZ(_sides[i]->node2()));
+  //     gp_Vec vecOut( gc, _sides[i]->MiddlePnt() );
+  //     if ( linkNorm * vecOut < 0 )
+  //       linkNorm.Reverse();
+  //     double mag2 = linkNorm.SquareMagnitude();
+  //     if ( mag2 > numeric_limits<double>::min() )
+  //       linkNorm /= sqrt( mag2 );
+  //     gp_Vec vecBent    ( _sides[i]->MiddlePnt(), bentLink->MediumPnt());
+  //     gp_Vec vecStraight( _sides[i]->MiddlePnt(), bentLink->MiddlePnt());
+  //     if ( vecBent * linkNorm > -0.1*vecStraight.Magnitude() )
+  //       return true;
+  //   }
+  //   return false;
 
-  }
+  // }
 
   //================================================================================
   /*!
@@ -5506,10 +5507,12 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       volExp.Set( *pentIt, /*ignoreCentralNodes=*/false );
     }
   }
-#ifdef _DEBUG_
-  // avoid warning: defined but not used operator<<()
-  SMESH_Comment() << *links.begin() << *faces.begin();
-#endif
+
+  if ( false )
+    // avoid warning: defined but not used operator<<()
+    SMESH_Comment() << *links.begin() << *faces.begin();
+
+  return;
 }
 
 //================================================================================

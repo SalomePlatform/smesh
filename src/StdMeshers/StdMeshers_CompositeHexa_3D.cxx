@@ -44,6 +44,7 @@
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
+#include <Bnd_B3d.hxx>
 #include <Standard_ErrorHandler.hxx>
 #include <Standard_Failure.hxx>
 #include <TopExp_Explorer.hxx>
@@ -61,10 +62,9 @@
 #include <gp_XYZ.hxx>
 
 #include <list>
+#include <numeric>
 #include <set>
 #include <vector>
-#include <numeric>
-#include <Bnd_B3d.hxx>
 
 using namespace std;
 

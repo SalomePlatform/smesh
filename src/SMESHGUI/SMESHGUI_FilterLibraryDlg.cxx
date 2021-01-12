@@ -211,7 +211,7 @@ QWidget* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
   myTable->SetLibsEnabled(false);
 
   myListBox->setMinimumHeight((int)(myTable->sizeHint().height() * 0.5));
-  //myListBox->setRowMode(QListWidget::FitToWidth); //VSR : TODO ???
+  //myListBox->setRowMode(QListWidget::FitToWidth);
   myListBox->setSelectionMode(QListWidget::SingleSelection);
 
   myOpenBtn->setAutoDefault(false);

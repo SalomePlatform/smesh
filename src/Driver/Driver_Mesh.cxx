@@ -123,15 +123,15 @@ std::string Driver_Mesh::fixUTF8(const std::string & str )
 
     // how many bytes follow?
     int len = 0;
-    if      (s[i] >> 5 == 0b110  ) len = 1; // todo: binary constants are a GCC extension
-    else if (s[i] >> 4 == 0b1110 ) len = 2; // todo: binary constants are a GCC extension
-    else if (s[i] >> 3 == 0b11110) len = 3; // todo: binary constants are a GCC extension
+    if      (s[i] >> 5 == 0b110  ) len = 1; // WARNING: binary constants included in C++14
+    else if (s[i] >> 4 == 0b1110 ) len = 2;
+    else if (s[i] >> 3 == 0b11110) len = 3;
     else
       invalid = true;
 
     // check the bytes
     for ( int j = 0; j < len && !invalid; ++j )
-      invalid = ( s[i+j+1] >> 6 != 0b10 ); // todo: binary constants are a GCC extension
+      invalid = ( s[i+j+1] >> 6 != 0b10 );
 
     if ( invalid )
       fixed[i] = '?';

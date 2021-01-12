@@ -875,7 +875,7 @@ void GmfSetLin(int MshIdx, int KwdCod, ...)
                         {
                                 for(i=0;i<kwd->SolSiz;i++)
                                         if(kwd->fmt[i] == 'r')
-                                                fprintf(msh->hdl, "%.15lg ", va_arg(VarArg, double)); /* todo: ISO C90 does not support the '%lg' gnu_printf format */
+                                                fprintf(msh->hdl, "%.15g ", va_arg(VarArg, double)); /* was "%.15lg and warning "ISO C90 does not support the '%lg' gnu_printf format"*/
                                         else if(kwd->fmt[i] == 'n') {
                                                 nb_repeat = va_arg(VarArg, int);
                                                 fprintf(msh->hdl, "%d ", nb_repeat);
@@ -936,7 +936,7 @@ void GmfSetLin(int MshIdx, int KwdCod, ...)
 
                         if(msh->typ & Asc)
                                 for(j=0;j<kwd->SolSiz;j++)
-                                        fprintf(msh->hdl, "%.15lg ", DblSolTab[j]); /* todo: ISO C90 does not support the '%lg' gnu_printf format */
+                                        fprintf(msh->hdl, "%.15g ", DblSolTab[j]); /* was " %.15lg " and warning "ISO C90 does not support the '%lg' gnu_printf format" */
                         else
                                 RecBlk(msh, (unsigned char *)DblSolTab, kwd->NmbWrd);
                 }

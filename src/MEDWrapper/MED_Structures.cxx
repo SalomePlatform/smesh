@@ -352,10 +352,10 @@ namespace MED
   TGaussInfo::TLess
   ::operator()(const TGaussInfo& theLeft, const TGaussInfo& theRight) const
   {
-    if(!&theLeft)    // todo: address of reference can be assumed always non-null by compiler
+    if(!&theLeft) // address of reference can be assumed always non-null by compiler - OK
       return true;
 
-    if(!&theRight)   // todo: address of reference can be assumed always non-null by compiler
+    if(!&theRight) //address of reference can be assumed always non-null by compiler - OK
       return false;
 
     if(theLeft.myGeom != theRight.myGeom)

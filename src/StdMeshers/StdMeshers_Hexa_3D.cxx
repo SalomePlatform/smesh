@@ -55,7 +55,6 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <cstddef>
-
 #include <numeric>
 
 typedef SMESH_Comment TComm;

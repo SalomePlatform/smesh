@@ -1159,7 +1159,7 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
   // algorithm parameter
   if (algo)
   {
-    // look trough hypotheses used by algo
+    // look through hypotheses used by algo
     const SMESH_HypoFilter* hypoKind;
     if (( hypoKind = algo->GetCompatibleHypoFilter( !hyp->IsAuxiliary() ))) {
       std::list <const SMESHDS_Hypothesis * > usedHyps;
@@ -2432,6 +2432,7 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
         smVec.push_back( sm );
         if ( sm->GetSubMeshDS() && sm->GetSubMeshDS()->IsComplexSubmesh() )
         {
+          smVec.reserve( smVec.size() + sm->GetSubMeshDS()->NbSubMeshes() );
           SMESHDS_SubMeshIteratorPtr smdsIt = sm->GetSubMeshDS()->GetSubMeshIterator();
           while ( smdsIt->more() )
           {

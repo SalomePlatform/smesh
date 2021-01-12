@@ -5029,6 +5029,74 @@ Please, create VTK viewer and try again</translation>
         <source>PREF_PREVIEW_CHUNK_SIZE</source>
         <translation>Sub-shapes preview chunk size</translation>
     </message>
+    <message>
+        <source>INFO_WELCOME_TO_SMESH</source>
+        <translation>Welcome to Mesh</translation>
+    </message>
+    <message>
+        <source>INFO_GRP_CREATE_MESH</source>
+        <translation>Create mesh</translation>
+    </message>
+    <message>
+        <source>INFO_DEFINE_ALGOS</source>
+        <translation>Choose algorithms</translation>
+    </message>
+    <message>
+        <source>INFO_DEFINE_HYPOS</source>
+        <translation>Define hypotheses</translation>
+    </message>
+    <message>
+        <source>INFO_COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+    <message>
+        <source>INFO_REFINE</source>
+        <translation>Add refinements</translation>
+    </message>
+    <message>
+        <source>INFO_REFINE_LOCAL_SIZE</source>
+        <translation>via local sizes with some hypotheses</translation>
+    </message>
+    <message>
+        <source>INFO_REFINE_SUBMESH</source>
+        <translation>via sub-meshes</translation>
+    </message>
+    <message>
+        <source>INFO_GRP_IMPORT_MESH</source>
+        <translation>Import mesh</translation>
+    </message>
+    <message>
+        <source>INFO_AVAILABLE_FORMATS</source>
+        <translation>Available formats</translation>
+    </message>
+    <message>
+        <source>INFO_GRP_CHECK_MESH</source>
+        <translation> Check mesh quality</translation>
+    </message>
+    <message>
+        <source>INFO_DISPLAY</source>
+        <translation>Display mesh</translation>
+    </message>
+    <message>
+        <source>INFO_QUALITY_INFO</source>
+        <translation>Display some quality criteria</translation>
+    </message>
+    <message>
+        <source>INFO_QUALITY_AREA</source>
+        <translation>area</translation>
+    </message>
+    <message>
+        <source>INFO_QUALITY_VOLUME</source>
+        <translation>volume</translation>
+    </message>
+    <message>
+        <source>INFO_QUALITY_ASPECT_RATION</source>
+        <translation>aspect ration</translation>
+    </message>
+    <message>
+        <source>INFO_CLIPPING</source>
+        <translation>Add clipping planes</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_GroupDlg</name>

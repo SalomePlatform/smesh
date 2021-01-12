@@ -2563,7 +2563,7 @@ namespace
         case 3: // at a corner
         {
           _Node& node = _hexNodes[ subEntity - SMESH_Block::ID_FirstV ];
-          if ( node.Node() != 0 )
+          if ( node.Node() )
           {
             if ( node._intPoint )
               node._intPoint->Add( _eIntPoints[ iP ]->_faceIDs, _eIntPoints[ iP ]->_node );
@@ -3503,7 +3503,7 @@ namespace
         continue;
 
       // perform intersection
-      E_IntersectPoint* eip, *vip = 0; // todo: vip must be explicitly initialized to avoid warning (see below)
+      E_IntersectPoint* eip, *vip = 0;
       for ( int iDirZ = 0; iDirZ < 3; ++iDirZ )
       {
         GridPlanes& planes = pln[ iDirZ ];
@@ -3604,7 +3604,7 @@ namespace
             vip = _grid->Add( ip );
           if ( isInternal && !sameV )
             vip->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
-          if ( !addIntersection( vip, hexes, ijk, d000 ) && !sameV ) // todo: vip must be explicitly initialized to avoid warning (see above)
+          if ( !addIntersection( vip, hexes, ijk, d000 ) && !sameV )
             _grid->Remove( vip );
           ip._shapeID = edgeID;
         }

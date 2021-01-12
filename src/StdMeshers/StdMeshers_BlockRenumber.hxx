@@ -86,14 +86,14 @@ public:
    *  \param theShape - the geometry of interest
    *  \retval bool - true if parameter values have been successfully defined
    */
-  bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape) override
+  bool SetParametersByMesh(const SMESH_Mesh* /*mesh*/, const TopoDS_Shape& /*shape*/) override
   { return false; }
 
   /*!
    * \brief Initialize my parameter values by default parameters.
    *  \retval bool - true if parameter values have been successfully defined
    */
-  bool SetParametersByDefaults(const TDefaults&  dflts, const SMESH_Mesh* theMesh=0) override
+  bool SetParametersByDefaults(const TDefaults& /*dflts*/, const SMESH_Mesh* /*mesh*/=0) override
   { return false; }
 
  public:
@@ -115,7 +115,7 @@ public:
 
   // Persistence: define both input and output at once
   friend class boost::serialization::access;
-  template<class Archive> void serialize( Archive & ar, const unsigned int version )
+  template<class Archive> void serialize( Archive & ar, const unsigned int /*version*/ )
   {
     ar & _blockCS;
   }

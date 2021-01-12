@@ -1130,8 +1130,8 @@ bool SMESH_Block::findUVByHalfDivision( const gp_Pnt&             thePoint,
 
 //================================================================================
 /*!
- * \brief Finds parameters corresponding to a given UV of a given face by searching 
- * around the starting solution
+ * \brief Find parameters corresponding to a given UV of a given face by searching
+ *        around the starting solution
  *  \param [in] theUV - the UV to locate
  *  \param [in] tface - the face
  *  \param [in,out] theParams - the starting parameters to improve 

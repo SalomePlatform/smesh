@@ -33,12 +33,16 @@
 #include "SMESH_MeshEditor_i.hxx"
 
 #include <Basics_Utils.hxx>
+#include <Basics_OCCTVersion.hxx>
 #include <SALOMEDS_wrap.hxx>
 
 #include <LDOMParser.hxx>
-#include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
 #include <TColStd_HSequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+
+#if OCC_VERSION_LARGE < 0x07050000
+#include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
+#endif
 
 #include <cstring>
 
@@ -672,7 +676,7 @@ namespace SMESH
 #ifdef _DEBUG_
     std::cout << "Exception in SMESH_Gen_i::DumpPython(): " << text << std::endl;
 #else
-    (void)text; // todo: unused in release mode
+    (void)text; // unused in release mode
 #endif
   }
 

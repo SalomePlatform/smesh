@@ -121,7 +121,7 @@ module SMESH
    */
   struct HypInitParams
   {
-    short   way; // 0 - by mesh, 1 - by geometry size + prefered parameters, 2 - by averageLength
+    short   way; // 0 - by mesh, 1 - by geometry size + preferred parameters, 2 - by averageLength
     double  averageLength;
     boolean quadDominated;
   };
