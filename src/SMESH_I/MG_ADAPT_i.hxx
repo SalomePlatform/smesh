@@ -106,7 +106,8 @@ public:
     
 	bool setAll();
 	char* getCommandToRun() ;
-	CORBA::Long compute(::CORBA::String_out errStr);
+	//~CORBA::Long compute(::CORBA::String_out errStr);
+	CORBA::Long compute();
 	char* getFileName();
 	char* getExeName();
 	void copyMgAdaptHypothesisData( const SMESH::MgAdaptHypothesisData& data ) ;
@@ -127,9 +128,10 @@ public:
 	void copyHypothesisDataToImpl(const SMESH::MgAdaptHypothesisData& from, ::MG_ADAPT::MgAdaptHypothesisData* to) const;
 	//~TOptionValues        getOptionValues()       const;
    	//~const TOptionValues& getCustomOptionValues() const ;
+   	char* getErrMsg();
 private:
   ::MG_ADAPT::MgAdapt*          myMgAdapt;
-
+  std::string errStr;
   //~CORBA::ORB_ptr         _orb;
   //~ADAPT::ADAPT_Gen_var _gen_i;
 	

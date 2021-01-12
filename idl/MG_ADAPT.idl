@@ -124,7 +124,9 @@ module SMESH{
 
 		boolean setAll();
 		string getCommandToRun() ;
-		long compute(out string errStr);
+		//long compute(out string errStr);
+		long compute();
+		string getErrMsg();
 		string getFileName() ;
 		string getExeName();
 		void copyMgAdaptHypothesisData(in  MgAdaptHypothesisData f ) ;

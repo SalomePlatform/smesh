@@ -376,7 +376,8 @@ bool SMESHGUI_MG_ADAPTDRIVER::execute()
     char* errStr;
     try
     {
-        err = getModel()->compute(errStr);
+        err = getModel()->compute();
+        errStr = getModel()->getErrMsg();
         std::string msg =  err == 0 ? " ok" : std::string("Not ok \n")+CORBA::string_dup(errStr) ;
     }
     catch (const std::exception& e)
