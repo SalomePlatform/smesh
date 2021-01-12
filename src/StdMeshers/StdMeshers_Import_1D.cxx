@@ -693,14 +693,14 @@ namespace // INTERNAL STUFF
 
       if ( removeImport )
       {
-        // treate removal of Import algo from subMesh
+        // treat removal of Import algo from subMesh
         removeSubmesh( subMesh, (_ListenerData*) data );
       }
       else if ( modifHyp ||
                 ( SMESH_subMesh::CLEAN         == event &&
                   SMESH_subMesh::COMPUTE_EVENT == eventType))
       {
-        // treate modification of ImportSource hypothesis
+        // treat modification of ImportSource hypothesis
         clearSubmesh( subMesh, (_ListenerData*) data, /*all=*/false );
       }
       else if ( SMESH_subMesh::CHECK_COMPUTE_STATE == event &&
@@ -720,7 +720,7 @@ namespace // INTERNAL STUFF
                 d->_computedSubM.insert( *smIt);
           }
       }
-      // Clear _ImportData::_n2n if it's no more useful, i.e. when
+      // Clear _ImportData::_n2n if it isn't useful anymore, i.e. when
       // the event is not within mesh.Compute()
       if ( SMESH_subMesh::ALGO_EVENT == eventType )
         clearN2N( subMesh->GetFather() );

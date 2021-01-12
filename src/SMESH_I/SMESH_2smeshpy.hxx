@@ -422,7 +422,7 @@ protected:
   std::list<Handle(_pyCommand)> myUnusedCommands;
   std::list<Handle(_pyObject) > myReferredObjs;
   // maps used to clear commands setting parameters if result of setting is
-  // discared (e.g. by mesh.Clear())
+  // discarded (e.g. by mesh.Clear())
   std::map<_AString, std::list<Handle(_pyCommand)> >            myMeth2Commands;
   std::map< _pyCommand::TAddr, std::list<Handle(_pyCommand) > > myComputeAddr2Cmds;
   std::list<Handle(_pyCommand) >                                myComputeCmds;
