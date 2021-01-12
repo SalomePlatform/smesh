@@ -30,18 +30,14 @@
     <message>
         <source>BAD_FACES_WARNING</source>
         <translation>
-Specified faces are not sub-shapes of the shape of 
-mesh/sub-mesh.
-Consider creating another hypothesis instead of using
-this one for this mesh/sub-mesh.</translation>
+Specified faces are not sub-shapes of the shape of mesh/sub-mesh.
+Consider creating another hypothesis instead of using this one for this mesh/sub-mesh.</translation>
     </message>
     <message>
         <source>BAD_EDGES_WARNING</source>
         <translation>
-Specified edges are not sub-shapes of the shape of 
-mesh/sub-mesh.
-Consider creating another hypothesis instead of using
-this one for this mesh/sub-mesh.</translation>
+Specified edges are not sub-shapes of the shape of mesh/sub-mesh.
+Consider creating another hypothesis instead of using this one for this mesh/sub-mesh.</translation>
     </message>
     <message>
         <source>EXTMETH_SURF_OFFSET_SMOOTH</source>
@@ -256,8 +252,7 @@ this one for this mesh/sub-mesh.</translation>
     </message>
     <message>
         <source>SMESH_FACES_WO_LAYERS</source>
-        <translation>Faces without layers
-(inlets and outlets)</translation>
+        <translation>Faces without layers (inlets and outlets)</translation>
     </message>
     <message>
         <source>SMESH_EDGES_WO_LAYERS</source>
@@ -265,8 +260,7 @@ this one for this mesh/sub-mesh.</translation>
     </message>
     <message>
         <source>SMESH_FACES_WITH_LAYERS</source>
-        <translation>Faces with layers 
-(walls)</translation>
+        <translation>Faces with layers (walls)</translation>
     </message>
     <message>
         <source>SMESH_EDGES_WITH_LAYERS</source>
@@ -342,30 +336,6 @@ this one for this mesh/sub-mesh.</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_2D_TITLE</source>
-        <translation>Hypothesis Construction</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_1D_HYPOTHESIS</source>
-        <translation>Projection Source 1D</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_1D_TITLE</source>
-        <translation>Hypothesis Construction</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_2D_HYPOTHESIS</source>
-        <translation>Projection Source 2D</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_2D_TITLE</source>
-        <translation>Hypothesis Construction</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_3D_HYPOTHESIS</source>
-        <translation>Projection Source 3D</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_3D_TITLE</source>
         <translation>Hypothesis Construction</translation>
     </message>
     <message>

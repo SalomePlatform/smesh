@@ -4,20 +4,20 @@
 <context>
     <name>StdMeshersGUI_StdHypothesisCreator</name>
     <message>
-        <source>TO_IGNORE_EDGES</source>
-        <translation>Arêtes sans couches limites (entrées / sorties)</translation>
+        <source>TO_IGNORE_EDGES_OR_NOT</source>
+        <translation>Les arêtes sélectionnées sont</translation>
     </message>
     <message>
         <source>NOT_TO_IGNORE_EDGES</source>
         <translation>Arêtes avec couche limite (parois)</translation>
     </message>
     <message>
-        <source>TO_IGNORE_EDGES_OR_NOT</source>
-        <translation>Les arêtes sélectionnées sont</translation>
+        <source>TO_IGNORE_EDGES</source>
+        <translation>Arêtes sans couches limites (entrées / sorties)</translation>
     </message>
     <message>
         <source>TO_IGNORE_FACES_OR_NOT</source>
-        <translation>Les face sélectionnées sont</translation>
+        <translation>Les faces sélectionnées sont</translation>
     </message>
     <message>
         <source>NOT_TO_IGNORE_FACES</source>
@@ -30,12 +30,14 @@
     <message>
         <source>BAD_FACES_WARNING</source>
         <translation>
-Les faces sélectionnées ne sont pas des sous-géométries de la pièce à mailler (ou de la pièce du sous-maillage). Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce maillage/sous-maillage.</translation>
+Les faces sélectionnées ne sont pas des sous-géométries de la pièce à mailler (ou de la pièce du sous-maillage).
+Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce maillage/sous-maillage.</translation>
     </message>
     <message>
         <source>BAD_EDGES_WARNING</source>
         <translation>
-Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à mailler (ou de la pièce du sous-maillage). Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce maillage/sous-maillage.</translation>
+Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à mailler (ou de la pièce du sous-maillage).
+Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce maillage/sous-maillage.</translation>
     </message>
     <message>
         <source>EXTMETH_SURF_OFFSET_SMOOTH</source>
@@ -70,7 +72,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_ARITHMETIC_1D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_GEOMETRIC_1D_HYPOTHESIS</source>
@@ -78,7 +80,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_GEOMETRIC_1D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_COMMON_RATIO</source>
@@ -90,7 +92,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_AUTOMATIC_LENGTH_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_CONV_MODE</source>
@@ -106,15 +108,15 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_MIN_SIZE</source>
-        <translation>Taille min</translation>
+        <translation>Taille minimale</translation>
     </message>
     <message>
         <source>SMESH_MAX_SIZE</source>
-        <translation>Taille max</translation>
+        <translation>Taille maximale</translation>
     </message>
     <message>
         <source>SMESH_ADAPTIVE1D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_DEFLECTION1D_HYPOTHESIS</source>
@@ -126,7 +128,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_DEFLECTION1D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_DENSITY_FUNC</source>
@@ -150,7 +152,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_DISTR_TAB</source>
-        <translation>Table de densités</translation>
+        <translation>Distribution avec une table de densités</translation>
     </message>
     <message>
         <source>SMESH_DISTR_TYPE</source>
@@ -182,7 +184,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_INVALID_FUNCTION</source>
-        <translation>La fonction n&apos;est pas valide</translation>
+        <translation>La fonction n'est pas valide</translation>
     </message>
     <message>
         <source>SMESH_LAYERS_DISTRIBUTION</source>
@@ -194,7 +196,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_LAYER_DISTRIBUTION_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_HYPOTHESIS</source>
@@ -210,7 +212,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_FIXED_POINTS_1D_HYPOTHESIS</source>
@@ -218,7 +220,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_FIXED_POINTS_1D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_MAX_LENGTH_HYPOTHESIS</source>
@@ -238,7 +240,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_VISCOUS_LAYERS_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_TOTAL_THICKNESS</source>
@@ -246,37 +248,35 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_STRETCH_FACTOR</source>
-        <translation>Facteur d&apos;échelle</translation>
+        <translation>Facteur d'échelle</translation>
     </message>
     <message>
         <source>SMESH_FACES_WO_LAYERS</source>
-        <translation>Faces sans couche limite
-(entrées et sorties)</translation>
+        <translation>Faces sans couche limite (entrées et sorties)</translation>
     </message>
     <message>
         <source>SMESH_EDGES_WO_LAYERS</source>
-        <translation>Arêtes sans couche limite
-(entrées et sorties)</translation>
-    </message>
-    <message>
-        <source>SMESH_EDGES_WITH_LAYERS</source>
-        <translation>Arêtes avec couche limite (parois)</translation>
+        <translation>Arêtes sans couche limite</translation>
     </message>
     <message>
         <source>SMESH_FACES_WITH_LAYERS</source>
         <translation>Faces avec couche limite (parois)</translation>
     </message>
     <message>
+        <source>SMESH_EDGES_WITH_LAYERS</source>
+        <translation>Arêtes avec couche limite</translation>
+    </message>
+    <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_CARTESIAN_PARAMS_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_AREA_HYPOTHESIS</source>
-        <translation>Aire maximale d&apos;une maille</translation>
+        <translation>Aire maximale d'une maille</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_AREA_PARAM</source>
@@ -284,11 +284,11 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_AREA_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_VOLUME_HYPOTHESIS</source>
-        <translation>Volume maximal d&apos;une maille</translation>
+        <translation>Volume maximal d'une maille</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_VOLUME_PARAM</source>
@@ -296,7 +296,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_VOLUME_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_HYPOTHESIS</source>
@@ -308,11 +308,11 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_SCALE_PARAM</source>
-        <translation>Facteur d&apos;échelle</translation>
+        <translation>Facteur d'échelle</translation>
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_NO_CONV</source>
@@ -332,35 +332,11 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_2D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_1D_HYPOTHESIS</source>
-        <translation>Source pour le projection 1D</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_1D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_2D_HYPOTHESIS</source>
-        <translation>Source pour la projection 2D</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_2D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_3D_HYPOTHESIS</source>
-        <translation>Source pour la projection 3D</translation>
-    </message>
-    <message>
-        <source>SMESH_PROJECTION_SOURCE_3D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_IMPORT_SOURCE_1D_HYPOTHESIS</source>
@@ -368,7 +344,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_IMPORT_SOURCE_1D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_IMPORT_SOURCE_2D_HYPOTHESIS</source>
@@ -376,7 +352,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_IMPORT_SOURCE_2D_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_REMOVE_ROW</source>
@@ -396,11 +372,11 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS</source>
-        <translation>Nb. segments</translation>
+        <translation>Nombre de segments</translation>
     </message>
     <message>
         <source>SMESH_SAME_NB_SEGMENTS</source>
-        <translation>Le même Nb. segments dans chaque intervalle</translation>
+        <translation>Le même nombre de segments dans chaque intervalle</translation>
     </message>
     <message>
         <source>SMESH_BASE_VERTEX</source>
@@ -408,7 +384,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_HYPOTHESIS</source>
-        <translation>Longueur des segments autour d&apos;un point</translation>
+        <translation>Longueur des segments autour d'un point</translation>
     </message>
     <message>
         <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_PARAM</source>
@@ -416,7 +392,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_3DSHAPE</source>
@@ -428,7 +404,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_SOURCE_EDGES</source>
-        <translation>Groupes d&apos;arêtes</translation>
+        <translation>Groupes d'arêtes</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_FACE</source>
@@ -464,11 +440,11 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_START_END_LENGTH_HYPOTHESIS</source>
-        <translation>Start and end local Length</translation>
+        <translation>Longueur locale début et fin</translation>
     </message>
     <message>
         <source>SMESH_START_END_LENGTH_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_START_LENGTH_PARAM</source>
@@ -496,7 +472,7 @@ Les arêtes sélectionnées ne sont pas des sous-géométries de la pièce à ma
     </message>
     <message>
         <source>SMESH_QUADRANGLE_PARAMS_TITLE</source>
-        <translation>Construction de l&apos;hypothèse</translation>
+        <translation>Construction de l'hypothèse</translation>
     </message>
     <message>
         <source>SMESH_QUAD_TYPE</source>
