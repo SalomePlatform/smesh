@@ -44,7 +44,9 @@
 // model
 
 
-#include "MG_ADAPT.hxx"
+//~#include "MG_ADAPT.hxx"
+
+#include CORBA_SERVER_HEADER(MG_ADAPT)
 
 class SUIT_ViewWindow;
 class SUIT_Desktop;
@@ -88,7 +90,7 @@ class SMESHGUI_MgAdaptArguments;
 class SMESHGUI_SpinBox;
 class MgAdaptAdvWidgetTreeWidget;
 class MgAdaptAdvWidget;
-class MgAdapt;
+//~class MgAdapt;
 class QHeaderView;
 class QFileDialog;
 
@@ -115,14 +117,14 @@ class  SMESHGUI_MgAdaptDlg : public QDialog
 public:
     //! Property type
     enum Mode { Arguments, AdvancedOptions};
-    SMESHGUI_MgAdaptDlg( SalomeApp_Module*, MgAdapt*, QWidget* parent= 0,bool isCreation = true );
+    SMESHGUI_MgAdaptDlg( SalomeApp_Module*, SMESH::MG_ADAPT_ptr, QWidget* parent= 0,bool isCreation = true );
     ~SMESHGUI_MgAdaptDlg();
 
     void  buildDlg();
     void reject();
     bool checkParams(QString& msg) ;
-    void setModel(MgAdapt*);
-    MgAdapt* getModel() const;
+    //~void setModel(MgAdapt*);
+    SMESH::MG_ADAPT_ptr getModel() const;
 
 public slots:
 
@@ -138,7 +140,7 @@ protected :
     MgAdaptAdvWidget* myAdvOpt;
     bool                readParamsFromHypo( ) const ;
     bool                readParamsFromWidgets( ) ;
-    bool                storeParamsToHypo( const MgAdaptHypothesisData& ) const;
+    bool                storeParamsToHypo( const SMESH::MgAdaptHypothesisData & ) const;
 
 private:
 
@@ -147,8 +149,8 @@ private:
     QTabWidget*           myTabWidget;
 
 
-    MgAdaptHypothesisData* myData;
-    MgAdapt* model;
+    SMESH::MgAdaptHypothesisData* myData;
+    SMESH::MG_ADAPT_ptr model;
 
 };
 

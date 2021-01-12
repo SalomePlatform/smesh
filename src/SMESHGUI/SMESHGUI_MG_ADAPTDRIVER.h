@@ -45,8 +45,9 @@
 // model
 //~#include "MG_ADAPT.h"
 #include "MG_ADAPTGUI.hxx"
-#include "MG_ADAPT.hxx"
+//~#include "MG_ADAPT.hxx"
 
+#include CORBA_SERVER_HEADER(MG_ADAPT)
 
 class SUIT_ViewWindow;
 class SUIT_Desktop;
@@ -103,29 +104,13 @@ Handle(SALOME_InteractiveObject) firstIObject();
 bool createAndPublishMed(QString fileName);
 bool createMgAdaptObject(MgAdapt* myMgAdapt = 0);
 
-class SMESHGUI_EXPORT SMESHGUI_MG_AdaptComputeDlg_QThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    SMESHGUI_MG_AdaptComputeDlg_QThread(MgAdapt* model);
-    int                   result();
-    void                   cancel();
-protected:
-    void run();
-
-private:
-
-    MgAdapt* model;
-    int                  myResult;
-};
 
 class  SMESHGUI_MG_ADAPTDRIVER : public SMESHGUI_MgAdaptDlg
 {
     Q_OBJECT;
 
 public :
-    SMESHGUI_MG_ADAPTDRIVER( SMESHGUI*, MgAdapt*, bool isCreation = true );
+    SMESHGUI_MG_ADAPTDRIVER( SMESHGUI*, SMESH::MG_ADAPT_ptr, bool isCreation = true );
     void setMyMesh(SMESH::SMESH_Mesh_var);
     SMESH::SMESH_Mesh_var getMyMesh() ;
 

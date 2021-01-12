@@ -25,7 +25,8 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_AdaptDlg.h"
 #include "SMESHGUI_MG_ADAPTDRIVER.h"
-#include "MG_ADAPT.hxx"
+//~#include "MG_ADAPT_i.hxx"
+//~#include "MG_ADAPT.hxx"
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
@@ -225,13 +226,14 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
       INFOS("Interface avec MG-Adapt" );
 //       A faire
 
-      MgAdapt* model = new MgAdapt();
+      SMESH::MG_ADAPT_ptr model = SMESHGUI::GetSMESHGen()->CreateMG_ADAPT();// = new SMESH::MG_ADAPT_var();
+      //~SMESH::MG_ADAPT_ptr model = SMESH::MG_ADAPT_i::CreateMG_ADAPT();
       bool isCreation = false;
 	  if (mySMESHGUI->isStudyLocked()) break;
       mySMESHGUI->EmitSignalDeactivateDialog();
       SMESHGUI_MG_ADAPTDRIVER *mgAdapt = new SMESHGUI_MG_ADAPTDRIVER(mySMESHGUI, model, isCreation);
       mgAdapt->show();
-      delete model;
+      //~delete model;
       break;
     }
 

@@ -233,33 +233,8 @@ int IObjectCount()
 }
 
 
-SMESHGUI_MG_AdaptComputeDlg_QThread::SMESHGUI_MG_AdaptComputeDlg_QThread(MgAdapt* aModel)
-{
-    model = aModel;
-    myResult = -1;
-}
 
-void SMESHGUI_MG_AdaptComputeDlg_QThread::run()
-{
-
-    int err;
-    std::string errStr;
-    errStr = model->compute(errStr);
-    std::string msg = err == 0 ? " ok" : std::string("Not ok \n")+ errStr;
-    exec();
-}
-
-int SMESHGUI_MG_AdaptComputeDlg_QThread::result()
-{
-    return myResult;
-}
-
-void SMESHGUI_MG_AdaptComputeDlg_QThread::cancel()
-{
-    //~model->cancel();
-}
-
-SMESHGUI_MG_ADAPTDRIVER::SMESHGUI_MG_ADAPTDRIVER( SMESHGUI* theModule, MgAdapt* myModel, bool isCreation )
+SMESHGUI_MG_ADAPTDRIVER::SMESHGUI_MG_ADAPTDRIVER( SMESHGUI* theModule, SMESH::MG_ADAPT_ptr myModel, bool isCreation )
     : mySMESHGUI( theModule ),
       myFilterDlg(0),
       myIsApplyAndClose( false ),
@@ -397,11 +372,12 @@ bool SMESHGUI_MG_ADAPTDRIVER::execute()
 {
 
     int err;
-    std::string errStr;
+    //~std::string errStr;
+    char* errStr;
     try
     {
         err = getModel()->compute(errStr);
-        std::string msg =  err == 0 ? " ok" : std::string("Not ok \n")+errStr ;
+        std::string msg =  err == 0 ? " ok" : std::string("Not ok \n")+CORBA::string_dup(errStr) ;
     }
     catch (const std::exception& e)
     {
@@ -611,7 +587,7 @@ bool SMESHGUI_MG_ADAPTDRIVER::isValid()
 
 bool SMESHGUI_MG_ADAPTDRIVER::createMeshInObjectBrowser()
 {
-    QString filename(getModel()->getMedFileOut().c_str());
+    QString filename(getModel()->getMedFileOut());
     QStringList errors;
     QStringList anEntryList;
     bool isEmpty = false;

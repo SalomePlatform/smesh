@@ -36,7 +36,7 @@
 
 //~#include <med.h>
 
-
+namespace MG_ADAPT{
 class MgAdapt;
 
 typedef std::map< std::string, std::string > TOptionValues;
@@ -118,7 +118,7 @@ public:
     MgAdapt(const MgAdapt&);
     ~MgAdapt();
     void buildModel();
-    void setData( MgAdaptHypothesisData*);
+    void setData( MgAdaptHypothesisData* data);
 
     void setMedFileIn(std::string fileName);
     std::string getMedFileIn();
@@ -142,11 +142,14 @@ public:
     std::string getFieldName();
 
     void setTimeStep(int time);
-    int getTimeStep() const;
+    int getTimeStep() const; 
 
     void setRankTimeStep(int time, int myRank);
     int getRank();
-
+	
+	void setTimeStepRankLast();
+	void setNoTimeStep();
+	
     void setLogFile(std::string);
     std::string getLogFile();
 
@@ -192,11 +195,9 @@ public:
     int compute(std::string& errStr);
     std::string getFileName() const;
     static std::string getExeName();
-    void copyMgAdaptHypothesisData( MgAdaptHypothesisData* from) ;
+    void copyMgAdaptHypothesisData( const MgAdaptHypothesisData* from) ;
 
     void checkDirPath(std::string& dirPath);
-
-
 
     bool hasOptionDefined( const std::string& optionName ) const;
     void setOptionValue(const std::string& optionName,
@@ -332,6 +333,6 @@ private :
     void appendMsgToLogFile(std::string& msg);
 };
 
-
+}
 
 #endif // MG_ADAPT_HXX

@@ -43,11 +43,12 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/SMESHClient
   ${PROJECT_SOURCE_DIR}/src/MEDWrapper
   ${PROJECT_SOURCE_DIR}/src/ADAPT
+  ${PROJECT_SOURCE_DIR}/src/ADAPT_I
   ${PROJECT_SOURCE_DIR}/src/ADAPTGUI
   ${PROJECT_BINARY_DIR}
   ${PROJECT_BINARY_DIR}/idl
   ${PROJECT_BINARY_DIR}/src/ADAPTGUI
-  ${PROJECT_BINARY_DIR}/src/ADAPT
+  ${PROJECT_BINARY_DIR}/src/ADAPT_I
   ${MEDCOUPLING_INCLUDE_DIRS}
 )
 
@@ -156,7 +157,7 @@ SET(_moc_HEADERS
   SMESHGUI_PreVisualObj.h
   SMESHGUI_AdaptDlg.h
   SMESHGUI_MG_ADAPTDRIVER.h
-  #~MG_ADAPTGUI.hxx # to replace in ../ADAPTGUI/
+  MG_ADAPTGUI.hxx # to replace in ../ADAPTGUI/
 )
 
 # header files / no moc processing
@@ -275,7 +276,7 @@ SET(_other_SOURCES
   SMESHGUI_IdPreview.cxx
   SMESHGUI_AdaptDlg.cxx
   SMESHGUI_MG_ADAPTDRIVER.cxx
-  #~MG_ADAPTGUI.cxx # to replace in ../ADAPTGUI/
+  MG_ADAPTGUI.cxx # to replace in ../ADAPTGUI/
   #MG_ADAPT.cxx
 )
 

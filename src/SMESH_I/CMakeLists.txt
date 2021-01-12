@@ -37,8 +37,11 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/DriverCGNS
   ${PROJECT_SOURCE_DIR}/src/SMESH
   ${PROJECT_SOURCE_DIR}/src/SMESHUtils
+  #~${PROJECT_SOURCE_DIR}/src/ADAPT
   ${PROJECT_BINARY_DIR}
   ${PROJECT_BINARY_DIR}/idl
+  #~${PROJECT_BINARY_DIR}/ADAPT
+  ${MEDCOUPLING_INCLUDE_DIRS}
 )
 
 # additional preprocessor / compiler flags
@@ -81,6 +84,7 @@ SET(_link_LIBRARIES
   SMESHDS
   SMESHControls
   MeshDriverMED
+  ${MEDCoupling_medloader}
 )
 
 # --- headers ---
@@ -107,6 +111,7 @@ SET(SMESHEngine_HEADERS
   SMESH_PreMeshInfo.hxx
   SMESH_MeshPartDS.hxx
   SMESH.hxx
+  MG_ADAPT_i.hxx
 )
 
 # --- sources ---
@@ -132,6 +137,7 @@ SET(SMESHEngine_SOURCES
   SMESH_NoteBook.cxx
   SMESH_Measurements_i.cxx
   SMESH_PreMeshInfo.cxx
+  MG_ADAPT_i.cxx
 )
 
 # --- rules ---

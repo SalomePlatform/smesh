@@ -38,6 +38,7 @@
 #include <cstdlib>
 #include <boost/filesystem.hpp>
 
+using namespace MG_ADAPT;
 static std::string removeFile(std::string fileName, int& notOk)
 {
 	std::string errStr;
@@ -280,11 +281,24 @@ int MgAdapt::getRank()
 {
     return rank;
 }
+void MgAdapt::setTimeStepRankLast()
+{
+	med_int aRank, tmst;
+   	std::string fieldFile = useBackgroundMap ? sizeMapFile : medFileIn;
+	getTimeStepInfos(fieldFile, tmst, aRank);	
+	setRankTimeStep((int) tmst, (int) aRank);
+}
+void MgAdapt::setNoTimeStep()
+{
+	int aRank = (int)MED_NO_IT;
+	int tmst  = (int)MED_NO_DT ;
+	setRankTimeStep(tmst, aRank);
+}
 void MgAdapt::setUseLocalMap(bool myLocal)
 {
-    useLocalMap      = myLocal;
-
+    useLocalMap = myLocal;
 }
+
 bool MgAdapt::getUseLocalMap()
 {
     return useLocalMap;
@@ -293,8 +307,8 @@ bool MgAdapt::getUseLocalMap()
 void MgAdapt::setUseBackgroundMap(bool bckg)
 {
     useBackgroundMap = bckg;
-
 }
+
 bool MgAdapt::getUseBackgroundMap()
 {
     return useBackgroundMap;
@@ -303,7 +317,6 @@ bool MgAdapt::getUseBackgroundMap()
 void MgAdapt::setUseConstantValue(bool cnst)
 {
     useConstantValue = cnst;
-
 }
 bool MgAdapt::getUseConstantValue()
 {
@@ -399,6 +412,7 @@ bool MgAdapt::getPrintLogInFile()
 {
     return printLogInFile;
 }
+
 
 bool MgAdapt::setAll()
 {
@@ -1068,7 +1082,7 @@ std::string MgAdapt::getExeName()
 {
     return "mg-adapt.exe";
 }
-void MgAdapt::copyMgAdaptHypothesisData( MgAdaptHypothesisData* from)
+void MgAdapt::copyMgAdaptHypothesisData( const MgAdaptHypothesisData* from)
 {
 
     data->myFileInDir = from->myFileInDir;

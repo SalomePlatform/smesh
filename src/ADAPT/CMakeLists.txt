@@ -50,7 +50,7 @@ SET(ADAPTImpl_HEADERS
   HOMARD_YACS.hxx
   HomardDriver.hxx
   YACSDriver.hxx
-  MG_ADAPT.hxx
+  #~MG_ADAPT.hxx
 )
 
 # --- sources ---
@@ -67,7 +67,7 @@ SET(ADAPTImpl_SOURCES
   HOMARD_YACS.cxx
   HomardDriver.cxx
   YACSDriver.cxx
-  MG_ADAPT.cxx
+  #~MG_ADAPT.cxx
 )
 
 # --- rules ---

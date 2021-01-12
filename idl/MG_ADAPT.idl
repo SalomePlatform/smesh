@@ -24,11 +24,13 @@
 
 #include "SALOME_Component.idl"
 #include "SALOME_Exception.idl"
+#include "SALOME_GenericObj.idl"
 #include "SALOMEDS.idl"
+#include "SMESH_Mesh.idl"
 
-module ADAPT{
+module SMESH{
 	
-    typedef sequence<string    > string_array ;
+    typedef sequence<string> str_array ;
 	struct MgAdaptHypothesisData
 	{
 	   	string myFileInDir, myMeshFileIn, myInMeshName, myMeshFileBackground, myOutMeshName,
@@ -46,10 +48,10 @@ module ADAPT{
 	};
 
 	
-    interface MG_ADAPT : Engines::EngineComponent
+    interface MG_ADAPT : SALOME::GenericObj
     {
-
-		void setData( in MgAdaptHypothesisData data);
+		//MG_ADAPT CreateMG_ADAPT(in PortableServer::POA_var poa);
+		void setData( inout MgAdaptHypothesisData data);
 
 		void setMedFileIn(in string MedFileIn );
 		string getMedFileIn();
@@ -77,6 +79,9 @@ module ADAPT{
 
 		void setRankTimeStep(in long s, in long f);
 		long getRank();
+		
+		void setTimeStepRankLast();
+		void setNoTimeStep();
 
 		void setLogFile(in string f);
 		string getLogFile();
@@ -119,12 +124,12 @@ module ADAPT{
 
 		boolean setAll();
 		string getCommandToRun() ;
-		long compute(inout string errStr);
+		long compute(out string errStr);
 		string getFileName() ;
 		string getExeName();
 		void copyMgAdaptHypothesisData(in  MgAdaptHypothesisData f ) ;
 
-		void checkDirPath(in string  f);
+		//void checkDirPath(inout string  f);
 
 
 
@@ -132,9 +137,9 @@ module ADAPT{
 		void setOptionValue(in  string optionName,
 							in  string optionValue) raises (SALOME::SALOME_Exception);
 		string getOptionValue(in  string optionName,
-								   in boolean  isDefault) raises (SALOME::SALOME_Exception);
-		string_array getCustomOptionValuesStrVec() ;
-		string_array getOptionValuesStrVec() ; 
+								   inout boolean  isDefault) raises (SALOME::SALOME_Exception);
+		str_array getCustomOptionValuesStrVec() ;
+		str_array getOptionValuesStrVec() ; 
     };
 
 	

@@ -43,6 +43,7 @@ module SMESH
   interface FilterManager;
   interface SMESH_Pattern;
   interface Measurements;
+  interface MG_ADAPT;
 
   /*!
    * Tags definition
@@ -136,7 +137,6 @@ module SMESH
     SMESH_Pattern GetPattern();
 
     Measurements  CreateMeasurements();
-
     /*!
       Set the current mode
      */
@@ -584,7 +584,8 @@ module SMESH
 			  in GEOM::GEOM_Object theGeom,
 			  in double theTolerance );    
 
-
+   
+	MG_ADAPT CreateMG_ADAPT();
   };
 
 };

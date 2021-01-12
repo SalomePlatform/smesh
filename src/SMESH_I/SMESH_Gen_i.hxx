@@ -469,6 +469,7 @@ public:
   void CleanPythonTrace();
 
   static int CountInPyDump(const TCollection_AsciiString& text);
+  SMESH::MG_ADAPT_ptr CreateMG_ADAPT();
 
   // *****************************************
   // Internal methods

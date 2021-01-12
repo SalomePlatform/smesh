@@ -98,10 +98,11 @@ const int MARGIN  = 9;            // layout margin
 // function : SMESHGUI_MgAdaptDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_MgAdaptDlg::SMESHGUI_MgAdaptDlg( SalomeApp_Module* theModule, MgAdapt* myModel, QWidget* parent, bool isCreation )
+SMESHGUI_MgAdaptDlg::SMESHGUI_MgAdaptDlg( SalomeApp_Module* theModule, SMESH::MG_ADAPT_ptr myModel, QWidget* parent, bool isCreation )
     : mySMESHGUI( theModule ), QDialog(parent)
 {
-    model = new MgAdapt(*myModel);
+    //~model = new MgAdapt(*myModel);
+    model = SMESH::MG_ADAPT::_duplicate(myModel);
     myData = model->getData();
     buildDlg();
     if (!isCreation) readParamsFromHypo();
@@ -120,11 +121,15 @@ void  SMESHGUI_MgAdaptDlg::buildDlg()
     // Arguments
 
     myArgs = new SMESHGUI_MgAdaptArguments( myTabWidget );
-    std::vector <std::string> str = model->getOptionValuesStrVec();
-    std::vector <std::string> str2 = model->getCustomOptionValuesStrVec();
-    str.insert( str.end(), str2.begin(), str2.end() );
+    SMESH::str_array* str = model->getOptionValuesStrVec();
+    SMESH::str_array* str2 = model->getCustomOptionValuesStrVec();
+    std::vector<std::string> s;
+    for (int i = 0; i< str->length(); i++) s.push_back( (*str)[i].in()); 
+    for (int j = str->length(); j< str2->length(); j++) s.push_back((*str2)[ j - str->length() ].in() ); 
+    //~str.insert( str.end(), str2.begin(), str2.end() );
 
-    myAdvOpt = new MgAdaptAdvWidget(myTabWidget, &str);
+    myAdvOpt = new MgAdaptAdvWidget(myTabWidget, &s);
+        
     int argsTab = myTabWidget->addTab( myArgs, tr( "Args" ) );
     int advTab = myTabWidget->addTab( myAdvOpt, tr( "ADVOP" ) );
 
@@ -187,14 +192,14 @@ void  SMESHGUI_MgAdaptDlg::buildDlg()
 //=================================================================================
 SMESHGUI_MgAdaptDlg::~SMESHGUI_MgAdaptDlg()
 {
-    delete model;
+    //~delete model;
 }
 
-void SMESHGUI_MgAdaptDlg::setModel(MgAdapt* mg)
-{
-    model = mg;
-}
-MgAdapt* SMESHGUI_MgAdaptDlg::getModel() const
+//~void SMESHGUI_MgAdaptDlg::setModel(MgAdapt* mg)
+//~{
+    //~model = mg;
+//~}
+SMESH::MG_ADAPT_ptr SMESHGUI_MgAdaptDlg::getModel() const
 {
     return model;
 }
@@ -222,24 +227,24 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromHypo( ) const
     if (myData->fromMedFile)
     {
 
-        *(myArgs->myFileInDir) = QString(myData->myFileInDir.c_str()) ;
-        myArgs->selectMedFileLineEdit->setText(myData->myMeshFileIn.c_str()) ;
+        *(myArgs->myFileInDir) = QString(myData->myFileInDir) ;
+        myArgs->selectMedFileLineEdit->setText(QString(myData->myMeshFileIn)) ;
         // myData->myInMeshName = // TODO
 
     }
     else
     {
-        myArgs->aBrowserObject->setText(myData->myInMeshName.c_str());
+        myArgs->aBrowserObject->setText(QString(myData->myInMeshName));
         //~ myArgs->myFileInDir =""; // TODO
         //~ myArgs->selectMedFileLineEdit->setText(); // TODO
     }
-    myArgs->meshNameLineEdit->setText(myData->myOutMeshName.c_str());
+    myArgs->meshNameLineEdit->setText(QString(myData->myOutMeshName));
     myArgs->medFileCheckBox->setChecked(myData->myMeshOutMed);
 
     if(myData->myMeshOutMed)
     {
-        *(myArgs->myFileOutDir) = QString(myData->myFileOutDir.c_str());
-        myArgs->selectOutMedFileLineEdit->setText(myData->myMeshFileOut.c_str());
+        *(myArgs->myFileOutDir) = QString(myData->myFileOutDir);
+        myArgs->selectOutMedFileLineEdit->setText(QString(myData->myMeshFileOut));
 
     }
     else
@@ -265,8 +270,8 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromHypo( ) const
     if (myData->myUseBackgroundMap)
     {
 
-        *(myArgs->myFileSizeMapDir) = QString(myData->myFileSizeMapDir.c_str()) ;
-        myArgs->selectMedFileBackgroundLineEdit->setText(myData->myMeshFileBackground.c_str());
+        *(myArgs->myFileSizeMapDir) = QString(myData->myFileSizeMapDir) ;
+        myArgs->selectMedFileBackgroundLineEdit->setText(QString(myData->myMeshFileBackground));
     }
     else
     {
@@ -274,7 +279,7 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromHypo( ) const
         myArgs->selectMedFileBackgroundLineEdit->setText(""); //TODO
     }
 
-    myArgs->fieldNameCmb->setCurrentText(myData->myFieldName.c_str());
+    myArgs->fieldNameCmb->setCurrentText(QString(myData->myFieldName));
     myArgs->noTimeStep->setChecked(myData->myUseNoTimeStep);
     myArgs->lastTimeStep->setChecked( myData->myUseLastTimeStep);
     myArgs->chosenTimeStep->setChecked(myData->myUseChosenTimeStep);
@@ -284,7 +289,7 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromHypo( ) const
         myArgs->timeStep->setValue(myData->myTimeStep);
     }
 
-    myAdvOpt->workingDirectoryLineEdit->setText(myData->myWorkingDir.c_str());
+    myAdvOpt->workingDirectoryLineEdit->setText(QString(myData->myWorkingDir));
     myAdvOpt->logInFileCheck->setChecked(myData->myPrintLogInFile);
 
     myAdvOpt->verboseLevelSpin->setValue(myData->myVerboseLevel);
@@ -299,21 +304,21 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromHypo( ) const
 bool SMESHGUI_MgAdaptDlg::readParamsFromWidgets()
 {
     bool ret = true;
-    MgAdaptHypothesisData* aData = new MgAdaptHypothesisData();
+    SMESH::MgAdaptHypothesisData* aData = new SMESH::MgAdaptHypothesisData();
     aData->fromMedFile = myArgs->aMedfile->isChecked();
     if (aData->fromMedFile)
     {
 
-        aData->myFileInDir = myArgs->myFileInDir->toStdString();
-        aData->myMeshFileIn = myArgs->selectMedFileLineEdit->text().toStdString();
+        aData->myFileInDir = CORBA::string_dup(myArgs->myFileInDir->toStdString().c_str());
+        aData->myMeshFileIn = CORBA::string_dup(myArgs->selectMedFileLineEdit->text().toStdString().c_str());
         // aData->myInMeshName = // TODO
     }
     else // TODO browser
     {
-        aData->myInMeshName = myArgs->aBrowserObject->text().toStdString();
-        aData->myFileInDir = myAdvOpt->workingDirectoryLineEdit->text().toStdString();
+        aData->myInMeshName = CORBA::string_dup(myArgs->aBrowserObject->text().toStdString().c_str());
+        aData->myFileInDir = CORBA::string_dup(myAdvOpt->workingDirectoryLineEdit->text().toStdString().c_str());
 
-        TCollection_AsciiString aGenericName = (char*)aData->myFileInDir.c_str();
+        TCollection_AsciiString aGenericName = (char*)aData->myFileInDir;
         TCollection_AsciiString aGenericName2 = "MgAdapt_";
         aGenericName2 += getpid();
         aGenericName2 += "_";
@@ -323,12 +328,12 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromWidgets()
         emit myArgs->toExportMED(aGenericName.ToCString());
         aData->myMeshFileIn = aGenericName2.ToCString();
     }
-    aData->myOutMeshName = myArgs->meshNameLineEdit->text().toStdString();
+    aData->myOutMeshName = CORBA::string_dup(myArgs->meshNameLineEdit->text().toStdString().c_str());
     aData->myMeshOutMed = myArgs->medFileCheckBox->isChecked();
     if(aData->myMeshOutMed)
     {
-        aData->myFileOutDir = myArgs->myFileOutDir->toStdString();
-        aData->myMeshFileOut = myArgs->selectOutMedFileLineEdit->text().toStdString();
+        aData->myFileOutDir = CORBA::string_dup(myArgs->myFileOutDir->toStdString().c_str());
+        aData->myMeshFileOut = CORBA::string_dup(myArgs->selectOutMedFileLineEdit->text().toStdString().c_str());
 
     }
     else
@@ -352,15 +357,15 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromWidgets()
     }
     if (aData->myUseBackgroundMap)
     {
-        aData->myFileSizeMapDir = myArgs->myFileSizeMapDir->toStdString();
-        aData->myMeshFileBackground = myArgs->selectMedFileBackgroundLineEdit->text().toStdString();
+        aData->myFileSizeMapDir = CORBA::string_dup(myArgs->myFileSizeMapDir->toStdString().c_str());
+        aData->myMeshFileBackground = CORBA::string_dup(myArgs->selectMedFileBackgroundLineEdit->text().toStdString().c_str());
     }
     else
     {
         aData->myMeshFileBackground = "";
     }
 
-    aData->myFieldName = myArgs->fieldNameCmb->currentText().toStdString();
+    aData->myFieldName = CORBA::string_dup(myArgs->fieldNameCmb->currentText().toStdString().c_str());
     aData->myUseNoTimeStep = myArgs->noTimeStep->isChecked();
     aData->myUseLastTimeStep = myArgs->lastTimeStep->isChecked();
     aData->myUseChosenTimeStep = myArgs->chosenTimeStep->isChecked();
@@ -372,18 +377,18 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromWidgets()
     }
 
 
-    aData->myWorkingDir = myAdvOpt->workingDirectoryLineEdit->text().toStdString();
+    aData->myWorkingDir = CORBA::string_dup(myAdvOpt->workingDirectoryLineEdit->text().toStdString().c_str());
     aData->myPrintLogInFile = myAdvOpt->logInFileCheck->isChecked();
     aData->myVerboseLevel = myAdvOpt->verboseLevelSpin->value();
     aData->myRemoveLogOnSuccess = myAdvOpt->removeLogOnSuccessCheck->isChecked();
     aData->myKeepFiles = myAdvOpt->keepWorkingFilesCheck->isChecked();
-    model->setData(aData);
+    model->setData(*aData);
     QString msg;
     checkParams(msg);
     delete aData;
     return ret;
 }
-bool SMESHGUI_MgAdaptDlg::storeParamsToHypo( const MgAdaptHypothesisData& ) const
+bool SMESHGUI_MgAdaptDlg::storeParamsToHypo( const SMESH::MgAdaptHypothesisData& ) const
 {
 
 }

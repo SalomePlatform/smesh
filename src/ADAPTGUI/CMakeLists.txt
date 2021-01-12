@@ -39,6 +39,8 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_BINARY_DIR}/adm_local/unix
   ${PROJECT_SOURCE_DIR}/src/ADAPT
   ${PROJECT_SOURCE_DIR}/src/ADAPT_I
+  ${PROJECT_SOURCE_DIR}/src/SMESH_I
+  ${PROJECT_SOURCE_DIR}/src/SMESH
   ${MEDCOUPLING_INCLUDE_DIRS}
 )
 
@@ -56,8 +58,10 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeDS}
   ${GUI_SalomeApp}
   ${SMESH_SalomeIDLSMESH}
+  ${SMESH_SMESHEngine}
   ADAPTEngine
   ${MEDCoupling_medloader}
+  SMESHimpl
 )
 
 # --- resources ---
@@ -114,7 +118,7 @@ SET(_moc_HEADERS
   MonCreateYACS.h
   MonEditYACS.h
   MonEditFile.h
-  MG_ADAPTGUI.hxx
+  #~MG_ADAPTGUI.hxx
 )
 
 # header files / uic wrappings
@@ -163,7 +167,7 @@ SET(_other_SOURCES
   MonEditYACS.cxx
   MonEditFile.cxx
   HomardQtCommun.cxx
-  MG_ADAPTGUI.cxx
+  #~MG_ADAPTGUI.cxx
 )
 
 # sources / to compile
