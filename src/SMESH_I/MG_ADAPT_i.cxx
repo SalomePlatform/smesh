@@ -354,12 +354,23 @@ char* MG_ADAPT_i::getCommandToRun()
 	return CORBA::string_dup(myMgAdapt->getCommandToRun().c_str());
 }
 
-CORBA::Long MG_ADAPT_i::compute(::CORBA::String_out errStr)
+//~CORBA::Long MG_ADAPT_i::compute(::CORBA::String_out errStr)
+//~{
+	//~std::string err("");
+	//~CORBA::Long ret = myMgAdapt->compute(err);
+	//~errStr =  err.c_str();
+	//~return ret;
+//~}
+CORBA::Long MG_ADAPT_i::compute()
 {
-	std::string err("");
-	CORBA::Long ret = myMgAdapt->compute(err);
-	errStr =  err.c_str();
+	errStr = "";
+	CORBA::Long ret = myMgAdapt->compute(errStr);
+	//~errStr =  err.c_str();
 	return ret;
+}
+char* MG_ADAPT_i::getErrMsg()
+{
+	return CORBA::string_dup(errStr.c_str());
 }
 char* MG_ADAPT_i::getFileName() 
 {
