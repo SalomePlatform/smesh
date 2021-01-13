@@ -6624,6 +6624,30 @@ Indiquez-les et essayez de nouveau</translation>
         <source>CREATE_ALL_GROUPS</source>
         <translation>Créer tous les groupes définis dans la géométrie</translation>
     </message>
+    <message>
+        <source>3D: Tetrahedralization</source>
+        <translation>3D : Tétraèdres</translation>
+    </message>
+    <message>
+        <source>3D: Mapped Hexahedralization</source>
+        <translation>3D : Hexaèdres réglés</translation>
+    </message>
+    <message>
+        <source>3D: Free Hexahedralization</source>
+        <translation>3D : Hexaèdres libres</translation>
+    </message>
+    <message>
+        <source>2D: Triangulation</source>
+        <translation>2D : Triangles</translation>
+    </message>
+    <message>
+        <source>2D: Mapped Quadrangulation</source>
+        <translation>2D : Quadrangles réglés</translation>
+    </message>
+    <message>
+        <source>2D: Free Quadrangulation</source>
+        <translation>2D : Quadrangles libres</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MeshOp</name>
