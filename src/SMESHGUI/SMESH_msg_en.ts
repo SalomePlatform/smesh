@@ -190,7 +190,7 @@
     <message>
         <source>EDITERR_NO_MEDIUM_ON_GEOM</source>
         <translation>Some medium nodes not placed on geometry to avoid
-        distorting elements shown in magenta</translation>
+        distorting elements shown in magenta.</translation>
     </message>
     <message>
         <source>SMESH_GEOM</source>
@@ -1150,7 +1150,7 @@
     </message>
     <message>
         <source>MEN_SAVE_DISTRIBUTION</source>
-        <translation>Export ...</translation>
+        <translation>Export the distribution...</translation>
     </message>
     <message>
         <source>MEN_SHOW_DISTRIBUTION</source>
@@ -4957,7 +4957,7 @@ was changed and the mesh needs to be recomputed.</translation>
     </message>
     <message>
         <source>NB_GROUPS_CREATED</source>
-        <translation>%1 groups of faces created</translation>
+        <translation>%1 group(s) of faces created</translation>
     </message>
 </context>
 <context>
@@ -7060,7 +7060,7 @@ select mesh or sub-mesh and try again</translation>
     <message>
         <source>CONCURRENT_SUBMESH_APPEARS</source>
         <translation>
-The assigned algorithm has the same priority as one assigned to an
+The assigned algorithm has the same priority as one assigned to an 
 adjacent sub-mesh, hence it&apos;s undefined which algorithm to use for
 meshing boundary shared by two sub-meshes. Would you like to set
 the order of sub-mesh computation? </translation>
