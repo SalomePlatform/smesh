@@ -364,7 +364,16 @@ char* MG_ADAPT_i::getCommandToRun()
 CORBA::Long MG_ADAPT_i::compute()
 {
 	errStr = "";
-	CORBA::Long ret = myMgAdapt->compute(errStr);
+	CORBA::Long ret;
+	 try
+    {
+	    ret = myMgAdapt->compute(errStr);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr<<e.what();
+        ret = -1;
+    }
 	//~errStr =  err.c_str();
 	return ret;
 }
