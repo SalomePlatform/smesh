@@ -112,6 +112,23 @@ SMESH::MG_ADAPT_ptr SMESH_Gen_i::CreateMG_ADAPT()
   SMESH::MG_ADAPT_var anObj = aMGadapt->_this();
   return anObj._retn();
 }
+SMESH::MG_ADAPT_ptr SMESH_Gen_i::CreateAdaptationHypothesis()
+{
+  SMESH::MG_ADAPT_i* aMGadapt = new SMESH::MG_ADAPT_i();
+  SMESH::MG_ADAPT_var anObj = aMGadapt->_this();
+  return anObj._retn();
+}
+SMESH::MG_ADAPT_OBJECT_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
+{
+
+    if (!strcmp(adaptationType, "MG_Adapt")){
+	    SMESH::MG_ADAPT_OBJECT_i* mg_adapt_object = new SMESH::MG_ADAPT_OBJECT_i();
+		SMESH::MG_ADAPT_OBJECT_var anObj = mg_adapt_object->_this();
+		return anObj._retn();
+	}
+	    
+
+}
 //~SMESH::MG_ADAPT_ptr MG_ADAPT_i::CreateMG_ADAPT()
 //~{
   
@@ -211,11 +228,11 @@ bool MG_ADAPT_i::getPublish()
 {
 	return myMgAdapt->getPublish();
 }
-void MG_ADAPT_i::setFieldName(const char* str)
+void MG_ADAPT_i::setSizeMapFieldName(const char* str)
 {
 	myMgAdapt->setFieldName(str);
 }
-char* MG_ADAPT_i::getFieldName()
+char* MG_ADAPT_i::getSizeMapFieldName()
 {
 	return CORBA::string_dup(myMgAdapt->getFieldName().c_str());
 }
@@ -227,7 +244,7 @@ CORBA::Long MG_ADAPT_i::getTimeStep()
 {
 	return myMgAdapt->getTimeStep();
 }
-void MG_ADAPT_i::setRankTimeStep(CORBA::Long t, CORBA::Long r)
+void MG_ADAPT_i::setTimeStepRank(CORBA::Long t, CORBA::Long r)
 {
 	myMgAdapt->setRankTimeStep(t, r);
 }
@@ -300,11 +317,11 @@ bool MG_ADAPT_i::getUseConstantValue()
 	return myMgAdapt->getUseConstantValue();
 }
 
-void MG_ADAPT_i::setConstantValue(double value)
+void MG_ADAPT_i::setConstantSize(double value)
 {
 	myMgAdapt->setConstantValue(value);
 }
-double MG_ADAPT_i::getConstantValue() 
+double MG_ADAPT_i::getConstantSize() 
 {
 	return myMgAdapt->getConstantValue();
 }
@@ -337,6 +354,19 @@ bool MG_ADAPT_i::getKeepWorkingFiles()
 //~void MG_ADAPT_i::setPrCORBA::LongLogInFile(bool);
 //~bool MG_ADAPT_i::getPrCORBA::LongLogInFile();
 
+void MG_ADAPT_i::setSizeMapType(const char* type)
+{
+	setUseLocalMap(false);
+	setUseBackgroundMap(false);
+	setUseConstantValue(false);
+	
+	if (!strcmp("Local", type))
+		setUseLocalMap(true);
+	else if (!strcmp("Background", type))
+	    setUseBackgroundMap(true);
+	else 
+	    setUseConstantValue(true);
+}
 void MG_ADAPT_i::setWorkingDir(const char* dir)
 {
 	myMgAdapt->setWorkingDir(dir);
@@ -365,7 +395,7 @@ CORBA::Long MG_ADAPT_i::compute()
 {
 	errStr = "";
 	CORBA::Long ret;
-	 try
+	try
     {
 	    ret = myMgAdapt->compute(errStr);
     }
@@ -445,3 +475,68 @@ bool MG_ADAPT_i::getPrintLogInFile()
 }
 //~TOptionValues        MG_ADAPT_i::getOptionValues()       const;
 //~const TOptionValues& MG_ADAPT_i::getCustomOptionValues() const ;
+
+MG_ADAPT_OBJECT_i::MG_ADAPT_OBJECT_i(): SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
+{
+    medFileIn="";
+    medFileOut="";
+    medFileBackground="";
+    publish = false;
+    //~myMesh = CORBA::nil;
+}
+
+void MG_ADAPT_OBJECT_i::setMeshIn(SMESH::SMESH_Mesh_ptr theMesh )
+{
+	myMesh = SMESH::SMESH_Mesh::_duplicate(theMesh);
+}
+void MG_ADAPT_OBJECT_i::setMEDFileIn(const char* f)
+{
+	medFileIn =  f;
+}
+void MG_ADAPT_OBJECT_i::setMEDFileOut(const char* f)
+{
+	medFileOut = f;
+}
+void MG_ADAPT_OBJECT_i::setMEDFileBackground(const char* f)
+{
+	medFileBackground = f;
+}
+void MG_ADAPT_OBJECT_i::AddHypothesis(SMESH::MG_ADAPT_ptr mg)
+{
+	
+	mg->setMedFileIn(medFileIn.c_str());
+	mg->setMedFileOut(medFileOut.c_str());
+	mg->setSizeMapFile(medFileBackground.c_str());
+	hypothesis = SMESH::MG_ADAPT::_duplicate(mg);
+}
+CORBA::Long MG_ADAPT_OBJECT_i::Compute(bool publish)
+{
+	if(!checkMeshFileIn()){
+		std::cerr<< "\n Error : Please check the MED file input or mesh input. \n";
+		return -1;
+	}
+	hypothesis->setPublish(publish);
+	return hypothesis->compute();	
+}	
+
+bool MG_ADAPT_OBJECT_i::checkMeshFileIn()
+{
+	bool ret = false; // 1 ok , 0 nook
+    if(!::MG_ADAPT::MgAdapt::isFileExist(medFileIn))
+    {
+        if(!myMesh->_is_nil())
+        {
+	        bool toOverwrite  = true;
+			bool toFindOutDim = true;
+			medFileIn = hypothesis->getFileName();
+			medFileIn+= ".med";
+			myMesh->ExportMED(medFileIn.c_str(), false, -1, toOverwrite, toFindOutDim);
+			hypothesis->setMedFileIn(medFileIn.c_str());
+			ret = true; 
+		}
+	}
+	else
+	    ret = true;
+	    
+    return ret;
+}

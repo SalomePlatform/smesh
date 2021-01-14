@@ -11,7 +11,9 @@
 #include "SALOME_Component_i.hxx"
 #include "SALOME_NamingService.hxx"
 #include "Utils_CorbaException.hxx"
-
+#include <vector>
+#include <algorithm>
+#include <iterator>
 #include <string>
 
 //~struct MgAdaptHypothesisData;
@@ -20,6 +22,7 @@
 //~class MgAdapt;
 namespace SMESH
 {
+
 class SMESH_I_EXPORT MG_ADAPT_i :
     public virtual SALOME::GenericObj_i,
     public virtual POA_SMESH::MG_ADAPT
@@ -51,13 +54,13 @@ public:
 	void setPublish(bool mybool);
 	bool getPublish();
 
-	void setFieldName(const char* str);
-	char* getFieldName();
+	void setSizeMapFieldName(const char* str);
+	char* getSizeMapFieldName();
 
 	void setTimeStep(CORBA::Long t);
 	CORBA::Long getTimeStep() ;
 
-	void setRankTimeStep(CORBA::Long t, CORBA::Long r );
+	void setTimeStepRank(CORBA::Long t, CORBA::Long r );
 	CORBA::Long getRank();
 	
 	void setTimeStepRankLast();
@@ -73,7 +76,7 @@ public:
 	bool getRemoveOnSuccess();
 
 	SMESH::MgAdaptHypothesisData* getData() ;
-
+	void setSizeMapType(const char* type);
 	void setUseLocalMap(bool mybool);
 	bool getUseLocalMap();
 
@@ -83,8 +86,8 @@ public:
 	void setUseConstantValue(bool mybool);
 	bool getUseConstantValue();
 
-	void setConstantValue(double value);
-	double getConstantValue();
+	void setConstantSize(double value);
+	double getConstantSize();
 
 	void setSizeMapFile(const char* str);
 	char* getSizeMapFile();
@@ -136,5 +139,25 @@ private:
   //~ADAPT::ADAPT_Gen_var _gen_i;
 	
 };
+
+class SMESH_I_EXPORT MG_ADAPT_OBJECT_i:
+    public virtual SALOME::GenericObj_i,
+    public virtual POA_SMESH::MG_ADAPT_OBJECT {
+public :
+	MG_ADAPT_OBJECT_i();
+	void setMeshIn( SMESH::SMESH_Mesh_ptr theMesh );
+	void setMEDFileIn(const char* f);
+	void setMEDFileOut(const char* f);
+	void setMEDFileBackground(const char* f);
+	void AddHypothesis(SMESH::MG_ADAPT_ptr);
+	CORBA::Long Compute(bool Publish);	
+private:
+std::string medFileIn, medFileOut, medFileBackground;
+bool checkMeshFileIn();
+bool publish;
+SMESH::SMESH_Mesh_ptr myMesh;
+SMESH::MG_ADAPT_ptr hypothesis;
+};
+
 }
 #endif // MG_ADAPT_I_HXX

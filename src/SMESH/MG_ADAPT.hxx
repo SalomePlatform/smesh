@@ -35,7 +35,7 @@
 // SMESH includes
 
 //~#include <med.h>
-
+std::string remove_extension(const std::string& filename);
 namespace MG_ADAPT{
 class MgAdapt;
 
@@ -54,7 +54,7 @@ struct MgAdaptHypothesisData
     bool    myUseNoTimeStep, myUseLastTimeStep, myUseChosenTimeStep;
     std::string myWorkingDir, myLogFile;
     bool    myPrintLogInFile, myKeepFiles, myRemoveLogOnSuccess;
-    int   myVerboseLevel;
+    int     myVerboseLevel;
 
 };
 
@@ -149,6 +149,8 @@ public:
 	
 	void setTimeStepRankLast();
 	void setNoTimeStep();
+	void setChosenTimeStepRank();
+	void updateTimeStepRank();
 	
     void setLogFile(std::string);
     std::string getLogFile();
@@ -219,9 +221,9 @@ public:
     /*  default values */
     static std::string defaultWorkingDirectory();
     static std::string defaultLogFile();
-    static bool   defaultKeepFiles();
-    static bool   defaultRemoveLogOnSuccess();
-    static int  defaultVerboseLevel();
+    static bool  defaultKeepFiles();
+    static bool  defaultRemoveLogOnSuccess();
+    static int   defaultVerboseLevel();
     static bool  defaultPrintLogInFile();
     static bool  defaultFromMedFile();
     static bool  defaultMeshOutMed();
@@ -233,6 +235,7 @@ public:
     static bool  defaultUseLastTimeStep();
     static bool  defaultUseChosenTimeStep();
     static double  defaultMaximumMemory();
+    static bool isFileExist(const std::string& fName);
 
 
 
@@ -281,6 +284,7 @@ private :
     std::string meshNameOut;
     bool publish, meshOutMed;
     bool useLocalMap, useBackgroundMap, useConstantValue;
+    bool myUseLastTimeStep, myUseNoTimeStep, myUseChosenTimeStep;
     std::string sizeMapFile;
     std::string fieldName;
     double constantValue;
@@ -327,7 +331,6 @@ private :
     void getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit);
     Status addMessage(const std::string& msg, const bool isFatal = false);
     med_idt openMedFile(const std::string aFile) ;
-    bool isFileExist(std::string& fName) const;
     void execCmd( const char* cmd, int& err);
     void cleanUp();
     void appendMsgToLogFile(std::string& msg);

@@ -49,6 +49,11 @@ static std::string removeFile(std::string fileName, int& notOk)
     
     return errStr; 
 }
+std::string remove_extension(const std::string& filename) {
+    size_t lastdot = filename.find_last_of(".");
+    if (lastdot == std::string::npos) return filename;
+    return filename.substr(0, lastdot); 
+}
 namespace
 {
 struct GET_DEFAULT // struct used to get default value from GetOptionValue()
@@ -221,7 +226,9 @@ MgAdaptHypothesisData* MgAdapt::getData() const
 }
 void MgAdapt::setMedFileIn(std::string fileName)
 {
-    medFileIn = fileName;
+    medFileIn  = fileName;
+    if (medFileOut == "") // default MED file Out
+        medFileOut = remove_extension( fileName )+ ".adapt.med";
 }
 
 std::string MgAdapt::getMedFileIn()
@@ -283,16 +290,31 @@ int MgAdapt::getRank()
 }
 void MgAdapt::setTimeStepRankLast()
 {
-	med_int aRank, tmst;
-   	std::string fieldFile = useBackgroundMap ? sizeMapFile : medFileIn;
-	getTimeStepInfos(fieldFile, tmst, aRank);	
-	setRankTimeStep((int) tmst, (int) aRank);
+	myUseLastTimeStep = true;
+	myUseChosenTimeStep = false;
+	myUseNoTimeStep = false;
+	//~med_int aRank, tmst;
+   	//~std::string fieldFile = useBackgroundMap ? sizeMapFile : medFileIn;
+	//~getTimeStepInfos(fieldFile, tmst, aRank);	
+	//~setRankTimeStep((int) tmst, (int) aRank);
 }
 void MgAdapt::setNoTimeStep()
-{
-	int aRank = (int)MED_NO_IT;
-	int tmst  = (int)MED_NO_DT ;
-	setRankTimeStep(tmst, aRank);
+{	
+	myUseLastTimeStep = false;
+	myUseChosenTimeStep = false;
+	myUseNoTimeStep = true;
+	//~int aRank = (int)MED_NO_IT;
+	//~int tmst  = (int)MED_NO_DT ;
+	//~setRankTimeStep(tmst, aRank);
+}
+void MgAdapt::setChosenTimeStepRank()
+{	
+	myUseLastTimeStep = false;
+	myUseChosenTimeStep = true;
+	myUseNoTimeStep = false;
+	//~int aRank = (int)MED_NO_IT;
+	//~int tmst  = (int)MED_NO_DT ;
+	//~setRankTimeStep(tmst, aRank);
 }
 void MgAdapt::setUseLocalMap(bool myLocal)
 {
@@ -454,25 +476,15 @@ bool MgAdapt::setAll()
     }
 
     setSizeMapFile(mapfile);
-    med_int rank;
-    med_int tmst;
     if (data->myUseNoTimeStep)
-    {
-        rank = MED_NO_IT;
-        tmst  = MED_NO_DT ;
-    }
+        setNoTimeStep();
     else if (data->myUseLastTimeStep)
-    {
-        std::string fieldFile = useBackgroundMap ? sizeMapFile : medFileIn;
-        getTimeStepInfos(fieldFile, tmst, rank);
-    }
+        setTimeStepRankLast();
     else
-    {
-        rank = data->myRank;
-        tmst  = data->myTimeStep;
-    }
-    setRankTimeStep((int)tmst, (int)rank);
-
+	{    
+	   	setChosenTimeStepRank();
+		setRankTimeStep(data->myTimeStep, data->myRank);
+	}
     /* Advanced options */
     setWorkingDir(data->myWorkingDir);
     checkDirPath(data->myWorkingDir);
@@ -714,7 +726,7 @@ int MgAdapt::compute(std::string& errStr)
     {
         convertMeshFile(meshFormatOutputMesh, solFormatOutput);
     }
-    //~if (!err) cleanUp();
+    if (!err) cleanUp();
     return err;
 }
 
@@ -787,6 +799,7 @@ std::string MgAdapt::getCommandToRun()
     std::string errStr;
     std::string cmd = getExeName();
     std::string meshIn(""), sizeMapIn(""), solFileIn("");
+    updateTimeStepRank();
     convertMedFile(meshIn, solFileIn, sizeMapIn);
     if (!isFileExist(meshIn) || !isFileExist(solFileIn))
     {
@@ -833,7 +846,7 @@ std::string MgAdapt::getCommandToRun()
 
         cmd+= " --verbose "+ ToComment(verbosityLevel);
     }
-
+	
     std::string option, value;
     bool isDefault;
     const TOptionValues* options[] = { &_option2value, &_customOption2value };
@@ -876,7 +889,7 @@ std::string MgAdapt::getCommandToRun()
 }
 
 
-bool MgAdapt::isFileExist(std::string& fName) const
+bool MgAdapt::isFileExist(const std::string& fName)
 {
 
     if ( fName.empty() )
@@ -1123,6 +1136,8 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
     MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(medFileIn);
     MEDCoupling::MEDFileMeshes* meshes = mfd->getMeshes();
     MEDCoupling::MEDFileMesh* fileMesh = meshes->getMeshAtPos(0); // ok only one mesh in file!
+    if (meshNameOut =="")
+        meshNameOut = fileMesh->getName();
     storeGroupsAndFams(fileMesh);
 
     MEDCoupling::MCAuto<MEDCoupling::MEDFileFields> fields = MEDCoupling::MEDFileFields::New();
@@ -1408,5 +1423,20 @@ void MgAdapt::getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit
 
 }
 
-
-
+void MgAdapt::updateTimeStepRank()
+{
+	
+    med_int arank = rank;
+    med_int tmst  = timeStep;
+    if (myUseNoTimeStep)
+    {
+        rank = MED_NO_IT;
+        tmst  = MED_NO_DT ;
+    }
+    else if (myUseLastTimeStep)
+    {
+        std::string fieldFile = useBackgroundMap ? sizeMapFile : medFileIn;
+        getTimeStepInfos(fieldFile, tmst, arank);
+    }
+    setRankTimeStep((int)tmst, (int)arank);
+}
