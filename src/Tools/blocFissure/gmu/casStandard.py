@@ -122,7 +122,7 @@ class casStandard(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportFile( self.dicoParams['brepFaceFissure'], "BREP")
+    shellFiss = geompy.ImportBREP( self.dicoParams['brepFaceFissure'])
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, self.dicoParams['edgeFissIds'] )
     geomPublish(initLog.debug, shellFiss, 'shellFiss' )

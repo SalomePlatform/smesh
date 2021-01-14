@@ -73,7 +73,7 @@ class cubeAngle(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportFile(os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"), "BREP")
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )

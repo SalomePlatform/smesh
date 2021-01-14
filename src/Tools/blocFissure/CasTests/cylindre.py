@@ -77,7 +77,7 @@ class cylindre(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportFile(os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre2.brep"), "BREP")
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre2.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [6])
     geompy.addToStudy( shellFiss, 'shellFiss' )
