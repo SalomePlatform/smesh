@@ -208,8 +208,8 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
  */
 //=============================================================================
 
-bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
-                                        const TopoDS_Shape& aShape)
+bool StdMeshers_Quadrangle_2D::Compute( SMESH_Mesh&         aMesh,
+                                        const TopoDS_Shape& aShape )
 {
   const TopoDS_Face& F = TopoDS::Face(aShape);
   aMesh.GetSubMesh( F );
@@ -4776,6 +4776,7 @@ bool StdMeshers_Quadrangle_2D::check()
 
     const SMDS_MeshNode* nInFace = 0;
     if ( myHelper->HasSeam() )
+    {
       for ( int i = 0; i < nbN && !nInFace; ++i )
         if ( !myHelper->IsSeamShape( nn[i]->getshapeId() ))
         {
@@ -4784,6 +4785,33 @@ bool StdMeshers_Quadrangle_2D::check()
           if ( myHelper->IsOnSeam( uv ))
             nInFace = NULL;
         }
+    }
+    if ( myHelper->GetPeriodicIndex() && !nInFace )
+    {
+      for ( int i = 0; i < nbN && !nInFace; ++i )
+        if ( fSubMesh->Contains( nn[i] ))
+          nInFace = nn[i];
+      if ( !nInFace )
+        for ( int i = 0; i < nbN && !nInFace; ++i )
+        {
+          SMDS_ElemIteratorPtr fIt = nn[i]->GetInverseElementIterator( SMDSAbs_Face );
+          while ( fIt->more() && !nInFace )
+          {
+            const SMDS_MeshElement* face = fIt->next();
+            if ( !fSubMesh->Contains( face ))
+              continue;
+            for ( int iN = 0, nN = face->NbCornerNodes(); iN < nN; ++iN )
+            {
+              const SMDS_MeshNode* n = face->GetNode( iN );
+              if ( fSubMesh->Contains( n ))
+              {
+                nInFace = n;
+                break;
+              }
+            }
+          }
+        }
+    }
 
     toCheckUV = true;
     for ( int i = 0; i < nbN; ++i )
