@@ -4,7 +4,7 @@
 Test cases
 #######################
 
-A base of 25 test cases ensures the proper functioning of « Bloc Fissure ». 12 cases are dedicated to :ref:`cracked bended pipes <pipeTC>` and the others 13 are for other :ref:`generic geometries <genericTC>`. They are shown here in order to illustrate cases on which « Bloc Fissure » works.
+A base of 30 test cases guarantees the correct functioning of « Bloc Fissure ». 12 cases are dedicated to :ref:`cracked bended pipes <pipeTC>` and the others 13 are for other :ref:`generic geometries <genericTC>`. They are shown here in order to illustrate cases on which « Bloc Fissure » works.
 
 .. _genericTC:
 
@@ -152,11 +152,28 @@ modify the file ``execution_Cas.py`` and change::
 
 And change from 0 to 1 of the index of the test you want to launch::
 
-    torun = [ 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
+    torun = [ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 then launch the test cases::
 
     from blocFissure.CasTests import execution_Cas
+
+The index of each test is the position of the test in the following table, from 0 for cubeAngle, 1 for cubeAngle2,
+2 for cubeCoin... from top to bottom, then from left to right.
+
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeAngle          | cylindre_2         | eprouvetteDroite_2 | fissureCoude_3  | fissureCoude_8  |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeAngle2         | disquePerce        | faceGauche         | fissureCoude_4  | fissureCoude_10 |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeCoin           | ellipse_1          | faceGauche_2       | fissure_Coude_4 | fissureCoude_10 |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeMilieu         | ellipse_2          | fissure_Coude      | fissureCoude_5  | vis_1           |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeTransverse     | eprouvetteCourbe   | fissureCoude_1     | fissureCoude_6  |                 |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cylindre           | eprouvetteDroite   | fissureCoude_2     | fissureCoude_7  |                 |
++--------------------+--------------------+--------------------+-----------------+-----------------+
 
 3) **To execute only one test case**::
 
@@ -164,19 +181,7 @@ then launch the test cases::
 
     [TEST_CASE_NAME](0).executeProbleme()
 
-[TEST_CASE_NAME] is the name of the test case in the following list. Note that the test cases fissureCoude_4 and fissure_Coude_4 are very similar.
-
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| faceGauche         | cylindre_2         | disquePerce        | fissureCoude_3  | fissureCoude_6  |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| faceGauche_2       | eprouvetteCourbe   | vis_1              | fissureCoude_4  | fissureCoude_7  |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| ellipse_1          | eprouvetteDroite   | fissureCoude       | fissure_Coude_4 | fissureCoude_8  |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| ellipse_2          | cubeAngle          | fissureCoude_1     | fissureCoude_5  | fissureCoude_9  |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| cylindre           | cubeAngle2         | fissureCoude_2     | fissureCoude_5  | fissureCoude_10 |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
+[TEST_CASE_NAME] is the name of the test case in the previous list. Note that the test cases fissureCoude_4 and fissure_Coude_4 are very similar.
 
 
 
