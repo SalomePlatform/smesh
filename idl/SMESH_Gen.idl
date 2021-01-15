@@ -44,6 +44,7 @@ module SMESH
   interface SMESH_Pattern;
   interface Measurements;
   interface MG_ADAPT;
+  interface MG_ADAPT_OBJECT;
 
   /*!
    * Tags definition
@@ -586,6 +587,8 @@ module SMESH
 
    
 	MG_ADAPT CreateMG_ADAPT();
+	MG_ADAPT_OBJECT Adaptation(in string adaptType);
+	MG_ADAPT CreateAdaptationHypothesis();
   };
 
 };

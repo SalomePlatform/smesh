@@ -246,6 +246,7 @@ CORBA::Long MG_ADAPT_i::getTimeStep()
 }
 void MG_ADAPT_i::setTimeStepRank(CORBA::Long t, CORBA::Long r)
 {
+	myMgAdapt->setChosenTimeStepRank();
 	myMgAdapt->setRankTimeStep(t, r);
 }
 CORBA::Long MG_ADAPT_i::getRank()

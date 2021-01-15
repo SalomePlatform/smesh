@@ -71,13 +71,13 @@ module SMESH{
 		void setPublish(in boolean b);
 		boolean getPublish();
 
-		void setFieldName(in string s);
-		string getFieldName();
+		void setSizeMapFieldName(in string s);
+		string getSizeMapFieldName();
 
 		void setTimeStep(in long s);
 		long getTimeStep() ;
 
-		void setRankTimeStep(in long s, in long f);
+		void setTimeStepRank(in long s, in long f);
 		long getRank();
 		
 		void setTimeStepRankLast();
@@ -103,8 +103,8 @@ module SMESH{
 		void setUseConstantValue(in boolean f);
 		boolean getUseConstantValue();
 
-		void setConstantValue(in double f);
-		double getConstantValue() ;
+		void setConstantSize(in double f);
+		double getConstantSize() ;
 
 		void setSizeMapFile(in string f);
 		string getSizeMapFile();
@@ -121,7 +121,7 @@ module SMESH{
 		void setWorkingDir(in string f);
 		string getWorkingDir() ;
 
-
+		void setSizeMapType(in string f);
 		boolean setAll();
 		string getCommandToRun() ;
 		//long compute(out string errStr);
@@ -143,7 +143,16 @@ module SMESH{
 		str_array getCustomOptionValuesStrVec() ;
 		str_array getOptionValuesStrVec() ; 
     };
-
+	typedef MG_ADAPT MG_ADAPT_HYPOTHESIS;
+	interface MG_ADAPT_OBJECT : SALOME::GenericObj
+	{
+		void setMeshIn(in SMESH_Mesh theMesh );
+		void setMEDFileIn(in string f);
+		void setMEDFileOut(in string f);
+		void setMEDFileBackground(in string f);
+		void AddHypothesis(in MG_ADAPT mg);
+		long Compute(in boolean Publish);
+	};
 	
 };
 #endif // MG_ADAPT_IDL

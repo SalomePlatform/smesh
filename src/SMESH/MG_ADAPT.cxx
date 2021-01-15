@@ -1426,17 +1426,18 @@ void MgAdapt::getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit
 void MgAdapt::updateTimeStepRank()
 {
 	
-    med_int arank = rank;
-    med_int tmst  = timeStep;
+    med_int arank;
+    med_int tmst;
     if (myUseNoTimeStep)
     {
-        rank = MED_NO_IT;
+        arank = MED_NO_IT;
         tmst  = MED_NO_DT ;
+		setRankTimeStep((int)tmst, (int)arank);
     }
     else if (myUseLastTimeStep)
     {
         std::string fieldFile = useBackgroundMap ? sizeMapFile : medFileIn;
         getTimeStepInfos(fieldFile, tmst, arank);
+		setRankTimeStep((int)tmst, (int)arank);
     }
-    setRankTimeStep((int)tmst, (int)arank);
 }
