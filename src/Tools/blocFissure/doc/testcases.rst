@@ -115,6 +115,10 @@ All 12 bended pipe test cases are not shown here because they are relatively sim
 | with an external crack         |                                              |
 +--------------------------------+----------------------------------------------+
 
+coude_0 can be computed using this file for the data:
+
+  * :download:`data for a bended puipe <../ihm/dialogFissureCoude.dic>`
+
 « Bloc Fissure » is very efficient for the case of bended pipes. The generation of the geometry and the crack insertion takes only around 15s.
 
 Running test cases
