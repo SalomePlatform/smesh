@@ -120,13 +120,21 @@ All 12 bended pipe test cases are not shown here because they are relatively sim
 Running test cases
 =====================================
 
-In SALOME interface:
+All the files for these test cases are stored in the directory of the installation of SALOME:
 
-0) **Generate med and breps files.** Once the files are generated, they are saved in SALOME source files. There is no need to generate them again::
+``Salome-VXXXX_package-YY/modules/SMESH_VXXXX/lib/python3.6/site-packages/salome/blocFissure``
+
+The test cases can be runned either through the python window of the SALOME GUI or with a python script.
+
+0) **Generate med and breps files.**::
 
     from blocFissure.materielCasTests import genereMateriel
 
-Then the user can either launch all test cases, several at once or just one :
+Once the files are generated, they are saved into the directory of the installation of SALOME:
+
+``Salome-VXXXX_package-YY/modules/SMESH_VXXXX/lib/python3.6/site-packages/salome/blocFissure/materielCasTests``
+
+There is no need to generate them again.
 
 1) **To execute all test cases**::
 
@@ -134,11 +142,11 @@ Then the user can either launch all test cases, several at once or just one :
 
 2) **To execute only selected test cases**:
 
-modify execution_Cas.py file and change::
+modify the file ``execution_Cas.py`` and change::
 
     runall = False. #old : True
 
-And change from 0 to 1 of the number of the test you want to launch::
+And change from 0 to 1 of the index of the test you want to launch::
 
     torun = [ 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
 
