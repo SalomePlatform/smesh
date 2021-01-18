@@ -4,7 +4,7 @@
 Test cases
 #######################
 
-A base of 25 test cases ensures the proper functioning of « Bloc Fissure ». 12 cases are dedicated to :ref:`cracked bended pipes <pipeTC>` and the others 13 are for other :ref:`generic geometries <genericTC>`. They are shown here in order to illustrate cases on which « Bloc Fissure » works.
+A base of 30 test cases guarantees the correct functioning of « Bloc Fissure ». 12 cases are dedicated to :ref:`cracked bended pipes <pipeTC>` and the others 13 are for other :ref:`generic geometries <genericTC>`. They are shown here in order to illustrate cases on which « Bloc Fissure » works.
 
 .. _genericTC:
 
@@ -115,18 +115,30 @@ All 12 bended pipe test cases are not shown here because they are relatively sim
 | with an external crack         |                                              |
 +--------------------------------+----------------------------------------------+
 
+coude_0 can be computed using this file for the data:
+
+  * :download:`data for a bended puipe <../ihm/dialogFissureCoude.dic>`
+
 « Bloc Fissure » is very efficient for the case of bended pipes. The generation of the geometry and the crack insertion takes only around 15s.
 
 Running test cases
 =====================================
 
-In SALOME interface:
+All the files for these test cases are stored in the directory of the installation of SALOME:
 
-0) **Generate med and breps files.** Once the files are generated, they are saved in SALOME source files. There is no need to generate them again::
+``Salome-VXXXX_package-YY/modules/SMESH_VXXXX/lib/python3.6/site-packages/salome/blocFissure``
+
+The test cases can be runned either through the python window of the SALOME GUI or with a python script.
+
+0) **Generate med and breps files.**::
 
     from blocFissure.materielCasTests import genereMateriel
 
-Then the user can either launch all test cases, several at once or just one :
+Once the files are generated, they are saved into the directory of the installation of SALOME:
+
+``Salome-VXXXX_package-YY/modules/SMESH_VXXXX/lib/python3.6/site-packages/salome/blocFissure/materielCasTests``
+
+There is no need to generate them again.
 
 1) **To execute all test cases**::
 
@@ -134,17 +146,34 @@ Then the user can either launch all test cases, several at once or just one :
 
 2) **To execute only selected test cases**:
 
-modify execution_Cas.py file and change::
+modify the file ``execution_Cas.py`` and change::
 
     runall = False. #old : True
 
-And change from 0 to 1 of the number of the test you want to launch::
+And change from 0 to 1 of the index of the test you want to launch::
 
-    torun = [ 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
+    torun = [ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 then launch the test cases::
 
     from blocFissure.CasTests import execution_Cas
+
+The index of each test is the position of the test in the following table, from 0 for cubeAngle, 1 for cubeAngle2,
+2 for cubeCoin... from top to bottom, then from left to right.
+
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeAngle          | cylindre_2         | eprouvetteDroite_2 | fissureCoude_3  | fissureCoude_8  |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeAngle2         | disquePerce        | faceGauche         | fissureCoude_4  | fissureCoude_10 |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeCoin           | ellipse_1          | faceGauche_2       | fissure_Coude_4 | fissureCoude_10 |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeMilieu         | ellipse_2          | fissure_Coude      | fissureCoude_5  | vis_1           |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cubeTransverse     | eprouvetteCourbe   | fissureCoude_1     | fissureCoude_6  |                 |
++--------------------+--------------------+--------------------+-----------------+-----------------+
+| cylindre           | eprouvetteDroite   | fissureCoude_2     | fissureCoude_7  |                 |
++--------------------+--------------------+--------------------+-----------------+-----------------+
 
 3) **To execute only one test case**::
 
@@ -152,19 +181,7 @@ then launch the test cases::
 
     [TEST_CASE_NAME](0).executeProbleme()
 
-[TEST_CASE_NAME] is the name of the test case in the following list. Note that the test cases fissureCoude_4 and fissure_Coude_4 are very similar.
-
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| faceGauche         | cylindre_2         | disquePerce        | fissureCoude_3  | fissureCoude_6  |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| faceGauche_2       | eprouvetteCourbe   | vis_1              | fissureCoude_4  | fissureCoude_7  |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| ellipse_1          | eprouvetteDroite   | fissureCoude       | fissure_Coude_4 | fissureCoude_8  |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| ellipse_2          | cubeAngle          | fissureCoude_1     | fissureCoude_5  | fissureCoude_9  |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
-| cylindre           | cubeAngle2         | fissureCoude_2     | fissureCoude_5  | fissureCoude_10 |
-+--------------------+--------------------+--------------------+-----------------+-----------------+
+[TEST_CASE_NAME] is the name of the test case in the previous list. Note that the test cases fissureCoude_4 and fissure_Coude_4 are very similar.
 
 
 

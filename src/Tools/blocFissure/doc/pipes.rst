@@ -100,5 +100,16 @@ The GUI is a window with mandatory and optional parameters. Optional parameters 
 
 - **Sauver**: save a .dic file with the active parameters
 
+Example
+--------------------
+
+.. image:: images/coude_0.png
+  :align: center
+  :alt: Crak in a bended pipe
+  :scale: 100
+
+This example can be computed using this file for the data:
+
+  * :download:`data for a bended puipe <../ihm/dialogFissureCoude.dic>`
 
 
