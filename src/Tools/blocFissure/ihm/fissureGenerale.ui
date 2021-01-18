@@ -14,13 +14,13 @@
    <string>Insertion de fissure dans un maillage sain</string>
   </property>
   <property name="toolTip">
-   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insertion d'un maillage de fissure dans un maillage hexaédrique sain.&lt;/p&gt;&lt;p&gt;Le maillage sain est fourni sous forme de fichier Med.&lt;/p&gt;&lt;p&gt;La face de fissure est décrite par une géométrie dans un fichier brep.&lt;/p&gt;&lt;p&gt;La ou les arêtes de fond de fissure sont données par leurs index dans la face de fissure.&lt;/p&gt;&lt;p&gt;La procédure identfie des mailles saines à enlever et remailler, construit un maillage régulier rayonnant autour de la ligne de fond de fissure, reconstitue les faces externes en triangles, complète la zone à remailler en tétraèdres.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insertion d'un maillage de fissure dans un maillage hexaédrique sain.&lt;/p&gt;&lt;p&gt;Le maillage sain est fourni sous forme de fichier med.&lt;/p&gt;&lt;p&gt;La face de fissure est décrite par une géométrie dans un fichier brep.&lt;/p&gt;&lt;p&gt;La ou les arêtes de fond de fissure sont données par leurs index dans la face de fissure du point de vue de GEOM.&lt;/p&gt;&lt;p&gt;La procédure identifie des mailles saines à enlever et à remailler, construit un maillage régulier rayonnant autour de la ligne de fond de fissure, reconstitue les faces externes en triangles, complète la zone à remailler en tétraèdres.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>maillage sain et géometries de fissure</string>
+      <string>Maillage sain et géometries de fissure</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="1" column="0">
@@ -28,14 +28,14 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>index edges fond fissure</string>
+           <string>Index arêtes fond de fissure</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLineEdit" name="le_fondfiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Index des edges décrivant le fond de fissure, dans la face de fissure.&lt;/p&gt;&lt;p&gt;Sous forme d'une liste Python.&lt;/p&gt;&lt;p&gt;Exemples : &lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[5,9]&lt;/span&gt; ou&lt;span style=&quot; font-weight:600;&quot;/&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(on peut récupérer ces valeurs à l'aide du dialogue de création de groupes d'edges, dans GEOM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Index des arêtes décrivant le fond de fissure, dans la face de fissure.&lt;/p&gt;&lt;p&gt;Sous forme d'une liste Python.&lt;/p&gt;&lt;p&gt;Exemples : &lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[5,9]&lt;/span&gt; ou&lt;span style=&quot; font-weight:600;&quot;/&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(On peut récupérer ces valeurs à l'aide du dialogue de création de groupes d'edges, dans GEOM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -59,7 +59,7 @@
         <item row="0" column="1">
          <widget class="QLineEdit" name="le_maillage">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -69,14 +69,14 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>face fissure</string>
+           <string>Face fissure</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="le_facefiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fichier brep de la géométrie décrivant la face de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -86,7 +86,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>maillage sain</string>
+           <string>Maillage sain</string>
           </property>
          </widget>
         </item>
@@ -102,7 +102,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox_2">
        <property name="title">
-        <string>identification zone à remailler</string>
+        <string>Identification zone à remailler</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
@@ -110,7 +110,7 @@
           <item>
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>distance influence</string>
+             <string>Distance influence</string>
             </property>
            </widget>
           </item>
@@ -131,7 +131,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox_3">
             <property name="title">
-             <string>prémaillage face fissure</string>
+             <string>Prémaillage face fissure</string>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
              <item>
@@ -201,7 +201,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox_7">
             <property name="title">
-             <string>messages</string>
+             <string>Messages</string>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
              <item>
@@ -294,13 +294,13 @@
         </sizepolicy>
        </property>
        <property name="title">
-        <string>maillage zone de fissure</string>
+        <string>Maillage zone de fissure</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QGroupBox" name="groupBox_5">
           <property name="title">
-           <string>pipe rayonnant</string>
+           <string>Pipe rayonnant</string>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_10">
            <item>
@@ -308,7 +308,7 @@
              <item row="0" column="0">
               <widget class="QLabel" name="label_5">
                <property name="text">
-                <string>rayon pipe</string>
+                <string>Rayon pipe</string>
                </property>
               </widget>
              </item>
@@ -328,7 +328,7 @@
              <item row="1" column="0">
               <widget class="QLabel" name="label_6">
                <property name="text">
-                <string>longueur mailles</string>
+                <string>Longueur mailles</string>
                </property>
               </widget>
              </item>
@@ -348,14 +348,14 @@
              <item row="2" column="0">
               <widget class="QLabel" name="label_7">
                <property name="text">
-                <string>couronnes</string>
+                <string>Couronnes</string>
                </property>
               </widget>
              </item>
              <item row="2" column="1">
               <widget class="QSpinBox" name="sb_couronnes">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pipe rayonnant construit sur le fond de fissure :&lt;/p&gt;&lt;p&gt;nombre de couronnes de mailles autour de la ligne de fond de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pipe rayonnant construit sur le fond de fissure :&lt;/p&gt;&lt;p&gt;Nombre de couronnes de mailles autour de la ligne de fond de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="minimum">
                 <number>2</number>
@@ -371,14 +371,14 @@
              <item row="3" column="0">
               <widget class="QLabel" name="label_8">
                <property name="text">
-                <string>secteurs</string>
+                <string>Secteurs</string>
                </property>
               </widget>
              </item>
              <item row="3" column="1">
               <widget class="QSpinBox" name="sb_secteurs">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pipe rayonnant construit sur le fond de fissure :&lt;/p&gt;&lt;p&gt;nombre de secteurs selon un cercle normal au fond de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pipe rayonnant construit sur le fond de fissure :&lt;/p&gt;&lt;p&gt;Nombre de secteurs selon un cercle normal au fond de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="minimum">
                 <number>4</number>
@@ -412,7 +412,7 @@
         <item>
          <widget class="QGroupBox" name="groupBox_6">
           <property name="title">
-           <string>faces externes</string>
+           <string>Faces externes</string>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_11">
            <item>
@@ -420,7 +420,7 @@
              <item row="0" column="0">
               <widget class="QLabel" name="label_9">
                <property name="text">
-                <string>triangles face fissure</string>
+                <string>Triangles face fissure</string>
                </property>
               </widget>
              </item>
@@ -440,14 +440,14 @@
              <item row="1" column="0">
               <widget class="QLabel" name="label_11">
                <property name="text">
-                <string>aretes vives</string>
+                <string>Arêtes vives</string>
                </property>
               </widget>
              </item>
              <item row="1" column="1">
               <widget class="QDoubleSpinBox" name="dsb_aretesVives">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Arêtes vives de la zone à remailler.&lt;/p&gt;&lt;p&gt;Longueur des segments sur ces arêtes.&lt;/p&gt;&lt;p&gt;Ce paramètre est &lt;span style=&quot; font-weight:600; font-style:italic; color:#2631c1;&quot;&gt;optionnel&lt;/span&gt; : laissé à 0,&lt;/p&gt;&lt;p&gt;il est est ajusté automatiquement.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Longueur des segments sur les arêtes vives de la zone à remailler.&lt;/p&gt;Ce paramètre est &lt;span style=&quot; font-weight:600; font-style:italic; color:#2631c1;&quot;&gt;optionnel&lt;/span&gt; : laissé à 0, il est ajusté automatiquement.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="decimals">
                 <number>5</number>
@@ -485,21 +485,21 @@
      <item row="0" column="0">
       <widget class="QPushButton" name="pb_reptrav">
        <property name="text">
-        <string>répertoire de travail</string>
+        <string>Répertoire de travail</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="le_reptrav">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Répertoire dans lequel seront rangés le maillage final, les objets intermédiaires, la log d'exécution.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Répertoire dans lequel seront rangés le maillage final, les objets intermédiaires, la log d'exécution.&lt;/p&gt;&lt;p&gt;Ce répertoire doit exister avant l'exécution.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
       <widget class="QPushButton" name="pb_nomres">
        <property name="text">
-        <string>nom résultat</string>
+        <string>Nom résultat</string>
        </property>
       </widget>
      </item>
@@ -572,7 +572,7 @@
      <item>
       <widget class="QPushButton" name="pb_exemple">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;génération de jeux de données exemple :&lt;/p&gt;&lt;p&gt;maillages sain et face de fissure.&lt;/p&gt;&lt;p&gt;(from blocFissure.materielCasTests import genereMateriel)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Génération de jeux de données exemple :&lt;/p&gt;&lt;p&gt;maillages sain et face de fissure.&lt;/p&gt;&lt;p&gt;(from blocFissure.materielCasTests import genereMateriel)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Exemple</string>
@@ -582,7 +582,7 @@
      <item>
       <widget class="QPushButton" name="pb_reset">
        <property name="toolTip">
-        <string>réinitialisation de tous les paramètres à leur valeur par défaut</string>
+        <string>Réinitialisation de tous les paramètres à leur valeur par défaut</string>
        </property>
        <property name="text">
         <string>Reset</string>
@@ -592,7 +592,7 @@
      <item>
       <widget class="QPushButton" name="pb_valPrec">
        <property name="toolTip">
-        <string>réinitialisation de tous les paramètres à leur valeur de la précédente éxécution</string>
+        <string>Réinitialisation de tous les paramètres à leur valeur de la précédente éxécution</string>
        </property>
        <property name="text">
         <string>Précédent</string>
@@ -602,7 +602,7 @@
      <item>
       <widget class="QPushButton" name="pb_recharger">
        <property name="toolTip">
-        <string>réinitialisation des paramètres à partir d'un fichier préalablement sauvegardé</string>
+        <string>Réinitialisation des paramètres à partir d'un fichier préalablement sauvegardé</string>
        </property>
        <property name="text">
         <string>Recharger</string>
@@ -612,7 +612,7 @@
      <item>
       <widget class="QPushButton" name="pb_sauver">
        <property name="toolTip">
-        <string>sauvegarde des paramètres dans un fichier à choisir</string>
+        <string>Sauvegarde des paramètres dans un fichier à choisir</string>
        </property>
        <property name="text">
         <string>Sauver</string>

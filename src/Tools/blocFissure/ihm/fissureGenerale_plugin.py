@@ -89,7 +89,7 @@ def fissureGeneraleDlg(context):
         areteFaceFissure  = 10,
         areteVives        = 0,
         reptrav           = '.',
-        nomres            = 'casStandard_fissure.med',
+        nomres            = 'maillage_avec_fissure',
         verbosite         = 0)
 
 

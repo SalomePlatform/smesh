@@ -4,19 +4,19 @@
 General principles
 ###################
 
-« Bloc Fissure » is based on GEOM module geometrical Boolean operations. The initial structure being a mesh, a conversion from mesh to geometry becomes necessary. This operation is called extraction and reconstruction because it is only applied to a small part of the mesh, which is around the crack. The extracted mesh is called the « Box » and only external faces of this mesh are kept and converted into several geometrical surfaces. This operation implies some limitations on the input mesh. When all the Booleans operations are done, the geometry that contains the crack is meshed again with a ruled mesh in the tore and a free mesh elsewhere.
+« Bloc Fissure » is based on GEOM module geometrical Boolean operations. The initial structure being a mesh, a conversion from mesh to geometry becomes necessary. This operation is called extraction and reconstruction because it is only applied to a small part of the mesh, which is around the crack. The extracted mesh is called the « Box » and only external faces of this mesh are kept and converted into several geometrical surfaces. This operation implies some limitations on the input mesh. When all the Boolean operations are done, the geometry that contains the crack is meshed again with a ruled mesh in the torus and a free mesh elsewhere.
 
 In order to illustrate « Bloc Fissure » principle, the simple case of a crack insertion in a parallelepipedic specimen is detailed step by step:
 
 1. The first step consists in loading the structure mesh (a) as well as the crack surface geometry (b).
 
-2. The crack is then meshed (c). A length criterion defines the size of the extracted « Box ». This length is called the length of influence. All elements having a node within this zone is included in the « Box ». A second operation adds elements in the Box in order to have continuous faces (d).
+2. The crack is then meshed (c). A length criterion defines the size of the extracted « Box ». This length is called the length of influence. Every element having a node within this zone is included in the « Box ». A second operation adds elements in the Box in order to have continuous faces (d).
 
-3. A geometrical Box is reconstructed from the extracted Box mesh. The reconstruction is limited to faces which intersect the crack (e). A tore is created following the crack front (f).
+3. A geometrical Box is reconstructed from the extracted Box mesh. The reconstruction is limited to faces which intersect the crack (e). A torus is created following the crack front (f).
 
-4. The geometrical Box is then cut by the tore and the crack (g). Several plans are created in order to partition the box and the tore into radiuses for the future mesh (h).
+4. The geometrical Box is then cut by the torus and the crack (g). Several plans are created in order to partition the box and the torus into radiuses for the future mesh (h).
 
-5. The Box, the crack and the tore are meshed on their external surface (i) and then filled with volumetric elements (j). Crack nodes are doubled to « open » crack lips.
+5. The Box, the crack and the torus are meshed on their external surface (i) and then filled with volumetric elements (j). Crack nodes are doubled to « open » crack lips.
 
 6. Finally the cracked box mesh is reinserted in the initial mesh ensuring the connectivity (k).
 
@@ -64,7 +64,7 @@ The length of influence is important. It defines the size of the extracted Box. 
    :width: 600
    :align: center
 
-All elements having a node at a smaller distance to the crack than the length of influence is selected. Then a filling algorithm fulfill the Box with elements to get a Box. The Box is not limited to rectangular shapes. See the section on :ref:`test cases <test_cases>` to see examples.
+Every element having a node at a smaller distance to the crack than the length of influence is selected. Then a filling algorithm fulfill the Box with elements to get a Box. The Box is not limited to rectangular shapes. See the section on :ref:`test cases <test_cases>` to see examples.
 
 .. _recommendations:
 
@@ -86,7 +86,7 @@ Surface crack geometry shall exceed from the structure mesh. Boolean operation c
 
 4) **Crack front edges must exceed from the structure:**
 
-For similar reasons, crack front edges must exceed from the structure mesh. The user shall be really careful when fusing crack front edges within the structure with edges outside of the structure because junction mustn’t be on the box external face. For example the following figure shows the bad and the good practice. In grew a 2D view of a structure to cut and in red the crack surface. Line 1 is the edge declared as the crack front. On the left case, Line 1 stops on the box boundary. Even if Line 1 is extended with Line 2 and 5, « Bloc Fissure» will fail. The good practice is to extend the Line 1 with the same shape. See how to extend the front edges in the :ref:`tutorials section <tutorials>`
+For similar reasons, crack front edges must exceed from the structure mesh. The user shall be really careful when fusing crack front edges within the structure with edges outside of the structure because junction mustn’t be on the box external face. For example the following figure shows the bad and the good practice. In grey a 2D view of a structure to cut and in red the crack surface. Line 1 is the edge declared as the crack front. On the left case, Line 1 stops on the box boundary. Even if Line 1 is extended with Line 2 and 5, « Bloc Fissure» will fail. The good practice is to extend the Line 1 with the same shape. See how to extend the front edges in the :ref:`tutorials section <tutorials>`
 
 .. image:: images/schema_lignes1.png
    :scale: 80

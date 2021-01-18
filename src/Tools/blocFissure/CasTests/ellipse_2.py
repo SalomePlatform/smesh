@@ -53,7 +53,7 @@ class ellipse_2(ellipse_1):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportFile(os.path.join(gmu.pathBloc, "materielCasTests/ellipse1_pb.brep"), "BREP")
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/ellipse1_pb.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )
