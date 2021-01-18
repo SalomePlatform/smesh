@@ -75,21 +75,21 @@ def fissureGeneraleDlg(context):
       self.ui.bb_OkCancel.accepted.connect(self.execute)
 
     def initDefaut(self):
-      self.defaut = dict(
-        nomCas            = 'angleCube',
-        maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med'),
-        brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"),
-        edgeFissIds       = [4],
-        lgInfluence       = 20,
-        meshBrep          = (5,10),
-        rayonPipe         = 5,
-        lenSegPipe        = 2.5,
-        nbSegRad          = 5,
-        nbSegCercle       = 32,
-        areteFaceFissure  = 10,
-        areteVives        = 0,
-        reptrav           = '.',
-        nomres            = 'maillage_avec_fissure',
+      self.defaut = dict( \
+        nomCas            = 'angleCube', \
+        maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med'), \
+        brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"), \
+        edgeFissIds       = [4], \
+        lgInfluence       = 20, \
+        meshBrep          = (5,10), \
+        rayonPipe         = 5, \
+        lenSegPipe        = 2.5, \
+        nbSegRad          = 5, \
+        nbSegCercle       = 32, \
+        areteFaceFissure  = 10, \
+        areteVives        = 0, \
+        reptrav           = '.', \
+        nomres            = 'maillage_avec_fissure', \
         verbosite         = 0)
 
 
@@ -122,22 +122,37 @@ def fissureGeneraleDlg(context):
         incomplet = True
       else:
         self.ui.le_maillage.setPalette(self.blackPalette)
-      if not os.path.lexists(dico['brepFaceFissure']):
+      cao_file = dico['brepFaceFissure']
+      if not os.path.lexists(cao_file):
         self.ui.le_facefiss.setPalette(self.redPalette)
         incomplet = True
       else:
-        self.ui.le_facefiss.setPalette(self.blackPalette)
-      edgeFissIdsOK=True
-      try:
-        l = dico['edgeFissIds']
-        for i in l:
-          if not isinstance(i, int):
-            print("not isinstance(i, int)")
+        suffix = os.path.basename(cao_file).split(".")[-1]
+        if ( suffix.upper() not in ("BREP","XAO") ):
+          print ("Suffixe inconnu pour le fichier {}".format(cao_file))
+          self.ui.le_facefiss.setPalette(self.redPalette)
+          incomplet = True
+        else:
+          self.ui.le_facefiss.setPalette(self.blackPalette)
+      if dico['edgeFissIds']:
+        edgeFissIdsOK=True
+        param_0 = dico['edgeFissIds'][0]
+        type_param_id = type(param_0)
+        for param in dico['edgeFissIds'][1:]:
+          if not isinstance(param,type_param_id):
+            print ("La donnée {} n'est pas du même type que la première de la liste : {}.".format(param,type(param)))
             incomplet = True
             edgeFissIdsOK=False
-            break
-      except:
-        print("except eval")
+        if edgeFissIdsOK:
+          if isinstance(param_0, int):
+            pass
+          elif isinstance(param_0, str):
+            pass
+          else:
+            print("Il faut une liste d'IDs d'arêtes ou une liste de noms de groupes d'arêtes.")
+            incomplet = True
+            edgeFissIdsOK=False
+      else:
         incomplet = True
         edgeFissIdsOK=False
       if edgeFissIdsOK:
@@ -181,7 +196,7 @@ def fissureGeneraleDlg(context):
     def writeDefault(self, dico):
       filedef = self.fileDefault()
       with open(filedef, 'w') as f:
-          f.write(str(dico))
+        f.write(str(dico))
 
     def genereExemples(self):
       maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med')
@@ -199,7 +214,7 @@ def fissureGeneraleDlg(context):
       filedef = self.fileDefault()
       if os.path.exists(filedef):
         with open(filedef, 'r') as f:
-            txt = f.read()
+          txt = f.read()
         dico = eval(txt)
         print(dico)
         self.initDialog(dico)
@@ -306,21 +321,21 @@ def fissureGeneraleDlg(context):
         self.ui.le_nomres.setText(nomres)
 
     def creeDico(self):
-      dico = dict(
-                  maillageSain     = str(self.ui.le_maillage.text()),
-                  brepFaceFissure  = str(self.ui.le_facefiss.text()),
-                  edgeFissIds      = eval(str(self.ui.le_fondfiss.text())),
-                  lgInfluence      = self.ui.dsb_influence.value(),
-                  meshBrep         = [self.ui.dsb_meshBrepMin.value(),self.ui.dsb_meshBrepMax.value()],
-                  rayonPipe        = self.ui.dsb_rayonPipe.value(),
-                  lenSegPipe       = self.ui.dsb_lenSegPipe.value(),
-                  nbSegRad         = self.ui.sb_couronnes.value(),
-                  nbSegCercle      = self.ui.sb_secteurs.value(),
-                  areteFaceFissure = self.ui.dsb_areteFaceFissure.value(),
-                  aretesVives      = self.ui.dsb_aretesVives.value(),
-                  reptrav          = str(self.ui.le_reptrav.text()),
-                  nomres           = str(self.ui.le_nomres.text()),
-                  verbosite        = self.ui.cb_log.currentIndex()
+      dico = dict( \
+                  maillageSain     = str(self.ui.le_maillage.text()), \
+                  brepFaceFissure  = str(self.ui.le_facefiss.text()), \
+                  edgeFissIds      = eval(str(self.ui.le_fondfiss.text())), \
+                  lgInfluence      = self.ui.dsb_influence.value(), \
+                  meshBrep         = [self.ui.dsb_meshBrepMin.value(),self.ui.dsb_meshBrepMax.value()], \
+                  rayonPipe        = self.ui.dsb_rayonPipe.value(), \
+                  lenSegPipe       = self.ui.dsb_lenSegPipe.value(), \
+                  nbSegRad         = self.ui.sb_couronnes.value(), \
+                  nbSegCercle      = self.ui.sb_secteurs.value(), \
+                  areteFaceFissure = self.ui.dsb_areteFaceFissure.value(), \
+                  aretesVives      = self.ui.dsb_aretesVives.value(), \
+                  reptrav          = str(self.ui.le_reptrav.text()), \
+                  nomres           = str(self.ui.le_nomres.text()), \
+                  verbosite        = self.ui.cb_log.currentIndex() \
                   )
       print(dico)
       return dico
@@ -384,4 +399,3 @@ def fissureGeneraleDlg(context):
     else:
       print("dialog rejected, exit")
   pass
-

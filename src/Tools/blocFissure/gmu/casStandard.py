@@ -66,7 +66,7 @@ class casStandard(fissureGenerique):
     if 'reptrav' in self.dicoParams:
       self.reptrav = self.dicoParams['reptrav']
     else:
-      self.reptrav = '.'  
+      self.reptrav = '.'
     self.numeroCas = numeroCas
     if self.numeroCas != 0:
       self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
@@ -84,7 +84,7 @@ class casStandard(fissureGenerique):
       self.dicoParams['aretesVives'] = 0
     if self.numeroCas == 0: # valeur par défaut : exécution immédiate, sinon execution différée dans le cas d'une liste de problèmes
       self.executeProbleme(step)
-    
+
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
     logging.info("genereMaillageSain %s", self.nomCas)
@@ -122,9 +122,22 @@ class casStandard(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP( self.dicoParams['brepFaceFissure'])
+    cao_file = self.dicoParams['brepFaceFissure']
+    suffix = os.path.basename(cao_file).split(".")[-1]
+    if ( suffix.upper() == "BREP" ):
+      shellFiss = geompy.ImportBREP(cao_file)
+    elif ( suffix.upper() == "XAO" ):
+      (_, shellFiss, _, l_groups, _) = geompy.ImportXAO(cao_file)
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    geompy.UnionIDs(fondFiss, self.dicoParams['edgeFissIds'] )
+    if isinstance(self.dicoParams['edgeFissIds'][0],int):
+      geompy.UnionIDs(fondFiss, self.dicoParams['edgeFissIds'] )
+    else:
+      l_groups = geompy.GetGroups(shellFiss)
+      l_aux = list()
+      for group in l_groups:
+        if ( group.GetName() in self.dicoParams['edgeFissIds'] ):
+          l_aux.append(group)
+      geompy.UnionList(fondFiss, l_aux )
     geomPublish(initLog.debug, shellFiss, 'shellFiss' )
     geomPublishInFather(initLog.debug, shellFiss, fondFiss, 'fondFiss' )
 
@@ -153,8 +166,8 @@ class casStandard(fissureGenerique):
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
                             maillageFissureParams, elementsDefaut, step):
-    maillageFissure = construitFissureGenerale(maillagesSains,
-                                              shapesFissure, shapeFissureParams,
+    maillageFissure = construitFissureGenerale(maillagesSains, \
+                                              shapesFissure, shapeFissureParams, \
                                               maillageFissureParams, elementsDefaut, step)
     return maillageFissure
 
@@ -171,4 +184,3 @@ class casStandard(fissureGenerique):
                                             Entity_Node            = 0,
                                             Entity_Quad_Tetra      = 0,
                                             Entity_Quad_Quadrangle = 0)
-
