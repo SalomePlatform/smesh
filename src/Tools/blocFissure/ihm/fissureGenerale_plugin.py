@@ -79,7 +79,7 @@ def fissureGeneraleDlg(context):
         nomCas            = 'angleCube', \
         maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med'), \
         brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"), \
-        edgeFissIds       = [4], \
+        edgeFissIds       = [3], \
         lgInfluence       = 20, \
         meshBrep          = (5,10), \
         rayonPipe         = 5, \
