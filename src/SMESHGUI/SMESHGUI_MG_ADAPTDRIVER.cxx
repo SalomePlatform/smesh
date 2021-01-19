@@ -360,9 +360,6 @@ bool SMESHGUI_MG_ADAPTDRIVER::clickOnApply()
     SMESHGUI_MgAdaptDlg::clickOnApply();
 
     bool ok = execute();
-    //~SMESHGUI_MG_AdaptComputeDlg_QThread atest(getModel());
-    //~atest.start();
-    //~atest.quit();
     if (getModel()->getPublish()) this->createMeshInObjectBrowser();
 
     return ok;

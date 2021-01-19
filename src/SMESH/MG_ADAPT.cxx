@@ -1253,7 +1253,7 @@ void MgAdapt::restorefams(MEDCoupling::MEDFileMesh* fileMesh) const
 
     for (; fIt!=famVec.end(); ++fIt)
     {	
-		try  // safety : FAMILY could be lost P2-->P1
+		try  //
         {
 			std::string givenFamNameFromMeshGemConverter = fileMesh->getFamilyNameGivenId( std::abs(fIt->_famId) );
             fileMesh->changeFamilyId(std::abs(fIt->_famId), fIt->_famId);

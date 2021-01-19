@@ -405,6 +405,12 @@ CORBA::Long MG_ADAPT_i::compute()
         std::cerr<<e.what();
         ret = -1;
     }
+    if(ret!=-1 && myMgAdapt->getPublish())
+    {
+		SMESH_Gen_i* smeshGen_i = SMESH_Gen_i::GetSMESHGen();
+		SMESH::DriverMED_ReadStatus theStatus;
+		smeshGen_i->CreateMeshesFromMED(myMgAdapt->getMedFileOut().c_str(), theStatus);
+	}
 	//~errStr =  err.c_str();
 	return ret;
 }
