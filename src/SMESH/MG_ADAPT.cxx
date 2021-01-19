@@ -758,12 +758,19 @@ void MgAdapt::execCmd( const char* cmd, int& err)
     }
     err = 0;
 }
-
+/*
+ * to delete tmp files .mesh, .sol and if needed  
+ * the log file
+ * 
+ */
 void MgAdapt::cleanUp()
 {
 	int notOk;
 	std::string errStr;
-	if(removeOnSuccess) tmpFilesToBeDeleted.push_back(logFile);
+	if(toKeepWorkingFiles)
+	    return;
+	if(removeOnSuccess && printLogInFile) 
+	    tmpFilesToBeDeleted.push_back(logFile);
 	
 	std::vector< std::string>::iterator it = tmpFilesToBeDeleted.begin();
 	for (; it!=tmpFilesToBeDeleted.end(); ++it)
@@ -819,6 +826,7 @@ std::string MgAdapt::getCommandToRun()
 
     cmd+= " --in "+ meshIn;
     meshFormatOutputMesh = getFileName()+".mesh";
+    tmpFilesToBeDeleted.push_back(meshFormatOutputMesh);
     cmd+= " --out "+ meshFormatOutputMesh;
     if (useLocalMap || useConstantValue) cmd+= " --sizemap "+ solFileIn;
     else //  (useBackgroundMap)
@@ -840,6 +848,7 @@ std::string MgAdapt::getCommandToRun()
 		std::string solFileOut = getFileName()+".sol";
         cmd+= " --write_sizemap "+ solFileOut;
 		solFormatOutput.push_back(solFileOut);
+		tmpFilesToBeDeleted.push_back(solFileOut);
 	} 
     if (verbosityLevel != defaultVerboseLevel())
     {
