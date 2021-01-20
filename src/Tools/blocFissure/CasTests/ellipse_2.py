@@ -67,11 +67,13 @@ class ellipse_2(ellipse_1):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 159,
-                                          Entity_Quad_Triangle   = 438,
-                                          Entity_Quad_Edge       = 249,
-                                          Entity_Quad_Penta      = 80,
-                                          Entity_Quad_Hexa       = 3635,
-                                          Entity_Node            = 20519,
-                                          Entity_Quad_Tetra      = 1973,
-                                          Entity_Quad_Quadrangle = 1658)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 1748, \
+                                          Entity_Quad_Hexa = 3795, \
+                                          Entity_Node = 22219, \
+                                          Entity_Quad_Edge = 258, \
+                                          Entity_Quad_Triangle = 434, \
+                                          Entity_Quad_Tetra = 2574, \
+                                          Entity_Quad_Pyramid = 199, \
+                                          Entity_Quad_Penta = 120 \
+                                         )

@@ -114,12 +114,14 @@ class cylindre(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 1270,
-                                          Entity_Quad_Triangle   = 1260,
-                                          Entity_Quad_Edge       = 758,
-                                          Entity_Quad_Penta      = 496,
-                                          Entity_Quad_Hexa       = 18814,
-                                          Entity_Node            = 113313,
-                                          Entity_Quad_Tetra      = 20469,
-                                          Entity_Quad_Quadrangle = 7280)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 6920, \
+                                          Entity_Quad_Hexa = 18174, \
+                                          Entity_Node = 104349, \
+                                          Entity_Quad_Edge = 718, \
+                                          Entity_Quad_Triangle = 952, \
+                                          Entity_Quad_Tetra = 16691, \
+                                          Entity_Quad_Pyramid = 1110, \
+                                          Entity_Quad_Penta = 336 \
+                                         )
 

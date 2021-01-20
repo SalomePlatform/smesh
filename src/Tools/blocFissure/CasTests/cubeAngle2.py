@@ -57,6 +57,6 @@ class cubeAngle2(cubeAngle):
                                           Entity_Quad_Triangle = 1214, \
                                           Entity_Quad_Tetra = 7772, \
                                           Entity_Quad_Pyramid = 620, \
-                                          Entity_Quad_Penta = 512
+                                          Entity_Quad_Penta = 512 \
                                          )
 

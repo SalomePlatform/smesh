@@ -114,12 +114,14 @@ class eprouvetteDroite(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 368,
-                                          Entity_Quad_Triangle   = 798,
-                                          Entity_Quad_Edge       = 491,
-                                          Entity_Quad_Penta      = 88,
-                                          Entity_Quad_Hexa       = 9692,
-                                          Entity_Node            = 52652,
-                                          Entity_Quad_Tetra      = 5093,
-                                          Entity_Quad_Quadrangle = 3750)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 3768, \
+                                          Entity_Quad_Hexa = 9724, \
+                                          Entity_Node = 52337, \
+                                          Entity_Quad_Edge = 457, \
+                                          Entity_Quad_Triangle = 570, \
+                                          Entity_Quad_Tetra = 4919, \
+                                          Entity_Quad_Pyramid = 376, \
+                                          Entity_Quad_Penta = 96 \
+                                         )
 

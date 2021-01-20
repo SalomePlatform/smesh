@@ -112,12 +112,14 @@ class faceGauche(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 1284,
-                                          Entity_Quad_Triangle   = 2336,
-                                          Entity_Quad_Edge       = 758,
-                                          Entity_Quad_Penta      = 984,
-                                          Entity_Quad_Hexa       = 6416,
-                                          Entity_Node            = 85673,
-                                          Entity_Quad_Tetra      = 35990,
-                                          Entity_Quad_Quadrangle = 4285)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 3997, \
+                                          Entity_Quad_Hexa = 5904, \
+                                          Entity_Node = 77735, \
+                                          Entity_Quad_Edge = 725, \
+                                          Entity_Quad_Triangle = 2176, \
+                                          Entity_Quad_Tetra = 32320, \
+                                          Entity_Quad_Pyramid = 1156, \
+                                          Entity_Quad_Penta = 856 \
+                                         )
 

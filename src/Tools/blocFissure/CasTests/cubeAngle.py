@@ -119,5 +119,5 @@ class cubeAngle(fissureGenerique):
                                           Entity_Quad_Tetra = 1322, \
                                           Entity_Quad_Pyramid = 172, \
                                           Entity_Quad_Penta = 64 \
-                                        )
+                                         )
 

@@ -118,12 +118,14 @@ class ellipse_1(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 175,
-                                          Entity_Quad_Triangle   = 298,
-                                          Entity_Quad_Edge       = 248,
-                                          Entity_Quad_Penta      = 96,
-                                          Entity_Quad_Hexa       = 3699,
-                                          Entity_Node            = 20741,
-                                          Entity_Quad_Tetra      = 1979,
-                                          Entity_Quad_Quadrangle = 1694)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 1748, \
+                                          Entity_Quad_Hexa = 3795, \
+                                          Entity_Node = 21939, \
+                                          Entity_Quad_Edge = 256, \
+                                          Entity_Quad_Triangle = 360, \
+                                          Entity_Quad_Tetra = 2425, \
+                                          Entity_Quad_Pyramid = 199, \
+                                          Entity_Quad_Penta = 120 \
+                                         )
 

@@ -35,12 +35,14 @@ dicoParams = dict(nomCas            = 'cubeTransverse',
 
 # ---------------------------------------------------------------------------
 
-referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 0,
-                                 Entity_Quad_Triangle   = 0,
-                                 Entity_Quad_Edge       = 0,
-                                 Entity_Quad_Penta      = 0,
-                                 Entity_Quad_Hexa       = 0,
-                                 Entity_Node            = 0,
-                                 Entity_Quad_Tetra      = 0,
-                                 Entity_Quad_Quadrangle = 0)
+referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 2900, \
+                                          Entity_Quad_Hexa = 7000, \
+                                          Entity_Node = 58430, \
+                                          Entity_Quad_Edge = 390, \
+                                          Entity_Quad_Triangle = 1228, \
+                                          Entity_Quad_Tetra = 17567, \
+                                          Entity_Quad_Pyramid = 780, \
+                                          Entity_Quad_Penta = 200 \
+                                )
 
