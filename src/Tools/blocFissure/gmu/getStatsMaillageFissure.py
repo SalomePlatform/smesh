@@ -17,12 +17,12 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Statistiques maillage"""
 
+import os
 import logging
 import SMESH
 
-# -----------------------------------------------------------------------------
-# --- statistiques maillage
 
 def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissureParams):
   """
@@ -30,47 +30,60 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
   """
   logging.debug('start')
 
-  nomRep = '.'
   if 'nomRep' in maillageFissureParams:
     nomRep = maillageFissureParams['nomRep']
-  
+  else:
+    nomRep = os.path.curdir
+
   nomFicFissure     = maillageFissureParams['nomFicFissure']
-  fichierStatMaillageFissure = nomRep + '/' + nomFicFissure + '.res'
-  fichierNewRef = nomRep + '/' + nomFicFissure + '.new'
+  fichierStatMaillageFissure = os.path.join(nomRep, "{}.res".format(nomFicFissure))
+  fichierNewRef = os.path.join(nomRep, "{}.new".format(nomFicFissure))
   logging.debug("fichierStatMaillageFissure=%s", fichierStatMaillageFissure)
 
   OK = False
   if maillage is not None:
     mesures = maillage.GetMeshInfo()
-    d= {}
+    d_resu = dict()
     for key, value in mesures.items():
       logging.debug( "key: %s value: %s", key, value)
-      d[str(key)] = value
-    logging.debug("dico mesures %s", d)      
+      d_resu[str(key)] = value
+    logging.debug("dico mesures %s", d_resu)
 
-    f = open(fichierStatMaillageFissure, 'w')
-    f2 = open(fichierNewRef, 'w')
+    text_2 = ""
     OK = True
-    for key in ('Entity_Quad_Pyramid', 'Entity_Quad_Hexa', 'Entity_Quad_Quadrangle'):
-      if d[key] != referencesMaillageFissure[key]:
-        logging.info("Ecart: %s reference: %s calcul: %s", key, referencesMaillageFissure[key], d[key])
-        f.write("Ecart: " + key + " reference: " + str(referencesMaillageFissure[key]) + " calcul: " + str(d[key]) + '\n')
-        OK = False
-      else:
-        logging.info("Valeur_OK: %s reference: %s calcul: %s", key, referencesMaillageFissure[key], d[key])
-        f.write("Valeur_OK: " + key + " reference: " + str(referencesMaillageFissure[key]) + " calcul: " + str(d[key]) + '\n')
-      f2.write(key + " = " + str(d[key]) + ",\n")
-    tolerance = 0.05
-    for key in ('Entity_Quad_Penta', 'Entity_Quad_Tetra', 'Entity_Quad_Triangle', 'Entity_Quad_Edge', 'Entity_Node'):
-      if (d[key] < (1.0 - tolerance)*referencesMaillageFissure[key]) \
-      or (d[key] > (1.0 + tolerance)*referencesMaillageFissure[key]):
-        logging.info("Ecart: %s reference: %s calcul: %s", key, referencesMaillageFissure[key], d[key])
-        f.write("Ecart: " + key + " reference: " + str(referencesMaillageFissure[key]) + " calcul: " + str(d[key]) + '\n')
-        OK = False
-      else:
-        logging.info("Valeur_OK: %s reference: %s calcul: %s", key, referencesMaillageFissure[key], d[key])
-        f.write("Valeur_OK: " + key + " reference: " + str(referencesMaillageFissure[key]) + " calcul: " + str(d[key]) + '\n')
-      f2.write(key + " = " + str(d[key]) + ",\n")
-    f.close()
-    f2.close()
+    with open(fichierStatMaillageFissure, "w") as fic_stat :
+      for key in ('Entity_Quad_Quadrangle', 'Entity_Quad_Hexa'):
+        if d_resu[key] != referencesMaillageFissure[key]:
+          text = "Ecart"
+          OK = False
+        else:
+          text = "Valeur_OK"
+        text += ": {} reference: {} calcul: {}".format(key,referencesMaillageFissure[key],d_resu[key])
+        logging.info(text)
+        fic_stat.write(text+"\n")
+        text_2 += "                                          {} = {}, \\\n".format(key,d_resu[key])
+      tolerance = 0.05
+      for key in ('Entity_Node', 'Entity_Quad_Edge', 'Entity_Quad_Triangle', 'Entity_Quad_Tetra', 'Entity_Quad_Pyramid', 'Entity_Quad_Penta'):
+        if (d_resu[key] < (1.0 - tolerance)*referencesMaillageFissure[key]) \
+        or (d_resu[key] > (1.0 + tolerance)*referencesMaillageFissure[key]):
+          text = "Ecart"
+          OK = False
+        else:
+          text = "Valeur_OK"
+        text += ": {} reference: {} calcul: {}".format(key,referencesMaillageFissure[key],d_resu[key])
+        logging.info(text)
+        fic_stat.write(text+"\n")
+        text_2 += "                                          {} = {}, \\\n".format(key,d_resu[key])
+
+# Résultats de référence pour intégration dans le python du cas pour une mise à jour
+    with open(fichierNewRef, "w") as fic_info :
+      fic_info.write(text_2[:-4]+" \\")
+
+    if OK:
+      print ("Calcul cohérent avec la référence.")
+    else:
+      text = "Calcul différent de la référence.\n"
+      texte += "Voir le fichier {}".format(fichierStatMaillageFissure)
+      print (text)
+
   return OK
