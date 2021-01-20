@@ -146,7 +146,7 @@ There is no need to generate them again.
 
 2) **To execute only selected test cases**:
 
-modify the file ``execution_Cas.py`` and change::
+modify the file ``CasTests/execution_Cas.py`` and change::
 
     runall = False. #old : True
 
