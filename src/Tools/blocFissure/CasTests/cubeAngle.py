@@ -110,12 +110,14 @@ class cubeAngle(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 204,
-                                          Entity_Quad_Triangle   = 336,
-                                          Entity_Quad_Edge       = 278,
-                                          Entity_Quad_Penta      = 96,
-                                          Entity_Quad_Hexa       = 3651,
-                                          Entity_Node            = 20490,
-                                          Entity_Quad_Tetra      = 1877,
-                                          Entity_Quad_Quadrangle = 1702)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 1630, \
+                                          Entity_Quad_Hexa = 3523, \
+                                          Entity_Node = 18874, \
+                                          Entity_Quad_Edge = 261, \
+                                          Entity_Quad_Triangle = 190, \
+                                          Entity_Quad_Tetra = 1322, \
+                                          Entity_Quad_Pyramid = 172, \
+                                          Entity_Quad_Penta = 64 \
+                                        )
 

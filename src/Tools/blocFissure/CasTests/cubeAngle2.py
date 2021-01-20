@@ -49,12 +49,14 @@ class cubeAngle2(cubeAngle):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 748,
-                                          Entity_Quad_Triangle   = 1228,
-                                          Entity_Quad_Edge       = 351,
-                                          Entity_Quad_Penta      = 640,
-                                          Entity_Quad_Hexa       = 5827,
-                                          Entity_Node            = 42865,
-                                          Entity_Quad_Tetra      = 9216,
-                                          Entity_Quad_Quadrangle = 2518)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 2350, \
+                                          Entity_Quad_Hexa = 5315, \
+                                          Entity_Node = 38196, \
+                                          Entity_Quad_Edge = 345, \
+                                          Entity_Quad_Triangle = 1214, \
+                                          Entity_Quad_Tetra = 7772, \
+                                          Entity_Quad_Pyramid = 620, \
+                                          Entity_Quad_Penta = 512
+                                         )
 
