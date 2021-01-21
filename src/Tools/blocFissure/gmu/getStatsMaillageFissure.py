@@ -83,7 +83,9 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
       print ("Calcul cohérent avec la référence.")
     else:
       text = "Calcul différent de la référence.\n"
-      texte += "Voir le fichier {}".format(fichierStatMaillageFissure)
+      text += "Voir le fichier {}\n".format(fichierStatMaillageFissure)
+      text += "La nouvelle référence est disponible dans le fichier :\n{}\n".format(fichierNewRef)
+      text += "Il faut l'insérer pour créer le dictionnaire 'referencesMaillageFissure' dans le paramétrage du cas."
       print (text)
 
   return OK
