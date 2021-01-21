@@ -152,7 +152,7 @@ modify the file ``CasTests/execution_Cas.py`` and change::
 
 And change from 0 to 1 of the index of the test you want to launch::
 
-    torun = [ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 then launch the test cases::
 
@@ -162,17 +162,17 @@ The index of each test is the position of the test in the following table, from 
 2 for cubeCoin... from top to bottom, then from left to right.
 
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cubeAngle          | cylindre_2         | eprouvetteDroite_2 | fissureCoude_3  | fissureCoude_8  |
+| cubeAngle          | cylindre_2         | eprouvetteDroite_2 | fissureCoude_3  | fissureCoude_9  |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cubeAngle2         | disquePerce        | faceGauche         | fissureCoude_4  | fissureCoude_10 |
+| cubeAngle2         | disquePerce        | faceGauche         | fissureCoude_4  | fissure_Coude   |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cubeCoin           | ellipse_1          | faceGauche_2       | fissure_Coude_4 | fissureCoude_10 |
+| cubeCoin           | ellipse_1          | faceGauche_2       | fissureCoude_5  | fissure_Coude_4 |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cubeMilieu         | ellipse_2          | fissure_Coude      | fissureCoude_5  | vis_1           |
+| cubeMilieu         | ellipse_2          | fissureCoude_1     | fissureCoude_6  | vis_1           |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cubeTransverse     | eprouvetteCourbe   | fissureCoude_1     | fissureCoude_6  |                 |
+| cubeTransverse     | eprouvetteCourbe   | fissureCoude_10    | fissureCoude_7  |                 |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cylindre           | eprouvetteDroite   | fissureCoude_2     | fissureCoude_7  |                 |
+| cylindre           | eprouvetteDroite   | fissureCoude_2     | fissureCoude_8  |                 |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
 
 3) **To execute only one test case**::
