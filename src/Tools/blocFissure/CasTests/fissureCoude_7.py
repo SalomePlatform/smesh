@@ -97,12 +97,14 @@ class fissureCoude_7(fissureCoude):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Node            = 75580,
-                                          Entity_Quad_Edge       = 899,
-                                          Entity_Quad_Triangle   = 1158,
-                                          Entity_Quad_Quadrangle = 8022,
-                                          Entity_Quad_Tetra      = 13162,
-                                          Entity_Quad_Hexa       = 11272,
-                                          Entity_Quad_Penta      = 756,
-                                          Entity_Quad_Pyramid    = 812)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 7758, \
+                                          Entity_Quad_Hexa = 10696, \
+                                          Entity_Node = 71535, \
+                                          Entity_Quad_Edge = 882, \
+                                          Entity_Quad_Triangle = 1378, \
+                                          Entity_Quad_Tetra = 10847, \
+                                          Entity_Quad_Pyramid = 668, \
+                                          Entity_Quad_Penta = 612 \
+                                         )
 
