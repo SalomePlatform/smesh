@@ -25,16 +25,17 @@ from blocFissure.gmu import initLog
 
 # -----------------------------------------------------------------------------------------------
 #initLog.setDebug()
-initLog.setVerbose()
+#initLog.setVerbose()
 #initLog.setRelease()
 #initLog.setPerfTests()
 
-# ---tous les cas en sequence, ou les cas selectionnés ...
+# ---tous les cas en séquence, ou les cas sélectionnés ...
 runall = True
 if runall:
-  torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29
-  torun = [ 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
+  torun = [ 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1] # pb
+  torun = [ 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0] # OK
 # -----------------------------------------------------------------------------------------------
 
 from blocFissure.gmu import geomsmesh
@@ -42,127 +43,145 @@ from blocFissure.gmu.casStandard import casStandard
 
 problemes = list()
 
-cas=0
+n_cas = 0
 from blocFissure.CasTests.cubeAngle import cubeAngle
-problemes.append(cubeAngle(cas))
+problemes.append(cubeAngle(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.cubeAngle2 import cubeAngle2
-problemes.append(cubeAngle2(cas))
+problemes.append(cubeAngle2(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests import cubeCoin
-problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, cas))
+problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, n_cas, "cubeCoin"))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests import cubeMilieu
-problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, cas))
+problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, n_cas, "cubeMilieu"))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests import cubeTransverse
-problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, cas))
+problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, n_cas, "cubeTransverse"))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.cylindre import cylindre
-problemes.append(cylindre(cas))
+problemes.append(cylindre(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.cylindre_2 import cylindre_2
-problemes.append(cylindre_2(cas))
+problemes.append(cylindre_2(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests import disquePerce
-problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, cas))
+problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, n_cas, "disquePerce"))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.ellipse_1 import ellipse_1
-problemes.append(ellipse_1(cas))
+problemes.append(ellipse_1(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.ellipse_2 import ellipse_2
-problemes.append(ellipse_2(cas))
+problemes.append(ellipse_2(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.eprouvetteCourbe import eprouvetteCourbe
-problemes.append(eprouvetteCourbe(cas))
+problemes.append(eprouvetteCourbe(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.eprouvetteDroite import eprouvetteDroite
-problemes.append(eprouvetteDroite(cas))
+problemes.append(eprouvetteDroite(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.eprouvetteDroite_2 import eprouvetteDroite_2
-problemes.append(eprouvetteDroite_2(cas))
+problemes.append(eprouvetteDroite_2(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.faceGauche import faceGauche
-problemes.append(faceGauche(cas))
+problemes.append(faceGauche(n_cas))
 
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.faceGauche_2 import faceGauche_2
-problemes.append(faceGauche_2(cas))
+problemes.append(faceGauche_2(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissure_Coude import fissure_Coude
-problemes.append(fissure_Coude(cas))
-
-cas+=1
-from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
-problemes.append(fissure_Coude_4(cas))
-
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.fissureCoude_1 import fissureCoude_1
-problemes.append(fissureCoude_1(cas))
+problemes.append(fissureCoude_1(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_2 import fissureCoude_2
-problemes.append(fissureCoude_2(cas))
-
-cas+=1
-from blocFissure.CasTests.fissureCoude_3 import fissureCoude_3
-problemes.append(fissureCoude_3(cas))
-
-cas+=1
-from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
-problemes.append(fissure_Coude_4(cas))
-
-cas+=1
-from blocFissure.CasTests.fissureCoude_4 import fissureCoude_4
-problemes.append(fissureCoude_4(cas))
-
-cas+=1
-from blocFissure.CasTests.fissureCoude_5 import fissureCoude_5
-problemes.append(fissureCoude_5(cas))
-
-cas+=1
-from blocFissure.CasTests.fissureCoude_6 import fissureCoude_6
-problemes.append(fissureCoude_6(cas))
-
-cas+=1
-from blocFissure.CasTests.fissureCoude_7 import fissureCoude_7
-problemes.append(fissureCoude_7(cas))
-
-cas+=1
-from blocFissure.CasTests.fissureCoude_8 import fissureCoude_8
-problemes.append(fissureCoude_8(cas))
-
-cas+=1
-from blocFissure.CasTests.fissureCoude_9 import fissureCoude_9
-problemes.append(fissureCoude_9(cas))
-
-cas+=1
+n_cas += 1
 from blocFissure.CasTests.fissureCoude_10 import fissureCoude_10
-problemes.append(fissureCoude_10(cas))
+problemes.append(fissureCoude_10(n_cas))
 
-cas+=1
+n_cas += 1
+from blocFissure.CasTests.fissureCoude_2 import fissureCoude_2
+problemes.append(fissureCoude_2(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissureCoude_3 import fissureCoude_3
+problemes.append(fissureCoude_3(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissureCoude_4 import fissureCoude_4
+problemes.append(fissureCoude_4(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissureCoude_5 import fissureCoude_5
+problemes.append(fissureCoude_5(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissureCoude_6 import fissureCoude_6
+problemes.append(fissureCoude_6(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissureCoude_7 import fissureCoude_7
+problemes.append(fissureCoude_7(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissureCoude_8 import fissureCoude_8
+problemes.append(fissureCoude_8(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissureCoude_9 import fissureCoude_9
+problemes.append(fissureCoude_9(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissure_Coude import fissure_Coude
+problemes.append(fissure_Coude(n_cas))
+
+n_cas += 1
+from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
+problemes.append(fissure_Coude_4(n_cas))
+
+n_cas += 1
 from blocFissure.CasTests.vis_1 import vis_1
-problemes.append(vis_1(cas))
+problemes.append(vis_1(n_cas))
 
-for iaux, cas in enumerate(problemes):
-  if torun[iaux]:
-    logging.critical("=== Execution cas {}".format(iaux))
-    try:
-      cas.executeProbleme()
-    except:
-      traceback.print_exc()
-    print("---------------------------------------------------------------------")
+#=============================================================
+while True:
+
+  if ( len(problemes) != len(torun) ):
+    texte  = "\nNombre de problèmes définis  : {}\n".format(len(problemes))
+    texte += "Longueur de la liste 'torun' : {}\n".format(len(torun))
+    texte += "\t==> Incohérence de programmation à corriger."
+    print (texte)
+    break
+
+  ligne = "---------------------------------------------------------------------"
+  texte = ""
+  for iaux, cas in enumerate(problemes):
+    #print ("Cas n° {}, '{}'".format(iaux,cas.nomProbleme))
+    if torun[iaux]:
+      texte_a = "\n=== Exécution du cas n° {}, '{}'".format(iaux,cas.nomProbleme)
+      logging.critical(ligne+texte_a)
+      try:
+        cas.executeProbleme()
+      except:
+        traceback.print_exc()
+        texte += "Problème avec le cas n° {}, '{}'\n".format(iaux,cas.nomProbleme)
+      print(ligne)
+
+  if not texte:
+    texte = "Tous les tests se sont bien passés.\n"
+  print (texte+ligne)
+
+  break
+
