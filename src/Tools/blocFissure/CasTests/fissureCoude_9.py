@@ -21,8 +21,9 @@
 from blocFissure.gmu.fissureCoude  import fissureCoude
 
 class fissureCoude_9(fissureCoude):
-  # cas test ASCOU19
+  """cas test ASCOU19"""
 
+  nomProbleme = "fissureCoude_9"
 
 # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):

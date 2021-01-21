@@ -21,10 +21,12 @@
 from .fissure_Coude  import fissure_Coude
 
 class fissure_Coude_4(fissure_Coude):
-  """
-  probleme de fissure du Coude : ASCOU09A
+  """probleme de fissure du Coude : ASCOU09A
+
   adaptation maillage
   """
+
+  nomProbleme = "fissure_Coude_4"
 
 # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):

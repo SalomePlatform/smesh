@@ -41,9 +41,7 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class cylindre(fissureGenerique):
-  """
-  problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle
-  """
+  """problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle"""
 
   nomProbleme = "cylindre"
 

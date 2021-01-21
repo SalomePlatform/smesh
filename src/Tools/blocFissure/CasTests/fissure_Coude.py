@@ -40,12 +40,12 @@ from blocFissure.gmu.insereFissureLongue import insereFissureLongue
 O, OX, OY, OZ = triedreBase()
 
 class fissure_Coude(fissureGenerique):
-  """
-  problème de fissure du Coude : version de base
+  """problème de fissure du Coude : version de base
+
   maillage hexa
   """
 
-  nomProbleme = "tuyau_Coude"
+  nomProbleme = "fissure_Coude"
 
   # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):

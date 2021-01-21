@@ -32,7 +32,7 @@ class fissureGenerique():
   génération d'un bloc défaut inséré dans le maillage sain
   """
 
-  nomProbleme = "generique"
+  nomProbleme = "fissureGenerique"
 
   def __init__(self, numeroCas):
     initEtude()

@@ -48,7 +48,7 @@ class fissureCoude(fissureGenerique):
   maillage hexa
   """
 
-  nomProbleme = "tuyau_Coude"
+  nomProbleme = "fissureCoude"
 
   # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):

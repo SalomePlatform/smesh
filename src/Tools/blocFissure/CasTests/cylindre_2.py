@@ -38,9 +38,8 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class cylindre_2(cylindre):
-  """
-  problème de fissure plane sur cylindre hexa, fond de fissure complexe : polyline
-  """
+  """problème de fissure plane sur cylindre hexa, fond de fissure complexe : polyline"""
+
   nomProbleme = "cylindre2"
 
   # ---------------------------------------------------------------------------

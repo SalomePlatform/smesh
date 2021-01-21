@@ -41,9 +41,7 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class eprouvetteCourbe(fissureGenerique):
-  """
-  problème de fissure plane coupant 3 faces (éprouvette), faces au débouché non planes, incidence presque normale
-  """
+  """problème de fissure plane coupant 3 faces (éprouvette), faces au débouché non planes, incidence presque normale"""
 
   nomProbleme = "eprouvetteCourbe"
 

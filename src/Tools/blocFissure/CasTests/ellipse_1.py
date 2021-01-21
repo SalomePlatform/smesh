@@ -41,9 +41,7 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class ellipse_1(fissureGenerique):
-  """
-  problème de fissure non plane, débouchante non normale
-  """
+  """problème de fissure non plane, débouchante non normale"""
 
   nomProbleme = "ellipse1"
 

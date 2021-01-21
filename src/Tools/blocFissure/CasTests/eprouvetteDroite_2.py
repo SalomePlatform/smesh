@@ -41,11 +41,9 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class eprouvetteDroite_2(eprouvetteDroite):
-  """
-  problème de fissure plane coupant 3 faces (éprouvette), débouches non normaux, objet plan
-  """
+  """problème de fissure plane coupant 3 faces (éprouvette), débouches non normaux, objet plan"""
 
-  nomProbleme = "eprouvetteDroite2"
+  nomProbleme = "eprouvetteDroite_2"
 
   # ---------------------------------------------------------------------------
   def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):

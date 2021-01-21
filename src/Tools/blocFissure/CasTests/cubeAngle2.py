@@ -21,8 +21,8 @@
 from .cubeAngle import cubeAngle
 
 class cubeAngle2(cubeAngle):
-  """
-  problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan
+  """problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan
+
   detection d'un probleme de tolerance sur les edges de jonction pipe et face fissure externe 
   """
 

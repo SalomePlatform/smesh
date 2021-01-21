@@ -42,11 +42,9 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class faceGauche_2(fissureGenerique):
-  """
-  problème de fissure non plane, débouchante non normale
-  """
+  """problème de fissure non plane, débouchante non normale"""
 
-  nomProbleme = "faceGauche2"
+  nomProbleme = "faceGauche_2"
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):

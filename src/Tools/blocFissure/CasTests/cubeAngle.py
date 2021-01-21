@@ -41,9 +41,7 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class cubeAngle(fissureGenerique):
-  """
-  problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan
-  """
+  """problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan"""
 
   nomProbleme = "cubeAngle"
 

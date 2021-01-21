@@ -21,10 +21,10 @@
 from blocFissure.gmu.fissureCoude  import fissureCoude
 
 class fissureCoude_2(fissureCoude):
+  """problème de fissure du Coude : adaptation maillage
   """
-  problème de fissure du Coude :
-  adaptation maillage
-  """
+
+  nomProbleme = "fissureCoude_2"
 
 # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
