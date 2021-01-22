@@ -88,7 +88,7 @@ status = Disque_1.AddHypothesis(Nb_Segments_2,Compound_4)
 Quadrangle_2D = Disque_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 isDone = Disque_1.Compute()
 smesh.SetName(Disque_1, 'Disque')
-Disque_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/disque.med"))
+Disque_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "disque.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 

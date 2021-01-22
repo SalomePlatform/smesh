@@ -109,9 +109,9 @@ geompy.addToStudy( O_1, 'O' )
 geompy.addToStudy( OX_1, 'OX' )
 geompy.addToStudy( OY_1, 'OY' )
 geompy.addToStudy( OZ_1, 'OZ' )
-geompy.ExportBREP(cubeFin_Transverse, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Transverse.brep"))
-geompy.ExportBREP(cubeFin_Coin, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Coin.brep"))
-geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Milieu.brep"))
+geompy.ExportBREP(cubeFin_Transverse, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Transverse.brep"))
+geompy.ExportBREP(cubeFin_Coin, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Coin.brep"))
+geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Milieu.brep"))
 
 ###
 ### SMESH component
@@ -140,7 +140,7 @@ smesh.SetName(ENCASTR_1, 'ENCASTR')
 smesh.SetName(cubeFin_1.GetMesh(), 'cubeFin')
 smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
 
-cubeFin_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/cubeFin.med"))
+cubeFin_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin.med"))
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()
