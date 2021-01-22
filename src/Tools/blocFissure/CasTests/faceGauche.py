@@ -49,7 +49,7 @@ class faceGauche(fissureGenerique):
   def genereMaillageSain(self, geometriesSaines, meshParams):
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests/faceGaucheSain.med"))
+    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "faceGaucheSain.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -73,7 +73,7 @@ class faceGauche(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/faceGaucheFiss.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "faceGaucheFiss.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [6])
     geompy.addToStudy( shellFiss, 'shellFiss' )

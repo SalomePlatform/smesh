@@ -51,7 +51,7 @@ class eprouvetteDroite_2(eprouvetteDroite):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_2.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteDroiteFiss_2.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [10])
     geompy.addToStudy( shellFiss, 'shellFiss' )

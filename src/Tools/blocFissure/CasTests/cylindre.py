@@ -53,7 +53,7 @@ class cylindre(fissureGenerique):
     """
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests/CylindreSain.med"))
+    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "CylindreSain.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -75,7 +75,7 @@ class cylindre(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre2.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "FissInCylindre2.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [6])
     geompy.addToStudy( shellFiss, 'shellFiss' )

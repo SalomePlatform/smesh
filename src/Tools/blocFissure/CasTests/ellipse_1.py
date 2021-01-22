@@ -55,7 +55,7 @@ class ellipse_1(fissureGenerique):
   def genereMaillageSain(self, geometriesSaines, meshParams):
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests/boiteSaine.med"))
+    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "boiteSaine.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -79,7 +79,7 @@ class ellipse_1(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/ellipse1.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "ellipse1.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )

@@ -76,9 +76,9 @@ def fissureGeneraleDlg(context):
 
     def initDefaut(self):
       self.defaut = dict( \
-        nomCas            = 'angleCube', \
-        maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med'), \
-        brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"), \
+        nomCas            = "angleCube", \
+        maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med"), \
+        brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep"), \
         edgeFissIds       = [3], \
         lgInfluence       = 20, \
         meshBrep          = (5,10), \
@@ -88,8 +88,8 @@ def fissureGeneraleDlg(context):
         nbSegCercle       = 32, \
         areteFaceFissure  = 10, \
         areteVives        = 0, \
-        reptrav           = '.', \
-        nomres            = 'maillage_avec_fissure', \
+        reptrav           = os.curdir, \
+        nomres            = "maillage_avec_fissure", \
         verbosite         = 0)
 
 
@@ -189,7 +189,7 @@ def fissureGeneraleDlg(context):
       return incomplet
 
     def fileDefault(self):
-      filedef = os.path.expanduser("~/.config/salome/dialogFissureGenerale.dic")
+      filedef = os.path.expanduser( os.path.join(os.environ["HOME"],".config", "salome", "dialogFissureGenerale.dic") )
       print(filedef)
       return filedef
 
@@ -199,8 +199,8 @@ def fissureGeneraleDlg(context):
         f.write(str(dico))
 
     def genereExemples(self):
-      maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med')
-      brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep")
+      maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med")
+      brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep")
       if (os.path.exists(maillageSain) and os.path.exists(brepFaceFissure)):
         self.initDialog(self.defaut)
       else:

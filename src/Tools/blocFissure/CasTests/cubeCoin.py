@@ -21,9 +21,9 @@
 import os
 from blocFissure import gmu
 
-dicoParams = dict(nomCas            = 'cubeCoin',
-                  maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/cubeFin.med'),
-                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Coin.brep"),
+dicoParams = dict(nomCas            = "cubeCoin",
+                  maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin.med"),
+                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Coin.brep"),
                   edgeFissIds       = [6],
                   lgInfluence       = 50,
                   meshBrep          = (5,10),

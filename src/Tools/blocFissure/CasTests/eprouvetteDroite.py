@@ -52,7 +52,7 @@ class eprouvetteDroite(fissureGenerique):
   def genereMaillageSain(self, geometriesSaines, meshParams):
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests/eprouvetteDroite.med"))
+    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "eprouvetteDroite.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -77,7 +77,7 @@ class eprouvetteDroite(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_1.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteDroiteFiss_1.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [8])
     geompy.addToStudy( shellFiss, 'shellFiss' )

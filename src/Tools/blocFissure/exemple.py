@@ -26,9 +26,9 @@ initLog.setDebug()
 
 from blocFissure.gmu.casStandard import casStandard
 
-dicoParams = dict(nomCas            = 'angleCube',
-                  maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med'),
-                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"),
+dicoParams = dict(nomCas            = "angleCube",
+                  maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med"),
+                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep"),
                   edgeFissIds       = [4],
                   lgInfluence       = 20,
                   meshBrep          = (5,10),
