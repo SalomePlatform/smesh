@@ -41,6 +41,7 @@ else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,
 from blocFissure.gmu import geomsmesh
 from blocFissure.gmu.casStandard import casStandard
 
+d_aux = dict()
 problemes = list()
 
 n_cas = 0
@@ -53,15 +54,18 @@ problemes.append(cubeAngle2(n_cas))
 
 n_cas += 1
 from blocFissure.CasTests import cubeCoin
-problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, n_cas, "cubeCoin"))
+problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, n_cas))
+d_aux[n_cas] = "cubeCoin"
 
 n_cas += 1
 from blocFissure.CasTests import cubeMilieu
-problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, n_cas, "cubeMilieu"))
+problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, n_cas))
+d_aux[n_cas] = "cubeMilieu"
 
 n_cas += 1
 from blocFissure.CasTests import cubeTransverse
-problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, n_cas, "cubeTransverse"))
+problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, n_cas))
+d_aux[n_cas] = "cubeTransverse"
 
 n_cas += 1
 from blocFissure.CasTests.cylindre import cylindre
@@ -73,7 +77,8 @@ problemes.append(cylindre_2(n_cas))
 
 n_cas += 1
 from blocFissure.CasTests import disquePerce
-problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, n_cas, "disquePerce"))
+problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, n_cas))
+d_aux[n_cas] = "disquePerce"
 
 n_cas += 1
 from blocFissure.CasTests.ellipse_1 import ellipse_1
@@ -167,16 +172,20 @@ while True:
 
   ligne = "---------------------------------------------------------------------"
   texte = ""
-  for iaux, cas in enumerate(problemes):
-    #print ("Cas n° {}, '{}'".format(iaux,cas.nomProbleme))
-    if torun[iaux]:
-      texte_a = "\n=== Exécution du cas n° {}, '{}'".format(iaux,cas.nomProbleme)
+  for n_cas, cas in enumerate(problemes):
+    #print ("Cas n° {}, '{}'".format(n_cas,cas.nomProbleme))
+    if torun[n_cas]:
+      if n_cas in d_aux:
+        nom = d_aux[n_cas]
+      else:
+        nom = cas.nomProbleme
+      texte_a = "\n=== Exécution du cas n° {}, '{}'".format(n_cas,nom)
       logging.critical(ligne+texte_a)
       try:
         cas.executeProbleme()
       except:
         traceback.print_exc()
-        texte += "Problème avec le cas n° {}, '{}'\n".format(iaux,cas.nomProbleme)
+        texte += "Problème avec le cas n° {}, '{}'\n".format(n_cas,nom)
       print(ligne)
 
   if not texte:
