@@ -34,6 +34,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   """
   Retrouve les groupes de défaut dans le maillage sain modifié par CreateHoleSkin (CreeZoneDefautMaillage)
   On récupère le volume et la peau de la zone de défaut, les éventuelles faces et arêtes internes de cette zone.
+  Remarque : intérêt du passage par fichierMaillage plutôt que par maillageSain ?
   """
   logging.info("start")
   ([maillageSain], status) = smesh.CreateMeshesFromMED(fichierMaillage)
@@ -86,8 +87,8 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   
   maillageDefautCible = smesh.CopyMesh(zoneDefaut_skin, 'maillageCible', 0, 0)
   listOfCorner = lookForCorner(maillageDefautCible)
-  logging.debug("listOfCorner = %s", listOfCorner)
-  if len(listOfCorner) > 0:
+  logging.debug("listOfCorner = {}".format(listOfCorner))
+  if listOfCorner:
       logging.info("présence de coins à la surface externe de la zone à reconstruire")
       zoneDefaut_skin, internalBoundary = fusionMaillageDefaut(maillageSain, maillageDefautCible, internalBoundary, zoneDefaut_skin, shapeDefaut, listOfCorner)
 

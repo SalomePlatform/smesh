@@ -33,6 +33,7 @@ def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFi
   maillage faces de fissure
   """
   logging.info('start')
+  logging.info("Maillage de {}".format(faceFissureExterne.GetName()))
 
   meshFaceFiss = smesh.Mesh(faceFissureExterne)
   algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_1D2D)
@@ -46,18 +47,25 @@ def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFi
   putName(algo2d.GetSubMesh(), "faceFiss")
   putName(algo2d, "algo2d_faceFiss")
   putName(hypo2d, "hypo2d_faceFiss")
-  
+
+  logging.info('Récupération des arêtes de {}'.format(edgesPipeFissureExterneC.GetName()))
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
   hypo1d = algo1d.SourceEdges([ meshPipeGroups['edgeFaceFissGroup'] ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau")
   putName(algo1d, "algo1d_edgeFissPeau")
   putName(hypo1d, "hypo1d_edgeFissPeau")
-  
-  isDone = meshFaceFiss.Compute()
-  logging.info("meshFaceFiss fini")
 
   grpFaceFissureExterne = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
   grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
   grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
+
+  isDone = meshFaceFiss.Compute()
+  text = "meshFaceFiss fini"
+  if isDone:
+    logging.info(text)
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
 
   return (meshFaceFiss, grpFaceFissureExterne, grpEdgesPeauFissureExterne, grpEdgesPipeFissureExterne)

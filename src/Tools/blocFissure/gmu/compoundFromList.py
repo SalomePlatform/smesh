@@ -25,12 +25,11 @@ from .geomsmesh import geomPublishInFather
 from . import initLog
 
 def compoundFromList(elements, nom=None):
-  """
-  
-  """
+  """compoundFromList"""
+
   logging.debug('start')
   
-  shapeList = []
+  shapeList = list()
   for a in elements:
     if not isinstance(a, list):
       shapeList.append(a)

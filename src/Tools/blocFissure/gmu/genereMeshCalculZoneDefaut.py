@@ -41,6 +41,8 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize):
    dans une liste sous la forme : [X0, Y0, Z0, ..., Xn, Yn, Zn]"""
    
   logging.info('start')
+  text = "Maillage de '{}'".format(facefiss.GetName())
+  logging.info(text)
 
   meshFissure = smesh.Mesh(facefiss)
   algo2d = meshFissure.Triangle(algo=smeshBuilder.NETGEN_1D2D)
@@ -51,15 +53,27 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize):
   hypo2d.SetFineness( 2 )
   hypo2d.SetMinSize( minSize )
   hypo2d.SetQuadAllowed( 0 )
-  isDone = meshFissure.Compute()
   smesh.SetName(algo2d, "algo2d_zoneFiss")
   smesh.SetName(hypo2d, "hypo1d_zoneFiss")
 
-  coordsNoeudsFissure = []
+  isDone = meshFissure.Compute()
+
+  if isDone:
+    logging.info(text+" : OK")
+    logging.debug(text+" : OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
+
+  coordsNoeudsFissure = list()
   nodeIds = meshFissure.GetNodesId()
   for id in nodeIds:
     coords = meshFissure.GetNodeXYZ(id)
     coordsNoeudsFissure.append(coords[0])
     coordsNoeudsFissure.append(coords[1])
     coordsNoeudsFissure.append(coords[2])
+
+  logging.info('end')
+
   return coordsNoeudsFissure

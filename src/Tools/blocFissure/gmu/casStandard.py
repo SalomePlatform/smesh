@@ -28,9 +28,6 @@ import math
 import GEOM
 import SALOMEDS
 import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
 import logging
 
 from .fissureGenerique import fissureGenerique
@@ -44,8 +41,8 @@ from .construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class casStandard(fissureGenerique):
-  """
-  problème de fissure standard, défini par :
+  """problème de fissure standard, défini par :
+
   - un maillage sain (hexaèdres),
   - une face géométrique de fissure, qui doit légèrement dépasser hors du volume maillé
   - les numéros d'arêtes (edges géométriques) correspondant au fond de fissure
@@ -66,7 +63,7 @@ class casStandard(fissureGenerique):
     if 'reptrav' in self.dicoParams:
       self.reptrav = self.dicoParams['reptrav']
     else:
-      self.reptrav = '.'
+      self.reptrav = os.curdir
     self.numeroCas = numeroCas
     if self.numeroCas != 0:
       self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
@@ -176,11 +173,13 @@ class casStandard(fissureGenerique):
     if self.references is not None:
       self.referencesMaillageFissure = self.references
     else:
-      self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 0,
-                                            Entity_Quad_Triangle   = 0,
-                                            Entity_Quad_Edge       = 0,
-                                            Entity_Quad_Penta      = 0,
-                                            Entity_Quad_Hexa       = 0,
-                                            Entity_Node            = 0,
-                                            Entity_Quad_Tetra      = 0,
-                                            Entity_Quad_Quadrangle = 0)
+      self.referencesMaillageFissure = dict( \
+                                            Entity_Quad_Quadrangle = 0, \
+                                            Entity_Quad_Hexa = 0, \
+                                            Entity_Node = 0, \
+                                            Entity_Quad_Edge = 0, \
+                                            Entity_Quad_Triangle = 0, \
+                                            Entity_Quad_Tetra = 0, \
+                                            Entity_Quad_Pyramid = 0, \
+                                            Entity_Quad_Penta = 0 \
+                                           )

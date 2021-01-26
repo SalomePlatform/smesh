@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""fissureGenerique"""
 
 import logging
 
@@ -24,9 +25,9 @@ from blocFissure import gmu
 from blocFissure.gmu.initEtude import initEtude
 from blocFissure.gmu.getStatsMaillageFissure import getStatsMaillageFissure
 
-class fissureGenerique():
-  """
-  classe générique problème fissure:
+class fissureGenerique(object):
+  """classe générique problème fissure:
+
   génération géométrie et maillage sain
   définition et positionnement d'une fissure
   génération d'un bloc défaut inséré dans le maillage sain
@@ -41,46 +42,58 @@ class fissureGenerique():
     self.fissureLongue = False
 
   def setParamGeometrieSaine(self):
-    self.geomParams = {}
+    """setParamGeometrieSaine"""
+    self.geomParams = dict()
 
   def genereGeometrieSaine(self, geomParams):
+    """genereGeometrieSaine"""
     geometriesSaines = [None]
     return geometriesSaines
 
   def setParamMaillageSain(self):
-    self.meshParams = {}
+    """setParamMaillageSain"""
+    self.meshParams = dict()
 
   def genereMaillageSain(self, geometriesSaines, meshParams):
+    """genereMaillageSain"""
     maillagesSains = [None]
     return maillagesSains
 
   def setParamShapeFissure(self):
-    self.shapeFissureParams = {}
+    """setParamShapeFissure"""
+    self.shapeFissureParams = dict()
 
   def genereShapeFissure(self, geometriesSaines, geomParams, shapeFissureParams):
+    """genereShapeFissure"""
     shapesFissure = [None]
     return shapesFissure
 
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = {}
+    """setParamMaillageFissure"""
+    self.maillageFissureParams = dict()
 
   def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, maillageFissureParams):
+    """genereZoneDefaut"""
     elementsDefaut = [None]
     return elementsDefaut
 
   def genereMaillageFissure(self, geometriesSaines, maillagesSains, shapesFissure,
-                            maillageFissureParams, elementsDefaut, step):
+                            maillageFissureParams, elementsDefaut):
+    """genereMaillageFissure"""
     maillageFissure = None
     return maillageFissure
 
   def setReferencesMaillageFissure(self):
-    referencesMaillageFissure = {}
+    """setReferencesMaillageFissure"""
+    referencesMaillageFissure = dict()
     return referencesMaillageFissure
 
 # ---------------------------------------------------------------------------
 
   def executeProbleme(self, step=-1):
-    logging.info(" --- executeProbleme %s", self.nomCas)
+    """executeProbleme"""
+    texte = " --- fissureGenerique.executeProbleme pour '{}', step = {}".format(self.nomCas,step)
+    logging.info(texte)
     if step == 0:
       return
 
@@ -109,10 +122,5 @@ class fissureGenerique():
                                                  self.maillageFissureParams, elementsDefaut, step)
 
     self.setReferencesMaillageFissure()
-    mesures = getStatsMaillageFissure(maillageFissure, self.referencesMaillageFissure, self.maillageFissureParams)
-
-
-
-
-
-
+    ok_maillage = getStatsMaillageFissure(maillageFissure, self.referencesMaillageFissure, self.maillageFissureParams)
+    return ok_maillage

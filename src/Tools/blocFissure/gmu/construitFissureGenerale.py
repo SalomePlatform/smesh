@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 import logging
 import salome
 from .geomsmesh import geompy
@@ -82,7 +84,7 @@ def construitFissureGenerale(maillagesSains,
   TODO: a completer
   """
   logging.info('start')
-  
+
   shapeDefaut       = shapesFissure[0] # faces de fissure, débordant
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
 
@@ -121,8 +123,7 @@ def construitFissureGenerale(maillagesSains,
   else:
     pointInterne = None
 
-  #fichierMaillageSain = nomRep + '/' + nomFicSain + '.med'
-  fichierMaillageFissure = nomRep + '/' + nomFicFissure + '.med'
+  fichierMaillageFissure = os.path.join (nomRep , '{}.med'.format(nomFicFissure))
 
   # fillings des faces en peau
   facesDefaut              = elementsDefaut[0]
@@ -150,17 +151,18 @@ def construitFissureGenerale(maillagesSains,
 
   # --- restriction de la face de fissure au domaine solide :
   #     partition face fissure étendue par fillings, on garde la face interne
-  
+
   facesPortFissure = restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne)
- 
+
   # --- pipe de fond de fissure, prolongé, partition face fissure par pipe
   #     identification des edges communes pipe et face fissure
-  
+
   (fissPipe, edgesPipeFiss, edgesFondFiss, wirePipeFiss, wireFondFiss) = partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe)
   edgesFondFiss, edgesIdByOrientation = orderEdgesFromWire(wireFondFiss)
+
   for i,edge in enumerate(edgesFondFiss):
     geomPublishInFather(initLog.debug, wireFondFiss, edge, "edgeFondFiss%d"%i)
-  
+
   # --- peau et face de fissure
   #
   # --- partition peau défaut - face de fissure prolongée - wire de fond de fissure prolongée
@@ -169,39 +171,40 @@ def construitFissureGenerale(maillagesSains,
   #     liste de partitions face externe - fissure : partitionPeauFissFond (None quand pas d'intersection)
 
   partitionsPeauFissFond = construitPartitionsPeauFissure(facesDefaut, fissPipe)
-    
+
   # --- arêtes vives détectées (dans quadranglesToShapeNoCorner
   #                             et quadranglesToShapeWithCorner)
-    
+
   aretesVivesC = compoundFromList(bordsPartages, "areteVive")
-  aretesVivesCoupees = []  # ensembles des arêtes vives identifiées sur les faces de peau dans l'itération sur partitionsPeauFissFond
-   
+  aretesVivesCoupees = list()  # ensembles des arêtes vives identifiées sur les faces de peau dans l'itération sur partitionsPeauFissFond
+
   # --- inventaire des faces de peau coupées par la fissure
   #     pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
   #                                0, 1 ou plus edges de la face de fissure externe au pipe
-  
+
   nbFacesFilling = len(partitionsPeauFissFond)
-  
-  ptEdgeFond = [ []  for i in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux débouchés du pipe]
-  fsPipePeau = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
-  edRadFPiPo = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe débouchantes ]
-  fsFissuExt = [ []  for i in range(nbFacesFilling)] # pour chaque face [faces de fissure externes au pipe]
-  edFisExtPe = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge en peau des faces de fissure externes (pas subshape facePeau)]
-  edFisExtPi = [ []  for i in range(nbFacesFilling)] # pour chaque face [edge commun au pipe des faces de fissure externes]
+  logging.info("nbFacesFilling : {} ".format(nbFacesFilling))
+
+  ptEdgeFond = [ list()  for i in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux débouchés du pipe]
+  fsPipePeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
+  edRadFPiPo = [ list()  for i in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe débouchantes ]
+  fsFissuExt = [ list()  for i in range(nbFacesFilling)] # pour chaque face [faces de fissure externes au pipe]
+  edFisExtPe = [ list()  for i in range(nbFacesFilling)] # pour chaque face [edge en peau des faces de fissure externes (pas subshape facePeau)]
+  edFisExtPi = [ list()  for i in range(nbFacesFilling)] # pour chaque face [edge commun au pipe des faces de fissure externes]
   facesPeaux = [None for i in range(nbFacesFilling)] # pour chaque face : la face de peau finale a mailler (percée des faces débouchantes)
-  edCircPeau = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
-  ptCircPeau = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
+  edCircPeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
+  ptCircPeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
   gpedgeBord = [None for i in range(nbFacesFilling)] # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
   gpedgeVifs = [None for i in range(nbFacesFilling)] # pour chaque face de peau : groupes subshape des edges aux arêtes vives entre fillings
-  edFissPeau = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
-  ptFisExtPi = [ []  for i in range(nbFacesFilling)] # pour chaque face de peau : [point commun edFissPeau edCircPeau]
-  
+  edFissPeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
+  ptFisExtPi = [ list()  for i in range(nbFacesFilling)] # pour chaque face de peau : [point commun edFissPeau edCircPeau]
+
   for ifil, partitionPeauFissFond in enumerate(partitionsPeauFissFond):
     if partitionPeauFissFond is not None:
       dataPPFF,aretesVivesCoupees = identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss,
                                                                       edgesFondFiss, wireFondFiss, aretesVivesC,
                                                                       facesDefaut, centreFondFiss, rayonPipe,
-                                                                      aretesVivesCoupees)      
+                                                                      aretesVivesCoupees)
       ptEdgeFond[ifil] = dataPPFF['endsEdgeFond']
       fsPipePeau[ifil] = dataPPFF['facesPipePeau']
       edRadFPiPo[ifil] = dataPPFF['edgeRadFacePipePeau']
@@ -216,18 +219,18 @@ def construitFissureGenerale(maillagesSains,
       edFissPeau[ifil] = dataPPFF['edgesFissurePeau']
       ptFisExtPi[ifil] = dataPPFF['verticesPipePeau']
 
-  facesPipePeau = []
-  edgeRadFacePipePeau = []
+  facesPipePeau = list()
+  edgeRadFacePipePeau = list()
   for ifil in range(nbFacesFilling):
     facesPipePeau += fsPipePeau[ifil]
     edgeRadFacePipePeau += edRadFPiPo[ifil]
-  
+
   for i, avc in enumerate(aretesVivesCoupees):
     name = "areteViveCoupee%d"%i
     geomPublish(initLog.debug, avc, name)
-  
+
   # --- identification des faces et edges de fissure externe pour maillage
-  
+
   (faceFissureExterne, edgesPipeFissureExterneC,
     wirePipeFissureExterne, edgesPeauFissureExterneC) = identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe,
                                                                                           edFisExtPi, edgesPipeFiss)
@@ -236,52 +239,52 @@ def construitFissureGenerale(maillagesSains,
   #     - détections des points a respecter : jonction des edges/faces constituant la face de fissure externe au pipe
   #     - points sur les edges de fond de fissure et edges pipe/face fissure,
   #     - vecteurs tangents au fond de fissure (normal au disque maillé)
-  
-  (centres, gptsdisks, raydisks) = calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut, 
+
+  (centres, gptsdisks, raydisks) = calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
                                                            centreFondFiss, wireFondFiss, wirePipeFiss,
                                                            lenSegPipe, rayonPipe, nbsegCercle, nbsegRad)
-   
+
   # --- recherche des points en trop (externes au volume à remailler)
-  #     - on associe chaque extrémité du pipe à une face filling 
+  #     - on associe chaque extrémité du pipe à une face filling
   #     - on part des disques aux extrémités du pipe
   #     - pour chaque disque, on prend les vertices de géométrie,
   #       on marque leur position relative à la face.
   #     - on s'arrete quand tous les noeuds sont dedans
-  
+
   (idFillingFromBout, idisklim, idiskout) = elimineExtremitesPipe(ptEdgeFond, facesDefaut, centres, gptsdisks, nbsegCercle)
 
   # --- construction des listes d'edges radiales sur chaque extrémité débouchante
-  
+
   (listEdges, idFacesDebouchantes) = construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
                                                                         facesPipePeau, edgeRadFacePipePeau, nbsegCercle)
-    
+
   # --- création des points du maillage du pipe sur la face de peau
-  
+
   (gptsdisks, idisklim) = creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
                                              ptEdgeFond, ptFisExtPi, edCircPeau, gptsdisks, idisklim, nbsegRad)
-  
+
   # --- ajustement precis des points sur edgesPipeFissureExterneC
-  
+
   gptsdisks = ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne, gptsdisks, idisklim)
-    
+
    # --- maillage effectif du pipe
 
   (meshPipe, meshPipeGroups, edgesCircPipeGroup) = construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad)
-  
+
   # --- edges de bord, faces défaut à respecter
-  
+
   (internalBoundary, bordsLibres, grpAretesVives) = mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives)
 
   # --- maillage faces de fissure
-  
-  (meshFaceFiss, grpFaceFissureExterne, 
+
+  (meshFaceFiss, grpFaceFissureExterne,
    grpEdgesPeauFissureExterne, grpEdgesPipeFissureExterne) = mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFissureExterneC,
                                                                                 meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad)
 
   # --- maillage faces de peau
-  
+
   meshesFacesPeau = mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
-                                    facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, 
+                                    facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau,
                                     bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives,
                                     edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad)
 
@@ -318,7 +321,7 @@ def construitFissureGenerale(maillagesSains,
   isDone = meshBoiteDefaut.Compute()
   putName(meshBoiteDefaut, "boiteDefaut")
   logging.info("meshBoiteDefaut fini")
-  
+
   faceFissure = meshBoiteDefaut.GetMesh().UnionListOfGroups( [ group_faceFissOutPipe, group_faceFissInPipe ], 'FACE1' )
   maillageSain = enleveDefaut(maillageSain, zoneDefaut, zoneDefaut_skin,
                               zoneDefaut_internalFaces, zoneDefaut_internalEdges)
@@ -354,5 +357,5 @@ def construitFissureGenerale(maillagesSains,
     salome.sg.updateObjBrowser()
 
   logging.info("maillage fissure fini")
-  
+
   return maillageComplet

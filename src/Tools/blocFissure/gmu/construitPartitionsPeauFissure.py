@@ -50,7 +50,7 @@ def construitPartitionsPeauFissure(facesDefaut, fissPipe):
     isPart = checkDecoupePartition([fissPipe, filling], part)
     if isPart: # on recrée la partition avec toutes les faces filling en outil pour avoir une face de fissure correcte
       otherFD = [fd for fd in facesDefaut if fd != filling]
-      if len(otherFD) > 0:
+      if otherFD:
         fissPipePart = geompy.MakePartition([fissPipe], otherFD, [], [], geompy.ShapeType["FACE"], 0, [], 0)
       else:
         fissPipePart = fissPipe
@@ -59,6 +59,6 @@ def construitPartitionsPeauFissure(facesDefaut, fissPipe):
       geomPublish(initLog.debug, part, 'partitionPeauFissFond%d'%ipart )
     else:
       partitionsPeauFissFond.append(None)
-    ipart = ipart +1
+    ipart += 1
 
   return partitionsPeauFissFond

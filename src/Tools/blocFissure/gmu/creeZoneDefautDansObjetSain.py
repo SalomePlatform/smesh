@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 import logging
 from .geomsmesh import smesh
 import SMESH
@@ -62,7 +64,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   nomRep              = maillageFissureParams['nomRep']
   nomFicSain          = maillageFissureParams['nomFicSain']
 
-  fichierMaillageSain    = nomRep + '/' + nomFicSain + '.med'
+  fichierMaillageSain = os.path.join (nomRep , '{}.med'.format(nomFicSain))
   
   # --- centre de fond de fissure et tangente
   
@@ -80,10 +82,10 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   [maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges] = \
     peauInterne(fichierMaillageSain, shapeDefaut, nomZones)
 
-  facesDefaut = []
-  centresDefaut = []
-  normalsDefaut =[]
-  extrusionsDefaut = []
+  facesDefaut = list()
+  centresDefaut = list()
+  normalsDefaut = list()
+  extrusionsDefaut = list()
   isPlane = False
   if isHexa and not isPlane:
     meshQuad =  smesh.CopyMesh( zoneDefaut_skin, 'meshQuad', 0, 0)
@@ -100,7 +102,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   else:
     [facesDefaut, centreDefaut, normalDefaut, extrusionDefaut] = \
       creeZoneDefautGeom( geometrieSaine, shapeDefaut, origShapes, verticesShapes, dmoyen, lgExtrusion)
-    bordsPartages = []
+    bordsPartages = list()
     for face in facesDefaut:
       bordsPartages.append([None,None]) # TODO : traitement des arêtes vives ?
     fillconts = facesDefaut

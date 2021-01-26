@@ -40,7 +40,7 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
   fichierNewRef = os.path.join(nomRep, "{}.new".format(nomFicFissure))
   logging.debug("fichierStatMaillageFissure=%s", fichierStatMaillageFissure)
 
-  OK = False
+  ok_maillage = False
   if maillage is not None:
     mesures = maillage.GetMeshInfo()
     d_resu = dict()
@@ -50,12 +50,12 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
     logging.debug("dico mesures %s", d_resu)
 
     text_2 = ""
-    OK = True
+    ok_maillage = True
     with open(fichierStatMaillageFissure, "w") as fic_stat :
       for key in ('Entity_Quad_Quadrangle', 'Entity_Quad_Hexa'):
         if d_resu[key] != referencesMaillageFissure[key]:
           text = "Ecart"
-          OK = False
+          ok_maillage = False
         else:
           text = "Valeur_OK"
         text += ": {} reference: {} calcul: {}".format(key,referencesMaillageFissure[key],d_resu[key])
@@ -67,7 +67,7 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
         if (d_resu[key] < (1.0 - tolerance)*referencesMaillageFissure[key]) \
         or (d_resu[key] > (1.0 + tolerance)*referencesMaillageFissure[key]):
           text = "Ecart"
-          OK = False
+          ok_maillage = False
         else:
           text = "Valeur_OK"
         text += ": {} reference: {} calcul: {}".format(key,referencesMaillageFissure[key],d_resu[key])
@@ -79,7 +79,7 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
     with open(fichierNewRef, "w") as fic_info :
       fic_info.write(text_2[:-4]+" \\")
 
-    if OK:
+    if ok_maillage:
       print ("Calcul cohérent avec la référence.")
     else:
       text = "Calcul différent de la référence.\n"
@@ -88,4 +88,4 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
       text += "Il faut l'insérer pour créer le dictionnaire 'referencesMaillageFissure' dans le paramétrage du cas."
       print (text)
 
-  return OK
+  return ok_maillage

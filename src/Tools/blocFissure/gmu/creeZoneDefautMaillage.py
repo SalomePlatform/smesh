@@ -53,11 +53,11 @@ def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
   isHexa = maillagesSains[1]
   lists = maillageSain.CreateHoleSkin(tailleDefaut, shapeDefaut, nomZones, coordsNoeudsFissure)
 
-  logging.debug("lists=%s", lists)
+  logging.debug("lists={}".format(lists))
 
   trace = True
-  origShapes = []
-  verticesShapes = []
+  origShapes = list()
+  verticesShapes = list()
 
   cumul = 0 # somme des distances carrées entre point ordonnés (taille des arêtes)
   nb = 0    # nombre d'arêtes évaluées
@@ -65,8 +65,8 @@ def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
   for aList in lists:
     aShape = aList[0]
     origShapes.append(aShape)
-    logging.debug("  shapeId %s", aShape)
-    vertices = []
+    logging.debug("  shapeId {}".format(aShape))
+    vertices = list()
     xyz0 = None
     for inode in range(1, len(aList)):
       xyz = maillageSain.GetNodeXYZ(aList[inode])

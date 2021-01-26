@@ -32,7 +32,7 @@ def orderEdgesFromWire(aWire):
   logging.info("start")
   edges = geompy.ExtractShapes(aWire, geompy.ShapeType["EDGE"], False)
   
-  idverts = {}
+  idverts = dict()
   for i, edge in enumerate(edges):
     verts = geompy.ExtractShapes(edge, geompy.ShapeType["VERTEX"], True)
 #    idverts[(i,0)] = verts[0]
@@ -46,7 +46,7 @@ def orderEdgesFromWire(aWire):
       idverts[(i,0)] = verts[1]
       idverts[(i,1)] = verts[0]
      
-  idsubs = {}
+  idsubs = dict()
   for kv, sub in idverts.items():
     subid = geompy.GetSubShapeID(aWire, sub)
     if subid in list(idsubs.keys()):
@@ -63,7 +63,7 @@ def orderEdgesFromWire(aWire):
         debut = kv[0]
       else:
         fin = kv[0]
-  logging.debug("nombre d'edges: %s, indice edge début: %s, fin: %s",len(edges), debut, fin)
+  logging.debug("nombre d'edges: {}, indice edge début: {}, fin: {}".format(len(edges), debut, fin))
   if debut < 0:
     logging.critical("les edges du wire ne sont pas orientées dans le même sens: pas de début trouvé")
     return edges, list(range(len(edges)))
@@ -82,9 +82,9 @@ def orderEdgesFromWire(aWire):
             logging.critical("les edges du wire ne sont pas orientées dans le même sens: une edge à l'envers")
             return edges, list(range(len(edges)))
 
-  logging.debug("liste des edges ordonnées selon le sens de parcours: %s", orderedList)
+  logging.debug("liste des edges ordonnées selon le sens de parcours : {}".format(orderedList))
   accessList = list(range(len(orderedList)))
   for i,k in enumerate(orderedList):
     accessList[k] = i
-  logging.info("position ordonnée des edges selon le sens de parcours: %s", accessList)
+  logging.info("position ordonnée des edges selon le sens de parcours : {}".format(accessList))
   return edges, accessList
