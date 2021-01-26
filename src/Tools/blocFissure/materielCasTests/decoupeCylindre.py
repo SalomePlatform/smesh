@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import logging
+
 import sys
 import salome
 
