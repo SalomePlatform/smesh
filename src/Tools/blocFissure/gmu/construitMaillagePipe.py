@@ -185,4 +185,8 @@ def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad):
                         edgesCircPipeGroup = edgesCircPipeGroup \
                         )
 
+  #if meshPipe:
+    #text = "Arrêt rapide.\n"
+    #logging.info(text)
+    #raise Exception(text)
   return (meshPipe, meshPipeGroups, edgesCircPipeGroup)

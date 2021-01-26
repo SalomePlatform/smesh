@@ -211,9 +211,9 @@ conge_1 = coupe_vis_1.GroupOnGeom(conge,'conge',SMESH.EDGE)
 appui_1 = coupe_vis_1.GroupOnGeom(appui,'appui',SMESH.EDGE)
 p_imp_1 = coupe_vis_1.GroupOnGeom(p_imp,'p_imp',SMESH.EDGE)
 
-isDone = coupe_vis_1.Compute()
-text = "Maillage de {}".format(coupe_vis.GetName())
-if isDone:
+is_done = coupe_vis_1.Compute()
+text = "coupe_vis_1.Compute"
+if is_done:
   logging.debug(text+" : OK")
 else:
   text = "Erreur au calcul du maillage.\n" + text

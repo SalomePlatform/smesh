@@ -295,7 +295,14 @@ class fissureCoude(fissureGenerique):
     smesh.SetName(algo1d_long_p2, "algo1d_long_p2")
     smesh.SetName(hypo1d_long_p2, "hypo1d_long_p2")
 
-    isDone = maillageSain.Compute()
+    is_done = maillageSain.Compute()
+    text = "maillageSain.Compute"
+    if is_done:
+      logging.info(text+" OK")
+    else:
+      text = "Erreur au calcul du maillage.\n" + text
+      logging.info(text)
+      raise Exception(text)
 
     mp1 = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
     mp2 = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)

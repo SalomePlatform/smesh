@@ -194,7 +194,14 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
     putName(algo3d, "algo3d_ellipsoide")
     putName(hypo3d, "hypo3d_ellipsoide")
 
-  isDone = bloc1.Compute()
+  is_done = bloc1.Compute()
+  text = "bloc1.Compute"
+  if is_done:
+    logging.info(text+" OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
 
   nbRemoved = bloc1.RemoveOrphanNodes()
 
@@ -230,9 +237,9 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   putName(hypo3d, "hypo3d_bloc")
 
   is_done = blocMesh.Compute()
-  text = "meshBlocPart Compute"
+  text = "blocMesh.Compute"
   if is_done:
-    logging.info(text)
+    logging.info(text+" OK")
   else:
     text = "Erreur au calcul du maillage.\n" + text
     logging.info(text)

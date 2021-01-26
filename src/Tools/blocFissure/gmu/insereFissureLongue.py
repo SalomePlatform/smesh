@@ -449,8 +449,14 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     putName(algo1d.GetSubMesh(), "generatrice", i)
     putName(algo1d, "algo1d_generatrice", i)
     putName(hypo1d, "hypo1d_generatrice", i)
-  isDone = meshFondFiss.Compute()
-  logging.info("meshFondFiss computed")
+  is_done = meshFondFiss.Compute()
+  text = "meshFondFiss.Compute"
+  if is_done:
+    logging.info(text+" OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
 
   disks = list()
   for i, face in enumerate(disques[:4]):
@@ -547,8 +553,14 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     putName(algo1d, "algo1d_groupDemiCercles", i)
     putName(hypo1d, "hypo1d_groupDemiCercles", i)
   #
-  isDone = meshFacePeau.Compute()
-  logging.info("meshFacePeau computed")
+  is_done = meshFacePeau.Compute()
+  text = "meshFacePeau.Compute"
+  if is_done:
+    logging.info(text+" OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
   grpTHOR = meshFacePeau.GroupOnGeom(verticesOutCercles[0], "THOR", SMESH.NODE)
   grpTHEX = meshFacePeau.GroupOnGeom(verticesOutCercles[1], "THEX", SMESH.NODE)
 
@@ -584,8 +596,14 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   putName(algo1d, "algo1d_edgeFissPeau")
   putName(hypo1d, "hypo1d_edgeFissPeau")
   #
-  isDone = meshFaceFiss.Compute()
-  logging.info("meshFaceFiss computed")
+  is_done = meshFaceFiss.Compute()
+  text = "meshFaceFiss.Compute"
+  if is_done:
+    logging.info(text+" OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
 
   grp = meshFaceFiss.GroupOnGeom(faceFiss, "fisOutPi", SMESH.FACE)
 
@@ -617,9 +635,15 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     hypo3d = algo3d.MaxElementVolume(1000.0)
   putName(algo3d.GetSubMesh(), "boiteDefaut")
   putName(algo3d, "algo3d_boiteDefaut")
-  isDone = meshBoiteDefaut.Compute()
-  logging.info("meshBoiteDefaut computed")
   putName(meshBoiteDefaut, "boiteDefaut")
+  is_done = meshBoiteDefaut.Compute()
+  text = "meshBoiteDefaut.Compute"
+  if is_done:
+    logging.info(text+" OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
 
   groups = maillageSain.GetGroups()
   grps1 = [ grp for grp in groups if grp.GetName() == 'P1']

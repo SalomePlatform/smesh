@@ -95,13 +95,20 @@ from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Mesh_1 = smesh.Mesh(objetSain)
+smesh.SetName(Mesh_1, 'Mesh_1')
 Regular_1D = Mesh_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(15,[],[  ])
 Nb_Segments_1.SetDistrType( 0 )
 Quadrangle_2D = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = Mesh_1.Hexahedron(algo=smeshBuilder.Hexa)
-isDone = Mesh_1.Compute()
-smesh.SetName(Mesh_1, 'Mesh_1')
+is_done = Mesh_1.Compute()
+text = "Mesh_1.Compute"
+if is_done:
+  logging.info(text+" OK")
+else:
+  text = "Erreur au calcul du maillage.\n" + text
+  logging.info(text)
+  raise Exception(text)
 Mesh_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "boiteSaine.med"))
 
 ## set object names

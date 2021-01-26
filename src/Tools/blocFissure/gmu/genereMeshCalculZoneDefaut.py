@@ -39,7 +39,7 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize):
       -SetQuadAllowed = permission quadrangle dans maillage triangle
   -On récupère les coordonnées de chaque noeud de la fissure qu'on stocke
    dans une liste sous la forme : [X0, Y0, Z0, ..., Xn, Yn, Zn]"""
-   
+
   logging.info('start')
   text = "Maillage de '{}'".format(facefiss.GetName())
   logging.info(text)
@@ -56,11 +56,10 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize):
   smesh.SetName(algo2d, "algo2d_zoneFiss")
   smesh.SetName(hypo2d, "hypo1d_zoneFiss")
 
-  isDone = meshFissure.Compute()
-
-  if isDone:
-    logging.info(text+" : OK")
-    logging.debug(text+" : OK")
+  is_done = meshFissure.Compute()
+  text = "meshFissure.Compute"
+  if is_done:
+    logging.info(text+" OK")
   else:
     text = "Erreur au calcul du maillage.\n" + text
     logging.info(text)

@@ -318,9 +318,15 @@ def construitFissureGenerale(maillagesSains,
     hypo3d = algo3d.MaxElementVolume(1000.0)
   putName(algo3d.GetSubMesh(), "boiteDefaut")
   putName(algo3d, "algo3d_boiteDefaut")
-  isDone = meshBoiteDefaut.Compute()
   putName(meshBoiteDefaut, "boiteDefaut")
-  logging.info("meshBoiteDefaut fini")
+  is_done = meshBoiteDefaut.Compute()
+  text = "meshBoiteDefaut.Compute"
+  if is_done:
+    logging.info(text+" OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
 
   faceFissure = meshBoiteDefaut.GetMesh().UnionListOfGroups( [ group_faceFissOutPipe, group_faceFissInPipe ], \
                                                              'FACE1' )

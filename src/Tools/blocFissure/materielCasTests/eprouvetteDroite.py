@@ -126,6 +126,7 @@ from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 eprouvetteDroite_1 = smesh.Mesh(eprouvetteDroite)
+smesh.SetName(eprouvetteDroite_1, 'eprouvetteDroite')
 Regular_1D = eprouvetteDroite_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(50,[],[  ])
 Nb_Segments_1.SetDistrType( 0 )
@@ -137,8 +138,14 @@ Nb_Segments_2.SetDistrType( 0 )
 Regular_1D_2 = eprouvetteDroite_1.Segment(geom=Compound_x)
 Nb_Segments_3 = Regular_1D_2.NumberOfSegments(10,[],[  ])
 Nb_Segments_3.SetDistrType( 0 )
-isDone = eprouvetteDroite_1.Compute()
-smesh.SetName(eprouvetteDroite_1, 'eprouvetteDroite')
+is_done = eprouvetteDroite_1.Compute()
+text = "eprouvetteDroite_1.Compute"
+if is_done:
+  logging.info(text+" OK")
+else:
+  text = "Erreur au calcul du maillage.\n" + text
+  logging.info(text)
+  raise Exception(text)
 eprouvetteDroite_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "eprouvetteDroite.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()

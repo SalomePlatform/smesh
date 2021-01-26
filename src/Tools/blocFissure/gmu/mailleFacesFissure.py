@@ -59,10 +59,10 @@ def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFi
   grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
   grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
 
-  isDone = meshFaceFiss.Compute()
-  text = "meshFaceFiss fini"
-  if isDone:
-    logging.info(text)
+  is_done = meshFaceFiss.Compute()
+  text = "meshFaceFiss.Compute"
+  if is_done:
+    logging.info(text+" OK")
   else:
     text = "Erreur au calcul du maillage.\n" + text
     logging.info(text)
