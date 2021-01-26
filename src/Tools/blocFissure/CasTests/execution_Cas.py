@@ -34,8 +34,8 @@ runall = True
 if runall:
   torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
-  torun = [ 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1] # pb
-  torun = [ 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0] # OK
+  torun = [ 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1] # pb
+  torun = [ 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0] # OK
 # -----------------------------------------------------------------------------------------------
 
 from blocFissure.gmu import geomsmesh
@@ -45,40 +45,51 @@ d_aux = dict()
 problemes = list()
 
 n_cas = 0
+# matériel : cubeAngle
 from blocFissure.CasTests.cubeAngle import cubeAngle
 problemes.append(cubeAngle(n_cas))
 
 n_cas += 1
+# matériel : cubeAngle
 from blocFissure.CasTests.cubeAngle2 import cubeAngle2
 problemes.append(cubeAngle2(n_cas))
 
 n_cas += 1
+# matériel : cubeFin
 from blocFissure.CasTests import cubeCoin
 problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, n_cas))
 d_aux[n_cas] = "cubeCoin"
 
 n_cas += 1
+# matériel : cubeFin
 from blocFissure.CasTests import cubeMilieu
 problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, n_cas))
 d_aux[n_cas] = "cubeMilieu"
 
 n_cas += 1
+# matériel : cubeFin
 from blocFissure.CasTests import cubeTransverse
 problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, n_cas))
 d_aux[n_cas] = "cubeTransverse"
 
 n_cas += 1
+# matériel : decoupeCylindre
 from blocFissure.CasTests.cylindre import cylindre
 problemes.append(cylindre(n_cas))
 
 n_cas += 1
+# matériel : decoupeCylindre
 from blocFissure.CasTests.cylindre_2 import cylindre_2
 problemes.append(cylindre_2(n_cas))
 
 n_cas += 1
+# matériel : disque_perce
+# matériel : ellipse_disque
 from blocFissure.CasTests import disquePerce
 problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, n_cas))
 d_aux[n_cas] = "disquePerce"
+# mailleFacesFissure : Erreur au calcul du maillage
+# "Source elements overlap one another" dans l'import du fonds de fissure
 
 n_cas += 1
 from blocFissure.CasTests.ellipse_1 import ellipse_1
@@ -105,8 +116,11 @@ from blocFissure.CasTests.faceGauche import faceGauche
 problemes.append(faceGauche(n_cas))
 
 n_cas += 1
+# matériel : fissureGauche2
 from blocFissure.CasTests.faceGauche_2 import faceGauche_2
 problemes.append(faceGauche_2(n_cas))
+# mailleFacesFissure : Erreur au calcul du maillage
+# "Source elements don't cover totally the geometrical edge" dans l'import du fonds de fissure
 
 n_cas += 1
 from blocFissure.CasTests.fissureCoude_1 import fissureCoude_1
@@ -115,6 +129,8 @@ problemes.append(fissureCoude_1(n_cas))
 n_cas += 1
 from blocFissure.CasTests.fissureCoude_10 import fissureCoude_10
 problemes.append(fissureCoude_10(n_cas))
+# Erreur au calcul du maillage
+# "Source elements overlap one another" dans l'import du fonds de fissure
 
 n_cas += 1
 from blocFissure.CasTests.fissureCoude_2 import fissureCoude_2
@@ -141,8 +157,11 @@ from blocFissure.CasTests.fissureCoude_7 import fissureCoude_7
 problemes.append(fissureCoude_7(n_cas))
 
 n_cas += 1
+# matériel : fissureGauche2
 from blocFissure.CasTests.fissureCoude_8 import fissureCoude_8
 problemes.append(fissureCoude_8(n_cas))
+# mailleFacesFissure : Erreur au calcul du maillage
+# "Source elements overlap one another" dans l'import du fonds de fissure
 
 n_cas += 1
 from blocFissure.CasTests.fissureCoude_9 import fissureCoude_9
@@ -159,6 +178,7 @@ problemes.append(fissure_Coude_4(n_cas))
 n_cas += 1
 from blocFissure.CasTests.vis_1 import vis_1
 problemes.append(vis_1(n_cas))
+# restreintFaceFissure : Restriction de la face de fissure au domaine solide impossible
 
 #=============================================================
 while True:
@@ -172,6 +192,8 @@ while True:
 
   ligne = "---------------------------------------------------------------------"
   texte = ""
+  n_cas_ok = 0
+  n_cas_nook = 0
   for n_cas, cas in enumerate(problemes):
     #print ("Cas n° {}, '{}'".format(n_cas,cas.nomProbleme))
     if torun[n_cas]:
@@ -182,14 +204,22 @@ while True:
       texte_a = "\n=== Exécution du cas n° {}, '{}'".format(n_cas,nom)
       logging.critical(ligne+texte_a)
       try:
-        cas.executeProbleme()
+        ok_maillage = cas.executeProbleme()
       except:
         traceback.print_exc()
         texte += "Problème avec le cas n° {}, '{}'\n".format(n_cas,nom)
+        ok_maillage = False
+      if ok_maillage:
+        n_cas_ok += 1
+      else:
+        n_cas_nook += 1
       print(ligne)
 
-  if not texte:
-    texte = "Tous les tests se sont bien passés.\n"
+  if n_cas_nook:
+    texte += ". Nombre de cas_tests OK   : {}\n".format(n_cas_ok)
+    texte += ". Nombre de cas_tests NOOK : {}\n".format(n_cas_nook)
+  else:
+    texte += "Tous les tests se sont bien passés.\n"
   print (texte+ligne)
 
   break
