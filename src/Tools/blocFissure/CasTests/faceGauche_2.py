@@ -57,8 +57,8 @@ class faceGauche_2(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
-    """
-    paramètres de la fissure pour méthode construitFissureGenerale
+    """paramètres de la fissure pour méthode construitFissureGenerale
+
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
     rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
     convexe     : optionnel True : la face est convexe (vue de l'exterieur) sert si on ne donne pas de point interne
@@ -76,10 +76,9 @@ class faceGauche_2(fissureGenerique):
 
     shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "faceGauche2FissCoupe.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    geompy.UnionIDs(fondFiss, [14, 9])
+    geompy.UnionIDs(fondFiss, [4, 12])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
-
 
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25)
 
@@ -88,7 +87,7 @@ class faceGauche_2(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep           = '.',
+    self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
                                       nomFicFissure    = 'fissure_' + self.nomCas,
                                       nbsegRad         = 5,

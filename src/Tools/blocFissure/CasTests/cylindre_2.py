@@ -50,7 +50,7 @@ class cylindre_2(cylindre):
 
     shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "FissInCylindre.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    geompy.UnionIDs(fondFiss, [3])
+    geompy.UnionIDs(fondFiss, [6])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
@@ -62,12 +62,14 @@ class cylindre_2(cylindre):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 1334,
-                                          Entity_Quad_Triangle   = 1432,
-                                          Entity_Quad_Edge       = 785,
-                                          Entity_Quad_Penta      = 560,
-                                          Entity_Quad_Hexa       = 19070,
-                                          Entity_Node            = 114290,
-                                          Entity_Quad_Tetra      = 19978,
-                                          Entity_Quad_Quadrangle = 7424)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Pyramid    = 1158,
+                                          Entity_Quad_Quadrangle = 7028, \
+                                          Entity_Quad_Hexa = 18366, \
+                                          Entity_Node = 105035, \
+                                          Entity_Quad_Edge = 735, \
+                                          Entity_Quad_Triangle = 1056, \
+                                          Entity_Quad_Tetra = 16305, \
+                                          Entity_Quad_Penta = 384 \
+                                          )
 
