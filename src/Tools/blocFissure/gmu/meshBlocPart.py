@@ -29,12 +29,12 @@ from .putName import putName
 # -----------------------------------------------------------------------------
 # --- maillage du bloc partitionne
 
-def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circles, faces,
-                gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli,
-                aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords,
+def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circles, faces, \
+                gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli, \
+                aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords, \
                 nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle, nbsegFis, dmoyen, lensegEllipsoide):
-  """
-  Maillage du bloc partitionné
+  """Maillage du bloc partitionné
+
   TODO: a completer
   """
   logging.info('start')
@@ -43,7 +43,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
 
   aFilterManager = smesh.CreateFilterManager()
   nbAdded, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])
-  criteres = []
+  criteres = list()
   unCritere = smesh.GetCriterion(SMESH.EDGE,SMESH.FT_FreeBorders,SMESH.FT_Undefined,0)
   criteres.append(unCritere)
   filtre = smesh.GetFilterFromCriteria(criteres)
@@ -54,8 +54,8 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
 
   bloc1 = smesh.Mesh(blocPartition)
 
-  for i in range(len(sharedFaces)):
-    algo2d = bloc1.Triangle(algo=smeshBuilder.NETGEN, geom=sharedFaces[i])
+  for i, sharedFaces_i in enumerate(sharedFaces):
+    algo2d = bloc1.Triangle(algo=smeshBuilder.NETGEN, geom=sharedFaces_i)
     hypo2d = algo2d.Parameters(which=smesh.SIMPLE)
     hypo2d.SetLocalLength(lensegEllipsoide)
     hypo2d.LengthFromEdges()
@@ -64,8 +64,8 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
     putName(algo2d, "algo2d_sharedFaces", i)
     putName(hypo2d, "hypo2d_sharedFaces", i)
 
-  for i in range(len(sharedEdges)):
-    algo1d = bloc1.Segment(geom=sharedEdges[i])
+  for i, sharedEdges_i in enumerate(sharedEdges):
+    algo1d = bloc1.Segment(geom=sharedEdges_i)
     hypo1d = algo1d.LocalLength(lensegEllipsoide)
     putName(algo1d.GetSubMesh(), "sharedEdges", i)
     putName(algo1d, "algo1d_sharedEdges", i)
@@ -89,28 +89,28 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   putName(algo1d, "algo1d_tore")
   putName(hypo1d, "hypo1d_tore")
 
-  for i in range(len(faces)):
-    algo2d = bloc1.Quadrangle(geom=faces[i])
+  for i, faces_i in enumerate(faces):
+    algo2d = bloc1.Quadrangle(geom=faces_i)
     hypo2d = smesh.CreateHypothesis('QuadrangleParams')
     hypo2d.SetTriaVertex( geompy.GetSubShapeID(blocPartition,centres[i]) )
     hypo2d.SetQuadType( StdMeshersBuilder.QUAD_STANDARD )
-    status = bloc1.AddHypothesis(hypo2d,faces[i])
+    status = bloc1.AddHypothesis(hypo2d,faces_i)
     putName(algo2d.GetSubMesh(), "faces", i)
     putName(algo2d, "algo2d_faces", i)
     putName(hypo2d, "hypo2d_faces", i)
 
-  for i in range(len(edges)):
-    algo1d = bloc1.Segment(geom=edges[i])
+  for i, edges_i in enumerate(edges):
+    algo1d = bloc1.Segment(geom=edges_i)
     if reverses[i] > 0:
-      hypo1d = algo1d.NumberOfSegments(nbsegRad, scaleRad,[ geompy.GetSubShapeID(blocPartition,edges[i]) ])
+      hypo1d = algo1d.NumberOfSegments(nbsegRad, scaleRad,[ geompy.GetSubShapeID(blocPartition,edges_i) ])
     else:
       hypo1d = algo1d.NumberOfSegments(nbsegRad, scaleRad,[  ])
     putName(algo1d.GetSubMesh(), "edges", i)
     putName(algo1d, "algo1d_edges", i)
     putName(hypo1d, "hypo1d_edges", i)
 
-  for i in range(len(circles)):
-    algo1d = bloc1.Segment(geom=circles[i])
+  for i, circles_i in enumerate(circles):
+    algo1d = bloc1.Segment(geom=circles_i)
     hypo1d = algo1d.NumberOfSegments(nbsegCercle)
     putName(algo1d.GetSubMesh(), "circles", i)
     putName(algo1d, "algo1d_circles", i)
@@ -128,22 +128,22 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
     putName(hypo1d, "hypo1d_edgeext")
   else:
     longTotal = 0
-    longEdgeExts = []
-    for i in range(len(edgeext)):
-      props = geompy.BasicProperties(edgeext[i])
+    longEdgeExts = list()
+    for i, edgeext_i in enumerate(edgeext):
+      props = geompy.BasicProperties(edgeext_i)
       longEdgeExts.append(props[0])
       longTotal += props[0]
-    for i in range(len(edgeext)):
+    for i, edgeext_i in enumerate(edgeext):
       local = longTotal/nbsegFis
       nbLocal = int(round(nbsegFis*longEdgeExts[i]/longTotal))
       densite = int(round(nbLocal/2))
-      algo1d = bloc1.Segment(geom=edgeext[i])
+      algo1d = bloc1.Segment(geom=edgeext_i)
       hypo1d = algo1d.NumberOfSegments(nbLocal)
       hypo1d.SetDistrType( 2 )
       hypo1d.SetConversionMode( 1 )
       hypo1d.SetTableFunction( [ 0, densite, 0.8, 1, 1, 1 ] )
       if reverext[i]:
-        hypo1d.SetReversedEdges([ geompy.GetSubShapeID(blocPartition, edgeext[i]) ])
+        hypo1d.SetReversedEdges([ geompy.GetSubShapeID(blocPartition, edgeext_i) ])
       putName(algo1d.GetSubMesh(), "edgeext", i)
       putName(algo1d, "algo1d_edgeext", i)
       putName(hypo1d, "hypo1d_edgeext", i)
@@ -158,11 +158,11 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   maxElemArea = 0.5*dmoyen*dmoyen
   logging.debug("dmoyen %s, maxElemArea %s", dmoyen, maxElemArea)
 
-  for i in range(len(facesExternes)):
-    algo2d = bloc1.Triangle(algo=smeshBuilder.NETGEN_2D, geom=facesExternes[i])
+  for i, facesExternes_i in enumerate(facesExternes):
+    algo2d = bloc1.Triangle(algo=smeshBuilder.NETGEN_2D, geom=facesExternes_i)
     hypo2d = algo2d.MaxElementArea(maxElemArea)
     if edgesBords is None:
-      algo1d = bloc1.Segment(geom=facesExternes[i])
+      algo1d = bloc1.Segment(geom=facesExternes_i)
       hypo1d = algo1d.NumberOfSegments(1)
     putName(algo2d.GetSubMesh(), "facesExternes", i)
     putName(algo2d, "algo2d_facesExternes", i)
@@ -171,8 +171,8 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
       putName(algo1d, "algo1d_facesExternes", i)
       putName(hypo1d, "hypo1d_facesExternes", i)
 
-  for i in range(len(aretesInternes)):
-    algo1d = bloc1.Segment(geom=aretesInternes[i])
+  for i, aretesInternes_i in enumerate(aretesInternes):
+    algo1d = bloc1.Segment(geom=aretesInternes_i)
     hypo1d = algo1d.NumberOfSegments(nbsegExt)
     putName(algo1d.GetSubMesh(), "aretesInternes", i)
     putName(algo1d, "algo1d_aretesInternes", i)
@@ -201,26 +201,26 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   faceFissure1 = bloc1.GroupOnGeom(faceFissure,'FACE1',SMESH.FACE)
   noeudsFondFissure = bloc1.GroupOnGeom(gencnt,'nfondfis',SMESH.NODE)
 
-  groups_faceCommuneEllipsoideBloc = []
-  for i in range(len(sharedFaces)):
+  groups_faceCommuneEllipsoideBloc = list()
+  for i, sharedFaces_i in enumerate(sharedFaces):
     name = "faceCommuneEllipsoideBloc_%d"%i
-    groups_faceCommuneEllipsoideBloc.append(bloc1.GroupOnGeom(sharedFaces[i], name, SMESH.FACE))
-  groups_faceExterneBloc = []
-  for i in range(len(facesExtBloc)):
+    groups_faceCommuneEllipsoideBloc.append(bloc1.GroupOnGeom(sharedFaces_i, name, SMESH.FACE))
+  groups_faceExterneBloc = list()
+  for i, facesExtBloc_i in enumerate(facesExtBloc):
     name = "faceExterneBloc_%d"%i
-    groups_faceExterneBloc.append(bloc1.GroupOnGeom(facesExtBloc[i], name, SMESH.FACE))
+    groups_faceExterneBloc.append(bloc1.GroupOnGeom(facesExtBloc_i, name, SMESH.FACE))
 
-  skinBlocMeshes = []
-  for i in range(len(groups_faceCommuneEllipsoideBloc)):
+  skinBlocMeshes = list()
+  for i, groups_faceCommuneEllipsoideBloc_i in enumerate(groups_faceCommuneEllipsoideBloc):
     name = "faceCommuneEllipsoideBloc_%d"%i
-    skinBlocMeshes.append(smesh.CopyMesh(groups_faceCommuneEllipsoideBloc[i], name, 0, 0))
-  for i in range(len(groups_faceExterneBloc)):
+    skinBlocMeshes.append(smesh.CopyMesh(groups_faceCommuneEllipsoideBloc_i, name, 0, 0))
+  for i, groups_faceExterneBloc_i in enumerate(groups_faceExterneBloc):
     name = "faceExterneBloc_%d"%i
-    skinBlocMeshes.append(smesh.CopyMesh(groups_faceExterneBloc[i], name, 0, 0))
+    skinBlocMeshes.append(smesh.CopyMesh(groups_faceExterneBloc_i, name, 0, 0))
 
   meshesBloc = [internalBoundary.GetMesh()]
-  for i in range(len(skinBlocMeshes)):
-    meshesBloc.append(skinBlocMeshes[i].GetMesh())
+  for i, skinBlocMeshes_i in enumerate(skinBlocMeshes):
+    meshesBloc.append(skinBlocMeshes_i.GetMesh())
   blocMesh = smesh.Concatenate(meshesBloc, 1, 1, 1e-05,False)
 
   algo3d = blocMesh.Tetrahedron(algo=smeshBuilder.NETGEN)
@@ -230,6 +230,13 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   putName(hypo3d, "hypo3d_bloc")
 
   is_done = blocMesh.Compute()
+  text = "meshBlocPart Compute"
+  if is_done:
+    logging.info(text)
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
 
   blocComplet = smesh.Concatenate([bloc1.GetMesh(), blocMesh.GetMesh()], 1, 1, 1e-05,False)
 

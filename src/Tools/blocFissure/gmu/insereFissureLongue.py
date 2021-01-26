@@ -107,12 +107,12 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   edgesFilling = geompy.ExtractShapes(fillingFaceExterne, geompy.ShapeType["EDGE"], False)
 
   O, OX, OY, OZ = triedreBase()
-  
+
   # -----------------------------------------------------------------------------
   # --- peau et face de fissure
 
   # --- partition peau defaut - face de fissure prolongee - wire de fond de fissure prolongée
-  partitionPeauFissFond = geompy.MakePartition([facePorteFissure, WirePorteFondFissure, fillingFaceExterne], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
+  partitionPeauFissFond = geompy.MakePartition([facePorteFissure, WirePorteFondFissure, fillingFaceExterne], list(), list(), list(), geompy.ShapeType["FACE"], 0, list(), 0)
   geomPublish(initLog.debug,  partitionPeauFissFond, 'partitionPeauFissFond' )
 
   edges = geompy.ExtractShapes(WirePorteFondFissure, geompy.ShapeType["EDGE"], False)
@@ -151,7 +151,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   [facesInside, facesOutside, facesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "FACE", 1.e-3)
 
   # --- partition peau -face fissure - pipe fond de fissure prolongé
-  partitionPeauFissByPipe = geompy.MakePartition([facesInside[0], facesOnside[0]], [pipefiss], [], [], geompy.ShapeType["FACE"], 0, [], 0)
+  partitionPeauFissByPipe = geompy.MakePartition([facesInside[0], facesOnside[0]], [pipefiss], list(), list(), geompy.ShapeType["FACE"], 0, list(), 0)
   geomPublish(initLog.debug,  partitionPeauFissByPipe, 'partitionPeauFissByPipe' )
 
   # --- identification face de peau
@@ -161,7 +161,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   geomPublishInFather(initLog.debug,partitionPeauFissByPipe, facePeau, "facePeau")
 
   # --- identification edges de bord face peau
-  edgesBords = []
+  edgesBords = list()
   for i, edge in enumerate(edgesFilling):
     edgepeau = geompy.GetInPlace(facePeau, edge)
     edgesBords.append(edgepeau)
@@ -188,7 +188,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   edgesFacePeau = geompy.ExtractShapes(facePeau, geompy.ShapeType["EDGE"], False)
   edgesFacePeauSorted, minlg, maxlg = sortEdges(edgesFacePeau)
   demiCerclesPeau = edgesFacePeauSorted[0:4]
-  verticesDemiCerclesPeau = []
+  verticesDemiCerclesPeau = list()
   for i, edge in enumerate(demiCerclesPeau):
     name = "demiCerclePeau_%d"%i
     geomPublishInFather(initLog.debug,facePeau, edge, name)
@@ -203,9 +203,9 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
     geomPublishInFather(initLog.debug,facePeau, vertex, name)
 
   # --- demi cercles  regroupés
-  groupsDemiCerclesPeau = []
+  groupsDemiCerclesPeau = list()
   for i, vertex in enumerate(verticesEdgePeauFiss):
-    demis = []
+    demis = list()
     for edge in demiCerclesPeau:
       if geompy.MinDistance(vertex, edge) < 1.e-5:
         demis.append(edge)
@@ -218,7 +218,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   # --- identification edges commune pipe face fissure externe au pipe
   edgePeauFissId = geompy.GetSubShapeID(partitionPeauFissByPipe, edgePeauFiss)
   edgesFaceFiss = geompy.ExtractShapes(faceFiss, geompy.ShapeType["EDGE"], False)
-  edgesFaceFissPipe = []
+  edgesFaceFissPipe = list()
   for edge in edgesFaceFiss:
     if geompy.GetSubShapeID(partitionPeauFissByPipe, edge) != edgePeauFissId:
       edgesFaceFissPipe.append(edge)
@@ -255,13 +255,13 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   [vertexReference] = geompy.ExtractShapes(disque, geompy.ShapeType["VERTEX"], False)
 
   pipeFondFiss = geompy.MakePipe(disque, wireFondFiss)
-  pipeFondFiss = geompy.MakePartition([pipeFondFiss], [planfiss, wireFondFiss, planBord1, planBord2], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
+  pipeFondFiss = geompy.MakePartition([pipeFondFiss], [planfiss, wireFondFiss, planBord1, planBord2], list(), list(), geompy.ShapeType["SOLID"], 0, list(), 0)
   #pipe = geompy.MakePipe(disque, WirePorteFondFissure)
-  #pipe = geompy.MakePartition([pipe],[fillingFaceExterne], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
+  #pipe = geompy.MakePartition([pipe],[fillingFaceExterne], list(), list(), geompy.ShapeType["SOLID"], 0, list(), 0)
   #pipes = geompy.ExtractShapes(pipe, geompy.ShapeType["SOLID"], False)
   #pipesSorted, volmin, volmax = sortSolids(pipes)
   #pipeFondFiss = pipesSorted[-1]
-  #pipeFondFiss = geompy.MakePartition([pipeFondFiss], [planfiss, wireFondFiss, planBord1, planBord2], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
+  #pipeFondFiss = geompy.MakePartition([pipeFondFiss], [planfiss, wireFondFiss, planBord1, planBord2], list(), list(), geompy.ShapeType["SOLID"], 0, list(), 0)
 
   geomPublish(initLog.debug,  disque, 'disque')
   geomPublish(initLog.debug,  wireFondFiss, 'wireFondFiss')
@@ -271,7 +271,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   for i, v in enumerate(VerticesEndFondFiss):
     name = "vertexEndFondFiss_%d"%i
     geomPublishInFather(initLog.debug,wireFondFiss, v, name)
-  VerticesEndPipeFiss = []
+  VerticesEndPipeFiss = list()
   for v in VerticesEndFondFiss:
     VerticesEndPipeFiss.append(geompy.GetInPlace(pipeFondFiss, v))
   for i, v in enumerate(VerticesEndPipeFiss):
@@ -307,8 +307,8 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   #     generatrices  = edgesPipeOnplan moins rayon disques (3 grandes et 6 petites)
   edgesIdPipeOnside = getSubshapeIds(pipeFondFiss, edgesPipeOnside)
   edgesIdPipeOnplan = getSubshapeIds(pipeFondFiss, edgesPipeOnplan)
-  rayons = []
-  demiCercles = []
+  rayons = list()
+  demiCercles = list()
   for i, edgeId in enumerate(edgesIdPipeOnside):
     if edgeId in edgesIdPipeOnplan:
       rayons.append(edgesPipeOnside[i])
@@ -318,13 +318,13 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   rayons = rayons + edgesSorted[:4]            # les 4 plus petits sont les rayons
   demiCercles = demiCercles  + edgesSorted[4:] # les suivants sont les arcs de cercle
   rayonsId = getSubshapeIds(pipeFondFiss, rayons)
-  generatrices = []
+  generatrices = list()
   for i, edgeId in enumerate(edgesIdPipeOnplan):
     if edgeId not in rayonsId:
       generatrices.append(edgesPipeOnplan[i])
 
   # --- generatrices en contact avec la face fissure externe au pipe
-  generFiss = []
+  generFiss = list()
   for edge in generatrices:
     distance = geompy.MinDistance(vertexReference, edge)
     logging.debug("distance %s", distance)
@@ -341,9 +341,9 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   geomPublishInFather(initLog.debug,pipeFondFiss, groupGenerFiss, "GenFiss")
 
   # --- demi cercles externes regroupés
-  groupsDemiCerclesPipe = []
+  groupsDemiCerclesPipe = list()
   for i, vertex in enumerate(verticesEdgePeauFiss):
-    demis = []
+    demis = list()
     for edge in demiCerclesExternes:
       if geompy.MinDistance(vertex, edge) < 0.1:
         demis.append(edge)
@@ -355,7 +355,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
 
   # --- faces fissure dans le pipe
 
-  facesFissinPipe = []
+  facesFissinPipe = list()
   generFissId = getSubshapeIds(pipeFondFiss, generFiss)
   logging.debug("generatrice fissure %s", generFissId)
   for face in facesPipeOnplan:
@@ -376,7 +376,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
 
   # --- edges de fond de fissure
 
-  edgesFondFiss = []
+  edgesFondFiss = list()
   for i, edge in enumerate(edgesInside):
     anEdge = geompy.GetInPlace(pipeFondFiss, edge)
     logging.debug("  edge %s ", anEdge)
@@ -395,7 +395,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
 
   aFilterManager = smesh.CreateFilterManager()
   nbAdded, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])
-  criteres = []
+  criteres = list()
   unCritere = smesh.GetCriterion(SMESH.EDGE,SMESH.FT_FreeBorders,SMESH.FT_Undefined,0)
   criteres.append(unCritere)
   filtre = smesh.GetFilterFromCriteria(criteres)
@@ -452,7 +452,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   isDone = meshFondFiss.Compute()
   logging.info("meshFondFiss computed")
 
-  disks = []
+  disks = list()
   for i, face in enumerate(disques[:4]):
     name = "disk%d"%i
     disks.append(meshFondFiss.GroupOnGeom(face, name, SMESH.FACE))
@@ -464,8 +464,8 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   grp = meshFondFiss.GroupOnGeom(groupFaceFissInPipe, "fisInPi", SMESH.FACE)
   group_edgeFondFiss = meshFondFiss.GroupOnGeom(groupEdgeFondFiss, "FONDFISS", SMESH.EDGE)
   noeudsFondFissure = meshFondFiss.GroupOnGeom(groupEdgeFondFiss, "nfondfis", SMESH.NODE)
-  groups_demiCercles = []
-  groupnodes_demiCercles = []
+  groups_demiCercles = list()
+  groupnodes_demiCercles = list()
   for i, group in enumerate(groupsDemiCerclesPipe):
     name = "Cercle%d"%i
     groups_demiCercles.append(meshFondFiss.GroupOnGeom(group, name, SMESH.EDGE))
@@ -477,12 +477,12 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   grpNode1 = meshFondFiss.IntersectGroups(groupnode_generFiss, groupnodes_demiCercles[1], "Node1")
   idNode0 = grpNode0.GetID(1)
   idNode1 = grpNode1.GetID(1)
-  coordsMesh = []
+  coordsMesh = list()
   coordsMesh.append(meshFondFiss.GetNodeXYZ(idNode0))
   coordsMesh.append(meshFondFiss.GetNodeXYZ(idNode1))
-  coordsGeom = []
+  coordsGeom = list()
   for vertex in verticesEdgePeauFiss:
-    coord = geompy.PointCoordinates(vertex);
+    coord = geompy.PointCoordinates(vertex)
     if distance2(coord, coordsMesh[0]) < 0.1:
       meshFondFiss.MoveNode(idNode0, coord[0], coord[1], coord[2])
     if distance2(coord, coordsMesh[1]) < 0.1:
@@ -526,7 +526,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   ratio = (nbSegGenBout/float(profondeur)) / (nbSegGenLong/lenEdgePeauFiss)
   logging.info("lenEdgePeauFiss %s, profondeur %s, nbSegGenLong %s, nbSegGenBout %s, frac %s, ratio %s", lenEdgePeauFiss, profondeur, nbSegGenLong, nbSegGenBout, frac, ratio)
   algo1d = meshFacePeau.Segment(geom=edgePeauFiss)
-  hypo1d = algo1d.NumberOfSegments(nbSeg,[],[  ])
+  hypo1d = algo1d.NumberOfSegments(nbSeg,list(),[  ])
   hypo1d.SetDistrType( 2 )
   hypo1d.SetConversionMode( 1 )
   hypo1d.SetTableFunction( [ 0, ratio, frac, 1, (1.-frac), 1, 1, ratio ] )
@@ -589,11 +589,11 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
 
   grp = meshFaceFiss.GroupOnGeom(faceFiss, "fisOutPi", SMESH.FACE)
 
-  meshBoiteDefaut = smesh.Concatenate([internalBoundary.GetMesh(),
-                                   meshFondFiss.GetMesh(),
-                                   meshFacePeau.GetMesh(),
-                                   meshFaceFiss.GetMesh()],
-                                   1, 1, 1e-05,False)
+  meshBoiteDefaut = smesh.Concatenate( [internalBoundary.GetMesh(), \
+                                        meshFondFiss.GetMesh(), \
+                                        meshFacePeau.GetMesh(), \
+                                        meshFaceFiss.GetMesh()], \
+                                        1, 1, 1e-05,False)
   # pour aider l'algo hexa-tetra a ne pas mettre de pyramides a l'exterieur des volumes replies sur eux-memes
   # on designe les faces de peau en quadrangles par le groupe "skinFaces"
   group_faceFissOutPipe = None

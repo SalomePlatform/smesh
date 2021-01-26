@@ -26,12 +26,13 @@ from salome.smesh import smeshBuilder
 import SMESH
 
 from .putName import putName
-  
-def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFissureExterneC,
+
+def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
                         meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad):
   """maillage faces de fissure"""
   logging.info('start')
-  logging.info("Maillage de {}".format(faceFissureExterne.GetName()))
+  texte = "Maillage de {}".format(faceFissureExterne.GetName())
+  logging.info(texte)
 
   meshFaceFiss = smesh.Mesh(faceFissureExterne)
   algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_1D2D)
@@ -46,7 +47,8 @@ def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFi
   putName(algo2d, "algo2d_faceFiss")
   putName(hypo2d, "hypo2d_faceFiss")
 
-  logging.info("Récupération des arêtes de '{}'".format(edgesPipeFissureExterneC.GetName()))
+  texte = "Récupération des arêtes de '{}'".format(edgesPipeFissureExterneC.GetName())
+  logging.info(texte)
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
   hypo1d = algo1d.SourceEdges([ meshPipeGroups['edgeFaceFissGroup'] ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau")
