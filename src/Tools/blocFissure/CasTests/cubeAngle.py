@@ -47,10 +47,10 @@ class cubeAngle(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
-    logging.info("genereMaillageSain %s", self.nomCas)
+    logging.info("genereMaillageSain pour '{}'".format(self.nomCas))
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med'))
-    smesh.SetName(objetSain.GetMesh(), 'objetSain')
+    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med"))
+    smesh.SetName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme))
 
     return [objetSain, True] # True : maillage hexa
 
@@ -61,17 +61,18 @@ class cubeAngle(fissureGenerique):
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
     rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
     """
-    logging.info("setParamShapeFissure %s", self.nomCas)
+    logging.info("setParamShapeFissure pour '{}'".format(self.nomCas))
     self.shapeFissureParams = dict(lgInfluence = 20,
                                    rayonPipe   = 10)
 
   # ---------------------------------------------------------------------------
   def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
-    logging.info("genereShapeFissure %s", self.nomCas)
+    """Importe la géométrie de la fissure"""
+    logging.info("genereShapeFissure pour '{}'".format(self.nomCas))
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )
@@ -81,11 +82,13 @@ class cubeAngle(fissureGenerique):
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,10)
 
     centre = None
+
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep           = '.',
+    logging.info("setParamMaillageFissure pour '{}'".format(self.nomCas))
+    self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
                                       nomFicFissure    = 'fissure_' + self.nomCas,
                                       nbsegRad         = 5,
@@ -101,6 +104,7 @@ class cubeAngle(fissureGenerique):
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
                             maillageFissureParams, elementsDefaut, step):
+    logging.info("genereMaillageFissure pour '{}'".format(self.nomCas))
     maillageFissure = construitFissureGenerale(maillagesSains,
                                                shapesFissure, shapeFissureParams,
                                                maillageFissureParams, elementsDefaut, step)
