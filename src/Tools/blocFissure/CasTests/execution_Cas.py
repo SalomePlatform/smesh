@@ -215,11 +215,12 @@ while True:
         n_cas_nook += 1
       print(ligne)
 
-  if n_cas_nook:
-    texte += ". Nombre de cas_tests OK   : {}\n".format(n_cas_ok)
-    texte += ". Nombre de cas_tests NOOK : {}\n".format(n_cas_nook)
-  else:
-    texte += "Tous les tests se sont bien passés.\n"
+  if ( (n_cas_nook+n_cas_ok) > 1):
+    if n_cas_nook:
+      texte += ". Nombre de cas_tests OK   : {}\n".format(n_cas_ok)
+      texte += ". Nombre de cas_tests NOOK : {}\n".format(n_cas_nook)
+    else:
+      texte += "Tous les tests se sont bien passés.\n"
   print (texte+ligne)
 
   break
