@@ -34,8 +34,8 @@ class fissureCoude_ihm(fissureCoude):
 
 # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
-    """
-    Paramètres géométriques du tuyau coudé sain:
+    """Paramètres géométriques du tuyau coudé sain:
+
     angleCoude
     r_cintr
     l_tube_p1
@@ -43,26 +43,26 @@ class fissureCoude_ihm(fissureCoude):
     epais
     de
     """
-    self.geomParams = dict(angleCoude = self.dico['angle'],
-                           r_cintr    = self.dico['rCintr'],
-                           l_tube_p1  = self.dico['lTubeP1'],
-                           l_tube_p2  = self.dico['lTubeP2'],
-                           epais      = self.dico['epais'],
+    self.geomParams = dict(angleCoude = self.dico['angle'], \
+                           r_cintr    = self.dico['rCintr'], \
+                           l_tube_p1  = self.dico['lTubeP1'], \
+                           l_tube_p2  = self.dico['lTubeP2'], \
+                           epais      = self.dico['epais'], \
                            de         = self.dico['dext'])
 
   # ---------------------------------------------------------------------------
   def setParamMaillageSain(self):
-    self.meshParams = dict(n_long_p1    = self.dico['nbAxeTubeP1'],
-                           n_ep         = self.dico['nbEpaisseur'],
-                           n_long_coude = self.dico['nbAxeCoude'],
-                           n_circ_g     = self.dico['nbCirconf'],
-                           n_circ_d     = self.dico['nbCirconf'],
+    self.meshParams = dict(n_long_p1    = self.dico['nbAxeTubeP1'], \
+                           n_ep         = self.dico['nbEpaisseur'], \
+                           n_long_coude = self.dico['nbAxeCoude'], \
+                           n_circ_g     = self.dico['nbCirconf'], \
+                           n_circ_d     = self.dico['nbCirconf'], \
                            n_long_p2    = self.dico['nbAxeTubeP2'])
 
 # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
-    """
-    paramètres de la fissure pour le tuyau coude
+    """paramètres de la fissure pour le tuyau coude
+
     profondeur  : 0 < profondeur <= épaisseur
     rayonPipe   : rayon du pipe correspondant au maillage rayonnant
     lenSegPipe  : longueur des mailles rayonnantes le long du fond de fissure (= rayonPipe par défaut)
@@ -76,43 +76,43 @@ class fissureCoude_ihm(fissureCoude):
     externe     : True : fissure face externe, False : fissure face interne
     """
     print("setParamShapeFissure", self.nomCas)
-    self.shapeFissureParams = dict(profondeur  = self.dico['profondeur'],
-                                   rayonPipe   = self.dico['rayonTore'],
-                                   lenSegPipe  = self.dico['lenSegPipe'],
-                                   azimut      = self.dico['azimut'],
-                                   alpha       = self.dico['posiAngul'],
-                                   longueur    = self.dico['longueur'],
-                                   orientation = self.dico['orientation'],
-                                   lgInfluence = self.dico['influence'],
-                                   elliptique  = self.dico['cbForceEllipse'],
+    self.shapeFissureParams = dict(profondeur  = self.dico['profondeur'], \
+                                   rayonPipe   = self.dico['rayonTore'], \
+                                   lenSegPipe  = self.dico['lenSegPipe'], \
+                                   azimut      = self.dico['azimut'], \
+                                   alpha       = self.dico['posiAngul'], \
+                                   longueur    = self.dico['longueur'], \
+                                   orientation = self.dico['orientation'], \
+                                   lgInfluence = self.dico['influence'], \
+                                   elliptique  = self.dico['cbForceEllipse'], \
                                    externe     = self.dico['rbFissExt'])
 
 # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    """
-    Paramètres du maillage de la fissure pour le tuyau coudé
+    """Paramètres du maillage de la fissure pour le tuyau coudé
+
     Voir également setParamShapeFissure, paramètres rayonPipe et lenSegPipe.
     nbSegRad = nombre de couronnes
     nbSegCercle = nombre de secteurs
     areteFaceFissure = taille cible de l'arête des triangles en face de fissure.
     """
-    self.maillageFissureParams = dict(nomRep        = os.curdir,
-                                      nomFicSain    = self.nomCas,
-                                      nomFicFissure = 'fissure_' + self.nomCas,
-                                      nbsegRad      = self.dico['nbCouronnes'],
-                                      nbsegCercle   = self.dico['nbSecteurs'],
+    self.maillageFissureParams = dict(nomRep        = os.curdir, \
+                                      nomFicSain    = self.nomCas, \
+                                      nomFicFissure = 'fissure_' + self.nomCas, \
+                                      nbsegRad      = self.dico['nbCouronnes'], \
+                                      nbsegCercle   = self.dico['nbSecteurs'], \
                                       areteFaceFissure = self.dico['aretesFaceFissure'])
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
     self.referencesMaillageFissure = dict( \
-                                          Entity_Quad_Pyramid    = 0,
                                           Entity_Quad_Quadrangle = 0, \
                                           Entity_Quad_Hexa = 0, \
                                           Entity_Node = 0, \
                                           Entity_Quad_Edge = 0, \
                                           Entity_Quad_Triangle = 0, \
                                           Entity_Quad_Tetra = 0, \
+                                          Entity_Quad_Pyramid = 0, \
                                           Entity_Quad_Penta = 0 \
                                           )
 

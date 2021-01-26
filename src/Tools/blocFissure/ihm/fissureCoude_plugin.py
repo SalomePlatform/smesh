@@ -34,26 +34,25 @@ def fissureCoudeDlg(context):
   # get context study, salomeGui
   study = context.study
   sg = context.sg
-  
-  import os
+
   #import subprocess
   #import tempfile
   from qtsalome import QFileDialog, QMessageBox, QPalette, QColor, QDialog
   from blocFissure.ihm.fissureCoude_ui import Ui_Dialog
-  
+
   class fissureCoudeDialog(QDialog):
-    
+
     def __init__(self):
       QDialog.__init__(self)
       # Set up the user interface from Designer.
       self.ui = Ui_Dialog()
       self.ui.setupUi(self)
-      
+
       self.blackPalette = self.ui.dsb_angle.palette()
       self.redPalette = QPalette()
       self.redPalette.setColor(QPalette.Text, QColor(255,0,0))
       self.NOK = False
-      
+
       self.initDefaut()
       self.initDialog(self.defaut)
       self.ui.dsb_angle.setSpecialValueText("saisie_obligatoire")
@@ -74,7 +73,7 @@ def fissureCoudeDlg(context):
       self.ui.dsb_aretesFaceFissure.setSpecialValueText("automatique")
       self.ui.dsb_influence.setSpecialValueText("automatique")
       self.ui.lb_calcul.hide()
-      
+
       # Connect up the buttons.
       self.ui.pb_valPrec.clicked.connect(self.readValPrec)
       self.ui.pb_reset.clicked.connect(self.resetVal)
@@ -82,39 +81,39 @@ def fissureCoudeDlg(context):
       self.ui.pb_sauver.clicked.connect(self.sauver)
       self.ui.buttonBox.accepted.disconnect(self.accept)
       self.ui.buttonBox.accepted.connect(self.execute)
-    
+
     def initDefaut(self):
-      self.defaut = dict(
-        angle             = -181.0,
-        rCintr            = 0.0,
-        lTubeP1           = 0.0,
-        lTubeP2           = 0.0,
-        epais             = 0.0,
-        dext              = 0.0,
-        profondeur        = 0.0,
-        longueur          = 0.0,
-        azimut            = -181.0,
-        orientation       = -1.0,
-        posiAngul         = -181.0,
-        absCurv           = 0.0,
-        nbTranches        = 7,
-        nbCouronnes       = 1,
-        nbSecteurs        = 3,
-        cbOptDiscrSain    = False,
-        cbOptDiscrFiss    = False,
-        rbPosiAngul       = True,
-        rbFissExt         = True,
-        cbForceEllipse    = False,
-        nbAxeTubeP1       = 15,
-        nbAxeTubeP2       = 15,
-        nbAxeCoude        = 10,
-        nbCirconf         = 20,
-        nbEpaisseur       = 3,
-        rayonTore         = 2.0,
-        aretesFaceFissure = 0.0,
-        influence         = 0.0,
+      self.defaut = dict( \
+        angle             = -181.0, \
+        rCintr            = 0.0, \
+        lTubeP1           = 0.0, \
+        lTubeP2           = 0.0, \
+        epais             = 0.0, \
+        dext              = 0.0, \
+        profondeur        = 0.0, \
+        longueur          = 0.0, \
+        azimut            = -181.0, \
+        orientation       = -1.0, \
+        posiAngul         = -181.0, \
+        absCurv           = 0.0, \
+        nbTranches        = 7, \
+        nbCouronnes       = 1, \
+        nbSecteurs        = 3, \
+        cbOptDiscrSain    = False, \
+        cbOptDiscrFiss    = False, \
+        rbPosiAngul       = True, \
+        rbFissExt         = True, \
+        cbForceEllipse    = False, \
+        nbAxeTubeP1       = 15, \
+        nbAxeTubeP2       = 15, \
+        nbAxeCoude        = 10, \
+        nbCirconf         = 20, \
+        nbEpaisseur       = 3, \
+        rayonTore         = 2.0, \
+        aretesFaceFissure = 0.0, \
+        influence         = 0.0, \
         )
-      
+
     def initDialog(self, dico):
       self.ui.dsb_angle.setValue(dico['angle'])
       self.ui.dsb_rCintr.setValue(dico['rCintr'])
@@ -159,7 +158,7 @@ def fissureCoudeDlg(context):
       self.ui.cb_forceEllipse.setChecked(dico['cbForceEllipse'])
       incomplet = self.testval(dico)
       pass
-    
+
     def testval(self, dico):
       incomplet = False
       if dico['angle'] < -180.0:
@@ -167,109 +166,109 @@ def fissureCoudeDlg(context):
         incomplet = True
       else:
         self.ui.dsb_angle.setPalette(self.blackPalette)
-        
+
       if dico['rCintr'] == 0.0:
         self.ui.dsb_rCintr.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_rCintr.setPalette(self.blackPalette)
-        
-      if dico['lTubeP1'] == 0.0:  
+
+      if dico['lTubeP1'] == 0.0:
         self.ui.dsb_lTubeP1.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_lTubeP1.setPalette(self.blackPalette)
-        
-      if dico['lTubeP2'] == 0.0:  
+
+      if dico['lTubeP2'] == 0.0:
         self.ui.dsb_lTubeP2.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_lTubeP2.setPalette(self.blackPalette)
-        
-      if dico['epais'] == 0.0:  
+
+      if dico['epais'] == 0.0:
         self.ui.dsb_epais.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_epais.setPalette(self.blackPalette)
-        
-      if dico['dext'] == 0.0:  
+
+      if dico['dext'] == 0.0:
         self.ui.dsb_dext.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_dext.setPalette(self.blackPalette)
-        
-      if dico['profondeur'] == 0.0:  
+
+      if dico['profondeur'] == 0.0:
         self.ui.dsb_profondeur.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_profondeur.setPalette(self.blackPalette)
-        
-      if dico['longueur'] == 0.0:  
+
+      if dico['longueur'] == 0.0:
         self.ui.dsb_longueur.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_longueur.setPalette(self.blackPalette)
-        
-      if dico['azimut'] < -180.0:  
+
+      if dico['azimut'] < -180.0:
         self.ui.dsb_azimut.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_azimut.setPalette(self.blackPalette)
-        
-      if dico['orientation'] < 0.0:  
+
+      if dico['orientation'] < 0.0:
         self.ui.dsb_orientation.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_orientation.setPalette(self.blackPalette)
-        
-      if dico['posiAngul'] < -180.0 and dico['rbPosiAngul'] == True:  
+
+      if ( ( dico['posiAngul'] < -180.0 ) and dico['rbPosiAngul'] ):
         self.ui.dsb_posiAngul.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_posiAngul.setPalette(self.blackPalette)
-        
-      if dico['absCurv'] == 0.0 and dico['rbPosiAngul'] == False:  
+
+      if ( ( dico['absCurv'] == 0.0 ) and ( not dico['rbPosiAngul'] ) ):
         self.ui.dsb_absCurv.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.dsb_absCurv.setPalette(self.blackPalette)
-        
-      if dico['nbTranches'] == 7:  
+
+      if dico['nbTranches'] == 7:
         self.ui.sb_nbTranches.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.sb_nbTranches.setPalette(self.blackPalette)
-        
-      if dico['nbCouronnes'] == 1:  
+
+      if dico['nbCouronnes'] == 1:
         self.ui.sb_nbCouronne.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.sb_nbCouronne.setPalette(self.blackPalette)
-        
-      if dico['nbSecteurs'] == 3:  
+
+      if dico['nbSecteurs'] == 3:
         self.ui.sb_nbSecteur.setPalette(self.redPalette)
         incomplet = True
       else:
         self.ui.sb_nbSecteur.setPalette(self.blackPalette)
-        
+
       print("incomplet: ", incomplet)
       return incomplet
-    
+
     def fileDefault(self):
       filedef = os.path.expanduser( os.path.join(os.environ["HOME"],".config", "salome", "dialogFissureCoude.dic") )
       print(filedef)
       return filedef
-    
+
     def writeDefault(self, dico):
       filedef = self.fileDefault()
       with open(filedef, 'w') as f:
-          f.write(str(dico))
-    
+        f.write(str(dico))
+
     def readValPrec(self):
       filedef = self.fileDefault()
       if os.path.exists(filedef):
         with open(filedef, 'r') as f:
-            txt = f.read()
+          txt = f.read()
         dico = eval(txt)
         print(dico)
         self.initDialog(dico)
@@ -277,7 +276,7 @@ def fissureCoudeDlg(context):
     def resetVal(self):
       #self.initDefaut()
       self.initDialog(self.defaut)
-      
+
     def sauver(self):
       print("sauver")
       fileDiag = QFileDialog(self)
@@ -289,8 +288,8 @@ def fissureCoudeDlg(context):
         filedef = fileNames[0]
         dico = self.creeDico()
         with open(filedef, 'w') as f:
-            f.write(str(dico))
-        
+          f.write(str(dico))
+
     def recharger(self):
       print("recharger")
       fileDiag = QFileDialog(self)
@@ -303,45 +302,45 @@ def fissureCoudeDlg(context):
         print(filedef)
         if os.path.exists(filedef):
           with open(filedef, 'r') as f:
-              txt = f.read()
+            txt = f.read()
           dico = eval(txt)
           print(dico)
           self.initDialog(dico)
-         
+
     def creeDico(self):
-      dico = dict(
-        angle             = self.ui.dsb_angle.value(),
-        rCintr            = self.ui.dsb_rCintr.value(),
-        lTubeP1           = self.ui.dsb_lTubeP1.value(),
-        lTubeP2           = self.ui.dsb_lTubeP2.value(),
-        epais             = self.ui.dsb_epais.value(),
-        dext              = self.ui.dsb_dext.value(),
-        profondeur        = self.ui.dsb_profondeur.value(),
-        longueur          = self.ui.dsb_longueur.value(),
-        azimut            = self.ui.dsb_azimut.value(),
-        orientation       = self.ui.dsb_orientation.value(),
-        posiAngul         = self.ui.dsb_posiAngul.value(),
-        absCurv           = self.ui.dsb_absCurv.value(),
-        nbTranches        = self.ui.sb_nbTranches.value(),
-        nbCouronnes       = self.ui.sb_nbCouronne.value(),
-        nbSecteurs        = self.ui.sb_nbSecteur.value(),
-        cbOptDiscrSain    = self.ui.cb_optDiscrSain.isChecked(),
-        cbOptDiscrFiss    = self.ui.cb_optDiscrFiss.isChecked(),
-        rbPosiAngul       = self.ui.rb_posiAngul.isChecked(),
-        rbFissExt         = self.ui.rb_fissExt.isChecked(),
-        cbForceEllipse    = self.ui.cb_forceEllipse.isChecked(),
-        nbAxeTubeP1       = self.ui.sb_nbAxeTubeP1.value(),
-        nbAxeTubeP2       = self.ui.sb_nbAxeTubeP2.value(),
-        nbAxeCoude        = self.ui.sb_nbAxeCoude.value(),
-        nbCirconf         = self.ui.sb_nbCirconf.value(),
-        nbEpaisseur       = self.ui.sb_nbEpaisseur.value(),
-        rayonTore         = self.ui.dsb_rayonTore.value(),
-        aretesFaceFissure = self.ui.dsb_aretesFaceFissure.value(),
-        influence         = self.ui.dsb_influence.value(),
+      dico = dict( \
+        angle             = self.ui.dsb_angle.value(), \
+        rCintr            = self.ui.dsb_rCintr.value(), \
+        lTubeP1           = self.ui.dsb_lTubeP1.value(), \
+        lTubeP2           = self.ui.dsb_lTubeP2.value(), \
+        epais             = self.ui.dsb_epais.value(), \
+        dext              = self.ui.dsb_dext.value(), \
+        profondeur        = self.ui.dsb_profondeur.value(), \
+        longueur          = self.ui.dsb_longueur.value(), \
+        azimut            = self.ui.dsb_azimut.value(), \
+        orientation       = self.ui.dsb_orientation.value(), \
+        posiAngul         = self.ui.dsb_posiAngul.value(), \
+        absCurv           = self.ui.dsb_absCurv.value(), \
+        nbTranches        = self.ui.sb_nbTranches.value(), \
+        nbCouronnes       = self.ui.sb_nbCouronne.value(), \
+        nbSecteurs        = self.ui.sb_nbSecteur.value(), \
+        cbOptDiscrSain    = self.ui.cb_optDiscrSain.isChecked(), \
+        cbOptDiscrFiss    = self.ui.cb_optDiscrFiss.isChecked(), \
+        rbPosiAngul       = self.ui.rb_posiAngul.isChecked(), \
+        rbFissExt         = self.ui.rb_fissExt.isChecked(), \
+        cbForceEllipse    = self.ui.cb_forceEllipse.isChecked(), \
+        nbAxeTubeP1       = self.ui.sb_nbAxeTubeP1.value(), \
+        nbAxeTubeP2       = self.ui.sb_nbAxeTubeP2.value(), \
+        nbAxeCoude        = self.ui.sb_nbAxeCoude.value(), \
+        nbCirconf         = self.ui.sb_nbCirconf.value(), \
+        nbEpaisseur       = self.ui.sb_nbEpaisseur.value(), \
+        rayonTore         = self.ui.dsb_rayonTore.value(), \
+        aretesFaceFissure = self.ui.dsb_aretesFaceFissure.value(), \
+        influence         = self.ui.dsb_influence.value(), \
         )
       print(dico)
       return dico
-      
+
     def checkValues(self):
       return self.NOK
 
@@ -352,7 +351,7 @@ def fissureCoudeDlg(context):
       from blocFissure.gmu import geomsmesh
       from blocFissure.gmu.casStandard import casStandard
       from blocFissure.ihm.fissureCoude_ihm import fissureCoude_ihm
-      
+
       dico = self.creeDico()
       NOK = self.testval(dico)
       if not(NOK):
@@ -370,14 +369,14 @@ def fissureCoudeDlg(context):
         if dico['aretesFaceFissure'] == 0:
           dico['aretesFaceFissure'] = (areteMinAngle + areteMinCirco)/2.0
           print('aretesFaceFissure', dico['aretesFaceFissure'])
-        if dico['rbPosiAngul'] == False:
+        if not dico['rbPosiAngul']:
           rmoy = (dico['dext'] - dico['epais'])/2.0
           eta = 1
-          if dico['rbFissExt'] == False:
+          if not dico['rbFissExt']:
             eta = -1
           dico['posiAngul'] = (180.0/math.pi)*dico['absCurv']/(dico['rCintr']+(rmoy+eta*dico['epais']/2.0)*math.cos(math.pi*dico['azimut']/180.))
           print('posiAngul' , dico['posiAngul'])
-        
+
         self.writeDefault(dico)
         self.ui.lb_calcul.show()
         probleme = fissureCoude_ihm(0)
@@ -385,11 +384,9 @@ def fissureCoudeDlg(context):
         probleme.executeProbleme()
       self.NOK = NOK
       self.accept()
-    
-    pass 
 
 # ----------------------------------------------------------------------------
-                     
+
   window = fissureCoudeDialog()
 #  window.ui.dsb_tolerance.setValue(0.01)
   retry = True
@@ -403,5 +400,4 @@ def fissureCoudeDlg(context):
       retry = window.checkValues()
     else:
       print("dialog rejected, exit")
-  pass
-  
+
