@@ -34,27 +34,27 @@ from .checkDecoupePartition import checkDecoupePartition
   #     liste de partitions face externe - fissure : partitionPeauFissFond (None quand pas d'intersection)
 
 def construitPartitionsPeauFissure(facesDefaut, fissPipe):
-  """
-  partition peau défaut - face de fissure prolongée - wire de fond de fissure prolongée.
+  """partition peau défaut - face de fissure prolongée - wire de fond de fissure prolongée.
+
   Il peut y avoir plusieurs faces externes, dont certaines sont découpées par la fissure.
   @param facesDefaut liste de faces externes
   @param fissPipe    partition face de fissure etendue par pipe prolongé
   @return partitionsPeauFissFond : liste de partitions face externe - fissure (None quand pas d'intersection)
   """
-  
+
   logging.info('start')
-  partitionsPeauFissFond = []
+  partitionsPeauFissFond = list()
   ipart = 0
-  for filling in facesDefaut: 
-    part = geompy.MakePartition([fissPipe, filling], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
+  for filling in facesDefaut:
+    part = geompy.MakePartition([fissPipe, filling], list(), list(), list(), geompy.ShapeType["FACE"], 0, list(), 0)
     isPart = checkDecoupePartition([fissPipe, filling], part)
     if isPart: # on recrée la partition avec toutes les faces filling en outil pour avoir une face de fissure correcte
       otherFD = [fd for fd in facesDefaut if fd != filling]
       if otherFD:
-        fissPipePart = geompy.MakePartition([fissPipe], otherFD, [], [], geompy.ShapeType["FACE"], 0, [], 0)
+        fissPipePart = geompy.MakePartition([fissPipe], otherFD, list(), list(), geompy.ShapeType["FACE"], 0, list(), 0)
       else:
         fissPipePart = fissPipe
-      part = geompy.MakePartition([fissPipePart, filling], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
+      part = geompy.MakePartition([fissPipePart, filling], list(), list(), list(), geompy.ShapeType["FACE"], 0, list(), 0)
       partitionsPeauFissFond.append(part)
       geomPublish(initLog.debug, part, 'partitionPeauFissFond%d'%ipart )
     else:

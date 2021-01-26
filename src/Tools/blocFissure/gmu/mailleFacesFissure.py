@@ -29,9 +29,7 @@ from .putName import putName
   
 def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFissureExterneC,
                         meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad):
-  """
-  maillage faces de fissure
-  """
+  """maillage faces de fissure"""
   logging.info('start')
   logging.info("Maillage de {}".format(faceFissureExterne.GetName()))
 
@@ -48,7 +46,7 @@ def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFi
   putName(algo2d, "algo2d_faceFiss")
   putName(hypo2d, "hypo2d_faceFiss")
 
-  logging.info('Récupération des arêtes de {}'.format(edgesPipeFissureExterneC.GetName()))
+  logging.info("Récupération des arêtes de '{}'".format(edgesPipeFissureExterneC.GetName()))
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
   hypo1d = algo1d.SourceEdges([ meshPipeGroups['edgeFaceFissGroup'] ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau")

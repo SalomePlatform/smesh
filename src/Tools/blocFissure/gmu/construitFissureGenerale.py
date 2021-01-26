@@ -144,7 +144,7 @@ def construitFissureGenerale(maillagesSains,
   centreFondFiss           = elementsDefaut[15]
   #tgtCentre                = elementsDefaut[16]
   if lgAretesVives == 0:
-     lgAretesVives = dmoyen
+    lgAretesVives = dmoyen
 
 
   O, OX, OY, OZ = triedreBase()
@@ -183,7 +183,8 @@ def construitFissureGenerale(maillagesSains,
   #                                0, 1 ou plus edges de la face de fissure externe au pipe
 
   nbFacesFilling = len(partitionsPeauFissFond)
-  logging.info("nbFacesFilling : {} ".format(nbFacesFilling))
+  texte = "nbFacesFilling : {} ".format(nbFacesFilling)
+  logging.info(texte)
 
   ptEdgeFond = [ list()  for i in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux débouchés du pipe]
   fsPipePeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
@@ -231,9 +232,8 @@ def construitFissureGenerale(maillagesSains,
 
   # --- identification des faces et edges de fissure externe pour maillage
 
-  (faceFissureExterne, edgesPipeFissureExterneC,
-    wirePipeFissureExterne, edgesPeauFissureExterneC) = identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe,
-                                                                                          edFisExtPi, edgesPipeFiss)
+  (faceFissureExterne, edgesPipeFissureExterneC, wirePipeFissureExterne, edgesPeauFissureExterneC) = \
+      identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesPipeFiss)
 
   # --- preparation maillage du pipe :
   #     - détections des points a respecter : jonction des edges/faces constituant la face de fissure externe au pipe
@@ -322,12 +322,13 @@ def construitFissureGenerale(maillagesSains,
   putName(meshBoiteDefaut, "boiteDefaut")
   logging.info("meshBoiteDefaut fini")
 
-  faceFissure = meshBoiteDefaut.GetMesh().UnionListOfGroups( [ group_faceFissOutPipe, group_faceFissInPipe ], 'FACE1' )
+  faceFissure = meshBoiteDefaut.GetMesh().UnionListOfGroups( [ group_faceFissOutPipe, group_faceFissInPipe ], \
+                                                             'FACE1' )
   maillageSain = enleveDefaut(maillageSain, zoneDefaut, zoneDefaut_skin,
                               zoneDefaut_internalFaces, zoneDefaut_internalEdges)
   putName(maillageSain, nomFicSain+"_coupe")
-  extrusionFaceFissure, normfiss = shapeSurFissure(facesPortFissure)
-  maillageComplet = RegroupeSainEtDefaut(maillageSain, meshBoiteDefaut,
+  _, normfiss = shapeSurFissure(facesPortFissure)
+  maillageComplet = RegroupeSainEtDefaut(maillageSain, meshBoiteDefaut, \
                                          None, None, 'COMPLET', normfiss)
 
   logging.info("conversion quadratique")

@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Cas standard"""
 
 import os
 from .geomsmesh import geompy, smesh
@@ -48,6 +49,7 @@ class casStandard(fissureGenerique):
   - les numéros d'arêtes (edges géométriques) correspondant au fond de fissure
   - les paramètres de maillage de la fissure
   """
+  referencesMaillageFissure = None
 
   # ---------------------------------------------------------------------------
   def __init__ (self, dicoParams, references = None, numeroCas = 0):
