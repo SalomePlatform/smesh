@@ -22,6 +22,7 @@
 # if you already have plugins defined in a salome_plugins.py file, add this file at the end.
 # if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
+import os
 import math
 import sys
 import traceback
@@ -255,7 +256,7 @@ def fissureCoudeDlg(context):
       return incomplet
     
     def fileDefault(self):
-      filedef = os.path.expanduser("~/.config/salome/dialogFissureCoude.dic")
+      filedef = os.path.expanduser( os.path.join(os.environ["HOME"],".config", "salome", "dialogFissureCoude.dic") )
       print(filedef)
       return filedef
     

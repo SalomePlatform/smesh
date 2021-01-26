@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 from .fissure_Coude  import fissure_Coude
 
 class fissure_Coude_4(fissure_Coude):
@@ -67,7 +69,7 @@ class fissure_Coude_4(fissure_Coude):
     externe     : True : fissure face externe, False : fissure face interne
     """
     print("setParamShapeFissure", self.nomCas)
-    self.shapeFissureParams = dict(nomRep        = '.',
+    self.shapeFissureParams = dict(nomRep        = os.curdir,
                                    nomFicSain    = self.nomCas,
                                    nomFicFissure = 'fissure_' + self.nomCas,
                                    profondeur  = 10,

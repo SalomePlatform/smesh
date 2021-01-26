@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
 
@@ -477,7 +479,7 @@ class fissure_Coude(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep        = '.',
+    self.maillageFissureParams = dict(nomRep        = os.curdir,
                                       nomFicSain    = self.nomCas,
                                       nomFicFissure = 'fissure_' + self.nomCas,
                                       nbsegExt      = 5,

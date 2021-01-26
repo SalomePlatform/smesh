@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 from .geomsmesh import geompy, smesh
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
@@ -656,7 +658,7 @@ class fissureCoude(fissureGenerique):
     nbSegCercle = nombre de secteurs
     areteFaceFissure = taille cible de l'arête des triangles en face de fissure.
     """
-    self.maillageFissureParams = dict(nomRep        = '.',
+    self.maillageFissureParams = dict(nomRep        = os.curdir,
                                       nomFicSain    = self.nomCas,
                                       nomFicFissure = 'fissure_' + self.nomCas,
                                       nbsegRad      = 5,

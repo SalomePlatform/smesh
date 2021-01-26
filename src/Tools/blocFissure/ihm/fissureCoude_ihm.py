@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 from blocFissure.gmu.fissureCoude  import fissureCoude
 
 class fissureCoude_ihm(fissureCoude):
@@ -94,7 +96,7 @@ class fissureCoude_ihm(fissureCoude):
     nbSegCercle = nombre de secteurs
     areteFaceFissure = taille cible de l'arête des triangles en face de fissure.
     """
-    self.maillageFissureParams = dict(nomRep        = '.',
+    self.maillageFissureParams = dict(nomRep        = os.curdir,
                                       nomFicSain    = self.nomCas,
                                       nomFicFissure = 'fissure_' + self.nomCas,
                                       nbsegRad      = self.dico['nbCouronnes'],
@@ -103,12 +105,14 @@ class fissureCoude_ihm(fissureCoude):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Node            = 0,
-                                          Entity_Quad_Edge       = 0,
-                                          Entity_Quad_Triangle   = 0,
-                                          Entity_Quad_Quadrangle = 0,
-                                          Entity_Quad_Tetra      = 0,
-                                          Entity_Quad_Hexa       = 0,
-                                          Entity_Quad_Penta      = 0,
-                                          Entity_Quad_Pyramid    = 0)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Pyramid    = 0,
+                                          Entity_Quad_Quadrangle = 0, \
+                                          Entity_Quad_Hexa = 0, \
+                                          Entity_Node = 0, \
+                                          Entity_Quad_Edge = 0, \
+                                          Entity_Quad_Triangle = 0, \
+                                          Entity_Quad_Tetra = 0, \
+                                          Entity_Quad_Penta = 0 \
+                                          )
 

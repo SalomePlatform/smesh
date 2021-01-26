@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 from blocFissure.gmu.fissureCoude  import fissureCoude
 
 class fissureCoude_2(fissureCoude):
@@ -89,7 +91,7 @@ class fissureCoude_2(fissureCoude):
     nbSegCercle = nombre de secteurs
     areteFaceFissure = taille cible de l'arête des triangles en face de fissure.
     """
-    self.maillageFissureParams = dict(nomRep        = '.',
+    self.maillageFissureParams = dict(nomRep        = os.curdir,
                                       nomFicSain    = self.nomCas,
                                       nomFicFissure = 'fissure_' + self.nomCas,
                                       nbsegRad      = 5,

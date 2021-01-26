@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 from .cubeAngle import cubeAngle
 
 class cubeAngle2(cubeAngle):
@@ -40,7 +42,7 @@ class cubeAngle2(cubeAngle):
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep           = '.',
+    self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
                                       nomFicFissure    = 'fissure_' + self.nomCas,
                                       nbsegRad         = 5,

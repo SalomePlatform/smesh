@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 import logging
 import salome
 from .geomsmesh import geompy
@@ -79,8 +81,8 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   #nbsegFis          = maillageFissureParams['nbsegFis']      # 20
   #lensegEllipsoide  = maillageFissureParams['lensegEllipso'] # 1.0
 
-  #fichierMaillageSain = nomRep + '/' + nomFicSain + '.med'
-  fichierMaillageFissure = nomRep + '/' + nomFicFissure + '.med'
+  #fichierMaillageSain = os.path.join(nomRep, '{}.med'.format(nomFicSain))
+  fichierMaillageFissure = os.path.join(nomRep, '{}.med'.format(nomFicFissure))
 
   facesDefaut              = elementsDefaut[0]
   #centreDefaut             = elementsDefaut[1]

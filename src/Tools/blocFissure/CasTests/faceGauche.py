@@ -87,7 +87,7 @@ class faceGauche(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep           = '.',
+    self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
                                       nomFicFissure    = 'fissure_' + self.nomCas,
                                       nbsegRad         = 5,

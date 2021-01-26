@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import os
+
 import logging
 import salome
 from .geomsmesh import geompy
@@ -100,8 +102,8 @@ def insereFissureGenerale(maillagesSains,
   if isPointInterne:
     pointInterne = geompy.MakeVertex(pointIn_x, pointIn_y, pointIn_z)
 
-  #fichierMaillageSain = nomRep + '/' + nomFicSain + '.med'
-  fichierMaillageFissure = nomRep + '/' + nomFicFissure + '.med'
+  #fichierMaillageSain = os.path.join(nomRep, '{}.med'.format(nomFicSain))
+  fichierMaillageFissure = os.path.join(nomRep, '{}.med'.format(nomFicFissure))
 
   # fillings des faces en peau
   facesDefaut = elementsDefaut[0]
