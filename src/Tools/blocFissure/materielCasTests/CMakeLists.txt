@@ -34,6 +34,7 @@ SET(plugin_SCRIPTS
   fissureGauche2.py
   fissureGauche.py
   genereMateriel.py
+  tube.py
   vis.py
 )
 

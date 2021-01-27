@@ -51,6 +51,7 @@ SET(plugin_SCRIPTS
   fissureCoude_9.py
   fissure_Coude.py
   vis_1.py
+  tube.py
 )
 
 # --- rules ---
