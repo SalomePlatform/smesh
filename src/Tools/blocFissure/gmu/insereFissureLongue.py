@@ -46,6 +46,11 @@ from .shapeSurFissure import shapeSurFissure
 from .regroupeSainEtDefaut import RegroupeSainEtDefaut
 from .triedreBase import triedreBase
 
+from blocFissure.gmu.insereFissureLongue_a import insereFissureLongue_a
+from blocFissure.gmu.insereFissureLongue_b import insereFissureLongue_b
+from blocFissure.gmu.insereFissureLongue_c import insereFissureLongue_c
+from blocFissure.gmu.insereFissureLongue_d import insereFissureLongue_d
+
 # -----------------------------------------------------------------------------
 # --- procedure complete fissure longue
 
@@ -426,7 +431,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   # --- maillage face de fissure
 
   meshFaceFiss = \
-            insereFissureLongue_c (faceFiss, groupEdgesPeauFiss, edgePeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
+            insereFissureLongue_c (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
             profondeur, rayonPipe)
 
   # --- maillage meshBoiteDefaut
