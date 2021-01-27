@@ -25,8 +25,6 @@ import salome
 
 salome.salome_init()
 
-import salome_notebook
-
 import os
 from blocFissure import gmu
 
