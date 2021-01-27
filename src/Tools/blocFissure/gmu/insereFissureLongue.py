@@ -410,240 +410,32 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
 
   # --- maillage pipe fond fissure
 
-  meshFondFiss = smesh.Mesh(pipeFondFiss)
-  algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.QUADRANGLE)
-  algo3d = meshFondFiss.Prism()
-  putName(algo3d.GetSubMesh(), "pipe")
-  putName(algo3d, "algo3d_pipe")
-  putName(algo2d, "algo2d_pipe")
-
-  for i, face in enumerate(disques):
-    algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.RADIAL_QUAD,geom=face)
-    putName(algo2d.GetSubMesh(), "disque", i)
-    putName(algo2d, "algo2d_disque", i)
-
-  for i, edge in enumerate(rayons):
-    algo1d = meshFondFiss.Segment(geom=edge)
-    hypo1d = algo1d.NumberOfSegments(4)
-    putName(algo1d.GetSubMesh(), "rayon", i)
-    putName(algo1d, "algo1d_rayon", i)
-    putName(hypo1d, "hypo1d_rayon", i)
-
-  for i, edge in enumerate(demiCercles):
-    algo1d = meshFondFiss.Segment(geom=edge)
-    hypo1d = algo1d.NumberOfSegments(6)
-    putName(algo1d.GetSubMesh(), "demiCercle", i)
-    putName(algo1d, "algo1d_demiCercle", i)
-    putName(hypo1d, "hypo1d_demiCercle", i)
-
-  generSorted, minlg, maxlg = sortEdges(generatrices)
-  nbSegGenLong = int(math.sqrt(3.0)*maxlg/(profondeur - rayonPipe)) # on veut 2 triangles equilateraux dans la largeur de la face
-  nbSegGenBout = 6
-  logging.info("min %s, max %s, nombre de segments %s, nombre de generatrices %s", minlg, maxlg, nbSegGenLong, len(generSorted))
-  for i, edge in enumerate(generSorted):
-    algo1d = meshFondFiss.Segment(geom=edge)
-    if i < 6:
-      hypo1d = algo1d.NumberOfSegments(nbSegGenBout)
-    else:
-      hypo1d = algo1d.NumberOfSegments(nbSegGenLong)
-    putName(algo1d.GetSubMesh(), "generatrice", i)
-    putName(algo1d, "algo1d_generatrice", i)
-    putName(hypo1d, "hypo1d_generatrice", i)
-  is_done = meshFondFiss.Compute()
-  text = "meshFondFiss.Compute"
-  if is_done:
-    logging.info(text+" OK")
-  else:
-    text = "Erreur au calcul du maillage.\n" + text
-    logging.info(text)
-    raise Exception(text)
-
-  disks = list()
-  for i, face in enumerate(disques[:4]):
-    name = "disk%d"%i
-    disks.append(meshFondFiss.GroupOnGeom(face, name, SMESH.FACE))
-  peauext_pipe = meshFondFiss.GetMesh().UnionListOfGroups( disks, 'PEAUEXT' )
-
-  grpPFOR = meshFondFiss.GroupOnGeom(VerticesEndPipeFiss[0], "PFOR", SMESH.NODE)
-  grpPFEX = meshFondFiss.GroupOnGeom(VerticesEndPipeFiss[1], "PFEX", SMESH.NODE)
-
-  grp = meshFondFiss.GroupOnGeom(groupFaceFissInPipe, "fisInPi", SMESH.FACE)
-  group_edgeFondFiss = meshFondFiss.GroupOnGeom(groupEdgeFondFiss, "FONDFISS", SMESH.EDGE)
-  noeudsFondFissure = meshFondFiss.GroupOnGeom(groupEdgeFondFiss, "nfondfis", SMESH.NODE)
-  groups_demiCercles = list()
-  groupnodes_demiCercles = list()
-  for i, group in enumerate(groupsDemiCerclesPipe):
-    name = "Cercle%d"%i
-    groups_demiCercles.append(meshFondFiss.GroupOnGeom(group, name, SMESH.EDGE))
-    name = "nCercle%d"%i
-    groupnodes_demiCercles.append(meshFondFiss.GroupOnGeom(group, name, SMESH.NODE))
-  group_generFiss = meshFondFiss.GroupOnGeom(groupGenerFiss, "GenFiss", SMESH.EDGE)
-  groupnode_generFiss = meshFondFiss.GroupOnGeom(groupGenerFiss, "GenFiss", SMESH.NODE)
-  grpNode0 = meshFondFiss.IntersectGroups(groupnode_generFiss, groupnodes_demiCercles[0], "Node0")
-  grpNode1 = meshFondFiss.IntersectGroups(groupnode_generFiss, groupnodes_demiCercles[1], "Node1")
-  idNode0 = grpNode0.GetID(1)
-  idNode1 = grpNode1.GetID(1)
-  coordsMesh = list()
-  coordsMesh.append(meshFondFiss.GetNodeXYZ(idNode0))
-  coordsMesh.append(meshFondFiss.GetNodeXYZ(idNode1))
-  coordsGeom = list()
-  for vertex in verticesEdgePeauFiss:
-    coord = geompy.PointCoordinates(vertex)
-    if distance2(coord, coordsMesh[0]) < 0.1:
-      meshFondFiss.MoveNode(idNode0, coord[0], coord[1], coord[2])
-    if distance2(coord, coordsMesh[1]) < 0.1:
-      meshFondFiss.MoveNode(idNode1, coord[0], coord[1], coord[2])
-
-  for groupNodes in groupnodes_demiCercles:
-    for idNode in groupNodes.GetListOfID():
-      coordMesh = meshFondFiss.GetNodeXYZ(idNode)
-      vertex = geompy.MakeVertex(coordMesh[0], coordMesh[1], coordMesh[2])
-      minDist = 100000
-      minCoord = None
-      imin = -1
-      for i, edge in enumerate(demiCerclesPeau):
-        discoord = geompy.MinDistanceComponents(vertex, edge)
-        if discoord[0] <minDist:
-          minDist = discoord[0]
-          minCoord = discoord[1:]
-          imin = i
-      if imin >= 0 and minDist > 1.E-6:
-        logging.debug("node id moved : %s distance=%s", idNode, minDist)
-        meshFondFiss.MoveNode(idNode, coordMesh[0] + minCoord[0], coordMesh[1] + minCoord[1], coordMesh[2] + minCoord[2])
-
+  meshFondFiss, groups_demiCercles, group_generFiss, nbSegGenLong, nbSegGenBout = \
+            insereFissureLongue_a (pipeFondFiss, disques, rayons, demiCercles, demiCerclesPeau, generatrices, \
+            VerticesEndPipeFiss, verticesEdgePeauFiss, \
+            groupFaceFissInPipe, groupEdgeFondFiss, groupsDemiCerclesPipe, groupGenerFiss, \
+            profondeur, rayonPipe, distance2)
 
   # --- maillage face de peau
 
-  meshFacePeau = smesh.Mesh(facePeau)
-  algo2d = meshFacePeau.Triangle(algo=smeshBuilder.NETGEN_2D)
-  hypo2d = algo2d.Parameters()
-  hypo2d.SetMaxSize( 1000 )
-  hypo2d.SetOptimize( 1 )
-  hypo2d.SetFineness( 2 )
-  hypo2d.SetMinSize( 2 )
-  hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d.GetSubMesh(), "facePeau")
-  putName(algo2d, "algo2d_facePeau")
-  putName(hypo2d, "hypo2d_facePeau")
-  #
-  lenEdgePeauFiss = geompy.BasicProperties(edgePeauFiss)[0]
-  frac = profondeur/lenEdgePeauFiss
-  nbSeg = nbSegGenLong +2*nbSegGenBout
-  ratio = (nbSegGenBout/float(profondeur)) / (nbSegGenLong/lenEdgePeauFiss)
-  logging.info("lenEdgePeauFiss %s, profondeur %s, nbSegGenLong %s, nbSegGenBout %s, frac %s, ratio %s", lenEdgePeauFiss, profondeur, nbSegGenLong, nbSegGenBout, frac, ratio)
-  algo1d = meshFacePeau.Segment(geom=edgePeauFiss)
-  hypo1d = algo1d.NumberOfSegments(nbSeg,list(),[  ])
-  hypo1d.SetDistrType( 2 )
-  hypo1d.SetConversionMode( 1 )
-  hypo1d.SetTableFunction( [ 0, ratio, frac, 1, (1.-frac), 1, 1, ratio ] )
-  putName(algo1d.GetSubMesh(), "edgePeauFiss")
-  putName(algo1d, "algo1d_edgePeauFiss")
-  putName(hypo1d, "hypo1d_edgePeauFiss")
-  #
-  algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
-  hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
-  putName(algo1d.GetSubMesh(), "bordsLibres")
-  putName(algo1d, "algo1d_bordsLibres")
-  putName(hypo1d, "hypo1d_bordsLibres")
-  #
-  for i in range(2):
-    algo1d = meshFacePeau.UseExisting1DElements(geom=groupsDemiCerclesPeau[i])
-    hypo1d = algo1d.SourceEdges([ groups_demiCercles[i] ],0,0)
-    putName(algo1d.GetSubMesh(), "DemiCercles", i)
-    putName(algo1d, "algo1d_groupDemiCercles", i)
-    putName(hypo1d, "hypo1d_groupDemiCercles", i)
-  #
-  is_done = meshFacePeau.Compute()
-  text = "meshFacePeau.Compute"
-  if is_done:
-    logging.info(text+" OK")
-  else:
-    text = "Erreur au calcul du maillage.\n" + text
-    logging.info(text)
-    raise Exception(text)
-  grpTHOR = meshFacePeau.GroupOnGeom(verticesOutCercles[0], "THOR", SMESH.NODE)
-  grpTHEX = meshFacePeau.GroupOnGeom(verticesOutCercles[1], "THEX", SMESH.NODE)
-
-  groupEdgesPeauFiss = meshFacePeau.GroupOnGeom(edgePeauFiss, "PeauFis", SMESH.EDGE)
-
-  peauext_face = meshFacePeau.CreateEmptyGroup( SMESH.FACE, 'PEAUEXT' )
-  nbAdd = peauext_face.AddFrom( meshFacePeau.GetMesh() )
-
+  meshFacePeau, groupEdgesPeauFiss = \
+            insereFissureLongue_b (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibres, \
+            groupsDemiCerclesPeau, groups_demiCercles, verticesOutCercles, \
+            nbSegGenLong, nbSegGenBout, profondeur)
 
   # --- maillage face de fissure
 
-  meshFaceFiss = smesh.Mesh(faceFiss)
-  algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_2D)
-  hypo2d = algo2d.Parameters()
-  hypo2d.SetMaxSize( (profondeur - rayonPipe)/math.sqrt(3.0) ) # pour avoir deux couches de triangles equilateraux partout sur la fissure
-  hypo2d.SetOptimize( 1 )
-  hypo2d.SetFineness( 2 )
-  hypo2d.SetMinSize( 2 )
-  hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d.GetSubMesh(), "faceFiss")
-  putName(algo2d, "algo2d_faceFiss")
-  putName(hypo2d, "hypo2d_faceFiss")
-  #
-  algo1d = meshFaceFiss.UseExisting1DElements(geom=edgePeauFiss)
-  hypo1d = algo1d.SourceEdges([ groupEdgesPeauFiss ],0,0)
-  putName(algo1d.GetSubMesh(), "edgeFissPeau")
-  putName(algo1d, "algo1d_edgeFissPeau")
-  putName(hypo1d, "hypo1d_edgeFissPeau")
-  #
-  algo1d = meshFaceFiss.UseExisting1DElements(geom=groupEdgesFaceFissPipe)
-  hypo1d = algo1d.SourceEdges([ group_generFiss ],0,0)
-  putName(algo1d.GetSubMesh(), "edgeFissPeau")
-  putName(algo1d, "algo1d_edgeFissPeau")
-  putName(hypo1d, "hypo1d_edgeFissPeau")
-  #
-  is_done = meshFaceFiss.Compute()
-  text = "meshFaceFiss.Compute"
-  if is_done:
-    logging.info(text+" OK")
-  else:
-    text = "Erreur au calcul du maillage.\n" + text
-    logging.info(text)
-    raise Exception(text)
+  meshFaceFiss = \
+            insereFissureLongue_c (faceFiss, groupEdgesPeauFiss, edgePeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
+            profondeur, rayonPipe)
 
-  grp = meshFaceFiss.GroupOnGeom(faceFiss, "fisOutPi", SMESH.FACE)
+  # --- maillage meshBoiteDefaut
 
-  meshBoiteDefaut = smesh.Concatenate( [internalBoundary.GetMesh(), \
-                                        meshFondFiss.GetMesh(), \
-                                        meshFacePeau.GetMesh(), \
-                                        meshFaceFiss.GetMesh()], \
-                                        1, 1, 1e-05,False)
-  # pour aider l'algo hexa-tetra a ne pas mettre de pyramides a l'exterieur des volumes replies sur eux-memes
-  # on designe les faces de peau en quadrangles par le groupe "skinFaces"
-  group_faceFissOutPipe = None
-  group_faceFissInPipe = None
-  groups = meshBoiteDefaut.GetGroups()
-  for grp in groups:
-    if grp.GetType() == SMESH.FACE:
-      #if "internalBoundary" in grp.GetName():
-      #  grp.SetName("skinFaces")
-      if grp.GetName() == "fisOutPi":
-        group_faceFissOutPipe = grp
-      elif grp.GetName() == "fisInPi":
-        group_faceFissInPipe = grp
-
-  # le maillage NETGEN ne passe pas toujours ==> utiliser GHS3D
   distene=True
-  if distene:
-    algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.GHS3D)
-  else:
-    algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.NETGEN)
-    hypo3d = algo3d.MaxElementVolume(1000.0)
-  putName(algo3d.GetSubMesh(), "boiteDefaut")
-  putName(algo3d, "algo3d_boiteDefaut")
-  putName(meshBoiteDefaut, "boiteDefaut")
-  is_done = meshBoiteDefaut.Compute()
-  text = "meshBoiteDefaut.Compute"
-  if is_done:
-    logging.info(text+" OK")
-  else:
-    text = "Erreur au calcul du maillage.\n" + text
-    logging.info(text)
-    raise Exception(text)
+  meshBoiteDefaut, group_faceFissInPipe, group_faceFissOutPipe = \
+            insereFissureLongue_d (internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
+            distene)
+
 
   groups = maillageSain.GetGroups()
   grps1 = [ grp for grp in groups if grp.GetName() == 'P1']
