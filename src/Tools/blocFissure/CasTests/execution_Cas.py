@@ -33,9 +33,15 @@ from blocFissure.gmu import initLog
 runall = True
 if runall:
   torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
-  torun = [ 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1] # pb
-  torun = [ 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0] # OK
+else: #       0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
+  torunOK = [ 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0] # OK
+  torunPB = list()
+  for iaux in torunOK:
+    torunPB.append((iaux+1)%2)
+  print ("torun = {} # OK".format(torunOK))
+  print ("torun = {} # PB".format(torunPB))
+  torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+#           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
 # -----------------------------------------------------------------------------------------------
 
 from blocFissure.gmu import geomsmesh
@@ -170,6 +176,8 @@ problemes.append(fissureCoude_9(n_cas))
 n_cas += 1
 from blocFissure.CasTests.fissure_Coude import fissure_Coude
 problemes.append(fissure_Coude(n_cas))
+# mailleFacesFissure : Erreur au calcul du maillage
+# "Source elements overlap one another" dans l'import du fonds de fissure
 
 n_cas += 1
 from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
@@ -192,8 +200,8 @@ while True:
 
   ligne = "---------------------------------------------------------------------"
   texte = ""
-  n_cas_ok = 0
-  n_cas_nook = 0
+  nb_cas_ok = 0
+  nb_cas_nook = 0
   for n_cas, cas in enumerate(problemes):
     #print ("Cas n° {}, '{}'".format(n_cas,cas.nomProbleme))
     if torun[n_cas]:
@@ -210,17 +218,18 @@ while True:
         texte += "Problème avec le cas n° {}, '{}'\n".format(n_cas,nom)
         ok_maillage = False
       if ok_maillage:
-        n_cas_ok += 1
+        nb_cas_ok += 1
       else:
-        n_cas_nook += 1
+        nb_cas_nook += 1
       print(ligne)
 
-  if ( (n_cas_nook+n_cas_ok) > 1):
-    if n_cas_nook:
-      texte += ". Nombre de cas_tests OK   : {}\n".format(n_cas_ok)
-      texte += ". Nombre de cas_tests NOOK : {}\n".format(n_cas_nook)
+  nb_cas = nb_cas_nook + nb_cas_ok
+  if ( nb_cas > 1):
+    if nb_cas_nook:
+      texte += ". Nombre de cas_tests OK   : {}\n".format(nb_cas_ok)
+      texte += ". Nombre de cas_tests NOOK : {}\n".format(nb_cas_nook)
     else:
-      texte += "Tous les tests se sont bien passés.\n"
+      texte += "Les {} tests se sont bien passés.\n".format(nb_cas)
   print (texte+ligne)
 
   break
