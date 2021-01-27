@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""disque percé"""
+
 import os
 from blocFissure import gmu
 
@@ -45,4 +47,3 @@ referencesMaillageFissure = dict ( \
                                   Entity_Quad_Pyramid = 172, \
                                   Entity_Quad_Penta = 64 \
                                 )
-

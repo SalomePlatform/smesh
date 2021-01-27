@@ -18,27 +18,23 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import os
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
+"""problème de fissure non plane, débouchante non normale"""
 
-import math
-import GEOM
-import SALOMEDS
-import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
+import os
 import logging
 
-from .ellipse_1 import ellipse_1
-
-from blocFissure.gmu.triedreBase import triedreBase
+from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy, smesh
+from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
-O, OX, OY, OZ = triedreBase()
+import GEOM
+import SALOMEDS
+import SMESH
+
+from .ellipse_1 import ellipse_1
 
 class ellipse_2(ellipse_1):
   """problème de fissure non plane, débouchante non normale"""
@@ -47,7 +43,9 @@ class ellipse_2(ellipse_1):
 
   # ---------------------------------------------------------------------------
   def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
-    logging.info("genereShapeFissure %s", self.nomCas)
+    """Importe la géométrie de la fissure"""
+    texte = "genereShapeFissure pour '{}'".format(self.nomCas)
+    logging.info(texte)
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
@@ -57,10 +55,10 @@ class ellipse_2(ellipse_1):
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25)
 
     centre = None
+
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
 
   # ---------------------------------------------------------------------------

@@ -18,27 +18,21 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import os
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
+"""problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle"""
 
-import math
-import GEOM
-import SALOMEDS
-import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
+import os
 import logging
 
+from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.fissureGenerique import fissureGenerique
-
-from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
-O, OX, OY, OZ = triedreBase()
+import GEOM
+import SALOMEDS
+import SMESH
 
 class cylindre(fissureGenerique):
   """problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle"""
@@ -53,7 +47,7 @@ class cylindre(fissureGenerique):
     """
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "CylindreSain.med"))
+    ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "CylindreSain.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -122,4 +116,3 @@ class cylindre(fissureGenerique):
                                           Entity_Quad_Pyramid = 1110, \
                                           Entity_Quad_Penta = 336 \
                                          )
-

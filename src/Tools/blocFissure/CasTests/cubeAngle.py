@@ -18,27 +18,21 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import os
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
+"""problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan"""
 
-import math
-import GEOM
-import SALOMEDS
-import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
+import os
 import logging
 
+from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.fissureGenerique import fissureGenerique
-
-from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
-O, OX, OY, OZ = triedreBase()
+import GEOM
+import SALOMEDS
+import SMESH
 
 class cubeAngle(fissureGenerique):
   """problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan"""
@@ -47,9 +41,10 @@ class cubeAngle(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
-    logging.info("genereMaillageSain pour '{}'".format(self.nomCas))
+    texte = "genereMaillageSain pour '{}'".format(self.nomCas)
+    logging.info(texte)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med"))
+    ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med"))
     smesh.SetName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme))
 
     return [objetSain, True] # True : maillage hexa
@@ -61,14 +56,16 @@ class cubeAngle(fissureGenerique):
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
     rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
     """
-    logging.info("setParamShapeFissure pour '{}'".format(self.nomCas))
+    texte = "genereMaillageSain pour '{}'".format(self.nomCas)
+    logging.info(texte)
     self.shapeFissureParams = dict(lgInfluence = 20,
                                    rayonPipe   = 10)
 
   # ---------------------------------------------------------------------------
   def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
     """Importe la géométrie de la fissure"""
-    logging.info("genereShapeFissure pour '{}'".format(self.nomCas))
+    texte = "genereShapeFissure pour '{}'".format(self.nomCas)
+    logging.info(texte)
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
@@ -87,7 +84,8 @@ class cubeAngle(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    logging.info("setParamMaillageFissure pour '{}'".format(self.nomCas))
+    texte = "setParamMaillageFissure pour '{}'".format(self.nomCas)
+    logging.info(texte)
     self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
                                       nomFicFissure    = 'fissure_' + self.nomCas,
@@ -104,7 +102,8 @@ class cubeAngle(fissureGenerique):
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
                             maillageFissureParams, elementsDefaut, step):
-    logging.info("genereMaillageFissure pour '{}'".format(self.nomCas))
+    texte = "genereMaillageFissure pour '{}'".format(self.nomCas)
+    logging.info(texte)
     maillageFissure = construitFissureGenerale(maillagesSains,
                                                shapesFissure, shapeFissureParams,
                                                maillageFissureParams, elementsDefaut, step)
@@ -122,4 +121,3 @@ class cubeAngle(fissureGenerique):
                                           Entity_Quad_Pyramid = 172, \
                                           Entity_Quad_Penta = 64 \
                                          )
-

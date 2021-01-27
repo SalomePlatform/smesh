@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""problème de fissure plane coupant 2 faces (angle)"""
 
 import os
 
@@ -25,15 +26,15 @@ from .cubeAngle import cubeAngle
 class cubeAngle2(cubeAngle):
   """problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan
 
-  detection d'un probleme de tolerance sur les edges de jonction pipe et face fissure externe 
+  detection d'un probleme de tolerance sur les edges de jonction pipe et face fissure externe
   """
 
   nomProbleme = "cubeAngle2"
 
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
-    """
-    paramètres de la fissure pour méthode construitFissureGenerale
+    """paramètres de la fissure pour méthode construitFissureGenerale
+
     lgInfluence : distance autour de la shape de fissure a remailler (A ajuster selon le maillage)
     rayonPipe   : le rayon du pile maillé en hexa autour du fond de fissure
     """
@@ -61,4 +62,3 @@ class cubeAngle2(cubeAngle):
                                           Entity_Quad_Pyramid = 620, \
                                           Entity_Quad_Penta = 512 \
                                          )
-

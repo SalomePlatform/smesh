@@ -18,27 +18,21 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import os
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
+"""problème de fissure plane coupant 3 faces (éprouvette), faces au débouché non planes, incidence presque normale"""
 
-import math
-import GEOM
-import SALOMEDS
-import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
+import os
 import logging
 
+from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.fissureGenerique import fissureGenerique
-
-from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
-O, OX, OY, OZ = triedreBase()
+import GEOM
+import SALOMEDS
+import SMESH
 
 class eprouvetteCourbe(fissureGenerique):
   """problème de fissure plane coupant 3 faces (éprouvette), faces au débouché non planes, incidence presque normale"""
@@ -47,9 +41,10 @@ class eprouvetteCourbe(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
-    logging.info("genereMaillageSain %s", self.nomCas)
+    texte = "genereMaillageSain pour '{}'".format(self.nomCas)
+    logging.info(texte)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteCourbe.med"))
+    ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteCourbe.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -63,13 +58,16 @@ class eprouvetteCourbe(fissureGenerique):
     convexe     : optionnel True : la face est convexe (vue de l'exterieur) sert si on ne donne pas de point interne
     pointIn_x   : optionnel coordonnée x d'un point dans le solide sain (pour orienter la face)
     """
-    logging.info("setParamShapeFissure %s", self.nomCas)
+    texte = "genereMaillageSain pour '{}'".format(self.nomCas)
+    logging.info(texte)
     self.shapeFissureParams = dict(lgInfluence = 30,
                                    rayonPipe   = 10)
 
   # ---------------------------------------------------------------------------
   def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
-    logging.info("genereShapeFissure %s", self.nomCas)
+    """Importe la géométrie de la fissure"""
+    texte = "genereShapeFissure pour '{}'".format(self.nomCas)
+    logging.info(texte)
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
@@ -79,14 +77,16 @@ class eprouvetteCourbe(fissureGenerique):
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,10)
 
     centre = None
+
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
+    texte = "setParamMaillageFissure pour '{}'".format(self.nomCas)
+    logging.info(texte)
     self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
                                       nomFicFissure    = 'fissure_' + self.nomCas,
@@ -103,6 +103,8 @@ class eprouvetteCourbe(fissureGenerique):
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
                             maillageFissureParams, elementsDefaut, step):
+    texte = "genereMaillageFissure pour '{}'".format(self.nomCas)
+    logging.info(texte)
     maillageFissure = construitFissureGenerale(maillagesSains,
                                                shapesFissure, shapeFissureParams,
                                                maillageFissureParams, elementsDefaut, step)
@@ -120,4 +122,3 @@ class eprouvetteCourbe(fissureGenerique):
                                           Entity_Quad_Pyramid = 578, \
                                           Entity_Quad_Penta = 128 \
                                          )
-

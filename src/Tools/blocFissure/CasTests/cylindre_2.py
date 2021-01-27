@@ -18,24 +18,20 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""problème de fissure plane sur cylindre hexa, fond de fissure complexe : polyline"""
+
 import os
+import logging
+
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
+from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 
-import math
 import GEOM
 import SALOMEDS
 import SMESH
-import logging
 
 from .cylindre import cylindre
-
-from blocFissure.gmu.triedreBase import triedreBase
-from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
-
-O, OX, OY, OZ = triedreBase()
 
 class cylindre_2(cylindre):
   """problème de fissure plane sur cylindre hexa, fond de fissure complexe : polyline"""
@@ -72,4 +68,3 @@ class cylindre_2(cylindre):
                                           Entity_Quad_Pyramid = 1158, \
                                           Entity_Quad_Penta = 384 \
                                           )
-

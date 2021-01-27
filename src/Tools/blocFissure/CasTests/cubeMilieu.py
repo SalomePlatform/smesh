@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""problème de fissure plane coupant le cube au milieu"""
+
 import os
 from blocFissure import gmu
 
@@ -45,4 +47,3 @@ referencesMaillageFissure = dict( \
                                 Entity_Quad_Pyramid = 990, \
                                 Entity_Quad_Penta = 230 \
                                 )
-
