@@ -196,6 +196,9 @@ namespace
     int iSide = trias[0] + 1;
     if ( iSide == trias[1] )
       ++iSide;
+    if (iSide == 5)
+      // use first side (otherwise, out of bounds)
+      iSide = 0;
 
     const SMDS_MeshElement* botFace  = faces[ trias[0]];
     const SMDS_MeshElement* topFace  = faces[ trias[1]];
