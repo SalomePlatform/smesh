@@ -721,6 +721,7 @@ def insereFissureGenerale(maillagesSains,
   meshFondExt = smesh.Mesh(wireFondFiss)
   algo1d = meshFondExt.Segment()
   hypo1d = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
+
   is_done = meshFondExt.Compute()
   text = "meshFondExt.Compute"
   if is_done:
@@ -1205,7 +1206,8 @@ def insereFissureGenerale(maillagesSains,
 
   # --- maillage des éventuelles arêtes vives entre faces reconstruites
 
-  if len(aretesVivesCoupees) > 0:
+  if aretesVivesCoupees:
+
     aretesVivesC = geompy.MakeCompound(aretesVivesCoupees)
     meshAretesVives = smesh.Mesh(aretesVivesC)
     algo1d = meshAretesVives.Segment()
@@ -1213,6 +1215,7 @@ def insereFissureGenerale(maillagesSains,
     putName(algo1d.GetSubMesh(), "aretesVives")
     putName(algo1d, "algo1d_aretesVives")
     putName(hypo1d, "hypo1d_aretesVives")
+
     is_done = meshAretesVives.Compute()
     text = "meshAretesVives.Compute"
     if is_done:
@@ -1248,6 +1251,10 @@ def insereFissureGenerale(maillagesSains,
   putName(algo1d, "algo1d_edgeFissPeau")
   putName(hypo1d, "hypo1d_edgeFissPeau")
 
+  grpFaceFissureExterne = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
+  grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
+  grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
+
   is_done = meshFaceFiss.Compute()
   text = "meshFaceFiss.Compute"
   if is_done:
@@ -1256,10 +1263,6 @@ def insereFissureGenerale(maillagesSains,
     text = "Erreur au calcul du maillage.\n" + text
     logging.info(text)
     raise Exception(text)
-
-  grpFaceFissureExterne = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
-  grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
-  grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
 
   # --- maillage faces de peau
 
@@ -1350,6 +1353,7 @@ def insereFissureGenerale(maillagesSains,
       text = "Erreur au calcul du maillage.\n" + text
       logging.info(text)
       raise Exception(text)
+
     GroupFaces = meshFacePeau.CreateEmptyGroup( SMESH.FACE, "facePeau%d"%ifil )
     nbAdd = GroupFaces.AddFrom( meshFacePeau.GetMesh() )
     meshesFacesPeau.append(meshFacePeau)
@@ -1387,6 +1391,7 @@ def insereFissureGenerale(maillagesSains,
   putName(algo3d.GetSubMesh(), "boiteDefaut")
   putName(algo3d, "algo3d_boiteDefaut")
   putName(meshBoiteDefaut, "boiteDefaut")
+
   is_done = meshBoiteDefaut.Compute()
   text = "meshBoiteDefaut.Compute"
   if is_done:

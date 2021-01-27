@@ -185,25 +185,12 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
     putName(algo1d, "algo1d_bordsLibres")
     putName(hypo1d, "hypo1d_bordsLibres")
 
-  #isDone = bloc1.Compute()
-
   if not declareAlgoEllipsoideFirst:
     algo3d = bloc1.Tetrahedron(algo=smeshBuilder.NETGEN,geom=ellipsoidep)
     hypo3d = algo3d.MaxElementVolume(1000.0)
     putName(algo3d.GetSubMesh(), "ellipsoide")
     putName(algo3d, "algo3d_ellipsoide")
     putName(hypo3d, "hypo3d_ellipsoide")
-
-  is_done = bloc1.Compute()
-  text = "bloc1.Compute"
-  if is_done:
-    logging.info(text+" OK")
-  else:
-    text = "Erreur au calcul du maillage.\n" + text
-    logging.info(text)
-    raise Exception(text)
-
-  nbRemoved = bloc1.RemoveOrphanNodes()
 
   faceFissure1 = bloc1.GroupOnGeom(faceFissure,'FACE1',SMESH.FACE)
   noeudsFondFissure = bloc1.GroupOnGeom(gencnt,'nfondfis',SMESH.NODE)
@@ -216,6 +203,17 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   for i, facesExtBloc_i in enumerate(facesExtBloc):
     name = "faceExterneBloc_%d"%i
     groups_faceExterneBloc.append(bloc1.GroupOnGeom(facesExtBloc_i, name, SMESH.FACE))
+
+  is_done = bloc1.Compute()
+  text = "bloc1.Compute"
+  if is_done:
+    logging.info(text+" OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
+
+  nbRemoved = bloc1.RemoveOrphanNodes()
 
   skinBlocMeshes = list()
   for i, groups_faceCommuneEllipsoideBloc_i in enumerate(groups_faceCommuneEllipsoideBloc):

@@ -258,8 +258,6 @@ class fissure_Coude(fissureGenerique):
     smesh.SetName(algo1d_long_p2, "algo1d_long_p2")
     smesh.SetName(hypo1d_long_p2, "hypo1d_long_p2")
 
-    isDone = maillageSain.Compute()
-
     mp1 = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
     mp2 = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
     ext = maillageSain.GroupOnGeom(EXTUBE,'EXTUBE',SMESH.FACE)
@@ -268,6 +266,8 @@ class fissure_Coude(fissureGenerique):
     pei = maillageSain.GroupOnGeom(PEAUINT,'PEAUINT',SMESH.FACE)
     pex = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
     cou = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
+
+    isDone = maillageSain.Compute()
 
     return [maillageSain, True] # True : maillage hexa
 
