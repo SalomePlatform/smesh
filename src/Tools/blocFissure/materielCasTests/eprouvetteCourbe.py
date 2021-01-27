@@ -106,6 +106,7 @@ Nb_Segments_2.SetDistrType( 0 )
 Regular_1D_2 = EprouvetteCourbe_1.Segment(geom=Compound_y)
 Nb_Segments_3 = Regular_1D_2.NumberOfSegments(25)
 Nb_Segments_3.SetDistrType( 0 )
+
 is_done = EprouvetteCourbe_1.Compute()
 text = "EprouvetteCourbe_1.Compute"
 if is_done:
@@ -114,6 +115,7 @@ else:
   text = "Erreur au calcul du maillage.\n" + text
   logging.info(text)
   raise Exception(text)
+
 EprouvetteCourbe_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteCourbe.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()

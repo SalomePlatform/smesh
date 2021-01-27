@@ -128,6 +128,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
       text = "Erreur au calcul du maillage.\n" + text
       logging.info(text)
       raise Exception(text)
+
     GroupFaces = meshFacePeau.CreateEmptyGroup( SMESH.FACE, "facePeau%d"%ifil )
     nbAdd = GroupFaces.AddFrom( meshFacePeau.GetMesh() )
     meshesFacesPeau.append(meshFacePeau)

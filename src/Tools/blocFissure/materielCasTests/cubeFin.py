@@ -131,6 +131,7 @@ Quadrangle_2D = cubeFin_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = cubeFin_1.Hexahedron(algo=smeshBuilder.Hexa)
 DEPL_1 = cubeFin_1.GroupOnGeom(DEPL,'DEPL',SMESH.FACE)
 ENCASTR_1 = cubeFin_1.GroupOnGeom(ENCASTR,'ENCASTR',SMESH.FACE)
+
 is_done = cubeFin_1.Compute()
 text = "cubeFin_1.Compute"
 if is_done:
@@ -139,6 +140,7 @@ else:
   text = "Erreur au calcul du maillage.\n" + text
   logging.info(text)
   raise Exception(text)
+
 ## Set names of Mesh objects
 smesh.SetName(Regular_1D.GetAlgorithm(), 'Regular_1D')
 smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')

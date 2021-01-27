@@ -103,6 +103,7 @@ Nb_Segments_1 = Regular_1D.NumberOfSegments(15,[],[  ])
 Nb_Segments_1.SetDistrType( 0 )
 Quadrangle_2D = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = Mesh_1.Hexahedron(algo=smeshBuilder.Hexa)
+
 is_done = Mesh_1.Compute()
 text = "Mesh_1.Compute"
 if is_done:
@@ -111,6 +112,7 @@ else:
   text = "Erreur au calcul du maillage.\n" + text
   logging.info(text)
   raise Exception(text)
+
 Mesh_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "boiteSaine.med"))
 
 ## set object names

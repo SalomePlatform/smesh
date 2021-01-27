@@ -319,6 +319,7 @@ def construitFissureGenerale(maillagesSains,
   putName(algo3d.GetSubMesh(), "boiteDefaut")
   putName(algo3d, "algo3d_boiteDefaut")
   putName(meshBoiteDefaut, "boiteDefaut")
+
   is_done = meshBoiteDefaut.Compute()
   text = "meshBoiteDefaut.Compute"
   if is_done:

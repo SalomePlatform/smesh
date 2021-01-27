@@ -135,6 +135,7 @@ Nb_Segments_2.SetDistrType( 0 )
 Regular_1D_2 = objetSain_1.Segment(geom=epaisseurs)
 Nb_Segments_3 = Regular_1D_2.NumberOfSegments(5,[],[  ])
 Nb_Segments_3.SetDistrType( 0 )
+
 is_done = objetSain_1.Compute()
 text = "objetSain_1.Compute"
 if is_done:
@@ -143,6 +144,7 @@ else:
   text = "Erreur au calcul du maillage.\n" + text
   logging.info(text)
   raise Exception(text)
+
 objetSain_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "faceGaucheSain.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
