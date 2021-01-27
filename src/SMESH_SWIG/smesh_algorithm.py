@@ -340,20 +340,9 @@ class Mesh_Algorithm:
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
             faceIDs = []
             for shape in faces:
-                try:
-                  ff = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["FACE"] )
-                  for f in ff:
+                ff = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["FACE"] )
+                for f in ff:
                     faceIDs.append( self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f))
-                except:
-                  # try to get the SHAPERSTUDY engine directly, because GetGen does not work because of
-                  # simplification of access in geomBuilder: omniORB.registerObjref
-                  from SHAPERSTUDY_utils import getEngine
-                  gen = getEngine()
-                  if gen:
-                    aShapeOp = gen.GetIShapesOperations()
-                    ff = aShapeOp.ExtractSubShapes( shape, self.mesh.geompyD.ShapeType["FACE"], False)
-                    for f in ff:
-                      faceIDs.append( aShapeOp.GetSubShapeIndex( self.mesh.geom, f ))
             faces = faceIDs
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
@@ -403,20 +392,9 @@ class Mesh_Algorithm:
         if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
             edgeIDs = []
             for shape in edges:
-              try:
                 ee = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["EDGE"])
                 for e in ee:
                   edgeIDs.append( self.mesh.geompyD.GetSubShapeID( self.mesh.geom, e ))
-              except:
-                # try to get the SHAPERSTUDY engine directly, because GetGen does not work because of
-                # simplification of access in geomBuilder: omniORB.registerObjref
-                from SHAPERSTUDY_utils import getEngine
-                gen = getEngine()
-                if gen:
-                  aShapeOp = gen.GetIShapesOperations()
-                  ee = aShapeOp.ExtractSubShapes( shape, self.mesh.geompyD.ShapeType["EDGE"], False)
-                  for e in ee:
-                    edgeIDs.append( aShapeOp.GetSubShapeIndex( self.mesh.geom, e ))
             edges = edgeIDs
         hyp = self.Hypothesis("ViscousLayers2D",
                               [thickness, numberOfLayers, stretchFactor, edges, isEdgesToIgnore],
@@ -440,18 +418,6 @@ class Mesh_Algorithm:
         for i in reverseList:
             if isinstance( i, int ):
                 s = geompy.GetSubShape(self.mesh.geom, [i])
-
-                #bos #20082 begin:
-                if s is None and type(self.geom) != geomBuilder.GEOM._objref_GEOM_Object:
-                    # try to get the SHAPERSTUDY engine directly, as GetGen does not work because of
-                    # simplification of access in geomBuilder: omniORB.registerObjref
-                    from SHAPERSTUDY_utils import getEngine
-                    gen = getEngine()
-                    if gen:
-                        aShapeOp = gen.GetIShapesOperations()
-                        s = aShapeOp.GetSubShape(self.mesh.geom, i)
-                #bos #20082 end
-
                 if s.GetShapeType() != geomBuilder.GEOM.EDGE:
                     raise TypeError("Not EDGE index given")
                 resList.append( i )
