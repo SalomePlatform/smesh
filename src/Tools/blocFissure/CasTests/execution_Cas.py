@@ -32,16 +32,16 @@ from blocFissure.gmu import initLog
 # ---tous les cas en séquence, ou les cas sélectionnés ...
 runall = True
 if runall:
-  torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-else: #       0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
-  torunOK = [ 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0] # OK
+  torun =   [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+else: #       0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+  torunOK = [ 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0]
   torunPB = list()
   for iaux in torunOK:
     torunPB.append((iaux+1)%2)
   print ("torun = {} # OK".format(torunOK))
   print ("torun = {} # PB".format(torunPB))
-  torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-#           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
+  torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+#           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
 # -----------------------------------------------------------------------------------------------
 
 from blocFissure.gmu import geomsmesh
@@ -186,6 +186,11 @@ problemes.append(fissure_Coude_4(n_cas))
 n_cas += 1
 from blocFissure.CasTests.vis_1 import vis_1
 problemes.append(vis_1(n_cas))
+# restreintFaceFissure : Restriction de la face de fissure au domaine solide impossible
+
+n_cas += 1
+from blocFissure.CasTests.tube import tube
+problemes.append(tube(n_cas))
 # restreintFaceFissure : Restriction de la face de fissure au domaine solide impossible
 
 #=============================================================
