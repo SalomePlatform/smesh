@@ -6,9 +6,10 @@ For bended pipes
 Cracked bended pipes being a common encountered case, a specific module was developed with a Graphic User Interface (GUI). GUI is accessible in the SMESH extension *Meshed Pipe with a crack*. Compared to the classical use of « Bloc Fissure », this extension also generate the pipe mesh and the crack geometry from geometrical information.
 
 
-.. figure:: images/Capture_GUI_pipes_2.png
+.. image:: images/Capture_GUI_pipes_2.png
    :width: 800
    :align: center
+   :alt: Print screen of GUI
 
    Print screen of GUI of the extension *Meshed Pipe with a crack*
 

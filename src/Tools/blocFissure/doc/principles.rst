@@ -10,7 +10,7 @@ In order to illustrate « Bloc Fissure » principle, the simple case of a crack 
 
 1. The first step consists in loading the structure mesh (a) as well as the crack surface geometry (b).
 
-2. The crack is then meshed (c). A length criterion defines the size of the extracted « Box ». This length is called the length of influence. Every element having a node within this zone is included in the « Box ». A second operation adds elements in the Box in order to have continuous faces (d).
+2. The crack is then meshed (c). A length criterion defines the size of the extracted « Box ». This length is called the length of influence. Every element of the structure mesh having a node within this zone is included in the « Box ». A second operation adds those elements in the Box in order to have continuous faces (d).
 
 3. A geometrical Box is reconstructed from the extracted Box mesh. The reconstruction is limited to faces which intersect the crack (e). A torus is created following the crack front (f).
 
@@ -63,6 +63,7 @@ The length of influence is important. It defines the size of the extracted Box. 
 .. image:: images/longueur_influence.png
    :width: 600
    :align: center
+   :alt: The length of influence
 
 Every element having a node at a smaller distance to the crack than the length of influence is selected. Then a filling algorithm fulfill the Box with elements to get a Box. The Box is not limited to rectangular shapes. See the section on :ref:`test cases <test_cases>` to see examples.
 
@@ -90,6 +91,7 @@ For similar reasons, crack front edges must exceed from the structure mesh. The 
 
 .. image:: images/schema_lignes1.png
    :scale: 80
+   :alt: Crack front edges
 
 5) **Loss of element groups:**
 

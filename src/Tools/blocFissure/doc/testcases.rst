@@ -92,6 +92,8 @@ All 13 cases are shown Table 2. Two views show the whole cracked structure and a
 |   :width: 400                             |    :width: 400                               |
 |   :align: center                          |    :align: center                            |
 +-------------------------------------------+----------------------------------------------+
+| tube                                                                                     |
++-------------------------------------------+----------------------------------------------+
 
 .. _pipeTC:
 
@@ -152,7 +154,7 @@ modify the file ``CasTests/execution_Cas.py`` and change::
 
 And change from 0 to 1 of the index of the test you want to launch::
 
-    torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 then launch the test cases::
 
@@ -170,7 +172,7 @@ The index of each test is the position of the test in the following table, from 
 +--------------------+--------------------+--------------------+-----------------+-----------------+
 | cubeMilieu         | ellipse_2          | fissureCoude_1     | fissureCoude_6  | vis_1           |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cubeTransverse     | eprouvetteCourbe   | fissureCoude_10    | fissureCoude_7  |                 |
+| cubeTransverse     | eprouvetteCourbe   | fissureCoude_10    | fissureCoude_7  | tube            |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
 | cylindre           | eprouvetteDroite   | fissureCoude_2     | fissureCoude_8  |                 |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
