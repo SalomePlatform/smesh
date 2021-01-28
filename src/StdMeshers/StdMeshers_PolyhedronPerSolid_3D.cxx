@@ -299,10 +299,6 @@ namespace
     if ( hexa[1] == -1 )
       return newHexPrism;
 
-    int iSide = hexa[0] + 1;
-    if ( iSide == hexa[1] )
-      ++iSide;
-
     const SMDS_MeshElement* botFace = faces[ hexa[ 0 ]];
     const SMDS_MeshElement* topFace = faces[ hexa[ 1 ]];
     std::vector< const SMDS_MeshNode* > nodes( 24 ); // last 12 is a working buffer
