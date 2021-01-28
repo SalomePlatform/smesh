@@ -19,7 +19,7 @@
 #
 
 """Cas-test de blocFissure sur un tube"""
-__revision__ = "V02.05"
+__revision__ = "V02.06"
 
 import logging
 import os
@@ -46,6 +46,7 @@ F_L_1 = 80.
 F_THETA_1 = 3.
 F_C_1 = 1.04
 F_L_2 = 20.
+F_C_3 = 0.99
 # 3. Maillage
 # Nombre de segments du tube
 NB_S_E = 4
@@ -72,6 +73,7 @@ model.addParameter(Part_1_doc, "F_L_1", "{}".format(F_L_1))
 model.addParameter(Part_1_doc, "F_THETA_1", "{}".format(F_THETA_1))
 model.addParameter(Part_1_doc, "F_R_1", "{}*{}".format(F_C_1,RAYON_INT))
 model.addParameter(Part_1_doc, "F_L_2", "{}".format(F_L_2))
+model.addParameter(Part_1_doc, "F_D_3", "{}*{}".format(F_C_3,RAYON_INT))
 
 ### Create Sketch
 Sketch_1 = model.addSketch(Part_1_doc, model.defaultPlane("XOZ"))
@@ -107,7 +109,7 @@ model.do()
 ### Create Revolution
 Revolution_1 = model.addRevolution(Part_1_doc, [model.selection("FACE", "Sketch_1/Face-SketchLine_4r-SketchLine_3r-SketchLine_2r-SketchLine_1r")], model.selection("EDGE", "PartSet/OZ"), 180, 0)
 Revolution_1.result().setName("Tube")
-Revolution_1.result().setTransparency(0.9399999999999999)
+Revolution_1.result().setTransparency(0.37)
 
 ### Create Sketch
 Sketch_2 = model.addSketch(Part_1_doc, model.standardPlane("YOZ"))
@@ -146,47 +148,39 @@ Sketch_2.setCoincident(SketchArc_1.startPoint(), SketchLine_6.endPoint())
 ### Create SketchConstraintAngle
 Sketch_2.setAngle(SketchLine_5.result(), SketchLine_6.result(), "F_THETA_1", type = "Direct")
 
-### Create SketchProjection
-SketchProjection_5 = Sketch_2.addProjection(model.selection("VERTEX", "PartSet/Origin"), False)
-SketchPoint_5 = SketchProjection_5.createdFeature()
-
 ### Create SketchEllipticArc
-SketchEllipticArc_1 = Sketch_2.addEllipticArc(-20, 8.956370781951521e-27, -10.21629725685072, 9.783702743149284, 10.10993798723031, 4.722461741243296, 9.440921421952831, 9.565935245237778, False)
-[SketchPoint_6, SketchPoint_7, SketchPoint_8, SketchPoint_9, SketchPoint_10, SketchPoint_11, SketchPoint_12, SketchLine_7, SketchLine_8] = \
+SketchEllipticArc_1 = Sketch_2.addEllipticArc(-20, 8.956370781951521e-27, -10.21629725685072, 9.783702743149284, 10.10993798723031, 4.722461741243296, 9.7416, 8.052073253504034, False)
+[SketchPoint_5, SketchPoint_6, SketchPoint_7, SketchPoint_8, SketchPoint_9, SketchPoint_10, SketchPoint_11, SketchLine_7, SketchLine_8] = \
   SketchEllipticArc_1.construction(center = "aux", firstFocus = "aux", secondFocus = "aux", majorAxisStart = "aux", majorAxisEnd = "aux", minorAxisStart = "aux", minorAxisEnd = "aux", majorAxis = "aux", minorAxis = "aux")
 Sketch_2.setCoincident(SketchEllipticArc_1.startPoint(), SketchLine_6.endPoint())
-Sketch_2.setCoincident(SketchAPI_Point(SketchPoint_6).coordinates(), SketchLine_5.result())
+Sketch_2.setCoincident(SketchAPI_Point(SketchPoint_5).coordinates(), SketchLine_5.result())
 Sketch_2.setTangent(SketchEllipticArc_1.result(), SketchArc_1.results()[1])
+
+### Create SketchProjection
+SketchProjection_5 = Sketch_2.addProjection(model.selection("VERTEX", "PartSet/Origin"), False)
+SketchPoint_12 = SketchProjection_5.createdFeature()
+Sketch_2.setHorizontalDistance(SketchAPI_Point(SketchPoint_5).coordinates(), SketchAPI_Point(SketchPoint_12).coordinates(), "F_L_2")
+
+### Create SketchConstraintAngle
+Sketch_2.setAngle(SketchLine_5.result(), SketchLine_7.result(), 45, type = "Supplementary")
 
 ### Create SketchProjection
 SketchProjection_6 = Sketch_2.addProjection(model.selection("VERTEX", "PartSet/Origin"), False)
 SketchPoint_13 = SketchProjection_6.createdFeature()
-Sketch_2.setHorizontalDistance(SketchAPI_Point(SketchPoint_6).coordinates(), SketchAPI_Point(SketchPoint_13).coordinates(), "F_L_2")
-
-### Create SketchLine
-SketchLine_9 = Sketch_2.addLine(-20, 8.956370781951521e-27, 9.440921421952831, 9.565935245237778)
-SketchLine_9.setAuxiliary(True)
-Sketch_2.setCoincident(SketchEllipticArc_1.center(), SketchLine_9.startPoint())
-Sketch_2.setCoincident(SketchEllipticArc_1.endPoint(), SketchLine_9.endPoint())
-
-### Create SketchConstraintAngle
-Sketch_2.setAngle(SketchLine_9.result(), SketchLine_5.result(), "6.*F_THETA_1", type = "Direct")
-
-### Create SketchConstraintAngle
-Sketch_2.setAngle(SketchLine_5.result(), SketchLine_7.result(), 45, type = "Supplementary")
+Sketch_2.setHorizontalDistance(SketchEllipticArc_1.endPoint(), SketchAPI_Point(SketchPoint_13).coordinates(), "F_D_3")
 
 ### Create SketchConstraintMirror
 SketchConstraintMirror_1 = Sketch_2.addMirror(SketchLine_5.result(), [SketchEllipticArc_1.result()])
 [SketchEllipticArc_2] = SketchConstraintMirror_1.mirrored()
 
 ### Create SketchLine
-SketchLine_10 = Sketch_2.addLine(9.440921421952831, 9.565935245237778, 9.440921421952837, -9.565935245237783)
-Sketch_2.setCoincident(SketchEllipticArc_1.endPoint(), SketchLine_10.startPoint())
-Sketch_2.setCoincident(SketchAPI_EllipticArc(SketchEllipticArc_2).endPoint(), SketchLine_10.endPoint())
+SketchLine_9 = Sketch_2.addLine(9.7416, 8.052073253504034, 9.7416, -8.052073253504034)
+Sketch_2.setCoincident(SketchEllipticArc_1.endPoint(), SketchLine_9.startPoint())
+Sketch_2.setCoincident(SketchAPI_EllipticArc(SketchEllipticArc_2).endPoint(), SketchLine_9.endPoint())
 model.do()
 
 ### Create Face
-Face_1 = model.addFace(Part_1_doc, [model.selection("FACE", "Sketch_2/Face-SketchArc_1_2r-SketchEllipticArc_1f-SketchLine_10f-SketchEllipticArc_2f")])
+Face_1 = model.addFace(Part_1_doc, [model.selection("FACE", "Sketch_2/Face-SketchArc_1_2r-SketchEllipticArc_1f-SketchLine_9f-SketchEllipticArc_2f")])
 Face_1.result().setName("Fissure")
 
 ### Create Group
@@ -199,7 +193,7 @@ Group_2 = model.addGroup(Part_1_doc, "Edges", [model.selection("EDGE", "Fissure/
 Group_3 = model.addGroup(Part_1_doc, "Edges", [model.selection("EDGE", "Fissure/Modified_Edge&Sketch_2/SketchEllipticArc_2")])
 
 ### Create Group
-Group_4 = model.addGroup(Part_1_doc, "Edges", [model.selection("EDGE", "Fissure/Modified_Edge&Sketch_2/SketchLine_10")])
+Group_4 = model.addGroup(Part_1_doc, "Edges", [model.selection("EDGE", "Fissure/Modified_Edge&Sketch_2/SketchLine_9")])
 
 ### Create Group
 Group_5 = model.addGroup(Part_1_doc, "Edges", [model.selection("EDGE", "[Tube/Generated_Face&Sketch_1/SketchLine_1][Tube/From_Face]")])
@@ -217,10 +211,10 @@ Group_7.setName("Peripherie")
 Group_7.result().setName("Peripherie")
 
 ### Create Export
-ficxao = os.path.join(gmu.pathBloc, "materielCasTests", "{}Fiss.xao".format(NOM_OBJET))
-text = ".. Exportation de la géométrie de la fissure dans le fichier '{}'".format(ficxao)
+ficcao = os.path.join(gmu.pathBloc, "materielCasTests", "{}Fiss.xao".format(NOM_OBJET))
+text = ".. Exportation de la géométrie de la fissure dans le fichier '{}'".format(ficcao)
 logging.info(text)
-_ = model.exportToXAO(Part_1_doc, ficxao, model.selection("FACE", "Fissure"), 'XAO')
+_ = model.exportToXAO(Part_1_doc, ficcao, model.selection("FACE", "Fissure"), 'XAO')
 
 model.end()
 
@@ -281,7 +275,6 @@ logging.info(text)
 Maillage_tube.ExportMED(ficmed)
 
 ## set object names
-smesh.SetName(Maillage_tube.GetMesh(), 'Maillage_tube')
 smesh.SetName(Regular_1D.GetAlgorithm(), 'Regular_1D')
 smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
 smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')

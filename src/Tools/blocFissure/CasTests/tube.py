@@ -58,7 +58,7 @@ class tube(fissureGenerique):
     """
     texte = "genereMaillageSain pour '{}'".format(self.nomCas)
     logging.info(texte)
-    self.shapeFissureParams = dict(lgInfluence = 1.,
+    self.shapeFissureParams = dict(lgInfluence = 0.6,
                                    rayonPipe   = 0.05)
 
   # ---------------------------------------------------------------------------
@@ -79,7 +79,7 @@ class tube(fissureGenerique):
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.05, 0.2)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.025, 0.1)
 
     centre = None
 
