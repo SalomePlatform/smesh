@@ -7,20 +7,20 @@
     <x>0</x>
     <y>0</y>
     <width>664</width>
-    <height>624</height>
+    <height>681</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Insertion de fissure dans un maillage sain</string>
   </property>
   <property name="toolTip">
-   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insertion d'un maillage de fissure dans un maillage hexaédrique sain.&lt;/p&gt;&lt;p&gt;Le maillage sain est fourni sous forme de fichier med.&lt;/p&gt;&lt;p&gt;La face de fissure est décrite par une géométrie dans un fichier brep.&lt;/p&gt;&lt;p&gt;La ou les arêtes de fond de fissure sont données par leurs index dans la face de fissure du point de vue de GEOM.&lt;/p&gt;&lt;p&gt;La procédure identifie des mailles saines à enlever et à remailler, construit un maillage régulier rayonnant autour de la ligne de fond de fissure, reconstitue les faces externes en triangles, complète la zone à remailler en tétraèdres.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insertion d'un maillage de fissure dans un maillage hexaédrique sain.&lt;/p&gt;&lt;p&gt;Le maillage sain est fourni sous forme de fichier med.&lt;/p&gt;&lt;p&gt;La face de fissure est décrite par une géométrie dans un fichier de cao au format xao ou brep.&lt;/p&gt;&lt;p&gt;Si le format xao est utilisé, le fond de la fissure est identifiable par les noms du ou des groupes d'arêtes créés sur ce fond.&lt;/p&gt;&lt;p&gt; Avec le format brep, le fond de fissure est donné par les index des arêtes du fond dans la face de fissure du point de vue de GEOM. Cela est également possible pour un format xao.&lt;/p&gt;&lt;p&gt;La procédure identifie des mailles saines à enlever et à remailler, construit un maillage régulier rayonnant autour de la ligne de fond de fissure, reconstitue les faces externes en triangles, complète la zone à remailler en tétraèdres.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Maillage sain et géometries de fissure</string>
+      <string>Maillage sain et géométries de fissure</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="1" column="0">
@@ -28,14 +28,14 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Index arêtes fond de fissure</string>
+           <string>Arêtes fond de fissure</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLineEdit" name="le_fondfiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Index des arêtes décrivant le fond de fissure, dans la face de fissure.&lt;/p&gt;&lt;p&gt;Sous forme d'une liste Python.&lt;/p&gt;&lt;p&gt;Exemples : &lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[5,9]&lt;/span&gt; ou&lt;span style=&quot; font-weight:600;&quot;/&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(On peut récupérer ces valeurs à l'aide du dialogue de création de groupes d'edges, dans GEOM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Liste des noms des groupes d'arêtes formant le fond de la fissure.&lt;/p&gt;&lt;p&gt;Exemples : &lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;["F_1", "F_2"]&lt;/span&gt; ou&lt;span style=&quot; font-weight:600;&quot;/&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;["Fond"]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Ou liste des index des arêtes décrivant le fond de fissure dans la face de fissure.&lt;/p&gt;&lt;p&gt;Exemples : &lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[5,9]&lt;/span&gt; ou&lt;span style=&quot; font-weight:600;&quot;/&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(On peut récupérer ces valeurs à l'aide du dialogue de création de groupes d'edges, dans GEOM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -66,7 +66,7 @@
         <item row="1" column="0">
          <widget class="QPushButton" name="pb_facefiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier cao (format xao ou brep) décrivant la face de fissure.&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Face fissure</string>
@@ -76,7 +76,7 @@
         <item row="1" column="1">
          <widget class="QLineEdit" name="le_facefiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fichier brep de la géométrie décrivant la face de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fichier cao de la géométrie décrivant la face de fissure (xao ou brep).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -110,7 +110,7 @@
           <item>
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Distance influence</string>
+             <string>Distance d'influence</string>
             </property>
            </widget>
           </item>
@@ -209,7 +209,7 @@
                <item>
                 <widget class="QLabel" name="label_10">
                  <property name="text">
-                  <string>mode</string>
+                  <string>Mode</string>
                  </property>
                 </widget>
                </item>
@@ -499,7 +499,7 @@
      <item row="1" column="0">
       <widget class="QPushButton" name="pb_nomres">
        <property name="text">
-        <string>Nom résultat</string>
+        <string>Nom du résultat</string>
        </property>
       </widget>
      </item>

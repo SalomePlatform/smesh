@@ -19,15 +19,17 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""Pilotage de la fenêtre de dialogue"""
+
 # if you already have plugins defined in a salome_plugins.py file, add this file at the end.
 # if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
-import sys, traceback
-import math
+import sys
+import traceback
 from blocFissure import gmu
 
 def fissureGeneraleDlg(context):
-  # get context study, salomeGui
+  """get context study, salomeGui"""
   study = context.study
   sg = context.sg
 
@@ -44,6 +46,7 @@ def fissureGeneraleDlg(context):
   from blocFissure.ihm.fissureGenerale_ui import Ui_Dialog
 
   class fissureGeneraleDialog(QtWidgets.QDialog):
+    """classe du dialogue"""
 
     def __init__(self):
       print("__init__")
@@ -78,8 +81,8 @@ def fissureGeneraleDlg(context):
       self.defaut = dict( \
         nomCas            = "angleCube", \
         maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med"), \
-        brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep"), \
-        edgeFissIds       = [3], \
+        CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep"), \
+        edgeFiss          = [3], \
         lgInfluence       = 20, \
         meshBrep          = (5,10), \
         rayonPipe         = 5, \
@@ -95,8 +98,8 @@ def fissureGeneraleDlg(context):
 
     def initDialog(self, dico):
       self.ui.le_maillage.setText(dico['maillageSain'])
-      self.ui.le_facefiss.setText(dico['brepFaceFissure'])
-      self.ui.le_fondfiss.setText(str(dico['edgeFissIds']))
+      self.ui.le_facefiss.setText(dico['CAOFaceFissure'])
+      self.ui.le_fondfiss.setText(str(dico['edgeFiss']))
       self.ui.dsb_influence.setValue(dico['lgInfluence'])
       self.ui.dsb_meshBrepMin.setValue(dico['meshBrep'][0])
       self.ui.dsb_meshBrepMax.setValue(dico['meshBrep'][1])
@@ -112,8 +115,7 @@ def fissureGeneraleDlg(context):
       self.ui.le_reptrav.setText(os.path.abspath(dico['reptrav']))
       self.ui.le_nomres.setText(os.path.split(dico['nomres'])[1])
       self.ui.cb_log.setCurrentIndex(dico['verbosite'])
-      incomplet = self.testval(dico)
-      pass
+      #incomplet = self.testval(dico)
 
     def testval(self, dico):
       incomplet = False
@@ -122,7 +124,7 @@ def fissureGeneraleDlg(context):
         incomplet = True
       else:
         self.ui.le_maillage.setPalette(self.blackPalette)
-      cao_file = dico['brepFaceFissure']
+      cao_file = dico['CAOFaceFissure']
       if not os.path.lexists(cao_file):
         self.ui.le_facefiss.setPalette(self.redPalette)
         incomplet = True
@@ -134,28 +136,28 @@ def fissureGeneraleDlg(context):
           incomplet = True
         else:
           self.ui.le_facefiss.setPalette(self.blackPalette)
-      if dico['edgeFissIds']:
-        edgeFissIdsOK=True
-        param_0 = dico['edgeFissIds'][0]
+      if dico['edgeFiss']:
+        edgeFissOK=True
+        param_0 = dico['edgeFiss'][0]
         type_param_id = type(param_0)
-        for param in dico['edgeFissIds'][1:]:
+        for param in dico['edgeFiss'][1:]:
           if not isinstance(param,type_param_id):
             print ("La donnée {} n'est pas du même type que la première de la liste : {}.".format(param,type(param)))
             incomplet = True
-            edgeFissIdsOK=False
-        if edgeFissIdsOK:
+            edgeFissOK=False
+        if edgeFissOK:
           if isinstance(param_0, int):
             pass
           elif isinstance(param_0, str):
             pass
           else:
-            print("Il faut une liste d'IDs d'arêtes ou une liste de noms de groupes d'arêtes.")
+            print("Il faut une liste de noms de groupes d'arêtes ou une liste d'IDs d'arêtes.")
             incomplet = True
-            edgeFissIdsOK=False
+            edgeFissOK=False
       else:
         incomplet = True
-        edgeFissIdsOK=False
-      if edgeFissIdsOK:
+        edgeFissOK=False
+      if edgeFissOK:
         self.ui.le_fondfiss.setPalette(self.blackPalette)
       else:
         self.ui.le_fondfiss.setPalette(self.redPalette)
@@ -189,19 +191,19 @@ def fissureGeneraleDlg(context):
       return incomplet
 
     def fileDefault(self):
-      filedef = os.path.expanduser( os.path.join(os.environ["HOME"],".config", "salome", "dialogFissureGenerale.dic") )
+      filedef = os.path.expanduser( os.path.join(os.environ["HOME"], ".config", "salome", "dialogFissureGenerale.dic") )
       print(filedef)
       return filedef
 
     def writeDefault(self, dico):
       filedef = self.fileDefault()
-      with open(filedef, 'w') as f:
-        f.write(str(dico))
+      with open(filedef, 'w') as fichier:
+        fichier.write(str(dico))
 
     def genereExemples(self):
       maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med")
-      brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep")
-      if (os.path.exists(maillageSain) and os.path.exists(brepFaceFissure)):
+      CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep")
+      if (os.path.exists(maillageSain) and os.path.exists(CAOFaceFissure )):
         self.initDialog(self.defaut)
       else:
         self.ui.lb_calcul.setText("--- Generation exemples en cours ---")
@@ -213,8 +215,8 @@ def fissureGeneraleDlg(context):
     def readValPrec(self):
       filedef = self.fileDefault()
       if os.path.exists(filedef):
-        with open(filedef, 'r') as f:
-          txt = f.read()
+        with open(filedef, 'r') as fichier:
+          txt = fichier.read()
         dico = eval(txt)
         print(dico)
         self.initDialog(dico)
@@ -235,7 +237,6 @@ def fissureGeneraleDlg(context):
       elif index == 2:
         initLog.setDebug(logfile)
 
-
     def sauver(self):
       print("sauver")
       fileDiag = QFileDialog(self)
@@ -249,8 +250,8 @@ def fissureGeneraleDlg(context):
         if filedef[-4:] not in ['.dic']:
           filedef += '.dic'
         dico = self.creeDico()
-        with open(filedef, 'w') as f:
-          f.write(str(dico))
+        with open(filedef, 'w') as fichier:
+          fichier.write(str(dico))
 
     def recharger(self):
       print("recharger")
@@ -263,8 +264,8 @@ def fissureGeneraleDlg(context):
         filedef = fileNames[0]
         print(filedef)
         if os.path.exists(filedef):
-          with open(filedef, 'r') as f:
-            txt = f.read()
+          with open(filedef, 'r') as fichier:
+            txt = fichier.read()
           dico = eval(txt)
           print(dico)
           self.initDialog(dico)
@@ -323,8 +324,8 @@ def fissureGeneraleDlg(context):
     def creeDico(self):
       dico = dict( \
                   maillageSain     = str(self.ui.le_maillage.text()), \
-                  brepFaceFissure  = str(self.ui.le_facefiss.text()), \
-                  edgeFissIds      = eval(str(self.ui.le_fondfiss.text())), \
+                  CAOFaceFissure   = str(self.ui.le_facefiss.text()), \
+                  edgeFiss         = eval(str(self.ui.le_fondfiss.text())), \
                   lgInfluence      = self.ui.dsb_influence.value(), \
                   meshBrep         = [self.ui.dsb_meshBrepMin.value(),self.ui.dsb_meshBrepMax.value()], \
                   rayonPipe        = self.ui.dsb_rayonPipe.value(), \
@@ -381,8 +382,6 @@ def fissureGeneraleDlg(context):
       self.ui.lb_calcul.hide()
       #self.accept()
 
-    pass
-
 # ----------------------------------------------------------------------------
 
   print("main")
@@ -398,4 +397,3 @@ def fissureGeneraleDlg(context):
       retry = window.checkValues()
     else:
       print("dialog rejected, exit")
-  pass
