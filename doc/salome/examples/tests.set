@@ -182,6 +182,7 @@ SET(GOOD_TESTS
   split_biquad.py
   quad_medial_axis_algo.py
   defining_hypotheses_len_near_vertex.py
+  test_polyhedron_per_solid.py
 )
 
 SET(EXAMPLES_TESTS ${BAD_TESTS} ${GOOD_TESTS} testme.py)

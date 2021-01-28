@@ -196,6 +196,9 @@ namespace
     int iSide = trias[0] + 1;
     if ( iSide == trias[1] )
       ++iSide;
+    if (iSide == 5)
+      // use first side (otherwise, out of bounds)
+      iSide = 0;
 
     const SMDS_MeshElement* botFace  = faces[ trias[0]];
     const SMDS_MeshElement* topFace  = faces[ trias[1]];
@@ -295,10 +298,6 @@ namespace
       }
     if ( hexa[1] == -1 )
       return newHexPrism;
-
-    int iSide = hexa[0] + 1;
-    if ( iSide == hexa[1] )
-      ++iSide;
 
     const SMDS_MeshElement* botFace = faces[ hexa[ 0 ]];
     const SMDS_MeshElement* topFace = faces[ hexa[ 1 ]];
