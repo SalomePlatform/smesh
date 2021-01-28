@@ -19,17 +19,19 @@
 #
 
 """Cas-test de blocFissure sur un tube"""
-__revision__ = "V02.04"
+__revision__ = "V02.05"
 
 import logging
-
-import sys
-import salome
-
-salome.salome_init()
-
 import os
+
 from blocFissure import gmu
+
+import salome
+from SketchAPI import *
+from salome.shaper import model
+import SHAPERSTUDY
+import SMESH
+from salome.smesh import smeshBuilder
 
 #=============== Options ====================
 # 1. NOM_OBJET = nom de l'objet
@@ -51,13 +53,11 @@ NB_S_H = 60
 NB_S_P = 30
 #============================================
 
+salome.salome_init()
+
 ###
 ### SHAPER component
 ###
-
-from SketchAPI import *
-
-from salome.shaper import model
 
 model.begin()
 partSet = model.moduleDocument()
@@ -152,7 +152,8 @@ SketchPoint_5 = SketchProjection_5.createdFeature()
 
 ### Create SketchEllipticArc
 SketchEllipticArc_1 = Sketch_2.addEllipticArc(-20, 8.956370781951521e-27, -10.21629725685072, 9.783702743149284, 10.10993798723031, 4.722461741243296, 9.440921421952831, 9.565935245237778, False)
-[SketchPoint_6, SketchPoint_7, SketchPoint_8, SketchPoint_9, SketchPoint_10, SketchPoint_11, SketchPoint_12, SketchLine_7, SketchLine_8] = SketchEllipticArc_1.construction(center = "aux", firstFocus = "aux", secondFocus = "aux", majorAxisStart = "aux", majorAxisEnd = "aux", minorAxisStart = "aux", minorAxisEnd = "aux", majorAxis = "aux", minorAxis = "aux")
+[SketchPoint_6, SketchPoint_7, SketchPoint_8, SketchPoint_9, SketchPoint_10, SketchPoint_11, SketchPoint_12, SketchLine_7, SketchLine_8] = \
+  SketchEllipticArc_1.construction(center = "aux", firstFocus = "aux", secondFocus = "aux", majorAxisStart = "aux", majorAxisEnd = "aux", minorAxisStart = "aux", minorAxisEnd = "aux", majorAxis = "aux", minorAxis = "aux")
 Sketch_2.setCoincident(SketchEllipticArc_1.startPoint(), SketchLine_6.endPoint())
 Sketch_2.setCoincident(SketchAPI_Point(SketchPoint_6).coordinates(), SketchLine_5.result())
 Sketch_2.setTangent(SketchEllipticArc_1.result(), SketchArc_1.results()[1])
@@ -228,7 +229,7 @@ model.end()
 ###
 
 model.publishToShaperStudy()
-import SHAPERSTUDY
+
 l_aux = SHAPERSTUDY.shape(model.featureStringId(Revolution_1))
 objet = l_aux[0]
 l_groups = l_aux[1:]
@@ -237,11 +238,7 @@ l_groups = l_aux[1:]
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
-from salome.smesh import smeshBuilder
-
 smesh = smeshBuilder.New()
-from salome.StdMeshers import StdMeshersBuilder
 Maillage_tube = smesh.Mesh(objet)
 smesh.SetName(Maillage_tube, NOM_OBJET)
 

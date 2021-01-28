@@ -18,17 +18,17 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""Maillage sain sans la zone de defaut"""
+
 import logging
+
+from .geomsmesh import geompy
 from .geomsmesh import smesh
 import SMESH
-from .geomsmesh import geompy
-
-# -----------------------------------------------------------------------------
-# --- maillage complet et fissure
 
 def RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceGeomFissure, nomVolume, normal = None):
-  """
-  Maillage sain sans la zone de defaut
+  """Maillage sain sans la zone de defaut
+
   TODO: a completer
   """
   logging.info('Concatenation')
@@ -36,22 +36,26 @@ def RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceGe
   maillageComplet = smesh.Concatenate([maillageSain.GetMesh(), blocComplet.GetMesh()], 1, 1, 1e-05,False)
 
   groups = maillageComplet.GetGroups()
-  grps = [ grp for grp in groups if grp.GetName() == 'FACE1']
-  faceFissure = grps[0]
-  grps = [ grp for grp in groups if grp.GetName() == 'nfondfis']
-  noeudsFondFissure = grps[0]
-  grps = [ grp for grp in groups if grp.GetName() == 'fisInPi']
-  fisInPi = grps[0]
-  grps = [ grp for grp in groups if grp.GetName() == 'fisOutPi']
-  fisOutPi = grps[0]
+  for grp in groups:
+    grp_nom = grp.GetName()
+    if ( grp_nom == "FACE1" ):
+      faceFissure = grp
+    elif ( grp_nom == "nfondfis" ):
+      noeudsFondFissure = grp
+    elif ( grp_nom == "fisInPi" ):
+      fisInPi = grp
+    elif ( grp_nom == "fisOutPi" ):
+      fisOutPi = grp
 
   # --- TODO: fiabiliser l'orientation dans le cas general
   if normal is None:
     normal  = smesh.MakeDirStruct( 0, 0, 1 )
+  logging.debug('après normal = {}'.format(normal))
   maillageComplet.Reorient2D( fisInPi,  normal, [0,0,0])
+  logging.debug('après Reorient2D In')
   maillageComplet.Reorient2D( fisOutPi, normal, [0,0,0])
-    
-  shapes = []
+
+  shapes = list()
   if extrusionFaceFissure is not None:
     subIds = geompy.SubShapeAllIDs(extrusionFaceFissure, geompy.ShapeType["SOLID"])
     if len(subIds) > 1:
@@ -64,40 +68,47 @@ def RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceGe
 #      shapes = geompy.ExtractShapes(faceGeomFissure, geompy.ShapeType["FACE"], False)
 #    else:
 #      shapes = [faceGeomFissure]
-    
-  grpEdges = []
-  grpFaces = []
-  grpVolumes = []
+
+  grpEdges = list()
+  grpFaces = list()
+  grpVolumes = list()
   if len(shapes) == 0:
     shapes = [None] # calcul uniquement avec les normales des faces mailles de la fissure
   for i, aShape in enumerate(shapes):
-    logging.info('Detection elements affectes par le dedoublement de la face %d'%i)
+    texte = "Detection elements affectes par le dedoublement de la face n° {}".format(i)
+    logging.debug(texte)
     affectedGroups = maillageComplet.AffectedElemGroupsInRegion([faceFissure], [noeudsFondFissure], aShape)
-    grps = [ grp for grp in affectedGroups if grp.GetName() == 'affectedEdges']
-    affectedEdges = grps[0]
+    for grp in affectedGroups:
+      grp_nom = grp.GetName()
+      if ( grp_nom == "affectedEdges" ):
+        affectedEdges = grp
+      elif ( grp_nom == "affectedFaces" ):
+        affectedFaces = grp
+      elif ( grp_nom == "affectedVolumes" ):
+        affectedVolumes = grp
+    #grps = [ grp for grp in affectedGroups if grp.GetName() == 'affectedEdges']
+    #affectedEdges = grps[0]
     affectedEdges.SetName('affEd%d'%i)
     grpEdges.append(affectedEdges)
-    grps = [ grp for grp in affectedGroups if grp.GetName() == 'affectedFaces']
-    affectedFaces = grps[0]
+    #grps = [ grp for grp in affectedGroups if grp.GetName() == 'affectedFaces']
+    #affectedFaces = grps[0]
     affectedFaces.SetName('affFa%d'%i)
     grpFaces.append(affectedFaces)
-    grps = [ grp for grp in affectedGroups if grp.GetName() == 'affectedVolumes']
-    affectedVolumes = grps[0]
+    #grps = [ grp for grp in affectedGroups if grp.GetName() == 'affectedVolumes']
+    #affectedVolumes = grps[0]
     affectedVolumes.SetName('affVo%d'%i)
     grpVolumes.append(affectedVolumes)
-  logging.info("union des groupes d'edges") 
   affectedEdges = maillageComplet.UnionListOfGroups(grpEdges, 'affEdges')
-  logging.info("union des groupes de faces") 
   affectedFaces = maillageComplet.UnionListOfGroups(grpFaces, 'affFaces')
-  logging.info("union des groupes de volumes") 
   affectedVolumes = maillageComplet.UnionListOfGroups(grpVolumes, 'affVols')
   for grp in affectedGroups:
-    logging.debug("nom groupe %s",grp.GetName())
-  [ FACE2, FACE2_nodes ] = maillageComplet.DoubleNodeElemGroups([faceFissure], [noeudsFondFissure], affectedGroups, True, True)
+    texte = "Traitement du groupe '{}'".format(grp.GetName())
+    logging.debug(texte)
+  [ FACE2, _ ] = maillageComplet.DoubleNodeElemGroups([faceFissure], [noeudsFondFissure], affectedGroups, True, True)
   FACE2.SetName( 'FACE2' )
 
+  # Groupe de toutes les mailles volumiques
   GroupVol = maillageComplet.CreateEmptyGroup( SMESH.VOLUME, nomVolume )
-  nbAdd = GroupVol.AddFrom( maillageComplet.GetMesh() )
+  _ = GroupVol.AddFrom( maillageComplet.GetMesh() )
 
   return maillageComplet
-

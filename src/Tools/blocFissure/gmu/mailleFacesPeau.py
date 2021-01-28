@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""maillage faces de peau"""
+
 import logging
 
 from .geomsmesh import geompy
@@ -34,9 +36,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
                     facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau,
                     bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives,
                     edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad):
-  """
-  maillage faces de peau
-  """
+  """maillage faces de peau"""
   logging.info('start')
   nbFacesFilling = len(partitionsPeauFissFond)
   boutFromIfil = [None for i in range(nbFacesFilling)]
