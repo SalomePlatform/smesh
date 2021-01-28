@@ -25,8 +25,8 @@ from blocFissure import gmu
 
 dicoParams = dict(nomCas            = "cubeTransverse",
                   maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin.med"),
-                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Transverse.brep"),
-                  edgeFissIds       = [6],
+                  CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Transverse.brep"),
+                  edgeFiss          = [6],
                   lgInfluence       = 50,
                   meshBrep          = (5,10),
                   rayonPipe         = 10,

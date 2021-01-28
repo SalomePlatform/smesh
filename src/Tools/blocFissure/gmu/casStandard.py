@@ -121,20 +121,26 @@ class casStandard(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    cao_file = self.dicoParams['brepFaceFissure']
+#   Contrôle de 'brepFaceFissure' pour les anciennes versions
+    if ( 'brepFaceFissure' in self.dicoParams ):
+      self.dicoParams['CAOFaceFissure'] = self.dicoParams['brepFaceFissure']
+    cao_file = self.dicoParams['CAOFaceFissure']
     suffix = os.path.basename(cao_file).split(".")[-1]
     if ( suffix.upper() == "BREP" ):
       shellFiss = geompy.ImportBREP(cao_file)
     elif ( suffix.upper() == "XAO" ):
       (_, shellFiss, _, l_groups, _) = geompy.ImportXAO(cao_file)
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    if isinstance(self.dicoParams['edgeFissIds'][0],int):
-      geompy.UnionIDs(fondFiss, self.dicoParams['edgeFissIds'] )
+#   Contrôle de 'edgeFissIds' pour les anciennes versions
+    if ( 'edgeFissIds' in self.dicoParams ):
+      self.dicoParams['edgeFiss'] = self.dicoParams['edgeFissIds']
+    if isinstance(self.dicoParams['edgeFiss'][0],int):
+      geompy.UnionIDs(fondFiss, self.dicoParams['edgeFiss'] )
     else:
       l_groups = geompy.GetGroups(shellFiss)
       l_aux = list()
       for group in l_groups:
-        if ( group.GetName() in self.dicoParams['edgeFissIds'] ):
+        if ( group.GetName() in self.dicoParams['edgeFiss'] ):
           l_aux.append(group)
       geompy.UnionList(fondFiss, l_aux )
     geomPublish(initLog.debug, shellFiss, 'shellFiss' )

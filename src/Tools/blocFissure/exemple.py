@@ -28,8 +28,8 @@ from blocFissure.gmu.casStandard import casStandard
 
 dicoParams = dict(nomCas            = "angleCube",
                   maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngle.med"),
-                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep"),
-                  edgeFissIds       = [4],
+                  CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "CubeAngleFiss.brep"),
+                  edgeFiss          = [4],
                   lgInfluence       = 20,
                   meshBrep          = (5,10),
                   rayonPipe         = 5,

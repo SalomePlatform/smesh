@@ -93,8 +93,8 @@ from blocFissure.gmu.casStandard import casStandard
 
 dicoParams = dict(nomCas            = 'angleCube2',
                   maillageSain      = 'boite.med',
-                  brepFaceFissure   = "disk.brep",
-                  edgeFissIds       = [4],
+                  CAOFaceFissure    = "disk.brep",
+                  edgeFiss          = [4],
                   lgInfluence       = 50,
                   meshBrep          = (5,10),
                   rayonPipe         = 15,

@@ -38,8 +38,8 @@ crack = 'fissureQuartEllipse.brep'
 
 dicoParams = dict(nomCas            = 'fissTuyau',
                   maillageSain      = '/local00/home/I48174/Bureau/supportMaillage/{0}'.format(mesh),
-                  brepFaceFissure   = '/local00/home/I48174/Bureau/supportMaillage/{0}'.format(crack),
-                  edgeFissIds       = [9],
+                  CAOFaceFissure    = '/local00/home/I48174/Bureau/supportMaillage/{0}'.format(crack),
+                  edgeFiss          = [9],
                   lgInfluence       = 250,
                   meshBrep          = (10, 50),
                   rayonPipe         = 35,

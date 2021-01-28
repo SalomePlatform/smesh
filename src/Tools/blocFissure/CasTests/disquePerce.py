@@ -25,8 +25,8 @@ from blocFissure import gmu
 
 dicoParams = dict(nomCas            = 'disque',
                   maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "disque.med"),
-                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests", "ellipse_disque.brep"),
-                  edgeFissIds       = [3],
+                  CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "ellipse_disque.brep"),
+                  edgeFiss          = [3],
                   lgInfluence       = 10,
                   meshBrep          = (0.5,2.5),
                   rayonPipe         = 1.0,
