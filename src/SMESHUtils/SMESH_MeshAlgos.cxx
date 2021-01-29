@@ -688,6 +688,9 @@ bool SMESH_ElementSearcherImpl::getIntersParamOnLine(const gp_Lin&           lin
     GC_MakeSegment edge( SMESH_TNodeXYZ( face->GetNode( i )),
                          SMESH_TNodeXYZ( face->GetNode( (i+1)%nbNodes) ));
     anExtCC.Init( lineCurve, edge.Value() );
+    if ( !anExtCC.Extrema().IsDone() ||
+         anExtCC.Extrema().IsParallel() )
+      continue;
     if ( anExtCC.NbExtrema() > 0 && anExtCC.LowerDistance() <= tol)
     {
       Standard_Real pl, pe;

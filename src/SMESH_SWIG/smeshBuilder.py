@@ -1651,7 +1651,17 @@ class Mesh(metaclass = MeshMeta):
             #self.mesh.Register()
             self.geom = self.mesh.GetShapeToMesh()
             if self.geom:
-                self.geompyD = self.geom.GetGen()
+                self.geompyD = None
+                try:
+                    so = salome.ObjectToSObject( self.geom )
+                    comp = so.GetFatherComponent()
+                    if comp.ComponentDataType() == "SHAPERSTUDY":
+                        import shaperBuilder
+                        self.geompyD = shaperBuilder.New()
+                except:
+                    pass
+                if not self.geompyD:
+                    self.geompyD = self.geom.GetGen()
                 pass
         pass
 
@@ -2642,15 +2652,7 @@ class Mesh(metaclass = MeshMeta):
         elif tgeo == "SOLID" or tgeo == "COMPSOLID":
             typ = VOLUME
         elif tgeo == "COMPOUND":
-            try:
-              sub = self.geompyD.SubShapeAll( shape, self.geompyD.ShapeType["SHAPE"])
-            except:
-              # try to get the SHAPERSTUDY engine directly, because GetGen does not work because of
-              # simplification of access in geomBuilder: omniORB.registerObjref
-              from SHAPERSTUDY_utils import getEngine
-              gen = getEngine()
-              if gen:
-                sub = gen.GetIShapesOperations().ExtractSubShapes(shape, self.geompyD.ShapeType["SHAPE"], False)
+            sub = self.geompyD.SubShapeAll( shape, self.geompyD.ShapeType["SHAPE"])
             if not sub:
                 raise ValueError("_groupTypeFromShape(): empty geometric group or compound '%s'" % GetName(shape))
             return self._groupTypeFromShape( sub[0] )
