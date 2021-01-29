@@ -124,12 +124,12 @@ void  SMESHGUI_MgAdaptDlg::buildDlg()
     SMESH::str_array* str = model->getOptionValuesStrVec();
     SMESH::str_array* str2 = model->getCustomOptionValuesStrVec();
     std::vector<std::string> s;
-    for (int i = 0; i< str->length(); i++) s.push_back( (*str)[i].in()); 
-    for (int j = str->length(); j< str2->length(); j++) s.push_back((*str2)[ j - str->length() ].in() ); 
+    for (int i = 0; i< str->length(); i++) s.push_back( (*str)[i].in());
+    for (int j = str->length(); j< str2->length(); j++) s.push_back((*str2)[ j - str->length() ].in() );
     //~str.insert( str.end(), str2.begin(), str2.end() );
 
     myAdvOpt = new MgAdaptAdvWidget(myTabWidget, &s);
-        
+
     int argsTab = myTabWidget->addTab( myArgs, tr( "Args" ) );
     int advTab = myTabWidget->addTab( myAdvOpt, tr( "ADVOP" ) );
 
@@ -597,6 +597,7 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
     // Initial state
     setMode( Mesh, Local);
     medFileCheckBox->setChecked(true);
+    visibleTimeStepRankLabel (false);
 
     // Connections
     connect( meshInGroup, SIGNAL( buttonClicked( int ) ),  this, SLOT( modeChanged( int ) ) );
@@ -622,46 +623,39 @@ void SMESHGUI_MgAdaptArguments::onNoTimeStep(bool disableOther)
 {
     noTimeStep->setChecked(true);
 
-    rankLabel->setVisible(0);
-    rankSpinBox->setVisible(0);
+    visibleTimeStepRankLabel (false);
     rankSpinBox->setValue(-2);
-
-    timeStepLabel->setVisible(0);
-    timeStep->setVisible(0);
     timeStep->setValue(-2);
 
     lastTimeStep->setDisabled(disableOther);
     chosenTimeStep->setDisabled(disableOther);
-
-
 }
 void SMESHGUI_MgAdaptArguments::onLastTimeStep(bool disableOther)
 {
     lastTimeStep->setChecked(true);
 
-    rankLabel->setVisible(0);
-    rankSpinBox->setVisible(0);
+    visibleTimeStepRankLabel (false);
     rankSpinBox->setValue(-1);
-
-    timeStepLabel->setVisible(0);
-    timeStep->setVisible(0);
     timeStep->setValue(-1);
     noTimeStep->setDisabled(disableOther);
 }
-
 void SMESHGUI_MgAdaptArguments::onChosenTimeStep(bool disableOther, int max)
 {
     chosenTimeStep->setChecked(true);
 
-    rankLabel->setVisible(1);
-    rankSpinBox->setVisible(1);
+    visibleTimeStepRankLabel (true);
     rankSpinBox->setValue(0);
-
-    timeStepLabel->setVisible(1);
-    timeStep->setVisible(1);
     timeStep->setValue(0);
     if (max) timeStep->setMaximum(max);
+}
 
+void SMESHGUI_MgAdaptArguments::visibleTimeStepRankLabel(bool visible)
+{
+    rankLabel->setVisible(visible);
+    rankSpinBox->setVisible(visible);
+
+    timeStepLabel->setVisible(visible);
+    timeStep->setVisible(visible);
 }
 
 void SMESHGUI_MgAdaptArguments::onSelectOutMedFilebutton()
@@ -994,12 +988,12 @@ void MgAdaptAdvWidget::AddOption( const char* option, bool isCustom )
 		if(it != optionTreeWidgetItem.end()) return; // option exist
 		else
 		{
-			row = getNewQTreeWidgetItem(table, option, name, isCustom); 
-		} 
+			row = getNewQTreeWidgetItem(table, option, name, isCustom);
+		}
 	}
-	else 
+	else
 	{
-		row = getNewQTreeWidgetItem(table, option, name, isCustom); 
+		row = getNewQTreeWidgetItem(table, option, name, isCustom);
 	}
     row->setText( 0, tr( name.toLatin1().constData() ));
     row->setText( 1, tr( value.toLatin1().constData() ));
@@ -1019,8 +1013,8 @@ QTreeWidgetItem* MgAdaptAdvWidget::getNewQTreeWidgetItem(QTreeWidget* table, con
 	QTreeWidgetItem* row = new QTreeWidgetItem( table );
 	row->setData( NAME_COL, EDITABLE_ROLE, int( isCustom && !option ));
 	row->setFlags( row->flags() | Qt::ItemIsEditable );
-	optionTreeWidgetItem.insert(std::pair <QString, QTreeWidgetItem*> (name, row)); 
-	
+	optionTreeWidgetItem.insert(std::pair <QString, QTreeWidgetItem*> (name, row));
+
 	return row;
 }
 
@@ -1167,34 +1161,34 @@ void MgAdaptAdvWidget::onMeshDimChanged(ADAPTATION_MODE aMode)
 	/* default adaptation mode
 	 * assume that if meshDim == 2 -->adaptation surface
 	 * if meshDim == 3 and  if there is not 2D mesh -->VOLUME
-	 * else BOTH 
+	 * else BOTH
 	 */
-	 
+
 	 QString adaptation("adaptation"), value;
 	 switch(aMode)
 	 {
 	 case ADAPTATION_MODE::SURFACE:
-	 {   	
-	     value ="surface";		 
+	 {
+	     value ="surface";
 	     setOptionValue(adaptation, value);
 	     break;
 	 }
 	 case ADAPTATION_MODE::BOTH :
 	 {
-		 value = "both";	 
+		 value = "both";
 		 setOptionValue(adaptation, value);
 		 break;
 	 }
 	 case ADAPTATION_MODE::VOLUME :
 	 {
-		 value = "volume"; 
+		 value = "volume";
 		 setOptionValue(adaptation, value);
 		 break;
 	 }
-	 } 
+	 }
 }
 void MgAdaptAdvWidget::setOptionValue(QString& option, QString& value)
-{	 
+{
 
 	std::map<QString, QTreeWidgetItem *>::iterator it = optionTreeWidgetItem.find(option);
 	if (it != optionTreeWidgetItem.end())
@@ -1450,7 +1444,7 @@ std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)
 std::string remove_extension(const std::string& filename) {
     size_t lastdot = filename.find_last_of(".");
     if (lastdot == std::string::npos) return filename;
-    return filename.substr(0, lastdot); 
+    return filename.substr(0, lastdot);
 }
 
 

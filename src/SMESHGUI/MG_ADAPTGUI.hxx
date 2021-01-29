@@ -104,8 +104,8 @@ std::string remove_extension(const std::string& filename);
 
 enum ADAPTATION_MODE{
 	SURFACE, // surface adaption when meshDim == 2
-	VOLUME, //  
-	BOTH   
+	VOLUME, //
+	BOTH
 };
 //=================================================================================
 // class    : SMESHGUI_MgAdaptDlg
@@ -238,6 +238,7 @@ private slots:
     void onNoTimeStep(bool disableOther = false);
     void onLastTimeStep(bool disableOther = false);
     void onChosenTimeStep(bool disableOther = false, int max = 0);
+    void visibleTimeStepRankLabel(bool visible);
 
 private:
 
@@ -297,7 +298,7 @@ private slots:
 private:
     void setOptionValue(QString& option, QString& value);
     std::map<QString, QTreeWidgetItem *> optionTreeWidgetItem;
-    
+
     QTreeWidgetItem* getNewQTreeWidgetItem(QTreeWidget* table, const char* option, QString& name, bool isCustom);
 
 };

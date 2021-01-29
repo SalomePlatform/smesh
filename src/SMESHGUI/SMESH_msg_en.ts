@@ -396,7 +396,7 @@
         <source>Publish_MG_ADAPT</source>
         <translation>Publish</translation>
     </message>
-<message>
+    <message>
         <source>SIZE_MAP_FIELD</source>
         <translation>Size map field</translation>
     </message>
@@ -3138,36 +3138,12 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Background</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_MG_ADAPT_MED_SIZE_MAP_BACKGROUND</source>
-        <translation>MED file background size map</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP</source>
-        <translation>Time step</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_NO_TIME_STEP</source>
-        <translation>No time step</translation>
-    </message>
-    <message>
         <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_LAST</source>
         <translation>Last</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_MG_ADAPT_AR</source>
-        <translation>Arguments</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_ADVOP</source>
-        <translation>Advanced Options</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_LAST_STEP</source>
-        <translation>Last time step</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_C_STEP</source>
-        <translation>Chosen time step</translation>
+        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP</source>
+        <translation>Choosen time step</translation>
     </message>
     <message>
         <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_C</source>
@@ -3176,6 +3152,10 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>MG_ADAPT_SELECT_FILE_0</source>
         <translation>MG-ADAPT select file</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_MG_ADAPT_ADVOP</source>
+        <translation>Advanced Options</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>

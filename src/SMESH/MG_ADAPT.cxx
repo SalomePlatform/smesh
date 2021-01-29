@@ -45,14 +45,14 @@ static std::string removeFile(std::string fileName, int& notOk)
 	notOk = std::remove(fileName.c_str());
 	if (notOk) errStr = ToComment(" \n error while removing file : ")
                  << fileName;
-    else errStr= ToComment("\n file : ")<< fileName << " succesfully deleted! \n ";      
-    
-    return errStr; 
+    else errStr= ToComment("\n file : ")<< fileName << " succesfully deleted! \n ";
+
+    return errStr;
 }
 std::string remove_extension(const std::string& filename) {
     size_t lastdot = filename.find_last_of(".");
     if (lastdot == std::string::npos) return filename;
-    return filename.substr(0, lastdot); 
+    return filename.substr(0, lastdot);
 }
 namespace
 {
@@ -176,7 +176,7 @@ void MgAdapt::buildModel()
 
     _defaultOptionValues["adaptation"                         ] = "both";
     _defaultOptionValues["components"                         ] = "outside components";
-    _defaultOptionValues["compute_ridges"                         ] = "yes";
+    _defaultOptionValues["compute_ridges"                     ] = "yes";
     _defaultOptionValues["max_memory"                         ] = ToComment(defaultMaximumMemory());
 }
 
@@ -295,11 +295,11 @@ void MgAdapt::setTimeStepRankLast()
 	myUseNoTimeStep = false;
 	//~med_int aRank, tmst;
    	//~std::string fieldFile = useBackgroundMap ? sizeMapFile : medFileIn;
-	//~getTimeStepInfos(fieldFile, tmst, aRank);	
+	//~getTimeStepInfos(fieldFile, tmst, aRank);
 	//~setRankTimeStep((int) tmst, (int) aRank);
 }
 void MgAdapt::setNoTimeStep()
-{	
+{
 	myUseLastTimeStep = false;
 	myUseChosenTimeStep = false;
 	myUseNoTimeStep = true;
@@ -308,7 +308,7 @@ void MgAdapt::setNoTimeStep()
 	//~setRankTimeStep(tmst, aRank);
 }
 void MgAdapt::setChosenTimeStepRank()
-{	
+{
 	myUseLastTimeStep = false;
 	myUseChosenTimeStep = true;
 	myUseNoTimeStep = false;
@@ -481,7 +481,7 @@ bool MgAdapt::setAll()
     else if (data->myUseLastTimeStep)
         setTimeStepRankLast();
     else
-	{    
+	{
 	   	setChosenTimeStepRank();
 		setRankTimeStep(data->myTimeStep, data->myRank);
 	}
@@ -521,7 +521,7 @@ throw (std::invalid_argument)
 
     if (op_val->second != optionValue)
     {
-		
+
 		std::string lowerOptionValue = toLowerStr(optionValue);
         const char* ptr = lowerOptionValue.c_str();
         // strip white spaces
@@ -536,7 +536,7 @@ throw (std::invalid_argument)
         if (i == 0) {
             // empty string
         } else if (_charOptions.count(optionName)) {
-            // do not check strings 
+            // do not check strings
         } else if (_doubleOptions.count(optionName)) {
             // check if value is double
             toDbl(ptr, &typeOk);
@@ -621,7 +621,7 @@ throw (std::invalid_argument)
 }
 //================================================================================
 /*!
- * \brief Converts a string to a lower 
+ * \brief Converts a string to a lower
  */
 //================================================================================
 std::string MgAdapt::toLowerStr(const std::string& str)
@@ -743,10 +743,10 @@ void MgAdapt::execCmd( const char* cmd, int& err)
 	}
 	else
 	{
-	   buf = std::cout.rdbuf();	
+	   buf = std::cout.rdbuf();
 	}
 	std::ostream logStream(buf);
-	
+
     std::unique_ptr <FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose );
     if(!pipe)
     {
@@ -759,9 +759,9 @@ void MgAdapt::execCmd( const char* cmd, int& err)
     err = 0;
 }
 /*
- * to delete tmp files .mesh, .sol and if needed  
+ * to delete tmp files .mesh, .sol and if needed
  * the log file
- * 
+ *
  */
 void MgAdapt::cleanUp()
 {
@@ -769,9 +769,9 @@ void MgAdapt::cleanUp()
 	std::string errStr;
 	if(toKeepWorkingFiles)
 	    return;
-	if(removeOnSuccess && printLogInFile) 
+	if(removeOnSuccess && printLogInFile)
 	    tmpFilesToBeDeleted.push_back(logFile);
-	
+
 	std::vector< std::string>::iterator it = tmpFilesToBeDeleted.begin();
 	for (; it!=tmpFilesToBeDeleted.end(); ++it)
 	{
@@ -780,16 +780,16 @@ void MgAdapt::cleanUp()
 		{
 			appendMsgToLogFile(errStr);
 		}
-		
+
 	}
 }
 
 void MgAdapt::appendMsgToLogFile(std::string& msg)
 {
-	std::ofstream logStream;	
+	std::ofstream logStream;
 	logStream.open(logFile, std::ofstream::out | std::ofstream::app);
 	logStream<< msg;
-    logStream.close();	
+    logStream.close();
 }
 //================================================================================
 /*!
@@ -849,13 +849,13 @@ std::string MgAdapt::getCommandToRun()
         cmd+= " --write_sizemap "+ solFileOut;
 		solFormatOutput.push_back(solFileOut);
 		tmpFilesToBeDeleted.push_back(solFileOut);
-	} 
+	}
     if (verbosityLevel != defaultVerboseLevel())
     {
 
         cmd+= " --verbose "+ ToComment(verbosityLevel);
     }
-	
+
     std::string option, value;
     bool isDefault;
     const TOptionValues* options[] = { &_option2value, &_customOption2value };
@@ -1261,7 +1261,7 @@ void MgAdapt::restorefams(MEDCoupling::MEDFileMesh* fileMesh) const
     std::vector<family>::const_iterator fIt = famVec.begin();
 
     for (; fIt!=famVec.end(); ++fIt)
-    {	
+    {
 		try  //
         {
 			std::string givenFamNameFromMeshGemConverter = fileMesh->getFamilyNameGivenId( std::abs(fIt->_famId) );
@@ -1271,7 +1271,7 @@ void MgAdapt::restorefams(MEDCoupling::MEDFileMesh* fileMesh) const
         catch (const std::exception& e)
         {
             std::cerr<<e.what();
-        }  
+        }
     }
 }
 
@@ -1295,7 +1295,7 @@ void MgAdapt::buildConstantSizeMapSolFile(const std::string& solFormatFieldFileN
     int fileId = writer.GmfOpenMesh( solFormatFieldFileName.c_str(), GmfWrite, version, dim);
     int typTab[] = {GmfSca};
     writer.GmfSetKwd(fileId, MeshFormat::GmfSolAtVertices, (int)nbNodes, 1, typTab);
-    for (mcIdType i = 0; i<nbNodes; i++) 
+    for (mcIdType i = 0; i<nbNodes; i++)
     {
 		double valTab[1] = {constantValue};
 		writer.GmfSetLin( fileId, MeshFormat::GmfSolAtVertices, valTab);
@@ -1322,7 +1322,7 @@ void MgAdapt::buildBackGroundMeshAndSolFiles(const std::vector<std::string>& fie
 	tmpWriter.setMeshFileName(meshFormatsizeMapFile);
 	tmpWriter.setFieldFileNames( fieldFileNames);
 	tmpWriter.setMEDFileDS(tmpMfd);
-	tmpWriter.write();	
+	tmpWriter.write();
 }
 // =======================================================================
 med_idt MgAdapt::openMedFile(const std::string aFile)
@@ -1413,8 +1413,8 @@ void MgAdapt::getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit
 		if(tmp_numdt > numdt)
 		{
 		    numdt = tmp_numdt;
-			numit = tmp_numit;	    
-		} 
+			numit = tmp_numit;
+		}
 	}
     if ( erreur < 0 )
     {
@@ -1434,7 +1434,7 @@ void MgAdapt::getTimeStepInfos(std::string aFile, med_int& numdt, med_int& numit
 
 void MgAdapt::updateTimeStepRank()
 {
-	
+
     med_int arank;
     med_int tmst;
     if (myUseNoTimeStep)
