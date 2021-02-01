@@ -341,34 +341,6 @@
         <translation>Construct Group</translation>
     </message>
     <message>
-        <source>MEN_REF_ALL</source>
-        <translation>Uniform refinement</translation>
-    </message>
-    <message>
-        <source>MEN_REF_HOMARD</source>
-        <translation>Adaptation with HOMARD</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_CREATE_CASE</source>
-        <translation>New case for adaptation with HOMARD</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_FOLLOW_ITERATION</source>
-        <translation>Existing case</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_NEW_ITERATION</source>
-        <translation>New iteration</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_COMPUTE</source>
-        <translation>Compute</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_COMPUTE_PUBLISH</source>
-        <translation>Compute and publish</translation>
-    </message>
-    <message>
         <source>MEN_MG_ADAPT</source>
         <translation>Remesh with MG_Adapt</translation>
     </message>
@@ -3058,38 +3030,6 @@ Check algorithm documentation for supported geometry</translation>
         <translation>None</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_HOMARD_PUBLICATION</source>
-        <translation>Publication of meshes with HOMARD</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_IN</source>
-        <translation>IN mesh</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_OUT</source>
-        <translation>OUT mesh</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS</source>
-        <translation>A YACS schema with HOMARD</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS_MAX_ITER</source>
-        <translation>Maximal number of iterations</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS_MAX_NODE</source>
-        <translation>Maximal number of nodes</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS_MAX_ELEM</source>
-        <translation>Maximal number of elements</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS_TYPE_CONVERGENCE</source>
-        <translation>Test type for a YACS schema with HOMARD</translation>
-    </message>
-    <message>
         <source>ADAPT_PREF_MG_ADAPT</source>
         <translation>Adaptation with MG-Adapt</translation>
     </message>
@@ -3371,38 +3311,6 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_CONSTRUCT_GROUP</source>
         <translation>Construct Group</translation>
-    </message>
-    <message>
-        <source>STB_REF_ALL</source>
-        <translation>Uniform refinement</translation>
-    </message>
-    <message>
-        <source>STB_REF_HOMARD</source>
-        <translation>Refinement with HOMARD</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_CREATE_CASE</source>
-        <translation>Creation of a new case for adaptation with HOMARD</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_FOLLOW_ITERATION</source>
-        <translation>Creation of a new case: pursuit of a stored iteration</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_NEW_ITERATION</source>
-        <translation>Creation of a next iteration</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_COMPUTE</source>
-        <translation>Compute the refinement</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_COMPUTE_PUBLISH</source>
-        <translation>Compute the refinement and publish the final mesh</translation>
-    </message>
-    <message>
-        <source>STB_EDIT</source>
-        <translation>Edit</translation>
     </message>
     <message>
         <source>STB_MG_ADAPT</source>
@@ -4111,30 +4019,6 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
         <translation>Construct Group</translation>
-    </message>
-    <message>
-        <source>TOP_REF_ALL</source>
-        <translation>Uniform refinement</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_CREATE_CASE</source>
-        <translation>New case</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_FOLLOW_ITERATION</source>
-        <translation>Existing case</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_NEW_ITERATION</source>
-        <translation>New iteration</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_COMPUTE</source>
-        <translation>Compute</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_COMPUTE_PUBLISH</source>
-        <translation>Compute and publish</translation>
     </message>
     <message>
         <source>TOP_MG_ADAPT</source>
@@ -7040,7 +6924,7 @@ select mesh or sub-mesh and try again</translation>
     <message>
         <source>CONCURRENT_SUBMESH_APPEARS</source>
         <translation>
-The assigned algorithm has the same priority as one assigned to an 
+The assigned algorithm has the same priority as one assigned to an
 adjacent sub-mesh, hence it&apos;s undefined which algorithm to use for
 meshing boundary shared by two sub-meshes. Would you like to set
 the order of sub-mesh computation? </translation>

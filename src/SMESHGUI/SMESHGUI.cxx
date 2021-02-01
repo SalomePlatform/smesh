@@ -3036,14 +3036,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
   // Adaptation - begin
-  case SMESHOp::OpUniformRefinement:
-  case SMESHOp::OpHONewCase:
-  case SMESHOp::OpHOCaseFollow:
-  case SMESHOp::OpHONewIter:
-  case SMESHOp::OpHOIterCompute:
-  case SMESHOp::OpHOIterComputePublish:
-  case SMESHOp::OpHOEdit:
-  case SMESHOp::OpHODelete:
   case SMESHOp::OpMGAdapt:
     {
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
@@ -4288,14 +4280,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpDisableAutoColor, "DISABLE_AUTO_COLOR" );
 
   // Adaptation - begin
-  createSMESHAction( SMESHOp::OpUniformRefinement,    "REF_ALL",                 "ICON_REF_ALL" );
-  createSMESHAction( SMESHOp::OpHONewCase,            "HOMARD_CREATE_CASE",      "ICON_HOMARD_CREATE_CASE" );
-  createSMESHAction( SMESHOp::OpHOCaseFollow,         "HOMARD_FOLLOW_ITERATION", "ICON_HOMARD_FOLLOW_ITERATION" );
-  createSMESHAction( SMESHOp::OpHONewIter,            "HOMARD_NEW_ITERATION",    "ICON_HOMARD_NEW_ITERATION" );
-  createSMESHAction( SMESHOp::OpHOIterCompute,        "HOMARD_COMPUTE",          "ICON_HOMARD_COMPUTE" );
-  createSMESHAction( SMESHOp::OpHOIterComputePublish, "HOMARD_COMPUTE_PUBLISH",  "ICON_HOMARD_COMPUTE_PUBLISH" );
-  createSMESHAction( SMESHOp::OpHOEdit,               "EDIT",                    "ICON_DLG_EDIT_MESH" );
-  createSMESHAction( SMESHOp::OpHODelete,             "DELETE",                  "ICON_DELETE" );
   createSMESHAction( SMESHOp::OpMGAdapt,              "MG_ADAPT",                "ICON_MG_ADAPT" );
   // Adaptation - end
 
@@ -4358,7 +4342,6 @@ void SMESHGUI::initialize( CAM_Application* app )
       removeId = createMenu( tr( "MEN_REMOVE" ), modifyId, 403 ),
     //renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
       transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 ),
-      refHomardId = createMenu( tr( "MEN_REF_HOMARD" ), adaptId, -1, 10 ),
       basicPropId = createMenu( tr( "MEN_BASIC_PROPERTIES" ), measureId, -1, 10 );
 
   //createMenu( SMESHOp::OpImportDAT, importId, -1 );
@@ -4515,16 +4498,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpPatternMapping,         modifyId, -1 );
 
   // Adaptation - begin
-  createMenu( SMESHOp::OpUniformRefinement,    adaptId, -1 );
-  createMenu( SMESHOp::OpHONewCase,            refHomardId, -1 );
-  createMenu( SMESHOp::OpHOCaseFollow,         refHomardId, -1 );
-  createMenu( separator(),                     refHomardId, -1 );
-  createMenu( SMESHOp::OpHONewIter,            refHomardId, -1 );
-  createMenu( SMESHOp::OpHOIterCompute,        refHomardId, -1 );
-  createMenu( SMESHOp::OpHOIterComputePublish, refHomardId, -1 );
-  createMenu( separator(),                     refHomardId, -1 );
-  createMenu( SMESHOp::OpHOEdit,               refHomardId, -1 );
-  createMenu( SMESHOp::OpHODelete,             refHomardId, -1 );
   createMenu( SMESHOp::OpMGAdapt,              adaptId, -1 );
   // Adaptation - end
 
@@ -4673,12 +4646,6 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // Adaptation - begin
   int adaptTb      = createTool( tr( "TB_ADAPTATION" ),QString( "SMESHAdaptationToolbar" ) ) ;
-  createTool( SMESHOp::OpUniformRefinement,    adaptTb );
-  createTool( SMESHOp::OpHONewCase,            adaptTb );
-  createTool( SMESHOp::OpHOCaseFollow,         adaptTb );
-  createTool( SMESHOp::OpHONewIter,            adaptTb );
-  createTool( SMESHOp::OpHOIterCompute,        adaptTb );
-  createTool( SMESHOp::OpHOIterComputePublish, adaptTb );
   createTool( SMESHOp::OpMGAdapt,              adaptTb );
   // Adaptation - end
 
@@ -4764,12 +4731,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
 
   // Adaptation - begin
-  createPopupItem( SMESHOp::OpUniformRefinement,    OB, mesh );
-  createPopupItem( SMESHOp::OpHONewCase,            OB, mesh );
-//   createPopupItem( SMESHOp::OpHOCaseFollow,         OB, mesh );
-//   createPopupItem( SMESHOp::OpHONewIter,            OB, mesh );
-//   createPopupItem( SMESHOp::OpHOIterCompute,        OB, mesh );
-//   createPopupItem( SMESHOp::OpHOIterComputePublish, OB, mesh );
   createPopupItem( SMESHOp::OpMGAdapt,              OB, mesh );
   // Adaptation - end
 
@@ -5208,9 +5169,9 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 	<< wrap("GMF", "li");
   lab = tr("INFO_AVAILABLE_FORMATS") + ":" + wrap(items.join(""), "ul");
   items.clear();
-  
+
   app->infoPanel()->addLabel(lab, gb);
-    
+
   gb = app->infoPanel()->addGroup(tr("INFO_GRP_CHECK_MESH"));
   lab = tr("INFO_DISPLAY") + "<br/>";
   items << wrap(tr("INFO_QUALITY_AREA"), "li")
@@ -5220,7 +5181,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   lab = lab + tr("INFO_QUALITY_INFO") + ":" + wrap(items.join(""), "ul");
   items.clear();
   lab = lab + tr("INFO_CLIPPING");
-  
+
   app->infoPanel()->addLabel(lab, gb);
   // << Help Panel
 
@@ -5809,34 +5770,6 @@ void SMESHGUI::createPreferences()
   // Adaptation tab ------------------------------------------------------------------------
   int adaptTab = addPreference( tr( "ADAPT_PREF_TAB_GENERAL" ) );
   int bloc, pref ;
-  // Refinement with HOMARD
-  bloc = addPreference( tr( "ADAPT_PREF_HOMARD_PUBLICATION" ), adaptTab );
-  setPreferenceProperty( bloc, "columns", 1 );
-  pref = addPreference( tr( "ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_IN" ), bloc, LightApp_Preferences::Bool, "HOMARD", "homard_publish_mesh_in" );
-  pref = addPreference( tr( "ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_OUT" ), bloc, LightApp_Preferences::Bool, "HOMARD", "homard_publish_mesh_out" );
-
-  // YACS with HOMARD
-  bloc = addPreference( tr( "ADAPT_PREF_HOMARD_YACS" ), adaptTab );
-  setPreferenceProperty( bloc, "columns", 1 );
-  pref = addPreference( tr( "ADAPT_PREF_HOMARD_YACS_MAX_ITER" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "homard_yacs_max_iter" );
-  setPreferenceProperty( pref, "min",  0 );
-  setPreferenceProperty( pref, "max",  100000000 );
-  setPreferenceProperty( pref, "step", 1 );
-  pref = addPreference( tr( "ADAPT_PREF_HOMARD_YACS_MAX_NODE" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "homard_yacs_max_node" );
-  setPreferenceProperty( pref, "min",  0 );
-  setPreferenceProperty( pref, "max",  100000000 );
-  setPreferenceProperty( pref, "step", 1000 );
-  pref = addPreference( tr( "ADAPT_PREF_HOMARD_YACS_MAX_ELEM" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "homard_yacs_max_elem" );
-  setPreferenceProperty( pref, "min",  0 );
-  setPreferenceProperty( pref, "max",  100000000 );
-  setPreferenceProperty( pref, "step", 1000 );
-  pref = addPreference( tr( "ADAPT_PREF_HOMARD_YACS_TYPE_CONVERGENCE" ), bloc, LightApp_Preferences::Selector, "HOMARD", "homard_yacs_type_test" );
-  QStringList aListOfTypeTest;
-  aListOfTypeTest << tr( "ADAPT_PREF_NONE" );
-  aListOfTypeTest << "VTest > VRef";
-  aListOfTypeTest << "VTest < VRef";
-  setPreferenceProperty( pref, "strings", aListOfTypeTest );
-
   // MG-Adapt
   bloc = addPreference( tr( "ADAPT_PREF_MG_ADAPT" ), adaptTab );
   setPreferenceProperty( bloc, "columns", 1 );
@@ -6070,14 +6003,6 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     op = new SMESHGUI_Add0DElemsOnAllNodesOp();
     break;
   // Adaptation - begin
-  case SMESHOp::OpUniformRefinement:
-  case SMESHOp::OpHONewCase:
-  case SMESHOp::OpHOCaseFollow:
-  case SMESHOp::OpHONewIter:
-  case SMESHOp::OpHOIterCompute:
-  case SMESHOp::OpHOIterComputePublish:
-  case SMESHOp::OpHOEdit:
-  case SMESHOp::OpHODelete:
   case SMESHOp::OpMGAdapt:
     break;
   // Adaptation - end

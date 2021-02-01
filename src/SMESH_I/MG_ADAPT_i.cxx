@@ -17,16 +17,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-// Remarques :
-// L'ordre de description des fonctions est le meme dans tous les fichiers
-// HOMARD_aaaa.idl, HOMARD_aaaa.hxx, HOMARD_aaaa.cxx, HOMARD_aaaa_i.hxx, HOMARD_aaaa_i.cxx :
-// 1. Les generalites : Name, Delete, DumpPython, Dump, Restore
-// 2. Les caracteristiques
-// 3. Le lien avec les autres structures
-//
-// Quand les 2 fonctions Setxxx et Getxxx sont presentes, Setxxx est decrit en premier
-//
-
 #include "MG_ADAPT_i.hxx"
 //~#include "ADAPT_Gen_i.hxx"
 #include "string.h"
@@ -126,13 +116,13 @@ SMESH::MG_ADAPT_OBJECT_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
 		SMESH::MG_ADAPT_OBJECT_var anObj = mg_adapt_object->_this();
 		return anObj._retn();
 	}
-	    
+
 
 }
 //~SMESH::MG_ADAPT_ptr MG_ADAPT_i::CreateMG_ADAPT()
 //~{
-  
-  //~SMESH_Gen_i* smeshGen_i = SMESH_Gen_i::GetSMESHGen();	
+
+  //~SMESH_Gen_i* smeshGen_i = SMESH_Gen_i::GetSMESHGen();
   //~SMESH::MG_ADAPT_i* aMGadapt = new SMESH::MG_ADAPT_i(smeshGen_i->GetPOA());
   //~SMESH::MG_ADAPT_var anObj = aMGadapt->_this();
   //~return anObj._retn();
@@ -179,7 +169,7 @@ void MG_ADAPT_i::setData( SMESH::MgAdaptHypothesisData& data)
 	copyHypothesisDataToImpl(data, baseData);
 	myMgAdapt->setData(baseData);
 	delete baseData;
-}	
+}
 void MG_ADAPT_i::setMedFileIn(const char* str)
 {
 	myMgAdapt->setMedFileIn(str);
@@ -240,7 +230,7 @@ void MG_ADAPT_i::setTimeStep(CORBA::Long t)
 {
 	myMgAdapt->setTimeStep(t);
 }
-CORBA::Long MG_ADAPT_i::getTimeStep() 
+CORBA::Long MG_ADAPT_i::getTimeStep()
 {
 	return myMgAdapt->getTimeStep();
 }
@@ -286,11 +276,11 @@ bool MG_ADAPT_i::getRemoveOnSuccess()
 {
 	myMgAdapt->getRemoveOnSuccess();
 }
-SMESH::MgAdaptHypothesisData* MG_ADAPT_i::getData() 
+SMESH::MgAdaptHypothesisData* MG_ADAPT_i::getData()
 {
 	SMESH::MgAdaptHypothesisData* result = new 	SMESH::MgAdaptHypothesisData();
 	::MG_ADAPT::MgAdaptHypothesisData* from =  myMgAdapt->getData();
-	copyHypothesisDataFromImpl(from, result);	
+	copyHypothesisDataFromImpl(from, result);
 	return result;
 }
 void MG_ADAPT_i::setUseLocalMap(bool mybool)
@@ -322,7 +312,7 @@ void MG_ADAPT_i::setConstantSize(double value)
 {
 	myMgAdapt->setConstantValue(value);
 }
-double MG_ADAPT_i::getConstantSize() 
+double MG_ADAPT_i::getConstantSize()
 {
 	return myMgAdapt->getConstantValue();
 }
@@ -360,19 +350,19 @@ void MG_ADAPT_i::setSizeMapType(const char* type)
 	setUseLocalMap(false);
 	setUseBackgroundMap(false);
 	setUseConstantValue(false);
-	
+
 	if (!strcmp("Local", type))
 		setUseLocalMap(true);
 	else if (!strcmp("Background", type))
 	    setUseBackgroundMap(true);
-	else 
+	else
 	    setUseConstantValue(true);
 }
 void MG_ADAPT_i::setWorkingDir(const char* dir)
 {
 	myMgAdapt->setWorkingDir(dir);
 }
-char* MG_ADAPT_i::getWorkingDir() 
+char* MG_ADAPT_i::getWorkingDir()
 {
 	return CORBA::string_dup(myMgAdapt->getWorkingDir().c_str());
 }
@@ -418,7 +408,7 @@ char* MG_ADAPT_i::getErrMsg()
 {
 	return CORBA::string_dup(errStr.c_str());
 }
-char* MG_ADAPT_i::getFileName() 
+char* MG_ADAPT_i::getFileName()
 {
 	return CORBA::string_dup(myMgAdapt->getFileName().c_str());
 }
@@ -428,7 +418,7 @@ char* MG_ADAPT_i::getExeName()
 }
 void MG_ADAPT_i::copyMgAdaptHypothesisData( const SMESH::MgAdaptHypothesisData& data)
 {
-	::MG_ADAPT::MgAdaptHypothesisData* baseData = new ::MG_ADAPT::MgAdaptHypothesisData(); 
+	::MG_ADAPT::MgAdaptHypothesisData* baseData = new ::MG_ADAPT::MgAdaptHypothesisData();
 	copyHypothesisDataToImpl(data, baseData);
 	myMgAdapt->copyMgAdaptHypothesisData(baseData);
 	delete baseData;
@@ -439,7 +429,7 @@ void MG_ADAPT_i::copyMgAdaptHypothesisData( const SMESH::MgAdaptHypothesisData& 
 	//~myMgAdapt->checkDirPath(str);
 //~}
 
-bool MG_ADAPT_i::hasOptionDefined( const char* optionName ) 
+bool MG_ADAPT_i::hasOptionDefined( const char* optionName )
 {
 	return myMgAdapt->hasOptionDefined(optionName);
 }
@@ -447,14 +437,14 @@ void MG_ADAPT_i::setOptionValue(const char* optionName,
 					const char* optionValue) throw (std::invalid_argument)
 {
 	myMgAdapt->setOptionValue(optionName, optionValue);
-}					
+}
 
 char* MG_ADAPT_i::getOptionValue(const char* optionName,
 						   bool&              isDefault)  throw (std::invalid_argument)
 {
     return CORBA::string_dup(myMgAdapt->getOptionValue(optionName, &isDefault).c_str());
 }
-str_array* MG_ADAPT_i::getCustomOptionValuesStrVec() 
+str_array* MG_ADAPT_i::getCustomOptionValuesStrVec()
 {
    	SMESH::str_array_var result = new SMESH::str_array();
    	std::vector <std::string> vals = myMgAdapt->getCustomOptionValuesStrVec();
@@ -462,7 +452,7 @@ str_array* MG_ADAPT_i::getCustomOptionValuesStrVec()
    	for (int i = 0; i<vals.size(); i++) result[i] = CORBA::string_dup(vals[i].c_str());
    	return result._retn();
 }
-str_array*  MG_ADAPT_i::getOptionValuesStrVec() 
+str_array*  MG_ADAPT_i::getOptionValuesStrVec()
 {
 
 	SMESH::str_array_var result = new SMESH::str_array();
@@ -510,7 +500,7 @@ void MG_ADAPT_OBJECT_i::setMEDFileBackground(const char* f)
 }
 void MG_ADAPT_OBJECT_i::AddHypothesis(SMESH::MG_ADAPT_ptr mg)
 {
-	
+
 	mg->setMedFileIn(medFileIn.c_str());
 	mg->setMedFileOut(medFileOut.c_str());
 	mg->setSizeMapFile(medFileBackground.c_str());
@@ -523,8 +513,8 @@ CORBA::Long MG_ADAPT_OBJECT_i::Compute(bool publish)
 		return -1;
 	}
 	hypothesis->setPublish(publish);
-	return hypothesis->compute();	
-}	
+	return hypothesis->compute();
+}
 
 bool MG_ADAPT_OBJECT_i::checkMeshFileIn()
 {
@@ -539,11 +529,11 @@ bool MG_ADAPT_OBJECT_i::checkMeshFileIn()
 			medFileIn+= ".med";
 			myMesh->ExportMED(medFileIn.c_str(), false, -1, toOverwrite, toFindOutDim);
 			hypothesis->setMedFileIn(medFileIn.c_str());
-			ret = true; 
+			ret = true;
 		}
 	}
 	else
 	    ret = true;
-	    
+
     return ret;
 }

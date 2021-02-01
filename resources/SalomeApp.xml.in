@@ -99,12 +99,6 @@
     <parameter name="selection_increment"          value="0"  />
     <parameter name="controls_increment"           value="2"  />
     <!-- Adaptation -->
-    <parameter name="homard_publish_mesh_in"       value="false"  />
-    <parameter name="homard_publish_mesh_out"      value="false"  />
-    <parameter name="homard_yacs_max_iter"         value="0"  />
-    <parameter name="homard_yacs_max_node"         value="0"  />
-    <parameter name="homard_yacs_max_elem"         value="0"  />
-    <parameter name="homard_yacs_type_test"        value="None"  />
     <parameter name="mg_adapt_file_mesh_out"       value="true"  />
     <parameter name="mg_adapt_publish_mesh_out"    value="false"  />
     <parameter name="mg_adapt_size_map"            value="Local"  />

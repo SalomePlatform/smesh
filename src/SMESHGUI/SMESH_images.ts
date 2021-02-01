@@ -84,30 +84,6 @@
             <translation>mesh_groups_from_gemetry.png</translation>
         </message>
         <message>
-            <source>ICON_REF_ALL</source>
-            <translation>adapt_ref_all.png</translation>
-        </message>
-        <message>
-            <source>ICON_HOMARD_CREATE_CASE</source>
-            <translation>adapt_ref_homard.png</translation>
-        </message>
-        <message>
-            <source>ICON_HOMARD_FOLLOW_ITERATION</source>
-            <translation>adapt_hom_iter_poursuite.png</translation>
-        </message>
-        <message>
-            <source>ICON_HOMARD_NEW_ITERATION</source>
-            <translation>adapt_hom_iter_next</translation>
-        </message>
-        <message>
-            <source>ICON_HOMARD_COMPUTE</source>
-            <translation>mesh_compute.png</translation>
-        </message>
-        <message>
-            <source>ICON_HOMARD_COMPUTE_PUBLISH</source>
-            <translation>mesh_compute.png</translation>
-        </message>
-        <message>
             <source>ICON_MG_ADAPT</source>
             <translation>adapt_mg_adapt.png</translation>
         </message>
@@ -682,7 +658,7 @@
         <message>
             <source>ICON_MEASURE_AREA</source>
             <translation>mesh_measure_area.png</translation>
-        </message>	
+        </message>
         <message>
             <source>ICON_MEASURE_VOLUME</source>
             <translation>mesh_measure_volume.png</translation>

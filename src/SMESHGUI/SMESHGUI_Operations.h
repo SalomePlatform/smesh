@@ -187,14 +187,6 @@ namespace SMESHOp {
     OpCreateBoundaryElements = 4514,   // MENU MODIFICATION - CREATE BOUNDARY ELEMENTS
     OpSplitBiQuadratic       = 4515,   // MENU MODIFICATION - SPLIT BI-QUADRATIC TO LINEAR
     // Adaptation ---------------------//--------------------------------
-    OpUniformRefinement      = 8000,   // MENU ADAPTATION - HOMARD - UNIFORM REFINEMENT
-    OpHONewCase              = 8011,   // MENU ADAPTATION - HOMARD - FREE REFINEMENT - New Case
-    OpHOCaseFollow           = 8012,   // MENU ADAPTATION - HOMARD - FREE REFINEMENT - New Case Follow
-    OpHONewIter              = 8013,   // MENU ADAPTATION - HOMARD - FREE REFINEMENT - New Iteration
-    OpHOIterCompute          = 8014,   // MENU ADAPTATION - HOMARD - FREE REFINEMENT - Compute Iteration
-    OpHOIterComputePublish   = 8015,   // MENU ADAPTATION - HOMARD - FREE REFINEMENT - Compute Iteration and Publish
-    OpHOEdit                 = 8016,   // MENU ADAPTATION - HOMARD - FREE REFINEMENT - Edit objects
-    OpHODelete               = 8017,   // MENU ADAPTATION - HOMARD - FREE REFINEMENT - Delete objects
     OpMGAdapt                = 8020,   // MENU ADAPTATION - MG-ADAPT
     // Measurements -------------------//--------------------------------
     OpPropertiesLength       = 5000,   // MENU MEASUREMENTS - BASIC PROPERTIES - LENGTH

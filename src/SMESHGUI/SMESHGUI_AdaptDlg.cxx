@@ -35,9 +35,6 @@
 #include <SalomeApp_Application.h>
 #include <SalomeApp_Study.h>
 
-// HOMARD includes
-// #include "MonCreateCase.h"
-
 // SALOME KERNEL includes
 #include "utilities.h"
 #include <SALOME_LifeCycleCORBA.hxx>
@@ -70,7 +67,7 @@ SMESHGUI_AdaptDlg::~SMESHGUI_AdaptDlg()
 void SMESHGUI_AdaptDlg::action (int theCommandID)
 //=======================================================================
 {
-  std::cout  << "SMESHGUI_AdaptDlg::action avec theCommandID : " << theCommandID << std::endl;
+//   std::cout  << "SMESHGUI_AdaptDlg::action avec theCommandID : " << theCommandID << std::endl;
 
 // Preferences
 //   recupPreferences();
@@ -107,46 +104,6 @@ void SMESHGUI_AdaptDlg::action (int theCommandID)
 //
 //   SUIT_ResourceMgr* resMgr = mySMESHGUI->getApp()->resourceMgr();
 //
-// // B. Les valeurs
-// // B.1. La langue
-//
-//   _LanguageShort = resMgr->stringValue("language", "language", "en" );
-//   INFOS ("Enregistrement de LanguageShort = " << _LanguageShort.toStdString().c_str() );
-// //   adaptGen->SetLanguageShort(_LanguageShort.toStdString().c_str());
-//
-// // B.2. Les publications avec HOMARD
-//   bool publish_mesh ;
-//
-//   publish_mesh = resMgr->booleanValue("HOMARD", "homard_publish_mesh_in", false );
-//   if ( publish_mesh ) { _PublisMeshIN = 1 ; }
-//   else                { _PublisMeshIN = 0 ; }
-//
-//   publish_mesh = resMgr->booleanValue("HOMARD", "homard_publish_mesh_out", false );
-//   if ( publish_mesh ) { _PublisMeshOUT = 1 ; }
-//   else                { _PublisMeshOUT = 0 ; }
-//
-//   INFOS ("Enregistrement de PublisMeshIN = " << _PublisMeshIN<<", PublisMeshOUT = "<< _PublisMeshOUT);
-// //   adaptGen->SetPublisMesh(_PublisMeshIN, _PublisMeshOUT);
-//
-// // B.3. Les maximum pour YACS avec HOMARD
-//
-//   _YACSMaxIter = resMgr->integerValue("HOMARD", "homard_yacs_max_iter", 0 );
-//   _YACSMaxNode = resMgr->integerValue("HOMARD", "homard_yacs_max_node", 0 );
-//   _YACSMaxElem = resMgr->integerValue("HOMARD", "homard_yacs_max_elem", 0 );
-//
-//   INFOS ("Enregistrement de YACSMaxIter = " << _YACSMaxIter<<", YACSMaxNode = "<< _YACSMaxNode<<", YACSMaxElem = "<< _YACSMaxElem);
-// //   adaptGen->SetYACSMaximum(_YACSMaxIter, _YACSMaxNode, _YACSMaxElem);
-//
-// // B.4. La convergence pour YACS avec HOMARD
-//
-//   QString QString_v = resMgr->stringValue ( "HOMARD", "homard_yacs_type_test", "None" );
-//   if ( ( QString_v == "VTest > VRef" ) || ( QString_v == "VTest &gt; VRef" ) )      { _YACSTypeTest = 1 ; }
-//   else if ( ( QString_v == "VTest < VRef" ) || ( QString_v == "VTest &lt; VRef" ) ) { _YACSTypeTest = 2 ; }
-//   else                                                                              { _YACSTypeTest = 0 ; }
-//
-//   INFOS ("Enregistrement de YACSTypeTest = " << _YACSTypeTest);
-// //   adaptGen->SetYACSConvergenceType(_YACSTypeTest);
-//
 // }
 
 /*!
@@ -156,7 +113,7 @@ void SMESHGUI_AdaptDlg::action (int theCommandID)
 */
 bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 {
-  std::cout  << "OnGUIEvent avec theCommandID : " << theCommandID << std::endl;
+//   std::cout  << "SMESHGUI_AdaptDlg:OnGUIEvent avec theCommandID : " << theCommandID << std::endl;
 // A. Controles
   SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
   if ( !app ) return false;
@@ -183,57 +140,16 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
   SCRUTE(theCommandID);
   switch (theCommandID)
   {
-    case 8000: // Raffinement uniforme
-    {
-      INFOS("Raffinement uniforme");
-//       A faire
-      break;
-    }
-    case 8011: // Création d'un Cas
-    {
-      INFOS("Création d'un Cas");
-//       MonCreateCase *aDlg = new MonCreateCase( true,
-//                             ADAPT::ADAPT_Gen::_duplicate(adaptGen) ) ;
-//       aDlg->show();
-      break;
-    }
-    case 8012: // Création d'un cas en poursuite d'une itération
-    {
-      INFOS("Création d'un cas en poursuite d'une itération");
-//       A faire
-      break;
-    }
-    case 8013: // Création d'une itération
-    {
-      INFOS("Création d'une itération" );
-//       A faire
-      break;
-    }
-    case 8014: // Calcule une itération
-    {
-      INFOS("Calcule une itération" );
-//       A faire
-      break;
-    }
-    case 8015: // Calcule une itération et publication
-    {
-      INFOS("Calcule une itération et publication");
-//       A faire
-      break;
-    }
     case 8020: // Adaptation avec MG-Adpat
     {
-      INFOS("Interface avec MG-Adapt" );
-//       A faire
+//       INFOS("Interface avec MG-Adapt" );
 
-      SMESH::MG_ADAPT_ptr model = SMESHGUI::GetSMESHGen()->CreateMG_ADAPT();// = new SMESH::MG_ADAPT_var();
-      //~SMESH::MG_ADAPT_ptr model = SMESH::MG_ADAPT_i::CreateMG_ADAPT();
+      SMESH::MG_ADAPT_ptr model = SMESHGUI::GetSMESHGen()->CreateMG_ADAPT();
       bool isCreation = false;
 	  if (mySMESHGUI->isStudyLocked()) break;
       mySMESHGUI->EmitSignalDeactivateDialog();
       SMESHGUI_MG_ADAPTDRIVER *mgAdapt = new SMESHGUI_MG_ADAPTDRIVER(mySMESHGUI, model, isCreation);
       mgAdapt->show();
-      //~delete model;
       break;
     }
 

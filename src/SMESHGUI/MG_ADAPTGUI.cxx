@@ -30,13 +30,7 @@
 #include "SalomeApp_Application.h"
 #include "SalomeApp_Module.h"
 #include "SalomeApp_Study.h"
-//~#include "SMESH_Actor.h"
 #include <SUIT_MessageBox.h>
-//~#include <SMESH_TypeFilter.hxx>
-//~#include <SMESH_MeshAlgos.hxx>
-//~#include <SMESH_LogicalFilter.hxx>
-//~#include <SMDS_Mesh.hxx>
-//~#include <SMDS_MeshNode.hxx>
 #include <LightApp_SelectionMgr.h>
 #include <SUIT_OverrideCursor.h>
 #include <SUIT_ResourceMgr.h>
@@ -600,14 +594,14 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
     visibleTimeStepRankLabel (false);
 
     // Connections
-    connect( meshInGroup, SIGNAL( buttonClicked( int ) ),  this, SLOT( modeChanged( int ) ) );
-    connect( sizeMapDefGroup, SIGNAL( buttonClicked( int ) ),  this, SLOT( sizeMapDefChanged( int ) ) );
-    connect( selectMedFilebutton, SIGNAL( pressed(  ) ),  this, SLOT( onSelectMedFilebuttonClicked(  ) ) );
-    connect(medFileCheckBox, SIGNAL (stateChanged(int)), this, SLOT(onMedFileCheckBox(int) ) );
-    connect(publishOut, SIGNAL (stateChanged(int)), this, SLOT(onPublishOut(int) ) );
-    connect(selectOutMedFilebutton, SIGNAL( pressed()), this, SLOT(onSelectOutMedFilebutton()));
-    connect(selectMedFileBackgroundbutton, SIGNAL(pressed()), this, SLOT(onSelectMedFileBackgroundbutton()) );
-    connect( timeStepGroup, SIGNAL( buttonClicked( int ) ),  this, SLOT( timeStepGroupChanged( int ) ) );
+    connect( meshInGroup,            SIGNAL( buttonClicked( int ) ),  this, SLOT( modeChanged( int ) ) );
+    connect( sizeMapDefGroup,        SIGNAL( buttonClicked( int ) ),  this, SLOT( sizeMapDefChanged( int ) ) );
+    connect( selectMedFilebutton,    SIGNAL( pressed(  ) ),           this, SLOT( onSelectMedFilebuttonClicked(  ) ) );
+    connect( medFileCheckBox,        SIGNAL (stateChanged(int)),      this, SLOT(onMedFileCheckBox(int) ) );
+    connect( publishOut,             SIGNAL (stateChanged(int)),      this, SLOT(onPublishOut(int) ) );
+    connect( selectOutMedFilebutton, SIGNAL( pressed()),              this, SLOT(onSelectOutMedFilebutton()));
+    connect( selectMedFileBackgroundbutton, SIGNAL(pressed()),        this, SLOT(onSelectMedFileBackgroundbutton()) );
+    connect( timeStepGroup,          SIGNAL( buttonClicked( int ) ),  this, SLOT( timeStepGroupChanged( int ) ) );
     emit updateSelection();
 }
 
@@ -639,14 +633,14 @@ void SMESHGUI_MgAdaptArguments::onLastTimeStep(bool disableOther)
     timeStep->setValue(-1);
     noTimeStep->setDisabled(disableOther);
 }
-void SMESHGUI_MgAdaptArguments::onChosenTimeStep(bool disableOther, int max)
+void SMESHGUI_MgAdaptArguments::onChosenTimeStep(bool disableOther, int vmax)
 {
     chosenTimeStep->setChecked(true);
 
     visibleTimeStepRankLabel (true);
     rankSpinBox->setValue(0);
     timeStep->setValue(0);
-    if (max) timeStep->setMaximum(max);
+    if (vmax) timeStep->setMaximum(vmax);
 }
 
 void SMESHGUI_MgAdaptArguments::visibleTimeStepRankLabel(bool visible)
@@ -692,7 +686,7 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFileBackgroundbutton()
             {
                 fieldNameCmb->insertItem(0,QString(it->first));
                 int typeStepInField = it->second > 2 ?  2 : it->second ;
-                timeStepGroupChanged(typeStepInField, true);
+                timeStepGroupChanged(typeStepInField, false);
             }
 
         }
@@ -792,8 +786,10 @@ void SMESHGUI_MgAdaptArguments::onLocalSelected(QString filePath)
         for ( it = myFieldList.begin() ; it != myFieldList.end(); it++)
         {
             fieldNameCmb->insertItem(0,QString(it->first));
+            // Je ne comprends pas le rapport entre pas de temps et apparition d'un nouveau champ... GN
             int typeStepInField = it->second > 2 ?  2 : it->second ;
-            timeStepGroupChanged(typeStepInField, true);
+//             std::cout << "SMESHGUI_MgAdaptArguments::onLocalSelected typeStepInField : " << typeStepInField << std::endl;
+            timeStepGroupChanged(typeStepInField, false);
         }
 
     }
@@ -901,7 +897,7 @@ void SMESHGUI_MgAdaptArguments::sizeMapDefChanged( int  theSizeMap )
 
 
 }
-void SMESHGUI_MgAdaptArguments::timeStepGroupChanged(int timeStepType, bool disableOther, int max)
+void SMESHGUI_MgAdaptArguments::timeStepGroupChanged(int timeStepType, bool disableOther, int vmax)
 {
     switch (timeStepType)
     {
@@ -912,7 +908,7 @@ void SMESHGUI_MgAdaptArguments::timeStepGroupChanged(int timeStepType, bool disa
         onLastTimeStep(disableOther);
         break;
     case 2 :
-        onChosenTimeStep(disableOther, max);
+        onChosenTimeStep(disableOther, vmax);
     default:
         break;
     }

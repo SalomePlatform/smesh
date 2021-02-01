@@ -36,13 +36,6 @@ SET(SalomeIDLSMESH_IDLSOURCES
   SMESH_Pattern.idl
   SMESH_MeshEditor.idl
   SMESH_Measurements.idl
-  HOMARD_Boundary.idl
-  HOMARD_Cas.idl
-  ADAPT_Gen.idl
-  HOMARD_Hypothesis.idl
-  HOMARD_Iteration.idl
-  HOMARD_YACS.idl
-  HOMARD_Zone.idl
   MG_ADAPT.idl
 )
 

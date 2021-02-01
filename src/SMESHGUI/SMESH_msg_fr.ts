@@ -341,34 +341,6 @@
         <translation>Construire un groupe</translation>
     </message>
     <message>
-        <source>MEN_REF_ALL</source>
-        <translation>Raffinement uniforme</translation>
-    </message>
-    <message>
-        <source>MEN_REF_HOMARD</source>
-        <translation>Raffinement avec HOMARD</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_CREATE_CASE</source>
-        <translation>Création d'un cas d'adaptation</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_FOLLOW_ITERATION</source>
-        <translation>Poursuite d'une itération d'adaptation</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_NEW_ITERATION</source>
-        <translation>Création d'une itération d'adaptation</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_COMPUTE</source>
-        <translation>Calculer</translation>
-    </message>
-    <message>
-        <source>MEN_HOMARD_COMPUTE_PUBLISH</source>
-        <translation>Calculer et publier</translation>
-    </message>
-    <message>
         <source>MEN_MG_ADAPT</source>
         <translation>Remaillage avec MG_Adapt</translation>
     </message>
@@ -3052,38 +3024,6 @@ Référez-vous à la documentation sur l'algorithme et la géométrie supportée
         <translation>Sans</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_HOMARD_PUBLICATION</source>
-        <translation>Publication des maillages avec HOMARD</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_IN</source>
-        <translation>Le maillage d'entrée</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_PUBLICATION_MAILLAGE_OUT</source>
-        <translation>Le maillage de sortie</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS</source>
-        <translation>Schéma YACS avec HOMARD</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS_MAX_ITER</source>
-        <translation>Nombre maximal d'itérations</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS_MAX_NODE</source>
-        <translation>Nombre maximal de noeuds</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS_MAX_ELEM</source>
-        <translation>Nombre maximal d'éléments</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_HOMARD_YACS_TYPE_CONVERGENCE</source>
-        <translation>Type de test pour la convergence</translation>
-    </message>
-    <message>
         <source>ADAPT_PREF_MG_ADAPT</source>
         <translation>Adaptation avec MG-Adapt</translation>
     </message>
@@ -3366,38 +3306,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_CONSTRUCT_GROUP</source>
         <translation>Construire un groupe</translation>
-    </message>
-    <message>
-        <source>STB_REF_ALL</source>
-        <translation>Raffinement uniforme</translation>
-    </message>
-    <message>
-        <source>STB_REF_HOMARD</source>
-        <translation>Adaptation avec HOMARD</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_CREATE_CASE</source>
-        <translation>Création d'un nouveau cas d'adaptation avec HOMARD</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_FOLLOW_ITERATION</source>
-        <translation>Création d'un nouveau cas : poursuite d'une itération stockée</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_NEW_ITERATION</source>
-        <translation>Création d'une nouvelle itération</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_COMPUTE</source>
-        <translation>Calcule le raffinement</translation>
-    </message>
-    <message>
-        <source>STB_HOMARD_COMPUTE_PUBLISH</source>
-        <translation>Calcule le raffinement et publie le maillage résultat</translation>
-    </message>
-    <message>
-        <source>STB_EDIT</source>
-        <translation>Edit</translation>
     </message>
     <message>
         <source>STB_MG_ADAPT</source>
@@ -4106,30 +4014,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
         <translation>Construire un groupe</translation>
-    </message>
-    <message>
-        <source>TOP_REF_ALL</source>
-        <translation>Raffinement uniforme</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_CREATE_CASE</source>
-        <translation>Création d'un cas d'adaptation avec HOMARD</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_FOLLOW_ITERATION</source>
-        <translation>Poursuite d'une itération d'adaptation avec HOMARD</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_NEW_ITERATION</source>
-        <translation>Création d'une itération</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_COMPUTE</source>
-        <translation>Calculer</translation>
-    </message>
-    <message>
-        <source>TOP_HOMARD_COMPUTE_PUBLISH</source>
-        <translation>Calculer et publier</translation>
     </message>
     <message>
         <source>TOP_MG_ADAPT</source>

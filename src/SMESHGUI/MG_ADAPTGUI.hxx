@@ -227,7 +227,7 @@ protected slots:
 private slots:
     void modeChanged( int);
     void sizeMapDefChanged(int);
-    void timeStepGroupChanged(int timeStepType, bool disableOther = false, int max = 0);
+    void timeStepGroupChanged(int timeStepType, bool disableOther = false, int vmax = 0);
     void onSelectMedFilebuttonClicked();
     void clear();
     void onMedFileCheckBox(int);
@@ -237,7 +237,7 @@ private slots:
     void onLocalSelected(QString);
     void onNoTimeStep(bool disableOther = false);
     void onLastTimeStep(bool disableOther = false);
-    void onChosenTimeStep(bool disableOther = false, int max = 0);
+    void onChosenTimeStep(bool disableOther = false, int vmax = 0);
     void visibleTimeStepRankLabel(bool visible);
 
 private:
