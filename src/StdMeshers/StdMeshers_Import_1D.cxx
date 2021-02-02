@@ -253,6 +253,7 @@ namespace // INTERNAL STUFF
     _chord2  = Max( _line.     SquareDistance( curve->Value( uf + 0.25 * ( ul - uf ))),
                     Max( _line.SquareDistance( curve->Value( uf + 0.5  * ( ul - uf ))),
                          _line.SquareDistance( curve->Value( uf + 0.75 * ( ul - uf )))));
+    _chord2 *= ( 1.05 * 1.05 ); // +5%
     _chord2  = Max( tol, _chord2 );
     _chord   = Sqrt( _chord2 );
 
