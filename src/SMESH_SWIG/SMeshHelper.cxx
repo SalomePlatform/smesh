@@ -35,7 +35,7 @@ std::string BuildSMESHInstanceInternal()
     PortableServer::ObjectId_var conId;
     //
     {
-        char *argv[4] = {"Container","FactoryServer","toto",nullptr};
+        char *argv[4] = {"Container","FactoryServer","SMESH",nullptr};
         Engines_Container_i *cont = new Engines_Container_i(orb,poa,"FactoryServer",2,argv,false,false);
         conId = poa->activate_object(cont);
     }
