@@ -104,8 +104,8 @@
 
 #include <TCollection_AsciiString.hxx>
 
-const int SPACING = 6;            // layout spacing
-const int MARGIN  = 9;            // layout margin
+const int SPACING = 6; // layout spacing
+const int MARGIN  = 9; // layout margin
 
 SALOME_ListIO mySelected;
 
@@ -116,8 +116,8 @@ SALOME_ListIO mySelected;
 //================================================================
 Handle(SALOME_InteractiveObject) firstIObject()
 {
-    const SALOME_ListIO& aList = selectedIO();
-    return aList.Extent() > 0 ? aList.First() : Handle(SALOME_InteractiveObject)();
+  const SALOME_ListIO& aList = selectedIO();
+  return aList.Extent() > 0 ? aList.First() : Handle(SALOME_InteractiveObject)();
 }
 //================================================================
 // Function : selectedIO
@@ -125,15 +125,15 @@ Handle(SALOME_InteractiveObject) firstIObject()
 //================================================================
 const SALOME_ListIO& selectedIO()
 {
-    SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* > ( SUIT_Session::session()->activeApplication() );
-    LightApp_SelectionMgr* aSelectionMgr = app->selectionMgr();
-    if( aSelectionMgr )
-    {
-        aSelectionMgr->selectedObjects( mySelected );
-        for (SALOME_ListIteratorOfListIO it (mySelected); it.More(); it.Next())
-            SCRUTE(it.Value()->getEntry());
-    };
-    return mySelected;
+  SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* > ( SUIT_Session::session()->activeApplication() );
+  LightApp_SelectionMgr* aSelectionMgr = app->selectionMgr();
+  if( aSelectionMgr )
+  {
+    aSelectionMgr->selectedObjects( mySelected );
+    for (SALOME_ListIteratorOfListIO it (mySelected); it.More(); it.Next())
+      SCRUTE(it.Value()->getEntry());
+  };
+  return mySelected;
 }
 //================================================================
 // Function : getStudy
@@ -141,76 +141,78 @@ const SALOME_ListIO& selectedIO()
 //================================================================
 _PTR(Study) getStudy()
 {
-    static _PTR(Study) _study;
-    if(!_study)
-        _study = SalomeApp_Application::getStudy();
-    return _study;
+  static _PTR(Study) _study;
+  if(!_study)
+      _study = SalomeApp_Application::getStudy();
+  return _study;
 }
 
 bool createAndPublishMed(QString fileName)
 {
 
-    SMESH::DriverMED_ReadStatus res;
-    SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
-    // SMESHGUI aGui;
+  SMESH::DriverMED_ReadStatus res;
+  SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
+  // SMESHGUI aGui;
 
-    aMeshes = SMESHGUI::GetSMESHGen()->CreateMeshesFromMED( fileName.toUtf8().constData(), res );
-    _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[0] );
-    _PTR(Study) aStudy = SMESH::getStudy();
-    QStringList anEntryList;
-    // bool isEmpty;
-    if ( aMeshSO ) {
-        _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
-        _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
-        aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
-        anEntryList.append( aMeshSO->GetID().c_str() );
-    }
-    else {
-        // isEmpty = true;
-        return false;
-    }
-    SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+  aMeshes = SMESHGUI::GetSMESHGen()->CreateMeshesFromMED( fileName.toUtf8().constData(), res );
+  _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[0] );
+  _PTR(Study) aStudy = SMESH::getStudy();
+  QStringList anEntryList;
+  // bool isEmpty;
+  if ( aMeshSO )
+  {
+    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+    _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
+    aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
+    anEntryList.append( aMeshSO->GetID().c_str() );
+  }
+  else
+  {
+      // isEmpty = true;
+      return false;
+  }
+  SMESHGUI::GetSMESHGUI()->updateObjBrowser();
 
-    // browse to the published meshes
-    if( LightApp_Application* anApp =
-                dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
-        anApp->browseObjects( anEntryList );
-    return true;
+  // browse to the published meshes
+  if( LightApp_Application* anApp =
+              dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList );
+  return true;
 }
 bool createMgAdaptObject(MgAdapt *myMgAdapt )
 {
-    // SMESH::SMESH_Mesh_var newMesh = SMESHGUI::GetSMESHGen()->CreateEmptyMesh();
+  // SMESH::SMESH_Mesh_var newMesh = SMESHGUI::GetSMESHGen()->CreateEmptyMesh();
 
-    // _PTR(SObject) aHypothesis;
-    _PTR(Study) aStudy = SMESH::getStudy();
-    QStringList anEntryList;
-    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
-    _PTR(SComponent) mgadapt = aStudy->FindComponent("MG-ADAPT");
-    _PTR(GenericAttribute) ga;
-    if (!aBuilder->FindAttribute(mgadapt, ga, "AttributeName") )
-    {
-        mgadapt = aBuilder->NewComponent("MG-ADAPT");
-        _PTR(AttributeName) Name = aBuilder->FindOrCreateAttribute(mgadapt, "AttributeName");
-        Name->SetValue("MG-ADAPT");
-        _PTR(AttributePixMap) myPixmap = aBuilder->FindOrCreateAttribute( mgadapt, "AttributePixMap" );
-        myPixmap->SetPixMap( "ICON_MG_ADAPT" );
-        anEntryList.append( mgadapt->GetID().c_str() );
-    }
+  // _PTR(SObject) aHypothesis;
+  _PTR(Study) aStudy = SMESH::getStudy();
+  QStringList anEntryList;
+  _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+  _PTR(SComponent) mgadapt = aStudy->FindComponent("MG-ADAPT");
+  _PTR(GenericAttribute) ga;
+  if (!aBuilder->FindAttribute(mgadapt, ga, "AttributeName") )
+  {
+    mgadapt = aBuilder->NewComponent("MG-ADAPT");
+    _PTR(AttributeName) Name = aBuilder->FindOrCreateAttribute(mgadapt, "AttributeName");
+    Name->SetValue("MG-ADAPT");
+    _PTR(AttributePixMap) myPixmap = aBuilder->FindOrCreateAttribute( mgadapt, "AttributePixMap" );
+    myPixmap->SetPixMap( "ICON_MG_ADAPT" );
+    anEntryList.append( mgadapt->GetID().c_str() );
+  }
 
-    _PTR(SObject) obj =  aBuilder->NewObject(mgadapt);
-    _PTR(AttributeName) myName = aBuilder->FindOrCreateAttribute(obj, "AttributeName");
-    myName->SetValue("hypo");
-    _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( obj, "AttributePixMap" );
-    aPixmap->SetPixMap( "ICON_SMESH_TREE_HYPO" );
-    anEntryList.append( obj->GetID().c_str() );
+  _PTR(SObject) obj = aBuilder->NewObject(mgadapt);
+  _PTR(AttributeName) myName = aBuilder->FindOrCreateAttribute(obj, "AttributeName");
+  myName->SetValue("hypo");
+  _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( obj, "AttributePixMap" );
+  aPixmap->SetPixMap( "ICON_SMESH_TREE_HYPO" );
+  anEntryList.append( obj->GetID().c_str() );
 
-    SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+  SMESHGUI::GetSMESHGUI()->updateObjBrowser();
 
-    // // browse to the published meshes
-    if( LightApp_Application* anApp =
-                dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
-        anApp->browseObjects( anEntryList );
-    return true;
+  // // browse to the published meshes
+  if( LightApp_Application* anApp =
+              dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList );
+  return true;
 }
 
 
@@ -221,122 +223,121 @@ bool createMgAdaptObject(MgAdapt *myMgAdapt )
 //================================================================
 int IObjectCount()
 {
-    SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
-    LightApp_SelectionMgr* aSelectionMgr = app->selectionMgr();
-    if( aSelectionMgr )
-    {
-        aSelectionMgr->selectedObjects( mySelected );
-        SCRUTE(mySelected.Extent());
-        return mySelected.Extent();
-    }
-    return 0;
+  SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
+  LightApp_SelectionMgr* aSelectionMgr = app->selectionMgr();
+  if( aSelectionMgr )
+  {
+      aSelectionMgr->selectedObjects( mySelected );
+      SCRUTE(mySelected.Extent());
+      return mySelected.Extent();
+  }
+  return 0;
 }
 
 
 
 SMESHGUI_MG_ADAPTDRIVER::SMESHGUI_MG_ADAPTDRIVER( SMESHGUI* theModule, SMESH::MG_ADAPT_ptr myModel, bool isCreation )
-    : mySMESHGUI( theModule ),
-      myFilterDlg(0),
-      myIsApplyAndClose( false ),
-      SMESHGUI_MgAdaptDlg((SalomeApp_Module*)theModule, myModel, SMESHGUI::desktop(), isCreation)
+  : mySMESHGUI( theModule ),
+    myFilterDlg(0),
+    myIsApplyAndClose( false ),
+    SMESHGUI_MgAdaptDlg((SalomeApp_Module*)theModule, myModel, SMESHGUI::desktop(), isCreation)
 {
 
-    resMgr = resourceMgr();
+  resMgr = resourceMgr();
 
-    selMgr = selectionMgr();
+  selMgr = selectionMgr();
 
-    // connections
-    connect(myArgs, SIGNAL(updateSelection()), this, SLOT(updateSelection()));
-    connect(myArgs, SIGNAL(toExportMED(const char*)), this, SLOT(exportMED(const char*)));
+  // connections
+  connect(myArgs, SIGNAL(updateSelection()), this, SLOT(updateSelection()));
+  connect(myArgs, SIGNAL(toExportMED(const char*)), this, SLOT(exportMED(const char*)));
 }
 
 SUIT_ResourceMgr* SMESHGUI_MG_ADAPTDRIVER::resourceMgr()
 {
-    return dynamic_cast<SUIT_ResourceMgr*>( SUIT_Session::session()->resourceMgr() );
+  return dynamic_cast<SUIT_ResourceMgr*>( SUIT_Session::session()->resourceMgr() );
 }
 
 LightApp_SelectionMgr* SMESHGUI_MG_ADAPTDRIVER::selectionMgr()
 {
-    SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
-    if( anApp )
-        return dynamic_cast<LightApp_SelectionMgr*>( anApp->selectionMgr() );
-    else
-        return 0;
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+  if( anApp )
+    return dynamic_cast<LightApp_SelectionMgr*>( anApp->selectionMgr() );
+  else
+    return 0;
 }
 
 void SMESHGUI_MG_ADAPTDRIVER::updateSelection()
 {
-    disconnect( selMgr, 0, this, 0 );
-    selMgr->clearFilters();
+  disconnect( selMgr, 0, this, 0 );
+  selMgr->clearFilters();
 
-    SMESH::SetPointRepresentation( true );
-    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
-        aViewWindow->SetSelectionMode( ActorSelection );
-    if (myArgs->aBrowser->isChecked())
-    {
-        connect( selMgr,  SIGNAL( currentSelectionChanged() ), this, SLOT( selectionChanged() ));
-        selectionChanged();
-    }
+  SMESH::SetPointRepresentation( true );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
+      aViewWindow->SetSelectionMode( ActorSelection );
+  if (myArgs->aBrowser->isChecked())
+  {
+    connect( selMgr, SIGNAL( currentSelectionChanged() ), this, SLOT( selectionChanged() ));
+    selectionChanged();
+  }
 
 }
 void SMESHGUI_MG_ADAPTDRIVER::selectionChanged()
 {
-    //~ get selected mesh
-    SALOME_ListIO aList;
-    selMgr->selectedObjects(aList);
-    QString aString = "";
-    int nbSel = aList.Extent();
-    if (nbSel != 1)
+  //~ get selected mesh
+  SALOME_ListIO aList;
+  selMgr->selectedObjects(aList);
+  QString aString = "";
+  int nbSel = aList.Extent();
+  if (nbSel != 1)
+    return;
+
+  Handle(SALOME_InteractiveObject) IO = aList.First();
+  SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(IO);
+  if ( !mesh->_is_nil() )
+  {
+    myMesh = mesh;
+
+    mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+    if ( mySelectedObject->_is_nil() )
         return;
+  }
+  else
+      return;
 
-    Handle(SALOME_InteractiveObject) IO = aList.First();
-    SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(IO);
-    if ( !mesh->_is_nil() )
-    {
-        myMesh  = mesh;
-
-        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
-        if ( mySelectedObject->_is_nil() )
-            return;
-
-    }
-    else
-        return;
-
-    SMESH::GetNameOfSelectedIObjects( selMgr, aString );
-    if ( aString.isEmpty() ) aString = " ";
-    else                     aString = aString.trimmed();
+  SMESH::GetNameOfSelectedIObjects( selMgr, aString );
+  if ( aString.isEmpty() ) aString = " ";
+  else                     aString = aString.trimmed();
 
 
-    bool ok = !aString.isEmpty();
-    if ( !mesh->_is_nil() )
-    {
-        myArgs->aBrowserObject->setText( aString );
-        myArgs->meshNameLineEdit->setText( aString );
-        myArgs->selectOutMedFileLineEdit->setText(aString+QString(".med"));
-        ADAPTATION_MODE aMode;
-        int nbVolumes = myMesh->NbVolumes();
-        int nbFaces = myMesh->NbFaces();
-        if(nbFaces > 0 && nbVolumes > 0) aMode = ADAPTATION_MODE::BOTH;
-        else if(nbFaces > 0) aMode = ADAPTATION_MODE::SURFACE;
-        else aMode = ADAPTATION_MODE::VOLUME;
-        emit myArgs->meshDimSignal(aMode);
-    }
+  bool ok = !aString.isEmpty();
+  if ( !mesh->_is_nil() )
+  {
+    myArgs->aBrowserObject->setText( aString );
+    myArgs->meshNameLineEdit->setText( aString );
+    myArgs->selectOutMedFileLineEdit->setText(aString+QString(".med"));
+    ADAPTATION_MODE aMode;
+    int nbVolumes = myMesh->NbVolumes();
+    int nbFaces = myMesh->NbFaces();
+    if(nbFaces > 0 && nbVolumes > 0) aMode = ADAPTATION_MODE::BOTH;
+    else if(nbFaces > 0) aMode = ADAPTATION_MODE::SURFACE;
+    else aMode = ADAPTATION_MODE::VOLUME;
+    emit myArgs->meshDimSignal(aMode);
+  }
 
 }
 void SMESHGUI_MG_ADAPTDRIVER::exportMED(const char* tmp_file)
 {
-    bool toOverwrite  = true;
-    bool toFindOutDim = true;
-    myMesh->ExportMED(tmp_file, false, -1, toOverwrite, toFindOutDim);
+  bool toOverwrite = true;
+  bool toFindOutDim = true;
+  myMesh->ExportMED(tmp_file, false, -1, toOverwrite, toFindOutDim);
 }
 void SMESHGUI_MG_ADAPTDRIVER::setMyMesh(SMESH::SMESH_Mesh_var mesh)
 {
-    myMesh = mesh;
+  myMesh = mesh;
 }
 SMESH::SMESH_Mesh_var SMESHGUI_MG_ADAPTDRIVER::getMyMesh()
 {
-    return myMesh;
+  return myMesh;
 }
 
 //=================================================================================
@@ -345,43 +346,42 @@ SMESH::SMESH_Mesh_var SMESHGUI_MG_ADAPTDRIVER::getMyMesh()
 //=================================================================================
 void SMESHGUI_MG_ADAPTDRIVER::clickOnOk()
 {
-    setIsApplyAndClose( true );
-    clickOnApply();
-    reject();
+  setIsApplyAndClose( true );
+  clickOnApply();
+  reject();
 }
 bool SMESHGUI_MG_ADAPTDRIVER::clickOnApply()
 {
 
-    if ( SMESHGUI::isStudyLocked() )
-        return false;
-    if( !isValid() )
-        return false;
+  if ( SMESHGUI::isStudyLocked() )
+    return false;
+  if( !isValid() )
+    return false;
 
-    SMESHGUI_MgAdaptDlg::clickOnApply();
+  SMESHGUI_MgAdaptDlg::clickOnApply();
 
-    bool ok = execute();
-    if (getModel()->getPublish()) this->createMeshInObjectBrowser();
+  bool ok = execute();
+  if (getModel()->getPublish()) this->createMeshInObjectBrowser();
 
-    return ok;
+  return ok;
 }
 
 bool SMESHGUI_MG_ADAPTDRIVER::execute()
 {
-
-    int err;
-    //~std::string errStr;
-    char* errStr;
-    try
-    {
-        err = getModel()->compute();
-        errStr = getModel()->getErrMsg();
-        std::string msg =  err == 0 ? " ok" : std::string("Not ok \n")+CORBA::string_dup(errStr) ;
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr<<e.what();
-    }
-    return err == 0? true: false;
+  int err;
+  //~std::string errStr;
+  char* errStr;
+  try
+  {
+    err = getModel()->compute();
+    errStr = getModel()->getErrMsg();
+    std::string msg = err == 0 ? " ok" : std::string("Not ok \n")+CORBA::string_dup(errStr) ;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr<<e.what();
+  }
+  return err == 0? true: false;
 }
 
 //=================================================================================
@@ -390,23 +390,23 @@ bool SMESHGUI_MG_ADAPTDRIVER::execute()
 //=================================================================================
 void SMESHGUI_MG_ADAPTDRIVER::Init (bool ResetControls)
 {
-    myBusy = false;
+  myBusy = false;
 
-    if ( ResetControls )
-    {
-        myLineEditElements->clear();
-        myNbOkElements = 0;
+  if ( ResetControls )
+  {
+    myLineEditElements->clear();
+    myNbOkElements = 0;
 
-        buttonOk->setEnabled(false);
-        buttonApply->setEnabled(false);
+    buttonOk->setEnabled(false);
+    buttonApply->setEnabled(false);
 
-        //~myActor = 0;
-        myMesh = SMESH::SMESH_Mesh::_nil();
+    //~myActor = 0;
+    myMesh = SMESH::SMESH_Mesh::_nil();
 
-        myIdSourceCheck->setChecked(true);
+    myIdSourceCheck->setChecked(true);
 
-        onConstructor( 0 );
-    }
+    onConstructor( 0 );
+  }
 
 }
 
@@ -418,22 +418,20 @@ void SMESHGUI_MG_ADAPTDRIVER::Init (bool ResetControls)
 void SMESHGUI_MG_ADAPTDRIVER::onConstructor( int withGeom )
 {
 
-    myGeomLabel        ->setVisible( withGeom );
-    myGeomNameEdit     ->setVisible( withGeom );
-    myReuseHypCheck    ->setVisible( withGeom );
-    myCopyElementsCheck->setVisible( withGeom );
-    myFilterBtn        ->setVisible( !withGeom );
-    myIdSourceCheck    ->setVisible( !withGeom );
+  myGeomLabel        ->setVisible( withGeom );
+  myGeomNameEdit     ->setVisible( withGeom );
+  myReuseHypCheck    ->setVisible( withGeom );
+  myCopyElementsCheck->setVisible( withGeom );
+  myFilterBtn        ->setVisible( !withGeom );
+  myIdSourceCheck    ->setVisible( !withGeom );
 
-    if ( !withGeom )
-        myMeshNameEdit->setText( SMESH::UniqueMeshName("Mesh"));
+  if ( !withGeom )
+      myMeshNameEdit->setText( SMESH::UniqueMeshName("Mesh"));
 
 }
 
-
 //~void SMESHGUI_MG_ADAPTDRIVER::onSelectIdSource( bool )
 //~{}
-
 
 //=================================================================================
 // function : enterEvent()
@@ -442,13 +440,13 @@ void SMESHGUI_MG_ADAPTDRIVER::onConstructor( int withGeom )
 void SMESHGUI_MG_ADAPTDRIVER::enterEvent (QEvent*)
 {
 
-    // if ( !ConstructorsBox->isEnabled() ) {
-    //   SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
-    //   if ( aViewWindow && !mySelector ) {
-    //     mySelector = aViewWindow->GetSelector();
-    //   }
-    //   activateThisDialog();
-    // }
+  // if ( !ConstructorsBox->isEnabled() ) {
+  //   SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+  //   if ( aViewWindow && !mySelector ) {
+  //     mySelector = aViewWindow->GetSelector();
+  //   }
+  //   activateThisDialog();
+  // }
 
 }
 
@@ -459,14 +457,15 @@ void SMESHGUI_MG_ADAPTDRIVER::enterEvent (QEvent*)
 void SMESHGUI_MG_ADAPTDRIVER::keyPressEvent( QKeyEvent* e )
 {
 
-    QDialog::keyPressEvent( e );
-    if ( e->isAccepted() )
-        return;
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+      return;
 
-    if ( e->key() == Qt::Key_F1 ) {
-        e->accept();
-        clickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 )
+  {
+    e->accept();
+    clickOnHelp();
+  }
 
 }
 
@@ -477,22 +476,21 @@ void SMESHGUI_MG_ADAPTDRIVER::keyPressEvent( QKeyEvent* e )
 void SMESHGUI_MG_ADAPTDRIVER::clickOnHelp()
 {
 
-    LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-    if (app)
-        app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
-    else {
-        QString platform;
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app)
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    QString platform;
 #ifdef WIN32
-        platform = "winapplication";
+    platform = "winapplication";
 #else
-        platform = "application";
+    platform = "application";
 #endif
-        SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-                                 tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                                 arg(app->resourceMgr()->stringValue("ExternalBrowser",
-                                         platform)).
-                                 arg(myHelpFileName));
-    }
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                              arg(app->resourceMgr()->stringValue("ExternalBrowser",platform)).
+                              arg(myHelpFileName));
+  }
 
 }
 
@@ -502,74 +500,74 @@ void SMESHGUI_MG_ADAPTDRIVER::clickOnHelp()
 //=======================================================================
 
 QString SMESHGUI_MG_ADAPTDRIVER::getErrorMsg( SMESH::string_array_var theInvalidEntries,
-        QStringList &           theEntriesToBrowse )
+        QStringList & theEntriesToBrowse )
 {
 
-    if ( theInvalidEntries->length() == 0 )
-        return tr("OPERATION_FAILED");
+  if ( theInvalidEntries->length() == 0 )
+      return tr("OPERATION_FAILED");
 
-    // theInvalidEntries - SObject's that hold geometry objects whose
-    // counterparts are not found in the newGeometry, followed by SObject's
-    // holding mesh sub-objects that are invalid because they depend on a not found
-    // preceding sub-shape
+  // theInvalidEntries - SObject's that hold geometry objects whose
+  // counterparts are not found in the newGeometry, followed by SObject's
+  // holding mesh sub-objects that are invalid because they depend on a not found
+  // preceding sub-shape
 
-    QString msg = tr("SUBSHAPES_NOT_FOUND_MSG") + "\n";
+  QString msg = tr("SUBSHAPES_NOT_FOUND_MSG") + "\n";
 
-    QString objString;
-    for ( CORBA::ULong i = 0; i < theInvalidEntries->length(); ++i )
+  QString objString;
+  for ( CORBA::ULong i = 0; i < theInvalidEntries->length(); ++i )
+  {
+    _PTR(SObject) so = SMESH::getStudy()->FindObjectID( theInvalidEntries[i].in() );
+
+    int objType = SMESHGUI_Selection::type( theInvalidEntries[i].in() );
+    if ( objType < 0 ) // geom object
     {
-        _PTR(SObject) so = SMESH::getStudy()->FindObjectID( theInvalidEntries[i].in() );
-
-        int objType = SMESHGUI_Selection::type( theInvalidEntries[i].in() );
-        if ( objType < 0 ) // geom object
-        {
-            objString += "\n";
-            if ( so )
-                objString += so->GetName().c_str();
-            else
-                objString += theInvalidEntries[i].in(); // it's something like "FACE #2"
-        }
-        else // smesh object
-        {
-            theEntriesToBrowse.push_back( theInvalidEntries[i].in() );
-
-            objString += "\n   ";
-            switch ( objType ) {
-            case SMESH::MESH:
-                objString += tr("SMESH_MESH");
-                break;
-            case SMESH::HYPOTHESIS:
-                objString += tr("SMESH_HYPOTHESIS");
-                break;
-            case SMESH::ALGORITHM:
-                objString += tr("SMESH_ALGORITHM");
-                break;
-            case SMESH::SUBMESH_VERTEX:
-            case SMESH::SUBMESH_EDGE:
-            case SMESH::SUBMESH_FACE:
-            case SMESH::SUBMESH_SOLID:
-            case SMESH::SUBMESH_COMPOUND:
-            case SMESH::SUBMESH:
-                objString += tr("SMESH_SUBMESH");
-                break;
-            case SMESH::GROUP:
-                objString += tr("SMESH_GROUP");
-                break;
-            default:
-                ;
-            }
-            objString += " \"";
-            if ( so )
-                objString += so->GetName().c_str();
-            objString += "\" (";
-            objString += theInvalidEntries[i].in();
-            objString += ")";
-        }
+      objString += "\n";
+      if ( so )
+          objString += so->GetName().c_str();
+      else
+          objString += theInvalidEntries[i].in(); // it's something like "FACE #2"
     }
-    if ( !objString.isEmpty() )
-        msg += objString;
+    else // smesh object
+    {
+      theEntriesToBrowse.push_back( theInvalidEntries[i].in() );
 
-    return msg;
+      objString += "\n ";
+      switch ( objType ) {
+      case SMESH::MESH:
+          objString += tr("SMESH_MESH");
+          break;
+      case SMESH::HYPOTHESIS:
+          objString += tr("SMESH_HYPOTHESIS");
+          break;
+      case SMESH::ALGORITHM:
+          objString += tr("SMESH_ALGORITHM");
+          break;
+      case SMESH::SUBMESH_VERTEX:
+      case SMESH::SUBMESH_EDGE:
+      case SMESH::SUBMESH_FACE:
+      case SMESH::SUBMESH_SOLID:
+      case SMESH::SUBMESH_COMPOUND:
+      case SMESH::SUBMESH:
+          objString += tr("SMESH_SUBMESH");
+          break;
+      case SMESH::GROUP:
+          objString += tr("SMESH_GROUP");
+          break;
+      default:
+          ;
+      }
+      objString += " \"";
+      if ( so )
+          objString += so->GetName().c_str();
+      objString += "\" (";
+      objString += theInvalidEntries[i].in();
+      objString += ")";
+    }
+  }
+  if ( !objString.isEmpty() )
+      msg += objString;
+
+  return msg;
 }
 
 //=================================================================================
@@ -579,64 +577,66 @@ QString SMESHGUI_MG_ADAPTDRIVER::getErrorMsg( SMESH::string_array_var theInvalid
 
 bool SMESHGUI_MG_ADAPTDRIVER::isValid()
 {
-    bool ok = true;
-    return ok;
+  bool ok = true;
+  return ok;
 }
 
 bool SMESHGUI_MG_ADAPTDRIVER::createMeshInObjectBrowser()
 {
-    QString filename(getModel()->getMedFileOut());
-    QStringList errors;
-    QStringList anEntryList;
-    bool isEmpty = false;
-    bool ok = false;
-    SMESH::SMESH_Gen_var SMESH_Gen_ptr = SMESHGUI::GetSMESHGen();
-    if (!SMESH_Gen_ptr) {
-        std::cerr << "Could not retrieve SMESH_Gen_ptr" << std::endl;
-        throw SALOME_Exception(LOCALIZED("Could not retrieve SMESH::GetSMESHGen()"));
-    }
-    SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
-    aMeshes->length( 1 ); // one mesh only
-    SMESH::DriverMED_ReadStatus res;
-    aMeshes = SMESH_Gen_ptr->CreateMeshesFromMED( filename.toUtf8().constData(), res );
-    if ( res != SMESH::DRS_OK ) {
-        errors.append( QString( "%1 :\n\t%2" ).arg( filename ).arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
-    }
-    _PTR(Study) aStudy = SMESH::getStudy();
-    for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ )
+  QString filename(getModel()->getMedFileOut());
+  QStringList errors;
+  QStringList anEntryList;
+  bool isEmpty = false;
+  bool ok = false;
+  SMESH::SMESH_Gen_var SMESH_Gen_ptr = SMESHGUI::GetSMESHGen();
+  if (!SMESH_Gen_ptr) {
+    std::cerr << "Could not retrieve SMESH_Gen_ptr" << std::endl;
+    throw SALOME_Exception(LOCALIZED("Could not retrieve SMESH::GetSMESHGen()"));
+  }
+  SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
+  aMeshes->length( 1 ); // one mesh only
+  SMESH::DriverMED_ReadStatus res;
+  aMeshes = SMESH_Gen_ptr->CreateMeshesFromMED( filename.toUtf8().constData(), res );
+  if ( res != SMESH::DRS_OK ) {
+    errors.append( QString( "%1 :\n\t%2" ).arg( filename ).arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
+  }
+  _PTR(Study) aStudy = SMESH::getStudy();
+  for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ )
+  {
+    _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[i] );
+    if ( aMeshSO )
     {
-        _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[i] );
-        if ( aMeshSO ) {
-            _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
-            _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
-            aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" ); // put REFINED mesh ico
-            anEntryList.append( aMeshSO->GetID().c_str() );
-        }
-        else {
-            isEmpty = true;
-        }
+      _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+      _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
+      aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" ); // put REFINED mesh ico
+      anEntryList.append( aMeshSO->GetID().c_str() );
     }
-    // update Object browser
-    SMESHGUI::GetSMESHGUI()->updateObjBrowser();
-    // browse to the published meshes
-    if( LightApp_Application* anApp =
-                dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
-        anApp->browseObjects( anEntryList );
+    else
+    {
+      isEmpty = true;
+    }
+  }
+  // update Object browser
+  SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+  // browse to the published meshes
+  if( LightApp_Application* anApp =
+              dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList );
 
-    // show Error message box if there were errors
-    if ( errors.count() > 0 ) {
-        SUIT_MessageBox::critical( SMESHGUI::desktop(),
-                                   QObject::tr( "SMESH_ERROR" ),
-                                   QObject::tr( "SMESH_IMPORT_ERRORS" ) + "\n" + errors.join( "\n" ) );
-    }
+  // show Error message box if there were errors
+  if ( errors.count() > 0 ) {
+    SUIT_MessageBox::critical( SMESHGUI::desktop(),
+                                QObject::tr( "SMESH_ERROR" ),
+                                QObject::tr( "SMESH_IMPORT_ERRORS" ) + "\n" + errors.join( "\n" ) );
+  }
 
-    // show warning message box, if some imported mesh is empty
-    if ( isEmpty ) {
-        SUIT_MessageBox::warning( SMESHGUI::desktop(),
-                                  QObject::tr( "SMESH_WRN_WARNING" ),
-                                  QObject::tr( "SMESH_DRS_SOME_EMPTY" ) );
-    }
-    return true;
+  // show warning message box, if some imported mesh is empty
+  if ( isEmpty ) {
+    SUIT_MessageBox::warning( SMESHGUI::desktop(),
+                                QObject::tr( "SMESH_WRN_WARNING" ),
+                                QObject::tr( "SMESH_DRS_SOME_EMPTY" ) );
+  }
+  return true;
 }
 
 //================================================================
@@ -646,7 +646,7 @@ bool SMESHGUI_MG_ADAPTDRIVER::createMeshInObjectBrowser()
 //================================================================
 void SMESHGUI_MG_ADAPTDRIVER::setIsApplyAndClose( const bool theFlag )
 {
-    myIsApplyAndClose = theFlag;
+  myIsApplyAndClose = theFlag;
 }//================================================================
 // function : isApplyAndClose
 // Purpose  : Get value of the flag indicating that the dialog is
@@ -654,7 +654,7 @@ void SMESHGUI_MG_ADAPTDRIVER::setIsApplyAndClose( const bool theFlag )
 //================================================================
 bool SMESHGUI_MG_ADAPTDRIVER::isApplyAndClose() const
 {
-    return myIsApplyAndClose;
+  return myIsApplyAndClose;
 }
 
 //=================================================================================
@@ -663,16 +663,16 @@ bool SMESHGUI_MG_ADAPTDRIVER::isApplyAndClose() const
 //=================================================================================
 void SMESHGUI_MG_ADAPTDRIVER::deactivateActiveDialog()
 {
-
-    if (ConstructorsBox->isEnabled()) {
-        ConstructorsBox->setEnabled(false);
-        GroupArguments->setEnabled(false);
-        GroupButtons->setEnabled(false);
-        mySMESHGUI->ResetState();
-        mySMESHGUI->SetActiveDialogBox(0);
-        if ( selMgr )
-            selMgr->removeFilter( myIdSourceFilter );
-    }
+  if (ConstructorsBox->isEnabled())
+  {
+    ConstructorsBox->setEnabled(false);
+    GroupArguments->setEnabled(false);
+    GroupButtons->setEnabled(false);
+    mySMESHGUI->ResetState();
+    mySMESHGUI->SetActiveDialogBox(0);
+    if ( selMgr )
+        selMgr->removeFilter( myIdSourceFilter );
+  }
 }
 
 //=================================================================================
@@ -682,17 +682,17 @@ void SMESHGUI_MG_ADAPTDRIVER::deactivateActiveDialog()
 void SMESHGUI_MG_ADAPTDRIVER::activateThisDialog()
 {
 
-    /* Emit a signal to deactivate the active dialog */
-    // mySMESHGUI->EmitSignalDeactivateDialog();
-    // ConstructorsBox->setEnabled(true);
-    // GroupArguments->setEnabled(true);
-    // GroupButtons->setEnabled(true);
+  /* Emit a signal to deactivate the active dialog */
+  // mySMESHGUI->EmitSignalDeactivateDialog();
+  // ConstructorsBox->setEnabled(true);
+  // GroupArguments->setEnabled(true);
+  // GroupButtons->setEnabled(true);
 
-    // mySMESHGUI->SetActiveDialogBox((QDialog*)this);
+  // mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-    // onSelectIdSource( myIdSourceCheck->isChecked() );
+  // onSelectIdSource( myIdSourceCheck->isChecked() );
 
-    // SelectionIntoArgument();
+  // SelectionIntoArgument();
 }
 
 //=================================================================================
@@ -701,29 +701,30 @@ void SMESHGUI_MG_ADAPTDRIVER::activateThisDialog()
 //=================================================================================
 void SMESHGUI_MG_ADAPTDRIVER::setFilters()
 {
-    if(myMesh->_is_nil()) {
-        SUIT_MessageBox::critical(this,
-                                  tr("SMESH_ERROR"),
-                                  tr("NO_MESH_SELECTED"));
-        return;
-    }
-    if ( !myFilterDlg )
-        myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
+  if(myMesh->_is_nil())
+  {
+    SUIT_MessageBox::critical(this,
+                                tr("SMESH_ERROR"),
+                                tr("NO_MESH_SELECTED"));
+    return;
+  }
+  if ( !myFilterDlg )
+      myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
-    QList<int> types;
-    if ( myMesh->NbEdges()     ) types << SMESH::EDGE;
-    if ( myMesh->NbFaces()     ) types << SMESH::FACE;
-    if ( myMesh->NbVolumes()   ) types << SMESH::VOLUME;
-    if ( myMesh->NbBalls()     ) types << SMESH::BALL;
-    if ( myMesh->Nb0DElements()) types << SMESH::ELEM0D;
-    if ( types.count() > 1 )     types << SMESH::ALL;
+  QList<int> types;
+  if ( myMesh->NbEdges()     ) types << SMESH::EDGE;
+  if ( myMesh->NbFaces()     ) types << SMESH::FACE;
+  if ( myMesh->NbVolumes()   ) types << SMESH::VOLUME;
+  if ( myMesh->NbBalls()     ) types << SMESH::BALL;
+  if ( myMesh->Nb0DElements()) types << SMESH::ELEM0D;
+  if ( types.count() > 1 )     types << SMESH::ALL;
 
-    myFilterDlg->Init( types );
-    myFilterDlg->SetSelection();
-    myFilterDlg->SetMesh( myMesh );
-    myFilterDlg->SetSourceWg( myLineEditElements );
+  myFilterDlg->Init( types );
+  myFilterDlg->SetSelection();
+  myFilterDlg->SetMesh( myMesh );
+  myFilterDlg->SetSourceWg( myLineEditElements );
 
-    myFilterDlg->show();
+  myFilterDlg->show();
 }
 
 //=================================================================================
@@ -732,13 +733,13 @@ void SMESHGUI_MG_ADAPTDRIVER::setFilters()
 //=================================================================================
 void SMESHGUI_MG_ADAPTDRIVER::onOpenView()
 {
-    if ( mySelector ) {
-        SMESH::SetPointRepresentation(false);
-    }
-    else {
-        mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
-        activateThisDialog();
-    }
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    activateThisDialog();
+  }
 }
 
 //=================================================================================
@@ -747,6 +748,6 @@ void SMESHGUI_MG_ADAPTDRIVER::onOpenView()
 //=================================================================================
 void SMESHGUI_MG_ADAPTDRIVER::onCloseView()
 {
-    deactivateActiveDialog();
-    mySelector = 0;
+  deactivateActiveDialog();
+  mySelector = 0;
 }

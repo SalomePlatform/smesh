@@ -146,7 +146,7 @@ bool SMESHGUI_AdaptDlg::OnGUIEvent (int theCommandID)
 
       SMESH::MG_ADAPT_ptr model = SMESHGUI::GetSMESHGen()->CreateMG_ADAPT();
       bool isCreation = false;
-	  if (mySMESHGUI->isStudyLocked()) break;
+      if (mySMESHGUI->isStudyLocked()) break;
       mySMESHGUI->EmitSignalDeactivateDialog();
       SMESHGUI_MG_ADAPTDRIVER *mgAdapt = new SMESHGUI_MG_ADAPTDRIVER(mySMESHGUI, model, isCreation);
       mgAdapt->show();

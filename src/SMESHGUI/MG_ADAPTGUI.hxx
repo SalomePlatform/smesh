@@ -1,4 +1,7 @@
-// Copyright (C) 2011-2020  CEA/DEN, EDF R&D
+// Copyright (C) 2007-2020  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -16,9 +19,8 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 // SMESH SMESHGUI : GUI for the adaptation in the SMESH component
-// File   : MG_ADAPTGUI.hxx
+// File : MG_ADAPTGUI.hxx
 //
 #ifndef MG_ADAPTGUI_HXX
 #define MG_ADAPTGUI_HXX
@@ -103,9 +105,9 @@ std::string remove_extension(const std::string& filename);
 
 
 enum ADAPTATION_MODE{
-	SURFACE, // surface adaption when meshDim == 2
-	VOLUME, //
-	BOTH
+  SURFACE, // surface adaption when meshDim == 2
+  VOLUME, //
+  BOTH
 };
 //=================================================================================
 // class    : SMESHGUI_MgAdaptDlg
@@ -113,148 +115,146 @@ enum ADAPTATION_MODE{
 //=================================================================================
 class  SMESHGUI_MgAdaptDlg : public QDialog
 {
-    Q_OBJECT;
+  Q_OBJECT;
 public:
-    //! Property type
-    enum Mode { Arguments, AdvancedOptions};
-    SMESHGUI_MgAdaptDlg( SalomeApp_Module*, SMESH::MG_ADAPT_ptr, QWidget* parent= 0,bool isCreation = true );
-    ~SMESHGUI_MgAdaptDlg();
+  //! Property type
+  enum Mode { Arguments, AdvancedOptions};
+  SMESHGUI_MgAdaptDlg( SalomeApp_Module*, SMESH::MG_ADAPT_ptr, QWidget* parent= 0,bool isCreation = true );
+  ~SMESHGUI_MgAdaptDlg();
 
-    void  buildDlg();
-    void reject();
-    bool checkParams(QString& msg) ;
-    //~void setModel(MgAdapt*);
-    SMESH::MG_ADAPT_ptr getModel() const;
+  void buildDlg();
+  void reject();
+  bool checkParams(QString& msg) ;
+  //~void setModel(MgAdapt*);
+  SMESH::MG_ADAPT_ptr getModel() const;
 
 public slots:
 
 protected slots:
 
-    virtual bool clickOnApply();
+virtual bool clickOnApply();
 private slots:
-    virtual void clickOnHelp();
-    virtual void clickOnOk();
+virtual void clickOnHelp();
+virtual void clickOnOk();
 protected :
 
-    SMESHGUI_MgAdaptArguments* myArgs;
-    MgAdaptAdvWidget* myAdvOpt;
-    bool                readParamsFromHypo( ) const ;
-    bool                readParamsFromWidgets( ) ;
-    bool                storeParamsToHypo( const SMESH::MgAdaptHypothesisData & ) const;
+  SMESHGUI_MgAdaptArguments* myArgs;
+  MgAdaptAdvWidget* myAdvOpt;
+  bool readParamsFromHypo( ) const ;
+  bool readParamsFromWidgets( ) ;
+  bool storeParamsToHypo( const SMESH::MgAdaptHypothesisData & ) const;
 
 private:
 
+  SalomeApp_Module*              mySMESHGUI;              /* Current SMESHGUI object */
+  QTabWidget*           myTabWidget;
 
-    SalomeApp_Module*              mySMESHGUI;              /* Current SMESHGUI object */
-    QTabWidget*           myTabWidget;
 
-
-    SMESH::MgAdaptHypothesisData* myData;
-    SMESH::MG_ADAPT_ptr model;
+  SMESH::MgAdaptHypothesisData* myData;
+  SMESH::MG_ADAPT_ptr model;
 
 };
 
 class  SMESHGUI_MgAdaptArguments : public QWidget
 {
-    Q_OBJECT;
+  Q_OBJECT;
 public:
-    //! Property type
-    enum Mode { Mesh, Browser};
-    enum SIZEMAP { Local, Background, Constant};
-    SMESHGUI_MgAdaptArguments( QWidget* parent);
-    ~SMESHGUI_MgAdaptArguments();
-    void setMode( const Mode, const SIZEMAP );
-    med_int getMeshDim() const;
+  //! Property type
+  enum Mode { Mesh, Browser};
+  enum SIZEMAP { Local, Background, Constant};
+  SMESHGUI_MgAdaptArguments( QWidget* parent);
+  ~SMESHGUI_MgAdaptArguments();
+  void setMode( const Mode, const SIZEMAP );
+  med_int getMeshDim() const;
 
-    QString* myFileInDir;
-    QString* myFileOutDir;
-    QString* myFileSizeMapDir;
-    QGroupBox*    aMeshIn ;
-    QRadioButton* aMedfile;
-    QRadioButton* aBrowser ;
-    QLineEdit* aBrowserObject;
-    QPushButton* selectMedFilebutton ;
-    QSpacerItem* hspacer;
-    QLineEdit* selectMedFileLineEdit ;
-    QButtonGroup* meshInGroup ;
-    QGridLayout* meshIn ;
+  QString* myFileInDir;
+  QString* myFileOutDir;
+  QString* myFileSizeMapDir;
+  QGroupBox*    aMeshIn ;
+  QRadioButton* aMedfile;
+  QRadioButton* aBrowser ;
+  QLineEdit* aBrowserObject;
+  QPushButton* selectMedFilebutton ;
+  QSpacerItem* hspacer;
+  QLineEdit* selectMedFileLineEdit ;
+  QButtonGroup* meshInGroup ;
+  QGridLayout* meshIn ;
 
-    QGroupBox*    aMeshOut ;
-    QLabel* meshName;
-    QLineEdit* meshNameLineEdit;
-    QSpacerItem* secondHspacer;
-    QCheckBox* medFileCheckBox;
-    QPushButton* selectOutMedFilebutton;
-    QLineEdit* selectOutMedFileLineEdit;
-    QSpacerItem* thirdHspacer;
-    QCheckBox* publishOut;
-    QGridLayout* meshOut ;
+  QGroupBox*    aMeshOut ;
+  QLabel* meshName;
+  QLineEdit* meshNameLineEdit;
+  QSpacerItem* secondHspacer;
+  QCheckBox* medFileCheckBox;
+  QPushButton* selectOutMedFilebutton;
+  QLineEdit* selectOutMedFileLineEdit;
+  QSpacerItem* thirdHspacer;
+  QCheckBox* publishOut;
+  QGridLayout* meshOut ;
 
-    QGroupBox*    sizeMapDefinition ;
-    QRadioButton* localButton;
-    QRadioButton* backgroundButton ;
-    QRadioButton* constantButton ;
-    QLabel* medFileBackground;
-    QPushButton* selectMedFileBackgroundbutton;
-    QLineEdit* selectMedFileBackgroundLineEdit;
-    QLabel* valueLabel;
-    QDoubleSpinBox* dvalue;
-    QButtonGroup* sizeMapDefGroup ;
-    QGridLayout* sizeMapDefGroupLayout;
+  QGroupBox*    sizeMapDefinition ;
+  QRadioButton* localButton;
+  QRadioButton* backgroundButton ;
+  QRadioButton* constantButton ;
+  QLabel* medFileBackground;
+  QPushButton* selectMedFileBackgroundbutton;
+  QLineEdit* selectMedFileBackgroundLineEdit;
+  QLabel* valueLabel;
+  QDoubleSpinBox* dvalue;
+  QButtonGroup* sizeMapDefGroup ;
+  QGridLayout* sizeMapDefGroupLayout;
 
 
-    QGroupBox* sizeMapField;
-    QLabel* fieldName;
-    QComboBox* fieldNameCmb;
-    QRadioButton* noTimeStep;
-    QRadioButton* lastTimeStep ;
-    QRadioButton* chosenTimeStep;
-    QLabel* timeStepLabel;
-    QSpinBox* timeStep;
-    QLabel* rankLabel;
-    QSpinBox* rankSpinBox;
-    QButtonGroup* timeStepGroup;
-    QGridLayout* sizeMapFieldGroupLayout;
+  QGroupBox* sizeMapField;
+  QLabel* fieldName;
+  QComboBox* fieldNameCmb;
+  QRadioButton* noTimeStep;
+  QRadioButton* lastTimeStep ;
+  QRadioButton* chosenTimeStep;
+  QLabel* timeStepLabel;
+  QSpinBox* timeStep;
+  QLabel* rankLabel;
+  QSpinBox* rankSpinBox;
+  QButtonGroup* timeStepGroup;
+  QGridLayout* sizeMapFieldGroupLayout;
 
 signals:
-    void updateSelection();
-    void toExportMED(const char *);
-    void meshDimSignal(ADAPTATION_MODE aMode);
+  void updateSelection();
+  void toExportMED(const char *);
+  void meshDimSignal(ADAPTATION_MODE aMode);
 public slots:
 
 protected slots:
 
 private slots:
-    void modeChanged( int);
-    void sizeMapDefChanged(int);
-    void timeStepGroupChanged(int timeStepType, bool disableOther = false, int vmax = 0);
-    void onSelectMedFilebuttonClicked();
-    void clear();
-    void onMedFileCheckBox(int);
-    void onPublishOut(int);
-    void onSelectOutMedFilebutton();
-    void onSelectMedFileBackgroundbutton();
-    void onLocalSelected(QString);
-    void onNoTimeStep(bool disableOther = false);
-    void onLastTimeStep(bool disableOther = false);
-    void onChosenTimeStep(bool disableOther = false, int vmax = 0);
-    void visibleTimeStepRankLabel(bool visible);
+  void modeChanged( int);
+  void sizeMapDefChanged(int);
+  void timeStepGroupChanged(int timeStepType, bool disableOther = false, int vmax = 0);
+  void onSelectMedFilebuttonClicked();
+  void clear();
+  void onMedFileCheckBox(int);
+  void onPublishOut(int);
+  void onSelectOutMedFilebutton();
+  void onSelectMedFileBackgroundbutton();
+  void onLocalSelected(QString);
+  void onNoTimeStep(bool disableOther = false);
+  void onLastTimeStep(bool disableOther = false);
+  void onChosenTimeStep(bool disableOther = false, int vmax = 0);
+  void visibleTimeStepRankLabel(bool visible);
 
 private:
 
-    QString getMedFileName(bool avertir);
-    LightApp_SelectionMgr* selMgr ;
-	med_int meshDim;
-    std::map<QString, int> myFieldList;
-
+  QString getMedFileName(bool avertir);
+  LightApp_SelectionMgr* selMgr ;
+  med_int meshDim;
+  std::map<QString, int> myFieldList;
 
 };
 enum {
-    OPTION_ID_COLUMN = 0,
-    OPTION_TYPE_COLUMN,
-    OPTION_NAME_COLUMN = 0,
-    OPTION_VALUE_COLUMN,
-    NB_COLUMNS,
+  OPTION_ID_COLUMN = 0,
+  OPTION_TYPE_COLUMN,
+  OPTION_NAME_COLUMN = 0,
+  OPTION_VALUE_COLUMN,
+  NB_COLUMNS,
 };
 
 //////////////////////////////////////////
@@ -262,44 +262,44 @@ enum {
 //////////////////////////////////////////
 class  MgAdaptAdvWidget : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    MgAdaptAdvWidget( QWidget* = 0, std::vector <std::string> * = nullptr, Qt::WindowFlags = 0 );
-    ~MgAdaptAdvWidget();
-    std::vector < std::string > * myOptions;
-    QGridLayout *gridLayout_4;
-    MgAdaptAdvWidgetTreeWidget *myOptionTable;
-    QPushButton *addBtn;
-    QSpacerItem *horizontalSpacer;
-    QGroupBox *logGroupBox;
-    QGridLayout *gridLayout_2;
-    QGridLayout *gridLayout;
-    QLabel *workingDirectoryLabel;
-    QLineEdit *workingDirectoryLineEdit;
-    QPushButton *workingDirectoryPushButton;
-    QLabel *verboseLevelLabel;
-    QSpinBox *verboseLevelSpin;
-    QHBoxLayout *horizontalLayout;
-    QCheckBox *logInFileCheck;
-    QCheckBox *removeLogOnSuccessCheck;
-    QCheckBox *keepWorkingFilesCheck;
+  MgAdaptAdvWidget( QWidget* = 0, std::vector <std::string> * = nullptr, Qt::WindowFlags = 0 );
+  ~MgAdaptAdvWidget();
+  std::vector < std::string > * myOptions;
+  QGridLayout *gridLayout_4;
+  MgAdaptAdvWidgetTreeWidget *myOptionTable;
+  QPushButton *addBtn;
+  QSpacerItem *horizontalSpacer;
+  QGroupBox *logGroupBox;
+  QGridLayout *gridLayout_2;
+  QGridLayout *gridLayout;
+  QLabel *workingDirectoryLabel;
+  QLineEdit *workingDirectoryLineEdit;
+  QPushButton *workingDirectoryPushButton;
+  QLabel *verboseLevelLabel;
+  QSpinBox *verboseLevelSpin;
+  QHBoxLayout *horizontalLayout;
+  QCheckBox *logInFileCheck;
+  QCheckBox *removeLogOnSuccessCheck;
+  QCheckBox *keepWorkingFilesCheck;
 
-    void AddOption( const char* name_value_type, bool isCustom = false );
-    void GetOptionAndValue( QTreeWidgetItem * tblRow, QString& option, QString& value, bool& dflt );
-    void setupWidget();
+  void AddOption( const char* name_value_type, bool isCustom = false );
+  void GetOptionAndValue( QTreeWidgetItem * tblRow, QString& option, QString& value, bool& dflt );
+  void setupWidget();
+
 public slots:
-
-    void                onAddOption();
-    void itemChanged(QTreeWidgetItem * tblRow, int column);
-    void onMeshDimChanged(ADAPTATION_MODE aMode);
+  void                onAddOption();
+  void itemChanged(QTreeWidgetItem * tblRow, int column);
+  void onMeshDimChanged(ADAPTATION_MODE aMode);
 private slots:
-    void _onWorkingDirectoryPushButton();
+  void _onWorkingDirectoryPushButton();
 private:
-    void setOptionValue(QString& option, QString& value);
-    std::map<QString, QTreeWidgetItem *> optionTreeWidgetItem;
+  void setOptionValue(QString& option, QString& value);
+  std::map<QString, QTreeWidgetItem *> optionTreeWidgetItem;
 
-    QTreeWidgetItem* getNewQTreeWidgetItem(QTreeWidget* table, const char* option, QString& name, bool isCustom);
+  QTreeWidgetItem* getNewQTreeWidgetItem(QTreeWidget* table, const char* option, QString& name, bool isCustom);
 
 };
 
@@ -307,26 +307,23 @@ enum { EDITABLE_ROLE = Qt::UserRole + 1, PARAM_NAME,
        NAME_COL = 0, VALUE_COL
      };
 
-
-
 class  ItemDelegate: public QItemDelegate
 {
 public:
 
-    ItemDelegate(QObject* parent=0): QItemDelegate(parent) {}
-    QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &o, const QModelIndex &index) const;
+  ItemDelegate(QObject* parent=0): QItemDelegate(parent) {}
+  QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &o, const QModelIndex &index) const;
 };
 
 class  MgAdaptAdvWidgetTreeWidget : public QTreeWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    MgAdaptAdvWidgetTreeWidget( QWidget* );
+  MgAdaptAdvWidgetTreeWidget( QWidget* );
 
 protected:
-    QModelIndex moveCursor( CursorAction, Qt::KeyboardModifiers );
-    void keyPressEvent( QKeyEvent* );
+  QModelIndex moveCursor( CursorAction, Qt::KeyboardModifiers );
+  void keyPressEvent( QKeyEvent* );
 };
-
 
 #endif // MG_ADAPTGUI_HXX
