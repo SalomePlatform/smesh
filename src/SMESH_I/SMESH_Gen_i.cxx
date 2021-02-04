@@ -49,7 +49,6 @@
 #include <TopoDS_Wire.hxx>
 #include <gp_Pnt.hxx>
 
-
 #ifdef WIN32
  #include <windows.h>
  #include <process.h>
@@ -280,24 +279,6 @@ SALOME_LifeCycleCORBA*  SMESH_Gen_i::GetLCC()
  */
 //=============================================================================
 
-GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine( bool isShaper )
-{
-  Engines::EngineComponent_ptr temp =
-    GetLCC()->FindOrLoad_Component( isShaper ? "FactoryServer" : "FactoryServer",
-                                    isShaper ? "SHAPERSTUDY" : "GEOM" );
-  myGeomGen = GEOM::GEOM_Gen::_narrow( temp );
-
-  return myGeomGen;
-}
-
-//=============================================================================
-/*!
- *  GetGeomEngine [ static ]
- *
- *  Get GEOM::GEOM_Gen reference
- */
-//=============================================================================
-
 GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine( GEOM::GEOM_Object_ptr go )
 {
   GEOM::GEOM_Gen_ptr gen = GEOM::GEOM_Gen::_nil();
@@ -330,8 +311,9 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
                           PortableServer::POA_ptr   poa,
                           PortableServer::ObjectId* contId,
                           const char*               instanceName,
-                          const char*               interfaceName )
-  : Engines_Component_i( orb, poa, contId, instanceName, interfaceName )
+                          const char*               interfaceName,
+                          bool                      checkNS)
+  : Engines_Component_i( orb, poa, contId, instanceName, interfaceName, false, checkNS )
 {
 
   myOrb = CORBA::ORB::_duplicate(orb);
@@ -356,21 +338,24 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   // find out mode (embedded or standalone) here else
   // meshes created before calling SMESH_Client::GetSMESHGen(), which calls
   // SMESH_Gen_i::SetEmbeddedMode(), have wrong IsEmbeddedMode flag
-  if ( SALOME_NamingService* ns = GetNS() )
+  if(checkNS)
   {
-    CORBA::Object_var obj = ns->Resolve( "/Kernel/Session" );
-    SALOME::Session_var session = SALOME::Session::_narrow( obj ) ;
-    if ( !session->_is_nil() )
+    if ( SALOME_NamingService* ns = GetNS() )
     {
-      CORBA::String_var str_host = session->getHostname();
-      CORBA::Long        s_pid = session->getPID();
-      string my_host = Kernel_Utils::GetHostname();
+      CORBA::Object_var obj = ns->Resolve( "/Kernel/Session" );
+      SALOME::Session_var session = SALOME::Session::_narrow( obj ) ;
+      if ( !session->_is_nil() )
+      {
+        CORBA::String_var str_host = session->getHostname();
+        CORBA::Long        s_pid = session->getPID();
+        string my_host = Kernel_Utils::GetHostname();
 #ifdef WIN32
-      long    my_pid = (long)_getpid();
+        long    my_pid = (long)_getpid();
 #else
-      long    my_pid = (long) getpid();
+        long    my_pid = (long) getpid();
 #endif
-      SetEmbeddedMode( s_pid == my_pid && my_host == str_host.in() );
+        SetEmbeddedMode( s_pid == my_pid && my_host == str_host.in() );
+      }
     }
   }
 }
@@ -827,7 +812,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
     SALOMEDS::SObject_wrap aSO = PublishHypothesis( hyp );
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = " << this << ".CreateHypothesis('"
+      TPythonDump(this) << aSO << " = " << this << ".CreateHypothesis('"
                     << theHypName << "', '" << theLibName << "')";
     }
   }
@@ -862,7 +847,7 @@ SMESH_Gen_i::CreateHypothesisByAverageLength( const char*    theHypType,
                                   initParams );
   SALOMEDS::SObject_wrap so = PublishHypothesis( hyp );
 
-  TPythonDump() << hyp << " = " << this << ".CreateHypothesisByAverageLength( '"
+  TPythonDump(this) << hyp << " = " << this << ".CreateHypothesisByAverageLength( '"
                 << theHypType << "', '"
                 << theLibName << "', "
                 << theAverageLength << ", "
@@ -1217,7 +1202,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = " << this << ".CreateMesh(" << theShapeObject << ")";
+      TPythonDump(this) << aSO << " = " << this << ".CreateMesh(" << theShapeObject << ")";
     }
   }
 
@@ -1247,7 +1232,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateEmptyMesh()
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = " << this << ".CreateEmptyMesh()";
+      TPythonDump(this) << aSO << " = " << this << ".CreateEmptyMesh()";
     }
   }
 
@@ -1301,7 +1286,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromUNV(r'" << theFileName << "')";
+      TPythonDump(this) << aSO << " = " << this << ".CreateMeshesFromUNV(r'" << theFileName << "')";
     }
   }
 
@@ -1348,7 +1333,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
   { // open a new scope to make aPythonDump die before PythonDump in SMESH_Mesh::GetGroups()
 
   // Python Dump
-  TPythonDump aPythonDump;
+  TPythonDump aPythonDump(this);
   aPythonDump << "([";
 
   if (theStatus == SMESH::DRS_OK) {
@@ -1498,7 +1483,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromSTL(r'" << theFileName << "')";
+      TPythonDump(this) << aSO << " = " << this << ".CreateMeshesFromSTL(r'" << theFileName << "')";
     }
   }
 
@@ -1536,7 +1521,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char*               
   { // open a new scope to make aPythonDump die before PythonDump in SMESH_Mesh::GetGroups()
 
     // Python Dump
-    TPythonDump aPythonDump;
+    TPythonDump aPythonDump(this);
     aPythonDump << "([";
 
     if (theStatus == SMESH::DRS_OK)
@@ -1624,7 +1609,7 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << "("<< aSO << ", error) = " << this << ".CreateMeshesFromGMF(r'"
+      TPythonDump(this) << "("<< aSO << ", error) = " << this << ".CreateMeshesFromGMF(r'"
                     << theFileName << "', "
                     << theMakeRequiredGroups << " )";
     }
@@ -1894,7 +1879,7 @@ SMESH_Gen_i::MakeGroupsOfBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
     if ( SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh ))
     {
       groups = meshServant->MakeGroupsOfBadInputElements( theSubShapeID, theGroupName );
-      TPythonDump() << groups << " = " << this
+      TPythonDump(this) << groups << " = " << this
                     << ".MakeGroupsOfBadInputElements( "
                     << theMesh << ", " << theSubShapeID << ", '" << theGroupName << "' )";
     }
@@ -2064,7 +2049,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
                                   SALOME::BAD_PARAM );
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".Compute( "
+  TPythonDump(this) << "isDone = " << this << ".Compute( "
                 << theMesh << ", " << theShapeObject << ")";
 
   try {
@@ -2350,7 +2335,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
     nbels[i] = 0;
 
   // Update Python script
-  TPythonDump() << "theNbElems = " << this << ".Evaluate( "
+  TPythonDump(this) << "theNbElems = " << this << ".Evaluate( "
                 << theMesh << ", " << theShapeObject << ")";
 
   try {
@@ -2607,7 +2592,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
                                CORBA::Boolean                theCommonGroups,
                                SMESH::SMESH_Mesh_ptr         theMeshToAppendTo)
 {
-  std::unique_ptr< TPythonDump > pPythonDump( new TPythonDump );
+  std::unique_ptr< TPythonDump > pPythonDump( new TPythonDump(this) );
   TPythonDump& pythonDump = *pPythonDump; // prevent dump of called methods
 
   // create mesh if theMeshToAppendTo not provided
@@ -2888,7 +2873,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
 {
   Unexpect aCatch(SALOME_SalomeException);
 
-  TPythonDump* pyDump = new TPythonDump; // prevent dump from CreateMesh()
+  TPythonDump* pyDump = new TPythonDump(this); // prevent dump from CreateMesh()
   std::unique_ptr<TPythonDump> pyDumpDeleter( pyDump );
 
   // 1. Get source mesh
@@ -3670,7 +3655,7 @@ CORBA::Boolean SMESH_Gen_i::CopyMeshWithGeom( SMESH::SMESH_Mesh_ptr       theSou
   bool ok = true;
   SMESH_TRY;
 
-  TPythonDump pyDump; // prevent dump from CreateMesh()
+  TPythonDump pyDump(this); // prevent dump from CreateMesh()
 
   theNewMesh        = CreateMesh( theNewGeometry );
   theNewGroups      = new SMESH::ListOfGroups();
@@ -4230,7 +4215,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
           SMESH::SMESH_Mesh_var myMesh = SMESH::SMESH_Mesh::_narrow( anObject ) ;
           if ( !myMesh->_is_nil() ) {
             myMesh->Load(); // load from study file if not yet done
-            TPythonDump pd; // not to dump GetGroups()
+            TPythonDump pd(this); // not to dump GetGroups()
             SMESH::ListOfGroups_var groups = myMesh->GetGroups();
             for ( CORBA::ULong i = 0; i < groups->length(); ++i )
             {
@@ -5226,7 +5211,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
     return false;
   }
 
-  TPythonDump pd; // prevent dump during loading
+  TPythonDump pd(this); // prevent dump during loading
 
   // For PAL13473 ("Repetitive mesh") implementation.
   // New dependencies between SMESH objects are established:
@@ -6580,27 +6565,4 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
     }
   }
   return res;
-}
-
-//=============================================================================
-/*!
- *  SMESHEngine_factory
- *
- *  C factory, accessible with dlsym, after dlopen
- */
-//=============================================================================
-
-extern "C"
-{ SMESH_I_EXPORT
-  PortableServer::ObjectId* SMESHEngine_factory( CORBA::ORB_ptr            orb,
-                                                 PortableServer::POA_ptr   poa,
-                                                 PortableServer::ObjectId* contId,
-                                                 const char*               instanceName,
-                                                 const char*               interfaceName )
-  {
-    if(MYDEBUG) MESSAGE( "PortableServer::ObjectId* SMESHEngine_factory()" );
-    if(MYDEBUG) SCRUTE(interfaceName);
-    SMESH_Gen_i* aSMESHGen = new SMESH_Gen_i(orb, poa, contId, instanceName, interfaceName);
-    return aSMESHGen->getId() ;
-  }
 }

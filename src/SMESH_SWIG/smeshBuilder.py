@@ -1962,9 +1962,10 @@ class Mesh(metaclass = MeshMeta):
                 print(msg)
                 print(allReasons)
             pass
-        if salome.sg.hasDesktop():
-            if not isinstance( refresh, list): # not a call from subMesh.Compute()
-                if refresh: salome.sg.updateObjBrowser()
+        if salome.sg:
+            if salome.sg.hasDesktop():
+                if not isinstance( refresh, list): # not a call from subMesh.Compute()
+                    if refresh: salome.sg.updateObjBrowser()
 
         return ok
 

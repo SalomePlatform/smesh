@@ -68,9 +68,13 @@ namespace SMESH
     for ( size_t i = 0; i < value.length(); i++)
       myVals[i] = SMESH_Comment(value[i]);
   }
+  
+  TPythonDump::TPythonDump():myVarsCounter(0),mySmesh(SMESH_Gen_i::GetSMESHGen())
+  {
+    ++myCounter;
+  }
 
-  TPythonDump::
-  TPythonDump():myVarsCounter(0)
+  TPythonDump::TPythonDump(SMESH_Gen_i *smesh):myVarsCounter(0),mySmesh(smesh)
   {
     ++myCounter;
   }
@@ -304,7 +308,7 @@ namespace SMESH
   operator<<(CORBA::Object_ptr theArg)
   {
     SMESH_Gen_i*          aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(theArg);
+    SALOMEDS::SObject_wrap aSObject = mySmesh->ObjectToSObject(theArg);
     if(!aSObject->_is_nil()) {
       CORBA::String_var id = aSObject->GetID();
       myStream << id;
@@ -323,7 +327,7 @@ namespace SMESH
   TPythonDump::
   operator<<(SMESH::SMESH_Hypothesis_ptr theArg)
   {
-    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(theArg);
+    SALOMEDS::SObject_wrap aSObject = mySmesh->ObjectToSObject(theArg);
     if(aSObject->_is_nil() && !CORBA::is_nil(theArg))
       myStream << "hyp_" << theArg->GetId();
     else
@@ -337,7 +341,7 @@ namespace SMESH
   {
     if ( CORBA::is_nil( theArg ) )
       return *this << "None";
-    SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(theArg);
+    SALOMEDS::SObject_wrap aSObject = mySmesh->ObjectToSObject(theArg);
     if(!aSObject->_is_nil())
     {
       return *this << aSObject;
@@ -352,7 +356,7 @@ namespace SMESH
       SMESH::long_array_var    anElementsId = theArg->GetIDs();
       SMESH::array_of_ElementType_var types = theArg->GetTypes();
       SMESH::ElementType               type = types->length() ? types[0] : SMESH::ALL;
-      SALOMEDS::SObject_wrap         meshSO = SMESH_Gen_i::ObjectToSObject(mesh);
+      SALOMEDS::SObject_wrap         meshSO = mySmesh->ObjectToSObject(mesh);
       if ( meshSO->_is_nil() ) // don't waste memory for dumping not published objects
         return *this << mesh << ".GetIDSource([], " << type << ")";
       else

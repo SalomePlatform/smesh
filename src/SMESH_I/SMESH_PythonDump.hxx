@@ -121,7 +121,9 @@ namespace SMESH
     std::ostringstream myStream;
     static size_t      myCounter;
     int                myVarsCounter; // counts stored TVar's
+    SMESH_Gen_i       *mySmesh = nullptr;
   public:
+    TPythonDump(SMESH_Gen_i *smesh);
     TPythonDump();
     virtual ~TPythonDump();
 
