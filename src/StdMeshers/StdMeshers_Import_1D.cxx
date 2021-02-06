@@ -945,8 +945,8 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
   SMESHDS_Mesh* tgtMesh = theMesh.GetMeshDS();
 
   const TopoDS_Edge& geomEdge = TopoDS::Edge( theShape );
-  const double edgeTol = BRep_Tool::Tolerance( geomEdge );
-  const int shapeID = tgtMesh->ShapeToIndex( geomEdge );
+  const double        edgeTol = helper.MaxTolerance( geomEdge );
+  const int           shapeID = tgtMesh->ShapeToIndex( geomEdge );
 
 
   double geomTol = Precision::Confusion();
@@ -1084,7 +1084,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
   } // loop on groups
 
   if ( n2n->empty())
-    return error("Empty source groups");
+    return error("Source groups are empty or mismatching geometry");
 
   // check if the whole geom edge is covered by imported segments;
   // the check consist in passing by segments from one vetrex node to another
