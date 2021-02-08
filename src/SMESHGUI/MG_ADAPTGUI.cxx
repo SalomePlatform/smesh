@@ -84,7 +84,6 @@
 
 #include <TCollection_AsciiString.hxx>
 
-
 const int SPACING = 6;            // layout spacing
 const int MARGIN  = 9;            // layout margin
 
@@ -135,32 +134,25 @@ void SMESHGUI_MgAdaptDlg::buildDlg()
   myAdvOpt->logGroupBox                   ->setTitle(tr( "LOG_GROUP_TITLE" ));
 
   // buttons
-  QPushButton* okBtn = new QPushButton( tr( "SMESH_BUT_OK" ), this );
-  okBtn->setAutoDefault( true );
-  okBtn->setDefault( true );
-  okBtn->setFocus();
+  QPushButton* buttonOk = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), this);
+  buttonOk->setAutoDefault(false);
   QPushButton* buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), this);
-  buttonApply->setAutoDefault(true);
-  QPushButton* buttonApplyAndClose = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), this);
-  buttonApplyAndClose->setAutoDefault(true);
-  QPushButton* cancelBtn = new QPushButton( tr( "SMESH_BUT_CANCEL" ), this );
-  cancelBtn->setAutoDefault( true );
-  QPushButton* helpBtn = new QPushButton( tr( "SMESH_BUT_HELP" ), this );
-  helpBtn->setAutoDefault( true );
+  buttonApply->setAutoDefault(false);
+  QPushButton* buttonCancel = new QPushButton( tr( "SMESH_BUT_CANCEL" ), this );
+  buttonCancel->setAutoDefault( false );
+  QPushButton* buttonHelp = new QPushButton( tr( "SMESH_BUT_HELP" ), this );
+  buttonHelp->setAutoDefault( false );
 
   QHBoxLayout* btnLayout = new QHBoxLayout;
   btnLayout->setSpacing( SPACING );
   btnLayout->setMargin( 0 );
-  btnLayout->addWidget( buttonApplyAndClose );
+  btnLayout->addWidget( buttonOk );
   btnLayout->addStretch( 10 );
   btnLayout->addWidget( buttonApply );
   btnLayout->addStretch( 10 );
-  btnLayout->addWidget( okBtn );
+  btnLayout->addWidget( buttonCancel );
   btnLayout->addStretch( 10 );
-  btnLayout->addWidget( cancelBtn );
-  btnLayout->addStretch( 10 );
-  btnLayout->addWidget( helpBtn );
-  okBtn->hide(); // tab 1
+  btnLayout->addWidget( buttonHelp );
 
   QVBoxLayout* l = new QVBoxLayout ( this );
   l->setMargin( MARGIN );
@@ -169,13 +161,12 @@ void SMESHGUI_MgAdaptDlg::buildDlg()
   l->addStretch();
   l->addLayout( btnLayout );
 
+  connect( buttonOk,       SIGNAL(pressed()), this, SLOT(PushOnOK()));
+  connect( buttonApply,    SIGNAL(pressed()), this, SLOT(PushOnApply()));
+  connect( buttonCancel,   SIGNAL(pressed()), this, SLOT(close()));
+  connect( buttonHelp,     SIGNAL(pressed()), this, SLOT(PushOnHelp()));
 
-  connect( okBtn,       SIGNAL(clicked()),              this, SLOT( clickOnOk() ) );
-  connect( helpBtn,     SIGNAL(clicked()),              this, SLOT( clickOnHelp() ) );
-  connect(cancelBtn,    SIGNAL(clicked()),              this, SLOT(reject()));
-  connect(buttonApply,  SIGNAL(clicked()),              this,SLOT(clickOnApply()));
-  connect(buttonApplyAndClose,     SIGNAL(clicked()),   this,SLOT(clickOnOk()));
-  connect(myArgs, SIGNAL(meshDimSignal(ADAPTATION_MODE)), myAdvOpt, SLOT( onMeshDimChanged(ADAPTATION_MODE))  );
+  connect( myArgs, SIGNAL(meshDimSignal(ADAPTATION_MODE)), myAdvOpt, SLOT( onMeshDimChanged(ADAPTATION_MODE))  );
 }
 
 
@@ -199,15 +190,15 @@ SMESH::MG_ADAPT_ptr SMESHGUI_MgAdaptDlg::getModel() const
 /*!
 \brief Perform clean-up actions on the dialog box closing.
 */
-bool SMESHGUI_MgAdaptDlg::clickOnApply()
+bool SMESHGUI_MgAdaptDlg::PushOnApply()
 {
-  readParamsFromWidgets();
-  return true;
+  bool ret = readParamsFromWidgets();
+  return ret;
 }
-void SMESHGUI_MgAdaptDlg::clickOnOk()
+void SMESHGUI_MgAdaptDlg::PushOnOK()
 {
-  clickOnApply();
-  reject();
+  bool ret = PushOnApply();
+  if ( ret ) reject();
 }
 void SMESHGUI_MgAdaptDlg::reject()
 {
@@ -292,103 +283,127 @@ bool SMESHGUI_MgAdaptDlg::readParamsFromHypo( ) const
 
 }
 
-
 bool SMESHGUI_MgAdaptDlg::readParamsFromWidgets()
 {
-  bool ret = true;
+  MESSAGE ("readParamsFromWidgets") ;
+  bool ret = true ;
   SMESH::MgAdaptHypothesisData* aData = new SMESH::MgAdaptHypothesisData();
-  aData->fromMedFile = myArgs->aMedfile->isChecked();
-  if (aData->fromMedFile)
+  while ( ret )
   {
+    // 1. Fichier du maillage de départ
+    aData->fromMedFile = myArgs->aMedfile->isChecked();
+    if (aData->fromMedFile)
+    {
+      aData->myFileInDir = CORBA::string_dup(myArgs->myFileInDir->toStdString().c_str());
+      aData->myMeshFileIn = CORBA::string_dup(myArgs->selectMedFileLineEdit->text().toStdString().c_str());
+        // aData->myInMeshName = // TODO
+    }
+    else // TODO browser
+    {
+      QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
+                                QObject::tr("MG_ADAPT_MED_FILE_4") );
+      ret = false ;
+      break ;
+  //     aData->myInMeshName = CORBA::string_dup(myArgs->aBrowserObject->text().toStdString().c_str());
+  //     aData->myFileInDir = CORBA::string_dup(myAdvOpt->workingDirectoryLineEdit->text().toStdString().c_str());
+  //
+  //     TCollection_AsciiString aGenericName = (char*)aData->myFileInDir;
+  //     TCollection_AsciiString aGenericName2 = "MgAdapt_";
+  //     aGenericName2 += getpid();
+  //     aGenericName2 += "_";
+  //     aGenericName2 += Abs((Standard_Integer)(long) aGenericName.ToCString());
+  //     aGenericName2 += ".med";
+  //     aGenericName+=aGenericName2;
+  //     emit myArgs->toExportMED(aGenericName.ToCString());
+  //     aData->myMeshFileIn = aGenericName2.ToCString();
+    }
+    // 2. Fichier du maillage de sortie
+    aData->myOutMeshName = CORBA::string_dup(myArgs->meshNameLineEdit->text().toStdString().c_str());
+    aData->myMeshOutMed = myArgs->medFileCheckBox->isChecked();
+    if(aData->myMeshOutMed)
+    {
+      aData->myFileOutDir = CORBA::string_dup(myArgs->myFileOutDir->toStdString().c_str());
+      aData->myMeshFileOut = CORBA::string_dup(myArgs->selectOutMedFileLineEdit->text().toStdString().c_str());
+    }
+    else
+    {
+      aData->myMeshFileOut = "";
+    }
+    aData->myPublish = myArgs->publishOut->isChecked();
 
-    aData->myFileInDir = CORBA::string_dup(myArgs->myFileInDir->toStdString().c_str());
-    aData->myMeshFileIn = CORBA::string_dup(myArgs->selectMedFileLineEdit->text().toStdString().c_str());
-      // aData->myInMeshName = // TODO
-  }
-  else // TODO browser
-  {
-    aData->myInMeshName = CORBA::string_dup(myArgs->aBrowserObject->text().toStdString().c_str());
-    aData->myFileInDir = CORBA::string_dup(myAdvOpt->workingDirectoryLineEdit->text().toStdString().c_str());
+    // 3. Type de carte de tailles
+    aData->myUseLocalMap = myArgs->localButton->isChecked();
+    aData->myUseBackgroundMap = myArgs->backgroundButton->isChecked();
+    aData->myUseConstantValue = myArgs->constantButton->isChecked();
+    // 3.1. Constante
+    if (aData->myUseConstantValue)
+    {
+      aData->myConstantValue = myArgs->dvalue->value();
+    }
+    else
+    {
+      aData->myConstantValue = 0.0;
+    }
+    // 3.2. Arrière-plan
+    if (aData->myUseBackgroundMap)
+    {
+      aData->myFileSizeMapDir = CORBA::string_dup(myArgs->myFileSizeMapDir->toStdString().c_str());
+      aData->myMeshFileBackground = CORBA::string_dup(myArgs->selectMedFileBackgroundLineEdit->text().toStdString().c_str());
+    }
+    else
+    {
+      aData->myMeshFileBackground = "";
+    }
 
-    TCollection_AsciiString aGenericName = (char*)aData->myFileInDir;
-    TCollection_AsciiString aGenericName2 = "MgAdapt_";
-    aGenericName2 += getpid();
-    aGenericName2 += "_";
-    aGenericName2 += Abs((Standard_Integer)(long) aGenericName.ToCString());
-    aGenericName2 += ".med";
-    aGenericName+=aGenericName2;
-    emit myArgs->toExportMED(aGenericName.ToCString());
-    aData->myMeshFileIn = aGenericName2.ToCString();
-  }
-  aData->myOutMeshName = CORBA::string_dup(myArgs->meshNameLineEdit->text().toStdString().c_str());
-  aData->myMeshOutMed = myArgs->medFileCheckBox->isChecked();
-  if(aData->myMeshOutMed)
-  {
-    aData->myFileOutDir = CORBA::string_dup(myArgs->myFileOutDir->toStdString().c_str());
-    aData->myMeshFileOut = CORBA::string_dup(myArgs->selectOutMedFileLineEdit->text().toStdString().c_str());
+  // 4. Le champ
+    if ( ! aData->myUseConstantValue )
+    {
+      if ( strlen(myArgs->fieldNameCmb->currentText().toStdString().c_str()) == 0 )
+      {
+        QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
+                                  QObject::tr("MG_ADAPT_MED_FILE_5") );
+        ret = false ;
+        break ;
+      }
+      {
+        aData->myFieldName = CORBA::string_dup(myArgs->fieldNameCmb->currentText().toStdString().c_str());
+        aData->myUseNoTimeStep = myArgs->noTimeStep->isChecked();
+        aData->myUseLastTimeStep = myArgs->lastTimeStep->isChecked();
+        aData->myUseChosenTimeStep = myArgs->chosenTimeStep->isChecked();
+        if (aData->myUseChosenTimeStep)
+        {
+          aData->myRank = myArgs->rankSpinBox->value();
+          aData->myTimeStep = myArgs->timeStep->value();
+        }
+      }
+    }
 
-  }
-  else
-  {
-    aData->myMeshFileOut = "";
-  }
+    // 5. Options avancées
+    aData->myWorkingDir = CORBA::string_dup(myAdvOpt->workingDirectoryLineEdit->text().toStdString().c_str());
+    aData->myPrintLogInFile = myAdvOpt->logInFileCheck->isChecked();
+    aData->myVerboseLevel = myAdvOpt->verboseLevelSpin->value();
+    aData->myRemoveLogOnSuccess = myAdvOpt->removeLogOnSuccessCheck->isChecked();
+    aData->myKeepFiles = myAdvOpt->keepWorkingFilesCheck->isChecked();
+    model->setData(*aData);
 
-  aData->myPublish = myArgs->publishOut->isChecked();
-
-
-  aData->myUseLocalMap = myArgs->localButton->isChecked();
-  aData->myUseBackgroundMap = myArgs->backgroundButton->isChecked();
-  aData->myUseConstantValue = myArgs->constantButton->isChecked();
-  if (aData->myUseConstantValue)
-  {
-    aData->myConstantValue = myArgs->dvalue->value();
-  }
-  else
-  {
-    aData->myConstantValue = 0.0;
-  }
-  if (aData->myUseBackgroundMap)
-  {
-    aData->myFileSizeMapDir = CORBA::string_dup(myArgs->myFileSizeMapDir->toStdString().c_str());
-    aData->myMeshFileBackground = CORBA::string_dup(myArgs->selectMedFileBackgroundLineEdit->text().toStdString().c_str());
-  }
-  else
-  {
-    aData->myMeshFileBackground = "";
-  }
-
-  aData->myFieldName = CORBA::string_dup(myArgs->fieldNameCmb->currentText().toStdString().c_str());
-  aData->myUseNoTimeStep = myArgs->noTimeStep->isChecked();
-  aData->myUseLastTimeStep = myArgs->lastTimeStep->isChecked();
-  aData->myUseChosenTimeStep = myArgs->chosenTimeStep->isChecked();
-  if (aData->myUseChosenTimeStep)
-  {
-    aData->myRank = myArgs->rankSpinBox->value();
-    aData->myTimeStep = myArgs->timeStep->value();
-
+    QString msg;
+    checkParams(msg);
+    break ;
   }
 
-  aData->myWorkingDir = CORBA::string_dup(myAdvOpt->workingDirectoryLineEdit->text().toStdString().c_str());
-  aData->myPrintLogInFile = myAdvOpt->logInFileCheck->isChecked();
-  aData->myVerboseLevel = myAdvOpt->verboseLevelSpin->value();
-  aData->myRemoveLogOnSuccess = myAdvOpt->removeLogOnSuccessCheck->isChecked();
-  aData->myKeepFiles = myAdvOpt->keepWorkingFilesCheck->isChecked();
-  model->setData(*aData);
-  QString msg;
-  checkParams(msg);
   delete aData;
+
   return ret;
 }
 bool SMESHGUI_MgAdaptDlg::storeParamsToHypo( const SMESH::MgAdaptHypothesisData& ) const
 {
-
 }
 /*!
   \brief Show help page
 */
-void SMESHGUI_MgAdaptDlg::clickOnHelp()
+void SMESHGUI_MgAdaptDlg::PushOnHelp()
 {
-  // QString aHelpFile;
+//   QString aHelpFile;
   // if ( myTabWidget->currentIndex() == MinDistance ) {
   //   aHelpFile = "measurements.html#min-distance-anchor";
   // } else if ( myTabWidget->currentIndex() == BoundingBox ) {
@@ -399,7 +414,7 @@ void SMESHGUI_MgAdaptDlg::clickOnHelp()
   //   aHelpFile = "measurements.html#basic-properties-anchor";
   // }
 
-  // SMESH::ShowHelpFile( aHelpFile );
+//   SMESH::ShowHelpFile( aHelpFile );
 }
 bool SMESHGUI_MgAdaptDlg::checkParams(QString& msg)
 {
@@ -407,7 +422,7 @@ bool SMESHGUI_MgAdaptDlg::checkParams(QString& msg)
   {
     SUIT_MessageBox::warning( this,
                               tr( "SMESH_WRN_WARNING" ),
-                              tr( "GHS3D_PERMISSION_DENIED" ) );
+                              tr( "NO_PERMISSION" ) );
     return false;
   }
 
@@ -473,7 +488,7 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
   aMeshIn = new QGroupBox( tr( "MeshIn" ), this );
   aMedfile       = new QRadioButton( tr( "MEDFile" ),    aMeshIn );
   aBrowser       = new QRadioButton( tr( "Browser" ), aMeshIn );
-  aBrowserObject       = new QLineEdit(  aMeshIn );
+  aBrowserObject = new QLineEdit(  aMeshIn );
   selectMedFilebutton = new QPushButton("", aMeshIn);
   selectMedFileLineEdit      = new QLineEdit(  aMeshIn );
 
@@ -1416,4 +1431,3 @@ std::string remove_extension(const std::string& filename)
   if (lastdot == std::string::npos) return filename;
   return filename.substr(0, lastdot);
 }
-

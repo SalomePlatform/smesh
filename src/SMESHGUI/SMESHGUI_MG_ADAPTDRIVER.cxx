@@ -341,27 +341,44 @@ SMESH::SMESH_Mesh_var SMESHGUI_MG_ADAPTDRIVER::getMyMesh()
 }
 
 //=================================================================================
-// function : ClickOnOk()
+// function : PushOnOk()
 // purpose  :
 //=================================================================================
-void SMESHGUI_MG_ADAPTDRIVER::clickOnOk()
+void SMESHGUI_MG_ADAPTDRIVER::PushOnOK()
 {
   setIsApplyAndClose( true );
-  clickOnApply();
-  reject();
+  bool ret = PushOnApply();
+//   std::cout  << "SMESHGUI_MG_ADAPTDRIVER::PushOnOK ret : " <<ret<<std::endl;
+  if ( ret ) reject();
 }
-bool SMESHGUI_MG_ADAPTDRIVER::clickOnApply()
+bool SMESHGUI_MG_ADAPTDRIVER::PushOnApply()
 {
+  MESSAGE("PushOnApply");
 
   if ( SMESHGUI::isStudyLocked() )
     return false;
   if( !isValid() )
     return false;
 
-  SMESHGUI_MgAdaptDlg::clickOnApply();
+  bool ok = SMESHGUI_MgAdaptDlg::PushOnApply();
+//   std::cout  << "SMESHGUI_MG_ADAPTDRIVER::PushOnApply ok 1 : " <<ok<<std::endl;
 
-  bool ok = execute();
-  if (getModel()->getPublish()) this->createMeshInObjectBrowser();
+  if ( ok )
+  {
+    ok = execute();
+    if (getModel()->getPublish()) this->createMeshInObjectBrowser();
+//     std::cout  << "SMESHGUI_MG_ADAPTDRIVER::PushOnApply ok 2 : " <<ok<<std::endl;
+    if ( ok )
+    {
+      QMessageBox::information( 0, QObject::tr(""),
+                                   QObject::tr("MG_ADAPT_DIAG_1") );
+    }
+    else
+    {
+      QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
+                                QObject::tr("MG_ADAPT_DIAG_2") );
+    }
+  }
 
   return ok;
 }
@@ -464,33 +481,21 @@ void SMESHGUI_MG_ADAPTDRIVER::keyPressEvent( QKeyEvent* e )
   if ( e->key() == Qt::Key_F1 )
   {
     e->accept();
-    clickOnHelp();
+    PushOnHelp();
   }
 
 }
 
 //=================================================================================
-// function : clickOnHelp()
+// function : PushOnHelp()
 // purpose  :
 //=================================================================================
-void SMESHGUI_MG_ADAPTDRIVER::clickOnHelp()
+void SMESHGUI_MG_ADAPTDRIVER::PushOnHelp()
 {
 
-  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app)
-    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
-  else {
-    QString platform;
-#ifdef WIN32
-    platform = "winapplication";
-#else
-    platform = "application";
-#endif
-    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                              arg(app->resourceMgr()->stringValue("ExternalBrowser",platform)).
-                              arg(myHelpFileName));
-  }
+  QString aHelpFile = "adaptation.html#_mg_adapt_anchor";
+
+  SMESH::ShowHelpFile( aHelpFile );
 
 }
 

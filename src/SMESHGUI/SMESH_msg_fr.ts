@@ -457,6 +457,14 @@
         <translation>Options avancées</translation>
     </message>
     <message>
+        <source>MG_ADAPT_DIAG_1</source>
+        <translation>Adaptation réussie.</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_DIAG_2</source>
+        <translation>Echec de l'adaptation.</translation>
+    </message>
+    <message>
         <source>MEN_CONV_TO_QUAD</source>
         <translation>Convertir vers/depuis quadratique</translation>
     </message>

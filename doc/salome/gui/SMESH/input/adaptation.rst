@@ -33,6 +33,6 @@ To start **Remeshing** operation, select **MG Adapt** tab in **Adaptation** dial
   :align: center
 
 .. note::
-  The exhaustive description of MG-Adapt can be read into its documentation. It can be reached bu the general help button.
+  The exhaustive description of MG-Adapt can be read into its documentation. It can be reached by the general help button.
 
 **See Also** a sample TUI Script of :ref:`tui_adaptation_page`.

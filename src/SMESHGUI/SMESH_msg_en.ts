@@ -430,7 +430,7 @@
     </message>
     <message>
         <source>LOCAL_MG_ADAPT</source>
-        <translation>local</translation>
+        <translation>Local</translation>
     </message>
     <message>
         <source>BACKGRND_MG_ADAPT</source>
@@ -450,11 +450,19 @@
     </message>
     <message>
         <source>SIZE_MAP_DEF</source>
-        <translation>size map definition</translation>
+        <translation>Size map definition</translation>
     </message>
     <message>
         <source>ADVOP</source>
         <translation>Advanced Options</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_DIAG_1</source>
+        <translation>Adaptation succeeded.</translation>
+    </message>
+    <message>
+        <source>MG_ADAPT_DIAG_2</source>
+        <translation>Adaptation failed.</translation>
     </message>
     <message>
         <source>MEN_CONV_TO_QUAD</source>

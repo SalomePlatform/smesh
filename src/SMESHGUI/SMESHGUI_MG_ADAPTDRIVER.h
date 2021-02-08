@@ -190,10 +190,10 @@ private slots:
 
     void exportMED(const char* );
 
-    virtual bool clickOnApply();
-    virtual void                   clickOnOk();
-    virtual void           clickOnHelp();
-    //~void                   SelectionIntoArgument();
+    virtual bool PushOnApply();
+    virtual void PushOnOK();
+    virtual void PushOnHelp();
+
     void                   deactivateActiveDialog();
     void                   activateThisDialog();
     void                   onConstructor( int );

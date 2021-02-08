@@ -131,11 +131,12 @@ public:
 public slots:
 
 protected slots:
+  virtual bool PushOnApply();
 
-virtual bool clickOnApply();
 private slots:
-virtual void clickOnHelp();
-virtual void clickOnOk();
+  virtual void PushOnHelp();
+  virtual void PushOnOK();
+
 protected :
 
   SMESHGUI_MgAdaptArguments* myArgs;
