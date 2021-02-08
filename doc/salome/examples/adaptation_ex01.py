@@ -33,6 +33,9 @@ objet_adapt.AddHypothesis(hypo)
 #--- Compute without publication
 err = objet_adapt.Compute(False)
 
+#--- Clean
+del objet_adapt
+
 
 
 # Test 2 : remeshing with a background size, volume
@@ -59,4 +62,7 @@ objet_adapt.AddHypothesis(hypo)
 
 #--- Compute without publication
 err = objet_adapt.Compute(False)
+
+#--- Clean
+del objet_adapt
 
