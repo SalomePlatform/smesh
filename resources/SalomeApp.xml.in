@@ -111,6 +111,9 @@
     <parameter name="User's Guide/Mesh module/Plug-ins/MacMesh plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MacMesh/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/MacMesh/index.html"/>
     <parameter name="User's Guide/Mesh module/Plug-ins/blocFissure plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/blocFissure/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/blocFissure/index.html"/>
     <parameter name="User's Guide/Mesh module/Plug-ins/SpherePadder plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/padder/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/padder/index.html"/>
+    <parameter name="User's Guide/Mesh module/MG-Adapt plugin/User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html#adaptation;;http://docs.salome-platform.org/latest/gui/SMESH/index.html#adaptation"/>
+    <parameter name="User's Guide/Mesh module/MG-Adapt plugin/Reference"    value="%MESHGEMS_ROOT_DIR%/Docs/mg-adapt_api_manual.pdf"/>
+    <parameter name="User's Guide/Mesh module/MG-Adapt plugin/Manual"       value="%MESHGEMS_ROOT_DIR%/Docs/mg-adapt_user_manual.pdf"/>
     <parameter name="User's Guide/Mesh module/MGCleaner plugin/User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MGCleaner/index.html;;http://docs.salome-platform.org/latest/gui/SMESH/MGCleaner/index.html"/>
     <parameter name="User's Guide/Mesh module/MGCleaner plugin/Reference"    value="%MESHGEMS_ROOT_DIR%/Docs/mg-cleaner_api_manual.pdf"/>
     <parameter name="User's Guide/Mesh module/MGCleaner plugin/Manual"       value="%MESHGEMS_ROOT_DIR%/Docs/mg-cleaner_user_manual.pdf"/>
