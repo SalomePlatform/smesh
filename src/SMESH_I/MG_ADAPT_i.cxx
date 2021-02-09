@@ -18,14 +18,12 @@
 //
 
 #include "MG_ADAPT_i.hxx"
-//~#include "ADAPT_Gen_i.hxx"
+
 #include "string.h"
 #include "SMESH_Gen_i.hxx"
 #include <SMESH_Gen.hxx>
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOMEDS)
-//~#include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
-//~#include CORBA_CLIENT_HEADER(SMESH_Gen)
 
 
 //=============================================================================

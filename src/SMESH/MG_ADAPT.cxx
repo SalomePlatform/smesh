@@ -30,6 +30,9 @@
 #include "MEDFileField.hxx"
 #include "MEDCouplingFieldDouble.hxx"
 
+#include <SALOME_NamingService.hxx>
+#include <Utils_SALOME_Exception.hxx>
+
 #include <utilities.h>
 #include <iostream>
 #include <unistd.h>
@@ -219,9 +222,25 @@ MgAdaptHypothesisData* MgAdapt::getData() const
 }
 void MgAdapt::setMedFileIn(std::string fileName)
 {
-  medFileIn  = fileName;
-  if (medFileOut == "") // default MED file Out
-    medFileOut = remove_extension( fileName )+ ".adapt.med";
+  if ( isFileExist(fileName) )
+  {
+    medFileIn = fileName;
+
+    if (medFileOut == "") // default MED file Out
+      medFileOut = remove_extension( fileName )+ ".adapt.med";
+  }
+  else
+  {
+    std::cout << "\nThe file " + fileName + " does not exist.\n" << std::endl;
+//     SALOME::ExceptionStruct es;
+//     es.type = SALOME::BAD_PARAM;
+//     std::string text = "\nThe file " + fileName + " does not exist.\n" ;
+//     std::cout << text << std::endl;
+//     es.text = "The mesh file does not exist.";
+//     es.text = CORBA::string_dup(text.c_str());
+//     throw SALOME::SALOME_Exception(es);
+    throw SALOME_Exception(("The file " + fileName + " does not exist." ).c_str() );
+  }
 }
 
 std::string MgAdapt::getMedFileIn()
@@ -233,7 +252,6 @@ void MgAdapt::setMedFileOut(std::string fileOut)
 {
   medFileOut = fileOut;
 }
-
 std::string MgAdapt::getMedFileOut()
 {
   return medFileOut;
@@ -363,7 +381,15 @@ bool MgAdapt::getRemoveOnSuccess()
 }
 void MgAdapt::setSizeMapFile(std::string mapFile)
 {
-  sizeMapFile = mapFile;
+  if ( mapFile == "" || isFileExist(mapFile) )
+  {
+    sizeMapFile = mapFile;
+  }
+  else
+  {
+    std::cout << "\nThe file " + mapFile + " does not exist.\n" << std::endl;
+    throw SALOME_Exception(("The file " + mapFile + " does not exist." ).c_str() );
+  }
 }
 std::string MgAdapt::getSizeMapFile()
 {
@@ -427,7 +453,6 @@ bool MgAdapt::getPrintLogInFile()
 {
   return printLogInFile;
 }
-
 
 bool MgAdapt::setAll()
 {
@@ -1315,8 +1340,13 @@ med_idt MgAdapt::openMedFile(const std::string aFile)
   med_idt medIdt = MEDfileOpen(aFile.c_str(),MED_ACC_RDONLY);
   if (medIdt <0)
   {
-    //~addMessage( ToComment(" error: Can't open  ") << aFile, /*fatal=*/true );
-    ;
+    SALOME::ExceptionStruct es;
+    es.type = SALOME::BAD_PARAM;
+    std::string text = "The med file " + aFile + " cannot be opened." ;
+//     es.text = "The mesh file does not exist.";
+    es.text = CORBA::string_dup(text.c_str());
+    throw SALOME::SALOME_Exception(es);
+    return 0;
   }
   return medIdt;
 }
