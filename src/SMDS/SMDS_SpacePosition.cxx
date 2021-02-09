@@ -29,11 +29,11 @@
 #include "SMDS_SpacePosition.hxx"
 #include "SMDS_VertexPosition.hxx"
 
-SMDS_SpacePosition* SMDS_SpacePosition::_originPosition = new SMDS_SpacePosition();
+SMDS_SpacePosition* SMDS_SpacePosition::__originPosition = nullptr;
 
 SMDS_PositionPtr SMDS_SpacePosition::originSpacePosition()
 {
-  return SMDS_PositionPtr( _originPosition, /*isOwner=*/false );
+  return SMDS_PositionPtr( _originPosition(), /*isOwner=*/false );
 }
 
 SMDS_PositionPtr SMDS_VertexPosition::StaticPosition()
@@ -42,3 +42,9 @@ SMDS_PositionPtr SMDS_VertexPosition::StaticPosition()
   return SMDS_PositionPtr( _vertexPosition, /*isOwner=*/false );
 }
 
+SMDS_SpacePosition *SMDS_SpacePosition::_originPosition()
+{
+  if(!__originPosition)
+    __originPosition = new SMDS_SpacePosition;
+  return __originPosition;
+}

@@ -19,6 +19,7 @@ geompy = geomBuilder.New()
 
 ## Creates a polygon given its centre, external radius and number of sides
 def makePolygon(p_centre, radius, nb_sides, theName=""):
+  global geompy, math
   points = []
   x, y, z = geompy.PointCoordinates(p_centre)
   for i in range(nb_sides):
@@ -33,6 +34,7 @@ def makePolygon(p_centre, radius, nb_sides, theName=""):
 
 ## Creates a solid by adding a vertex on its top
 def makeSummitSolid(face, height, theName=""):
+  global geompy
   p_cdg = geompy.MakeCDG(face)
   p_top = geompy.MakeTranslation(p_cdg, 0, 0, height)
   edges = geompy.SubShapeAll(face, geompy.ShapeType["EDGE"])

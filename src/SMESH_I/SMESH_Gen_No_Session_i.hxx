@@ -1,7 +1,4 @@
-// Copyright (C) 2007-2020  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2021  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,28 +17,19 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMDS : implementation of Salome mesh data structure
-//  File   : SMDS_SpacePosition.hxx
-//  Module : SMESH
-//
-#ifndef _SMDS_SpacePosition_HeaderFile
-#define _SMDS_SpacePosition_HeaderFile
+#pragma once
 
-#include "SMESH_SMDS.hxx"
+#include "SMESH_Gen_i.hxx"
 
-#include "SMDS_Position.hxx"
-
-class SMDS_EXPORT SMDS_SpacePosition : public SMDS_Position
+class SMESH_I_EXPORT SMESH_Gen_No_Session_i : public SMESH_Gen_i
 {
- public:
-
-  virtual SMDS_TypeOfPosition GetTypeOfPosition() const { return SMDS_TOP_3DSPACE; }
-  static  SMDS_PositionPtr    originSpacePosition();
-  virtual const double* GetParameters() const { return 0; }
-
- private:
-  static SMDS_SpacePosition *_originPosition();
-  static SMDS_SpacePosition* __originPosition;
+public:
+  SMESH_Gen_No_Session_i( CORBA::ORB_ptr orb,
+               PortableServer::POA_ptr   poa,
+               PortableServer::ObjectId* contId,
+               const char*               instanceName,
+               const char*               interfaceName);
+  GEOM::GEOM_Gen_var GetGeomEngine( bool isShaper ) override;
+  SALOMEDS::Study_var getStudyServantVirtual() const override;
+  SALOME_ModuleCatalog::ModuleCatalog_var getModuleCatalog() const override;
 };
-
-#endif

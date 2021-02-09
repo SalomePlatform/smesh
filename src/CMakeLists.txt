@@ -40,6 +40,7 @@ SET(SUBDIRS_COMMON
   StdMeshers_I
   SMESH_PY
   Tools
+  SalomeSessionless
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)

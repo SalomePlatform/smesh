@@ -1153,7 +1153,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
           if ( !quadList.back() )
             return toSM( error(TCom("Side face #") << shapeID( face )
                                << " not meshable with quadrangles"));
-          bool isCompositeBase = ! setBottomEdge( *edge, quadList.back(), face );
+          bool isCompositeBase = ! setBottomEdge( *edge, quadList.back(), face ); // -> orient CCW
           if ( isCompositeBase )
           {
             // it's OK if all EDGEs of the bottom side belongs to the bottom FACE
@@ -2429,10 +2429,11 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf
         {
           for ( int iE = 0; iE < botSide->NbEdges(); ++iE )
           {
+            // sides are CWW oriented
             NSProjUtils::InsertAssociation( botSide->Edge( iE ),
                                             topSide->Edge( iE ), shape2ShapeMap );
-            NSProjUtils::InsertAssociation( myHelper->IthVertex( 0, botSide->Edge( iE )),
-                                            myHelper->IthVertex( 0, topSide->Edge( iE )),
+            NSProjUtils::InsertAssociation( botSide->FirstVertex( iE ),
+                                            topSide->LastVertex ( iE ),
                                             shape2ShapeMap );
           }
         }

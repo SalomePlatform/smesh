@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2020  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2021  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,22 +17,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(tests.set)
+SET(_bin_SCRIPTS
+  SMESH_SalomeSessionless.py
+)
 
-SET(SALOME_TEST_DRIVER "$ENV{KERNEL_ROOT_DIR}/bin/salome/appliskel/salome_test_driver.py")
-SET(COMPONENT_NAME SMESH)
-SET(TIMEOUT        300)
-
-FOREACH(tfile ${GOOD_TESTS} ${BAD_TESTS})
-  GET_FILENAME_COMPONENT(BASE_NAME ${tfile} NAME_WE)
-  SET(TEST_NAME SMESH_${BASE_NAME})
-  ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} ${tfile})
-  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES LABELS "${COMPONENT_NAME}")
-ENDFOREACH()
-
-foreach(tfile ${SESSION_FREE_TESTS})
-  get_filename_component(BASE_NAME ${tfile} NAME_WE)
-  set(TEST_NAME SMESH_${BASE_NAME})
-  add_test(${TEST_NAME} python ${tfile})
-  set_tests_properties(${TEST_NAME} PROPERTIES LABELS "${COMPONENT_NAME}")
-endforeach()
+SALOME_INSTALL_SCRIPTS("${_bin_SCRIPTS}" ${SALOME_INSTALL_PYTHON} DEF_PERMS)

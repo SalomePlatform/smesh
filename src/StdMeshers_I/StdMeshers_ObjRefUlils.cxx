@@ -60,7 +60,7 @@ StdMeshers_ObjRefUlils::EntryOrShapeToGeomObject (const std::string&  theEntry,
   // try by entry
   if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
     if ( ! theEntry.empty() ) {
-      SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::getStudyServant()->FindObjectID( theEntry.c_str() );
+      SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::GetSMESHGen()->getStudyServant()->FindObjectID( theEntry.c_str() );
       CORBA::Object_var       obj = gen->SObjectToObject( sobj );
       geom = GEOM::GEOM_Object::_narrow( obj );
     }
@@ -116,7 +116,7 @@ TopoDS_Shape StdMeshers_ObjRefUlils::LoadFromStream( istream &    stream,
     if ( entry )
       * entry = str;
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
-      SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::getStudyServant()->FindObjectID( str.c_str() );
+      SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::GetSMESHGen()->getStudyServant()->FindObjectID( str.c_str() );
       CORBA::Object_var       obj = gen->SObjectToObject( sobj );
       GEOM::GEOM_Object_var  geom = GEOM::GEOM_Object::_narrow( obj );
       return gen->GeomObjectToShape( geom.in() );
@@ -173,7 +173,7 @@ TopoDS_Shape StdMeshers_ObjRefUlils::EntryToShape(const std::string theEntry)
   TopoDS_Shape shape;
 
   if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
-    SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::getStudyServant()->FindObjectID( theEntry.c_str() );
+    SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::GetSMESHGen()->getStudyServant()->FindObjectID( theEntry.c_str() );
     CORBA::Object_var       obj = gen->SObjectToObject( sobj );
     GEOM::GEOM_Object_var  geom = GEOM::GEOM_Object::_narrow( obj );
     shape = gen->GeomObjectToShape( geom.in() );

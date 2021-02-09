@@ -1,7 +1,4 @@
-// Copyright (C) 2007-2020  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2021  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,28 +17,18 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMDS : implementation of Salome mesh data structure
-//  File   : SMDS_SpacePosition.hxx
-//  Module : SMESH
-//
-#ifndef _SMDS_SpacePosition_HeaderFile
-#define _SMDS_SpacePosition_HeaderFile
+%module SMeshHelper
 
-#include "SMESH_SMDS.hxx"
+%include "std_string.i"
 
-#include "SMDS_Position.hxx"
+%{
+#include "SMeshHelper.h"
+%}
 
-class SMDS_EXPORT SMDS_SpacePosition : public SMDS_Position
+%inline
 {
- public:
-
-  virtual SMDS_TypeOfPosition GetTypeOfPosition() const { return SMDS_TOP_3DSPACE; }
-  static  SMDS_PositionPtr    originSpacePosition();
-  virtual const double* GetParameters() const { return 0; }
-
- private:
-  static SMDS_SpacePosition *_originPosition();
-  static SMDS_SpacePosition* __originPosition;
-};
-
-#endif
+  std::string BuildSMESHInstance()
+  {
+    return BuildSMESHInstanceInternal();
+  }
+}
