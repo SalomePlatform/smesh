@@ -21,7 +21,6 @@
 #ifndef MG_ADAPT_IDL
 #define MG_ADAPT_IDL
 
-
 #include "SALOME_Component.idl"
 #include "SALOME_Exception.idl"
 #include "SALOME_GenericObj.idl"
@@ -29,130 +28,126 @@
 #include "SMESH_Mesh.idl"
 
 module SMESH{
-	
-    typedef sequence<string> str_array ;
-	struct MgAdaptHypothesisData
-	{
-	   	string myFileInDir, myMeshFileIn, myInMeshName, myMeshFileBackground, myOutMeshName,
-			myMeshFileOut,  myFileOutDir, myFileSizeMapDir, myFieldName;
-		boolean    fromMedFile;
-		boolean    myPublish, myMeshOutMed;
-		boolean    myUseLocalMap, myUseBackgroundMap, myUseConstantValue;
-		double  myConstantValue;
-		long     myRank, myTimeStep;
-		boolean    myUseNoTimeStep, myUseLastTimeStep, myUseChosenTimeStep;
-		string myWorkingDir, myLogFile;
-		boolean    myPrintLogInFile, myKeepFiles, myRemoveLogOnSuccess;
-		long   myVerboseLevel;
 
-	};
-
-	
-    interface MG_ADAPT : SALOME::GenericObj
-    {
-		//MG_ADAPT CreateMG_ADAPT(in PortableServer::POA_var poa);
-		void setData( inout MgAdaptHypothesisData data);
-
-		void setMedFileIn(in string MedFileIn );
-		string getMedFileIn();
-
-		void setMedFileOut(in string MedFileOut);
-		string getMedFileOut();
-
-		void setMeshName(in string s);
-		string getMeshName();
-
-		void setMeshNameOut(in string s);
-		string getMeshNameOut();
-
-		void setMeshOutMed(in boolean b);
-		boolean getMeshOutMed();
-
-		void setPublish(in boolean b);
-		boolean getPublish();
-
-		void setSizeMapFieldName(in string s);
-		string getSizeMapFieldName();
-
-		void setTimeStep(in long s);
-		long getTimeStep() ;
-
-		void setTimeStepRank(in long s, in long f);
-		long getRank();
-		
-		void setTimeStepRankLast();
-		void setNoTimeStep();
-
-		void setLogFile(in string f);
-		string getLogFile();
-
-		void setVerbosityLevel(in long f);
-		long getVerbosityLevel();
-
-		void setRemoveOnSuccess(in boolean f);
-		boolean getRemoveOnSuccess();
-
-		MgAdaptHypothesisData getData();
-
-		void setUseLocalMap(in boolean f);
-		boolean getUseLocalMap();
-
-		void setUseBackgroundMap(in boolean f);
-		boolean getUseBackgroundMap();
-
-		void setUseConstantValue(in boolean f);
-		boolean getUseConstantValue();
-
-		void setConstantSize(in double f);
-		double getConstantSize() ;
-
-		void setSizeMapFile(in string f);
-		string getSizeMapFile();
-
-		void setFromMedFile(in boolean f);
-		boolean isFromMedFile();
-
-		void setKeepWorkingFiles(in boolean f);
-		boolean getKeepWorkingFiles();
-
-		void setPrintLogInFile(in boolean f);
-		boolean getPrintLogInFile();
-
-		void setWorkingDir(in string f);
-		string getWorkingDir() ;
-
-		void setSizeMapType(in string f);
-		boolean setAll();
-		string getCommandToRun() ;
-		//long compute(out string errStr);
-		long compute();
-		string getErrMsg();
-		string getFileName() ;
-		string getExeName();
-		void copyMgAdaptHypothesisData(in  MgAdaptHypothesisData f ) ;
-
-		//void checkDirPath(inout string  f);
+  typedef sequence<string> str_array ;
+  struct MgAdaptHypothesisData
+  {
+    string  myFileInDir, myMeshFileIn, myInMeshName, myMeshFileBackground, myOutMeshName,
+            myMeshFileOut,  myFileOutDir, myFileSizeMapDir, myFieldName;
+    boolean fromMedFile;
+    boolean myPublish, myMeshOutMed;
+    boolean myUseLocalMap, myUseBackgroundMap, myUseConstantValue;
+    double  myConstantValue;
+    long    myRank, myTimeStep;
+    boolean myUseNoTimeStep, myUseLastTimeStep, myUseChosenTimeStep;
+    string  myWorkingDir, myLogFile;
+    boolean myPrintLogInFile, myKeepFiles, myRemoveLogOnSuccess;
+    long    myVerboseLevel;
+  };
 
 
+  interface MG_ADAPT : SALOME::GenericObj
+  {
+    //MG_ADAPT CreateMG_ADAPT(in PortableServer::POA_var poa);
+    void setData( inout MgAdaptHypothesisData data);
 
-		boolean hasOptionDefined( in string optionName ) ;
-		void setOptionValue(in  string optionName,
-							in  string optionValue) raises (SALOME::SALOME_Exception);
-		string getOptionValue(in  string optionName,
-								   inout boolean  isDefault) raises (SALOME::SALOME_Exception);
-		str_array getCustomOptionValuesStrVec() ;
-		str_array getOptionValuesStrVec() ; 
-    };
-	typedef MG_ADAPT MG_ADAPT_HYPOTHESIS;
-	interface MG_ADAPT_OBJECT : SALOME::GenericObj
-	{
-		void setMeshIn(in SMESH_Mesh theMesh );
-		void setMEDFileIn(in string f);
-		void setMEDFileOut(in string f);
-		void setMEDFileBackground(in string f);
-		void AddHypothesis(in MG_ADAPT mg);
-		long Compute(in boolean Publish);
-	};
-	
+    void setMedFileIn(in string MedFileIn );
+    string getMedFileIn();
+
+    void setMedFileOut(in string MedFileOut);
+    string getMedFileOut();
+
+    void setMeshName(in string s);
+    string getMeshName();
+
+    void setMeshNameOut(in string s);
+    string getMeshNameOut();
+
+    void setMeshOutMed(in boolean b);
+    boolean getMeshOutMed();
+
+    void setPublish(in boolean b);
+    boolean getPublish();
+
+    void setSizeMapFieldName(in string s);
+    string getSizeMapFieldName();
+
+    void setTimeStep(in long s);
+    long getTimeStep() ;
+
+    void setTimeStepRank(in long s, in long f);
+    long getRank();
+
+    void setTimeStepRankLast();
+    void setNoTimeStep();
+
+    void setLogFile(in string f);
+    string getLogFile();
+
+    void setVerbosityLevel(in long f);
+    long getVerbosityLevel();
+
+    void setRemoveOnSuccess(in boolean f);
+    boolean getRemoveOnSuccess();
+
+    MgAdaptHypothesisData getData();
+
+    void setUseLocalMap(in boolean f);
+    boolean getUseLocalMap();
+
+    void setUseBackgroundMap(in boolean f);
+    boolean getUseBackgroundMap();
+
+    void setUseConstantValue(in boolean f);
+    boolean getUseConstantValue();
+
+    void setConstantSize(in double f);
+    double getConstantSize() ;
+
+    void setSizeMapFile(in string f);
+    string getSizeMapFile();
+
+    void setFromMedFile(in boolean f);
+    boolean isFromMedFile();
+
+    void setKeepWorkingFiles(in boolean f);
+    boolean getKeepWorkingFiles();
+
+    void setPrintLogInFile(in boolean f);
+    boolean getPrintLogInFile();
+
+    void setWorkingDir(in string f);
+    string getWorkingDir() ;
+
+    void setSizeMapType(in string f);
+    boolean setAll();
+    string getCommandToRun() ;
+    //long compute(out string errStr);
+    long compute();
+    string getErrMsg();
+    string getFileName() ;
+    string getExeName();
+    void copyMgAdaptHypothesisData(in MgAdaptHypothesisData f ) ;
+
+    //void checkDirPath(inout string  f);
+
+    boolean hasOptionDefined( in string optionName ) ;
+    void setOptionValue(in string optionName, in string optionValue) raises (SALOME::SALOME_Exception);
+    string getOptionValue(in string optionName, inout boolean isDefault) raises (SALOME::SALOME_Exception);
+    str_array getCustomOptionValuesStrVec() ;
+    str_array getOptionValuesStrVec() ;
+  };
+
+  typedef MG_ADAPT MG_ADAPT_HYPOTHESIS;
+  interface MG_ADAPT_OBJECT : SALOME::GenericObj
+  {
+    void setMeshIn(in SMESH_Mesh theMesh );
+    void setMEDFileIn(in string f);
+    void setMEDFileOut(in string f);
+    void setMEDFileBackground(in string f);
+    void AddHypothesis(in MG_ADAPT mg);
+    long Compute(in boolean Publish);
+  };
+
 };
 #endif // MG_ADAPT_IDL
