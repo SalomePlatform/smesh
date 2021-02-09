@@ -35,6 +35,7 @@
 #include CORBA_CLIENT_HEADER(GEOM_Gen)
 #include CORBA_CLIENT_HEADER(SALOMEDS)
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
+#include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
 
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh_i.hxx"
@@ -93,9 +94,7 @@ private:
 // ===========================================================
 // SMESH module's engine
 // ==========================================================
-class SMESH_I_EXPORT SMESH_Gen_i:
-  public virtual POA_SMESH::SMESH_Gen,
-  public virtual Engines_Component_i
+class SMESH_I_EXPORT SMESH_Gen_i : public POA_SMESH::SMESH_Gen, public Engines_Component_i
 {
 public:
   // Get last created instance of the class
@@ -109,16 +108,23 @@ public:
   // Get SALOME_LifeCycleCORBA object
   static SALOME_LifeCycleCORBA* GetLCC();
   // Retrieve and get GEOM engine reference
-  static GEOM::GEOM_Gen_var GetGeomEngine( bool isShaper );
   static GEOM::GEOM_Gen_var GetGeomEngine( GEOM::GEOM_Object_ptr );
+  // Retrieve Study depending on Session / Standalone mode
+  virtual GEOM::GEOM_Gen_var GetGeomEngine( bool isShaper ) = 0;
+  SALOMEDS::Study_var getStudyServant() const { return this->getStudyServantVirtual(); }
+  virtual SALOMEDS::Study_var getStudyServantVirtual() const = 0 ;
+  virtual SALOME_ModuleCatalog::ModuleCatalog_var getModuleCatalog() const = 0;
+  SALOMEDS::SObject_ptr publish(CORBA::Object_ptr     theIOR,
+                                SALOMEDS::SObject_ptr theFatherObject,
+                                const int             theTag = 0,
+                                const char*           thePixMap = 0,
+                                const bool            theSelectable = true);
   // Get object of the CORBA reference
   static PortableServer::ServantBase_var GetServant( CORBA::Object_ptr theObject );
   // Get CORBA object corresponding to the SALOMEDS::SObject
   static CORBA::Object_var SObjectToObject( SALOMEDS::SObject_ptr theSObject );
   // Get the SALOMEDS::SObject corresponding to a CORBA object
-  static SALOMEDS::SObject_ptr ObjectToSObject( CORBA::Object_ptr theObject );
-  // Get the SALOMEDS::Study from naming service
-  static SALOMEDS::Study_var getStudyServant();
+  SALOMEDS::SObject_ptr ObjectToSObject( CORBA::Object_ptr theObject );
   // Get GEOM Object corresponding to TopoDS_Shape
   static GEOM::GEOM_Object_ptr ShapeToGeomObject( const TopoDS_Shape& theShape );
   // Get TopoDS_Shape corresponding to GEOM_Object
@@ -133,7 +139,8 @@ public:
                PortableServer::POA_ptr   poa,
                PortableServer::ObjectId* contId,
                const char*               instanceName,
-               const char*               interfaceName );
+               const char*               interfaceName,
+               bool                      checkNS = true);
   // Destructor
   virtual ~SMESH_Gen_i();
 
@@ -468,7 +475,7 @@ public:
 
   void CleanPythonTrace();
 
-  static int CountInPyDump(const TCollection_AsciiString& text);
+  int CountInPyDump(const TCollection_AsciiString& text);
 
   SMESH::MG_ADAPT_ptr CreateMG_ADAPT();
   SMESH::MG_ADAPT_ptr CreateAdaptationHypothesis();
@@ -526,12 +533,12 @@ public:
                                  SMESH::SMESH_Hypothesis_ptr theHyp);
   SALOMEDS::SObject_ptr GetMeshOrSubmeshByShape (SMESH::SMESH_Mesh_ptr theMesh,
                                                  GEOM::GEOM_Object_ptr theShape);
-  static void SetName(SALOMEDS::SObject_ptr theSObject,
-                      const char*           theName,
-                      const char*           theDefaultName = 0);
+  void SetName(SALOMEDS::SObject_ptr theSObject,
+              const char*           theName,
+              const char*           theDefaultName = 0);
 
-  static void SetPixMap(SALOMEDS::SObject_ptr theSObject,
-                        const char*           thePixMap);
+  void SetPixMap(SALOMEDS::SObject_ptr theSObject, const char *thePixMap);
+  void addReference (SALOMEDS::SObject_ptr theSObject, CORBA::Object_ptr theToObject, int theTag = 0);
 
   //  Get study context
   StudyContext* GetStudyContext();
@@ -641,8 +648,9 @@ private:
                                const TopoDS_Shape&       Shape,
                                double*                   Tolerance = NULL);
 
-private:
+protected:
   static GEOM::GEOM_Gen_var      myGeomGen;
+private:
   static CORBA::ORB_var          myOrb;         // ORB reference
   static PortableServer::POA_var myPoa;         // POA reference
   static SALOME_NamingService*   myNS;          // Naming Service
