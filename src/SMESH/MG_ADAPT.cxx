@@ -1152,9 +1152,33 @@ void MgAdapt::copyMgAdaptHypothesisData( const MgAdaptHypothesisData* from)
   data->myVerboseLevel = from->myVerboseLevel;
 }
 
+bool MgAdapt::checkFieldName(std::string fileIn)
+{
+  bool ret = false ;
+  MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(fileIn);
+  std::vector<std::string> fieldNames(mfd->getFields()->getFieldsNames());
+  std::size_t jaux(fieldNames.size());
+  for(std::size_t j=0;j<jaux;j++)
+  {
+    if ( fieldName == fieldNames[j] )
+    { ret = true ; }
+  }
+  if ( ! ret )
+  {
+    std::cout << "Available field names:" << std::endl;
+    for(std::size_t j=0;j<jaux;j++)
+    { std::cout << fieldNames[j] << std::endl;}
+    SALOME::ExceptionStruct es;
+    es.type = SALOME::BAD_PARAM;
+    std::string text = "Field " + fieldName + " is not found." ;
+    es.text = CORBA::string_dup(text.c_str());
+    throw SALOME::SALOME_Exception(es);
+  }
+  return ret ;
+}
+
 bool MgAdapt::checkTimeStepRank(std::string fileIn)
 {
-  INFOS("checkTimeStepRank");
   bool ret = false ;
   MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(fileIn);
   MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>( mfd->getFields()->getFieldWithName(fieldName) );
@@ -1165,19 +1189,15 @@ bool MgAdapt::checkTimeStepRank(std::string fileIn)
   std::size_t jaux(timesteprank.size());
   for(std::size_t j=0;j<jaux;j++)
   {
-//     std::cout << "--- l[j]first  " << timesteprank[j].first << std::endl;
-//     std::cout << "--- l[j]second " << timesteprank[j].second << std::endl;
     if ( ( timeStep == timesteprank[j].first ) & ( rank == timesteprank[j].second ) )
-    {
-      ret = true ;
-    }
+    { ret = true ; }
   }
   if ( ! ret )
   {
-    std::cout << "Available (Time step, Rank) :" << std::endl;
+    std::cout << "Available (Time step, Rank):" << std::endl;
     for(std::size_t j=0;j<jaux;j++)
     { std::cout << "(Time step = " << timesteprank[j].first << ", Rank = " << timesteprank[j].second << ")" << std::endl;}
-   SALOME::ExceptionStruct es;
+    SALOME::ExceptionStruct es;
     es.type = SALOME::BAD_PARAM;
     std::string text = "(Time step = " + std::to_string(timeStep) + ", Rank = " + std::to_string(rank) + ") is not found." ;
     es.text = CORBA::string_dup(text.c_str());
@@ -1204,14 +1224,18 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
 
   if (useBackgroundMap)
   {
-    bool ret = checkTimeStepRank(sizeMapFile) ;
+    bool ret ;
+    ret = checkFieldName(sizeMapFile) ;
+    ret = checkTimeStepRank(sizeMapFile) ;
     meshFormatsizeMapFile = getFileName();
     meshFormatsizeMapFile += ".mesh";
     buildBackGroundMeshAndSolFiles(fieldFileNames, meshFormatsizeMapFile);
   }
   else if(useLocalMap)
   {
-    bool ret = checkTimeStepRank(medFileIn) ;
+    bool ret ;
+    ret = checkFieldName(medFileIn) ;
+    ret = checkTimeStepRank(medFileIn) ;
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>( mfd->getFields()->getFieldWithName(fieldName) );
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeField1TS> f = fts->getTimeStep(timeStep, rank);
     MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::MEDFileFieldMultiTS::New();
