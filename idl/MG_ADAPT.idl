@@ -141,12 +141,12 @@ module SMESH{
   typedef MG_ADAPT MG_ADAPT_HYPOTHESIS;
   interface MG_ADAPT_OBJECT : SALOME::GenericObj
   {
-    void setMeshIn(in SMESH_Mesh theMesh );
-    void setMEDFileIn(in string f);
-    void setMEDFileOut(in string f);
-    void setMEDFileBackground(in string f);
-    void AddHypothesis(in MG_ADAPT mg);
-    long Compute(in boolean Publish);
+    void setMeshIn(in SMESH_Mesh theMesh )   raises (SALOME::SALOME_Exception);
+    void setMEDFileIn(in string f)           raises (SALOME::SALOME_Exception);
+    void setMEDFileOut(in string f)          raises (SALOME::SALOME_Exception);
+    void setMEDFileBackground(in string f)   raises (SALOME::SALOME_Exception);
+    void AddHypothesis(in MG_ADAPT mg)       raises (SALOME::SALOME_Exception);
+    long Compute(in boolean Publish)         raises (SALOME::SALOME_Exception);
   };
 
 };
