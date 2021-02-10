@@ -1152,22 +1152,31 @@ void MgAdapt::copyMgAdaptHypothesisData( const MgAdaptHypothesisData* from)
   data->myVerboseLevel = from->myVerboseLevel;
 }
 
+std::vector<std::string> MgAdapt::getListFieldsNames(std::string fileIn)
+{
+  MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(fileIn);
+  std::vector<std::string> listFieldsNames(mfd->getFields()->getFieldsNames());
+  return listFieldsNames ;
+}
+
 bool MgAdapt::checkFieldName(std::string fileIn)
 {
   bool ret = false ;
-  MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(fileIn);
-  std::vector<std::string> fieldNames(mfd->getFields()->getFieldsNames());
-  std::size_t jaux(fieldNames.size());
+  std::vector<std::string> listFieldsNames = getListFieldsNames(fileIn);
+  std::size_t jaux(listFieldsNames.size());
   for(std::size_t j=0;j<jaux;j++)
   {
-    if ( fieldName == fieldNames[j] )
-    { ret = true ; }
+    if ( fieldName == listFieldsNames[j] )
+    {
+      ret = true ;
+      break ;
+    }
   }
   if ( ! ret )
   {
     std::cout << "Available field names:" << std::endl;
     for(std::size_t j=0;j<jaux;j++)
-    { std::cout << fieldNames[j] << std::endl;}
+    { std::cout << listFieldsNames[j] << std::endl;}
     SALOME::ExceptionStruct es;
     es.type = SALOME::BAD_PARAM;
     std::string text = "Field " + fieldName + " is not found." ;
@@ -1190,7 +1199,10 @@ bool MgAdapt::checkTimeStepRank(std::string fileIn)
   for(std::size_t j=0;j<jaux;j++)
   {
     if ( ( timeStep == timesteprank[j].first ) & ( rank == timesteprank[j].second ) )
-    { ret = true ; }
+    {
+      ret = true ;
+      break ;
+    }
   }
   if ( ! ret )
   {

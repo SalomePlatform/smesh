@@ -23,6 +23,8 @@
 
 #include "MG_ADAPTGUI.hxx"
 
+#include "MEDFileData.hxx"
+
 #include "SUIT_Desktop.h"
 #include "SUIT_Application.h"
 #include "SUIT_Session.h"
@@ -1363,21 +1365,13 @@ std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)
   std::map<QString, int> ListeChamp ;
 
   med_err erreur = 0 ;
-  med_idt medIdt ;
 
   while ( erreur == 0 )
   {
-    // Ouverture du fichier
-    SCRUTE(aFile.toStdString());
-    medIdt = OuvrirFichier(aFile);
-    if ( medIdt < 0 )
-    {
-      erreur = 1 ;
-      break ;
-    }
-    // Lecture du nombre de champs
-    med_int ncha = MEDnField(medIdt) ;
-    if (ncha < 1 )
+    MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(aFile.toStdString());
+    std::vector<std::string> listFieldsNames(mfd->getFields()->getFieldsNames());
+    std::size_t jaux(listFieldsNames.size());
+    if (jaux < 1 )
     {
       if(errorMessage)
       {
@@ -1387,40 +1381,14 @@ std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)
       erreur = 2 ;
       break ;
     }
-    // Lecture des caracteristiques des champs
-    for (int i=0; i< ncha; i++)
+    med_int nbofcstp = 1;
+    for(std::size_t j=0;j<jaux;j++)
     {
-//       Lecture du nombre de composantes
-      med_int ncomp = MEDfieldnComponent(medIdt,i+1);
-//       Lecture du type du champ, des noms des composantes et du nom de l'unite
-      char nomcha  [MED_NAME_SIZE+1];
-      char meshname[MED_NAME_SIZE+1];
-      char * comp = (char*) malloc(ncomp*MED_SNAME_SIZE+1);
-      char * unit = (char*) malloc(ncomp*MED_SNAME_SIZE+1);
-      char dtunit[MED_SNAME_SIZE+1];
-      med_bool local;
-      med_field_type typcha;
-      med_int nbofcstp;
-      erreur = MEDfieldInfo(medIdt,i+1,nomcha,meshname,&local,&typcha,comp,unit,dtunit,&nbofcstp) ;
-      free(comp);
-      free(unit);
-      if ( erreur < 0 )
-      {
-        if(errorMessage)
-        {
-          QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
-                                    QObject::tr("MG_ADAPT_MED_FILE_6") );
-        }
-        break ;
-      }
-
-      ListeChamp.insert(std::pair<QString, int> (QString(nomcha), nbofcstp));
-
+//       std::cout << listFieldsNames[j] << std::endl;
+      ListeChamp.insert(std::pair<QString, int> (QString(listFieldsNames[j].c_str()), nbofcstp));
     }
     break ;
   }
-    // Fermeture du fichier
-  if ( medIdt > 0 ) MEDfileClose(medIdt);
 
   return ListeChamp;
 }

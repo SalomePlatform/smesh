@@ -43,9 +43,7 @@
 #include <med.h>
 #include <QObject>
 // model
-//~#include "MG_ADAPT.h"
 #include "MG_ADAPTGUI.hxx"
-//~#include "MG_ADAPT.hxx"
 
 #include CORBA_SERVER_HEADER(MG_ADAPT)
 
