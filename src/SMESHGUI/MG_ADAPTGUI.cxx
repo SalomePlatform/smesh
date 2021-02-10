@@ -24,6 +24,7 @@
 #include "MG_ADAPTGUI.hxx"
 
 #include "MEDFileData.hxx"
+#include "MEDLoader.hxx"
 
 #include "SUIT_Desktop.h"
 #include "SUIT_Application.h"
@@ -1278,82 +1279,32 @@ med_idt OuvrirFichier(QString aFile)
 QString lireNomMaillage(QString aFile, med_int& meshdim)
 {
   QString nomMaillage = QString::null ;
-  int erreur = 0 ;
-  med_idt medIdt ;
 
-  //  Ouverture du fichier
-  medIdt = OuvrirFichier(aFile);
-  if ( medIdt < 0 )
-  {
-    erreur = 1 ;
-    return nomMaillage;
-  }
-  med_int numberOfMeshes = MEDnMesh(medIdt) ;
+  std::vector<std::string> listMeshesNames = MEDCoupling::GetMeshNames(aFile.toStdString());
+
+  std::size_t numberOfMeshes(listMeshesNames.size());
+//   std::cout << "numberOfMeshes:" << numberOfMeshes << std::endl;
   if (numberOfMeshes == 0 )
   {
     QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
                               QObject::tr("MG_ADAPT_MED_FILE_2") );
-    erreur = 2 ;
     return nomMaillage;
   }
   if (numberOfMeshes > 1 )
   {
     QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
                               QObject::tr("MG_ADAPT_MED_FILE_3") );
-    erreur = 3 ;
     return nomMaillage;
   }
 
-  nomMaillage = lireNomMaillage2(medIdt,1, meshdim);
-  // Fermeture du fichier
-  if ( medIdt > 0 ) MEDfileClose(medIdt);
+//   std::cout << "numberOfMeshes:" << numberOfMeshes << std::endl;
+  std::cout << "nomMaillage:" << listMeshesNames[0] << std::endl;
+  nomMaillage = QString(listMeshesNames[0].c_str());
 
   return nomMaillage;
 }
 
 // =======================================================================
-// =======================================================================
-QString lireNomMaillage2(med_idt medIdt,int meshId, med_int& meshdim )
-{
-  QString NomMaillage=QString::null;
-  char meshname[MED_NAME_SIZE+1];
-  med_int spacedim;
-  med_mesh_type meshtype;
-  char descriptionription[MED_COMMENT_SIZE+1];
-  char dtunit[MED_SNAME_SIZE+1];
-  med_sorting_type sortingtype;
-  med_int nstep;
-  med_axis_type axistype;
-  int naxis = MEDmeshnAxis(medIdt,1);
-  char *axisname=new char[naxis*MED_SNAME_SIZE+1];
-  char *axisunit=new char[naxis*MED_SNAME_SIZE+1];
-  med_err aRet = MEDmeshInfo(medIdt,
-                              meshId,
-                              meshname,
-                              &spacedim,
-                              &meshdim,
-                              &meshtype,
-                              descriptionription,
-                              dtunit,
-                              &sortingtype,
-                              &nstep,
-                              &axistype,
-                              axisname,
-                              axisunit);
-
-  if ( aRet < 0 ) {
-    QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"), \
-                              QObject::tr("MG_ADAPT_MED_FILE_4") );
-  }
-  else            {
-    NomMaillage=QString(meshname);
-  }
-
-  delete[] axisname ;
-  delete[] axisunit ;
-
-  return NomMaillage;
-}
 
 // =======================================================================
 std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)

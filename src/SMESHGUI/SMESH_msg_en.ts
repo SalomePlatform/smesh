@@ -397,10 +397,6 @@
         <translation>No field in this MED file.</translation>
     </message>
     <message>
-        <source>MG_ADAPT_MED_FILE_6</source>
-        <translation>The field(s) in this MED file cannot be read.</translation>
-    </message>
-    <message>
         <source>MG_ADAPT_ERROR</source>
         <translation>Error</translation>
     </message>

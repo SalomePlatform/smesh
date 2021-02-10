@@ -397,10 +397,6 @@
         <translation>Ce fichier MED ne contient aucun champ.</translation>
     </message>
     <message>
-        <source>MG_ADAPT_MED_FILE_6</source>
-        <translation>Impossible de lire le(s) champ(s) de ce fichier MED.</translation>
-    </message>
-    <message>
         <source>MG_ADAPT_ERROR</source>
         <translation>Erreur</translation>
     </message>
