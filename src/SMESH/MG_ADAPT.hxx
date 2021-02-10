@@ -272,7 +272,6 @@ public:
 
 private :
   bool fromMedFile;
-
   std::string medFileIn;
   std::string medFileOut;
   std::string meshName;
@@ -329,6 +328,8 @@ private :
   void execCmd( const char* cmd, int& err);
   void cleanUp();
   void appendMsgToLogFile(std::string& msg);
+  bool checkTimeStepRank(std::string fileIn) ;
+
 };
 
 }

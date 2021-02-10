@@ -566,7 +566,7 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
   chosenTimeStep = new QRadioButton(tr("MG_ADAPT_CH_ST"), sizeMapField);
   timeStepLabel = new QLabel(tr("MG_ADAPT_TSTP"), sizeMapField);
   timeStep = new QSpinBox(sizeMapField);
-  //~timeStep->setMinimum(-1);
+  timeStep->setMinimum(-1);
   rankLabel = new QLabel(tr("MG_ADAPT_RANK"), sizeMapField);
   rankSpinBox = new QSpinBox(sizeMapField);
   rankSpinBox->setMinimum(-1);
@@ -649,8 +649,8 @@ void SMESHGUI_MgAdaptArguments::onChosenTimeStep(bool disableOther, int vmax)
   chosenTimeStep->setChecked(true);
 
   visibleTimeStepRankLabel (true);
-  rankSpinBox->setValue(0);
-  timeStep->setValue(0);
+  rankSpinBox->setValue(-1);
+  timeStep->setValue(-1);
   if (vmax) timeStep->setMaximum(vmax);
 }
 

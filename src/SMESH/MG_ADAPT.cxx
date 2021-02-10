@@ -32,6 +32,7 @@
 
 #include <SALOME_NamingService.hxx>
 #include <Utils_SALOME_Exception.hxx>
+#include "Utils_CorbaException.hxx"
 
 #include <utilities.h>
 #include <iostream>
@@ -231,15 +232,11 @@ void MgAdapt::setMedFileIn(std::string fileName)
   }
   else
   {
-    std::cout << "\nThe file " + fileName + " does not exist.\n" << std::endl;
-//     SALOME::ExceptionStruct es;
-//     es.type = SALOME::BAD_PARAM;
-//     std::string text = "\nThe file " + fileName + " does not exist.\n" ;
-//     std::cout << text << std::endl;
-//     es.text = "The mesh file does not exist.";
-//     es.text = CORBA::string_dup(text.c_str());
-//     throw SALOME::SALOME_Exception(es);
-    throw SALOME_Exception(("The file " + fileName + " does not exist." ).c_str() );
+    SALOME::ExceptionStruct es;
+    es.type = SALOME::BAD_PARAM;
+    std::string text = "\nThe file " + fileName + " does not exist.\n" ;
+    es.text = CORBA::string_dup(text.c_str());
+    throw SALOME::SALOME_Exception(es);
   }
 }
 
@@ -387,8 +384,11 @@ void MgAdapt::setSizeMapFile(std::string mapFile)
   }
   else
   {
-    std::cout << "\nThe file " + mapFile + " does not exist.\n" << std::endl;
-    throw SALOME_Exception(("The file " + mapFile + " does not exist." ).c_str() );
+    SALOME::ExceptionStruct es;
+    es.type = SALOME::BAD_PARAM;
+    std::string text = "\nThe file " + mapFile + " does not exist.\n" ;
+    es.text = CORBA::string_dup(text.c_str());
+    throw SALOME::SALOME_Exception(es);
   }
 }
 std::string MgAdapt::getSizeMapFile()
@@ -1152,6 +1152,39 @@ void MgAdapt::copyMgAdaptHypothesisData( const MgAdaptHypothesisData* from)
   data->myVerboseLevel = from->myVerboseLevel;
 }
 
+bool MgAdapt::checkTimeStepRank(std::string fileIn)
+{
+  INFOS("checkTimeStepRank");
+  bool ret = false ;
+  MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(fileIn);
+  MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>( mfd->getFields()->getFieldWithName(fieldName) );
+//   std::cout << "--- timeStep " << timeStep << std::endl;
+//   std::cout << "--- rank " << rank << std::endl;
+  std::vector<double> timevalue;
+  std::vector< std::pair<int,int> > timesteprank = fts->getTimeSteps(timevalue);
+  std::size_t jaux(timesteprank.size());
+  for(std::size_t j=0;j<jaux;j++)
+  {
+//     std::cout << "--- l[j]first  " << timesteprank[j].first << std::endl;
+//     std::cout << "--- l[j]second " << timesteprank[j].second << std::endl;
+    if ( ( timeStep == timesteprank[j].first ) & ( rank == timesteprank[j].second ) )
+    {
+      ret = true ;
+    }
+  }
+  if ( ! ret )
+  {
+    std::cout << "Available (Time step, Rank) :" << std::endl;
+    for(std::size_t j=0;j<jaux;j++)
+    { std::cout << "(Time step = " << timesteprank[j].first << ", Rank = " << timesteprank[j].second << ")" << std::endl;}
+   SALOME::ExceptionStruct es;
+    es.type = SALOME::BAD_PARAM;
+    std::string text = "(Time step = " + std::to_string(timeStep) + ", Rank = " + std::to_string(rank) + ") is not found." ;
+    es.text = CORBA::string_dup(text.c_str());
+    throw SALOME::SALOME_Exception(es);
+  }
+  return ret ;
+}
 
 void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& solFormatFieldFileName, std::string& meshFormatsizeMapFile)
 {
@@ -1171,12 +1204,14 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
 
   if (useBackgroundMap)
   {
+    bool ret = checkTimeStepRank(sizeMapFile) ;
     meshFormatsizeMapFile = getFileName();
     meshFormatsizeMapFile += ".mesh";
     buildBackGroundMeshAndSolFiles(fieldFileNames, meshFormatsizeMapFile);
   }
   else if(useLocalMap)
   {
+    bool ret = checkTimeStepRank(medFileIn) ;
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>( mfd->getFields()->getFieldWithName(fieldName) );
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeField1TS> f = fts->getTimeStep(timeStep, rank);
     MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::MEDFileFieldMultiTS::New();
@@ -1342,11 +1377,9 @@ med_idt MgAdapt::openMedFile(const std::string aFile)
   {
     SALOME::ExceptionStruct es;
     es.type = SALOME::BAD_PARAM;
-    std::string text = "The med file " + aFile + " cannot be opened." ;
-//     es.text = "The mesh file does not exist.";
+    std::string text = "\nThe med file " + aFile + " cannot be opened.\n" ;
     es.text = CORBA::string_dup(text.c_str());
     throw SALOME::SALOME_Exception(es);
-    return 0;
   }
   return medIdt;
 }
