@@ -133,7 +133,7 @@ MgAdapt::~MgAdapt()
 void MgAdapt::buildModel()
 {
 
-  const char* boolOptionNames[] = { "compute_ridges",                          // yes
+  const char* boolOptionNames[] = { "compute_ridges", // yes
                                     "" // mark of end
                                   };
   // const char* intOptionNames[] = { "max_number_of_errors_printed", // 1
@@ -143,8 +143,8 @@ void MgAdapt::buildModel()
   const char* doubleOptionNames[] = { "max_memory",  // 0
                                       "" // mark of end
                                     };
-  const char* charOptionNames[] = { "components",                    // "yes"
-                                    "adaptation",            // both
+  const char* charOptionNames[] = { "components",  // "yes"
+                                    "adaptation",  // both
                                     "" // mark of end
                                   };
 
@@ -171,10 +171,10 @@ void MgAdapt::buildModel()
 
   // default values to be used while MG-Adapt
 
-  _defaultOptionValues["adaptation"                         ] = "both";
-  _defaultOptionValues["components"                         ] = "outside components";
-  _defaultOptionValues["compute_ridges"                     ] = "yes";
-  _defaultOptionValues["max_memory"                         ] = ToComment(defaultMaximumMemory());
+  _defaultOptionValues["adaptation"    ] = "both";
+  _defaultOptionValues["components"    ] = "outside components";
+  _defaultOptionValues["compute_ridges"] = "yes";
+  _defaultOptionValues["max_memory"    ] = ToComment(defaultMaximumMemory());
 }
 
 //=============================================================================
@@ -527,6 +527,8 @@ void MgAdapt::setOptionValue(const std::string& optionName,
                              const std::string& optionValue)
 throw (std::invalid_argument)
 {
+//   INFOS("setOptionValue");
+//   std::cout << "optionName: " << optionName << ", optionValue: " << optionValue << std::endl;
   TOptionValues::iterator op_val = _option2value.find(optionName);
   if (op_val == _option2value.end())
   {
@@ -586,6 +588,7 @@ throw (std::invalid_argument)
     std::string value( ptr, i );
     if ( _defaultOptionValues[ optionName ] == value ) value.clear();
 
+//     std::cout << "==> value: " << value << std::endl;
     op_val->second = value;
 
   }
@@ -594,9 +597,11 @@ throw (std::invalid_argument)
 //! Return option value. If isDefault provided, it can be a default value,
 //  then *isDefault == true. If isDefault is not provided, the value will be
 //  empty if it equals a default one.
-std::string MgAdapt::getOptionValue(const std::string& optionName, bool*              isDefault) const
+std::string MgAdapt::getOptionValue(const std::string& optionName, bool* isDefault) const
 throw (std::invalid_argument)
 {
+//   INFOS("getOptionValue");
+//   std::cout << "optionName: " << optionName << ", isDefault: " << isDefault << std::endl;
   TOptionValues::const_iterator op_val = _option2value.find(optionName);
   if (op_val == _option2value.end())
   {
@@ -615,6 +620,8 @@ throw (std::invalid_argument)
     op_val = _defaultOptionValues.find( optionName );
     if (op_val != _defaultOptionValues.end()) val = op_val->second;
   }
+//   std::cout << "==> val: " << val << std::endl;
+
   return val;
 }
 //================================================================================
@@ -858,9 +865,11 @@ std::string MgAdapt::getCommandToRun()
   //~{
       //~// constant value TODO
   //~}
-  /* sizemap file is not adapted in case of only surface adaptation see MeshGems docs */
   std::string adapOp   = "adaptation";
   std::string adpOpVal = getOptionValue(adapOp);
+  // Check coherence between mesh dimension and option
+//   checkDimensionOption(adpOpVal);
+  /* sizemap file is not adapted in case of only surface adaptation see MeshGems docs */
   std::string surfaceAdapt = "surface";
   if(surfaceAdapt != adpOpVal )
   {
@@ -868,10 +877,6 @@ std::string MgAdapt::getCommandToRun()
     cmd+= " --write_sizemap "+ solFileOut;
     solFormatOutput.push_back(solFileOut);
     tmpFilesToBeDeleted.push_back(solFileOut);
-  }
-  if (verbosityLevel != defaultVerboseLevel())
-  {
-    cmd+= " --verbose "+ ToComment(verbosityLevel);
   }
 
   std::string option, value;
@@ -905,6 +910,12 @@ std::string MgAdapt::getCommandToRun()
         cmd += " ";
       cmd += option + " " + value;
     }
+  }
+
+  // Verbosity Level
+  if (verbosityLevel != defaultVerboseLevel())
+  {
+    cmd+= " --verbose "+ ToComment(verbosityLevel);
   }
     //~}
 //~cmd+= " >"
@@ -1159,7 +1170,23 @@ std::vector<std::string> MgAdapt::getListFieldsNames(std::string fileIn)
   return listFieldsNames ;
 }
 
-bool MgAdapt::checkFieldName(std::string fileIn)
+void MgAdapt::checkDimensionOption(std::string adpOpVal)
+{
+  // Pas correct.
+  MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(medFileIn);
+  int meshdim = mfd->getMeshes()->getMeshAtPos(0)->getMeshDimension() ;
+
+  if ( ( meshdim == 2 ) & ( adpOpVal != "surface" ) )
+  {
+    SALOME::ExceptionStruct es;
+    es.type = SALOME::BAD_PARAM;
+    std::string text = "Mesh dimension is 2; the option should be 'surface' instead of '" + adpOpVal + "'." ;
+    es.text = CORBA::string_dup(text.c_str());
+    throw SALOME::SALOME_Exception(es);
+  }
+}
+
+void MgAdapt::checkFieldName(std::string fileIn)
 {
   bool ret = false ;
   std::vector<std::string> listFieldsNames = getListFieldsNames(fileIn);
@@ -1183,10 +1210,9 @@ bool MgAdapt::checkFieldName(std::string fileIn)
     es.text = CORBA::string_dup(text.c_str());
     throw SALOME::SALOME_Exception(es);
   }
-  return ret ;
 }
 
-bool MgAdapt::checkTimeStepRank(std::string fileIn)
+void MgAdapt::checkTimeStepRank(std::string fileIn)
 {
   bool ret = false ;
   MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(fileIn);
@@ -1215,7 +1241,6 @@ bool MgAdapt::checkTimeStepRank(std::string fileIn)
     es.text = CORBA::string_dup(text.c_str());
     throw SALOME::SALOME_Exception(es);
   }
-  return ret ;
 }
 
 void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& solFormatFieldFileName, std::string& meshFormatsizeMapFile)
@@ -1236,18 +1261,16 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
 
   if (useBackgroundMap)
   {
-    bool ret ;
-    ret = checkFieldName(sizeMapFile) ;
-    ret = checkTimeStepRank(sizeMapFile) ;
+    checkFieldName(sizeMapFile) ;
+    checkTimeStepRank(sizeMapFile) ;
     meshFormatsizeMapFile = getFileName();
     meshFormatsizeMapFile += ".mesh";
     buildBackGroundMeshAndSolFiles(fieldFileNames, meshFormatsizeMapFile);
   }
   else if(useLocalMap)
   {
-    bool ret ;
-    ret = checkFieldName(medFileIn) ;
-    ret = checkTimeStepRank(medFileIn) ;
+    checkFieldName(medFileIn) ;
+    checkTimeStepRank(medFileIn) ;
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>( mfd->getFields()->getFieldWithName(fieldName) );
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeField1TS> f = fts->getTimeStep(timeStep, rank);
     MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::MEDFileFieldMultiTS::New();

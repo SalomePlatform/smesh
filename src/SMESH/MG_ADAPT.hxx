@@ -329,8 +329,9 @@ private :
   void cleanUp();
   void appendMsgToLogFile(std::string& msg);
   std::vector<std::string> getListFieldsNames(std::string fileIn) ;
-  bool checkFieldName(std::string fileIn) ;
-  bool checkTimeStepRank(std::string fileIn) ;
+  void checkDimensionOption(std::string adpOpVal) ;
+  void checkFieldName(std::string fileIn) ;
+  void checkTimeStepRank(std::string fileIn) ;
 
 };
 
