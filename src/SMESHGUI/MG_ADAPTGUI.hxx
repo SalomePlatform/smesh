@@ -99,9 +99,8 @@ class QFileDialog;
 
 std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage = true);
 QString lireNomMaillage(QString aFile, med_int& meshDim);
-med_idt OuvrirFichier(QString aFile);
-std::string remove_extension(const std::string& filename);
 
+std::string remove_extension(const std::string& filename);
 
 enum ADAPTATION_MODE{
   SURFACE, // surface adaption when meshDim == 2

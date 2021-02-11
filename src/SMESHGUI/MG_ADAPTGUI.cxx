@@ -1259,52 +1259,44 @@ void MgAdaptAdvWidgetTreeWidget::keyPressEvent( QKeyEvent* e )
   QTreeWidget::keyPressEvent( e );
 }
 
-
-// =======================================================================
-// renvoie le medId associe au fichier Med apres ouverture
-// =======================================================================
-med_idt OuvrirFichier(QString aFile)
-{
-  med_idt medIdt = MEDfileOpen(aFile.toStdString().c_str(),MED_ACC_RDONLY);
-  if (medIdt <0)
-  {
-    QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
-                              QObject::tr("MG_ADAPT_MED_FILE_1") );
-  }
-  return medIdt;
-}
-
 // ======================================================
 // ========================================================
 QString lireNomMaillage(QString aFile, med_int& meshdim)
 {
   QString nomMaillage = QString::null ;
 
-  std::vector<std::string> listMeshesNames = MEDCoupling::GetMeshNames(aFile.toStdString());
-
-  std::size_t numberOfMeshes(listMeshesNames.size());
-//   std::cout << "numberOfMeshes:" << numberOfMeshes << std::endl;
-  if (numberOfMeshes == 0 )
+  while ( true )
   {
-    QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
-                              QObject::tr("MG_ADAPT_MED_FILE_2") );
-    return nomMaillage;
-  }
-  if (numberOfMeshes > 1 )
-  {
-    QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
-                              QObject::tr("MG_ADAPT_MED_FILE_3") );
-    return nomMaillage;
-  }
+    std::vector<std::string> listMeshesNames = MEDCoupling::GetMeshNames(aFile.toStdString());
 
-//   std::cout << "numberOfMeshes:" << numberOfMeshes << std::endl;
-  std::cout << "nomMaillage:" << listMeshesNames[0] << std::endl;
-  nomMaillage = QString(listMeshesNames[0].c_str());
+    std::size_t numberOfMeshes(listMeshesNames.size());
+  //   std::cout << "numberOfMeshes:" << numberOfMeshes << std::endl;
+    if (numberOfMeshes == 0 )
+    {
+      QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
+                                QObject::tr("MG_ADAPT_MED_FILE_2") );
+      break ;
+    }
+    if (numberOfMeshes > 1 )
+    {
+      QMessageBox::critical( 0, QObject::tr("MG_ADAPT_ERROR"),
+                                QObject::tr("MG_ADAPT_MED_FILE_3") );
+      break ;
+    }
+
+//     std::cout << "nomMaillage:" << listMeshesNames[0] << std::endl;
+    nomMaillage = QString(listMeshesNames[0].c_str());
+
+    // Dimension du maillage
+    MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(aFile.toStdString());
+    meshdim = mfd->getMeshes()->getMeshAtPos(0)->getMeshDimension() ;
+//     std::cout << "meshdim:" << meshdim << std::endl;
+
+    break ;
+  }
 
   return nomMaillage;
 }
-
-// =======================================================================
 
 // =======================================================================
 std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)
@@ -1312,12 +1304,9 @@ std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)
 {
 // Il faut voir si plusieurs maillages
 
-  MESSAGE("GetListeChamps");
   std::map<QString, int> ListeChamp ;
 
-  med_err erreur = 0 ;
-
-  while ( erreur == 0 )
+  while ( true )
   {
     MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(aFile.toStdString());
     std::vector<std::string> listFieldsNames(mfd->getFields()->getFieldsNames());
@@ -1329,9 +1318,9 @@ std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)
         QMessageBox::critical( 0, QObject::tr("_ERROR"),
                                   QObject::tr("HOM_MED_FILE_5") );
       }
-      erreur = 2 ;
       break ;
     }
+    // nbofcstp inutile pour le moment
     med_int nbofcstp = 1;
     for(std::size_t j=0;j<jaux;j++)
     {
@@ -1344,7 +1333,9 @@ std::map<QString, int> GetListeChamps(QString aFile, bool errorMessage)
   return ListeChamp;
 }
 
+// =======================================================================
 std::string remove_extension(const std::string& filename)
+// =======================================================================
 {
   size_t lastdot = filename.find_last_of(".");
   if (lastdot == std::string::npos) return filename;
