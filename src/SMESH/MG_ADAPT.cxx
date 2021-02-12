@@ -539,7 +539,6 @@ throw (std::invalid_argument)
 
   if (op_val->second != optionValue)
   {
-
     std::string lowerOptionValue = toLowerStr(optionValue);
     const char* ptr = lowerOptionValue.c_str();
     // strip white spaces
@@ -586,11 +585,11 @@ throw (std::invalid_argument)
       throw std::invalid_argument(msg);
     }
     std::string value( ptr, i );
+//     std::cout << "==> value: " << value << std::endl;
     if ( _defaultOptionValues[ optionName ] == value ) value.clear();
 
 //     std::cout << "==> value: " << value << std::endl;
     op_val->second = value;
-
   }
 }
 //=============================================================================
@@ -744,6 +743,8 @@ std::string MgAdapt::getCommandToRun(MgAdapt* hyp)
 int MgAdapt::compute(std::string& errStr)
 {
   std::string cmd = getCommandToRun();
+//   std::cout << cmd << std::endl;
+
   int err = 0;
   execCmd( cmd.c_str(), err ); // run
 
@@ -865,13 +866,11 @@ std::string MgAdapt::getCommandToRun()
   //~{
       //~// constant value TODO
   //~}
-  std::string adapOp   = "adaptation";
-  std::string adpOpVal = getOptionValue(adapOp);
-  // Check coherence between mesh dimension and option
-//   checkDimensionOption(adpOpVal);
-  /* sizemap file is not adapted in case of only surface adaptation see MeshGems docs */
-  std::string surfaceAdapt = "surface";
-  if(surfaceAdapt != adpOpVal )
+  // Check coherence between mesh dimension and option fo adaptation
+  checkDimensionOptionAdaptation();
+
+//   sizemap file is written only if level is higher than 3
+  if ( verbosityLevel > 3)
   {
     std::string solFileOut = getFileName()+".sol";
     cmd+= " --write_sizemap "+ solFileOut;
@@ -891,23 +890,24 @@ std::string MgAdapt::getCommandToRun()
       value = getOptionValue( option, &isDefault );
 
       if ( isDefault )
-          continue;
+        continue;
       if ( value.empty() )//value == NoValue() )
       {
         if ( _defaultOptionValues.count( option ))
-            continue; // non-custom option with no value
+          continue; // non-custom option with no value
         //value.clear();
       }
       if ( strncmp( "no", option.c_str(), 2 ) == 0 ) // options w/o values: --no_*
       {
         if ( !value.empty() && toBool( value ) == false )
-            continue;
+          continue;
         value.clear();
       }
       if ( option[0] != '-' )
         cmd += " --";
       else
         cmd += " ";
+//       std::cout << "--- option: '" << option << ", value: '" << value <<"'"<< std::endl;
       cmd += option + " " + value;
     }
   }
@@ -922,6 +922,8 @@ std::string MgAdapt::getCommandToRun()
 #ifdef WIN32
     cmd += " < NUL";
 #endif
+//   std::cout << "--- cmd :"<< std::endl;
+//   std::cout << cmd << std::endl;
 
   return cmd;
 }
@@ -1170,19 +1172,45 @@ std::vector<std::string> MgAdapt::getListFieldsNames(std::string fileIn)
   return listFieldsNames ;
 }
 
-void MgAdapt::checkDimensionOption(std::string adpOpVal)
+void MgAdapt::checkDimensionOptionAdaptation()
 {
-  // Pas correct.
+  // Quand le maillage est 3D, tout est possible
+  // Quand le maillage est 2D, il faut 'surface' sauf si carte de fonds 3D
   MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(medFileIn);
   int meshdim = mfd->getMeshes()->getMeshAtPos(0)->getMeshDimension() ;
+//   std::cout << "meshdim = " << meshdim << std::endl;
 
-  if ( ( meshdim == 2 ) & ( adpOpVal != "surface" ) )
+  if ( meshdim == 2 )
   {
-    SALOME::ExceptionStruct es;
-    es.type = SALOME::BAD_PARAM;
-    std::string text = "Mesh dimension is 2; the option should be 'surface' instead of '" + adpOpVal + "'." ;
-    es.text = CORBA::string_dup(text.c_str());
-    throw SALOME::SALOME_Exception(es);
+    std::string optionName   = "adaptation";
+    std::string optionValue = getOptionValue(optionName);
+//     std::cout << "optionValue = '" << optionValue <<"'"<< std::endl;
+    bool a_tester = false ;
+    // carte locale ou constante : impératif d'avoir "surface"
+    if ( useLocalMap || useConstantValue) a_tester = true ;
+    // carte de fond : impératif d'avoir "surface" si le fonds est aussi 2D
+    else
+    {
+      MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfdbg = MEDCoupling::MEDFileData::New(sizeMapFile);
+      int meshdimbg = mfdbg->getMeshes()->getMeshAtPos(0)->getMeshDimension() ;
+//       std::cout << "meshdimbg = " << meshdimbg << std::endl;
+      if ( meshdimbg == 2 ) a_tester = true ;
+    }
+    if ( a_tester )
+    {
+      if ( optionValue == "" ) setOptionValue (optionName, "surface");
+      else
+      {
+        if ( optionValue != "surface" )
+        {
+          SALOME::ExceptionStruct es;
+          es.type = SALOME::BAD_PARAM;
+          std::string text = "Mesh dimension is 2; the option should be 'surface' instead of '" + optionValue + "'." ;
+          es.text = CORBA::string_dup(text.c_str());
+          throw SALOME::SALOME_Exception(es);
+        }
+      }
+    }
   }
 }
 

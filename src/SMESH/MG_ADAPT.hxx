@@ -329,7 +329,7 @@ private :
   void cleanUp();
   void appendMsgToLogFile(std::string& msg);
   std::vector<std::string> getListFieldsNames(std::string fileIn) ;
-  void checkDimensionOption(std::string adpOpVal) ;
+  void checkDimensionOptionAdaptation() ;
   void checkFieldName(std::string fileIn) ;
   void checkTimeStepRank(std::string fileIn) ;
 
