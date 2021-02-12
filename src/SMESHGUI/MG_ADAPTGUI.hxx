@@ -103,8 +103,8 @@ QString lireNomMaillage(QString aFile, med_int& meshDim);
 std::string remove_extension(const std::string& filename);
 
 enum ADAPTATION_MODE{
-  SURFACE, // surface adaption when meshDim == 2
-  VOLUME, //
+  SURFACE,
+  VOLUME,
   BOTH
 };
 //=================================================================================
@@ -164,7 +164,6 @@ public:
   SMESHGUI_MgAdaptArguments( QWidget* parent);
   ~SMESHGUI_MgAdaptArguments();
   void setMode( const Mode, const SIZEMAP );
-  med_int getMeshDim() const;
 
   QString* myFileInDir;
   QString* myFileOutDir;
@@ -239,12 +238,14 @@ private slots:
   void onLastTimeStep(bool disableOther = false);
   void onChosenTimeStep(bool disableOther = false, int vmax = 0);
   void visibleTimeStepRankLabel(bool visible);
+  void valueAdaptation ();
 
 private:
 
   QString getMedFileName(bool avertir);
   LightApp_SelectionMgr* selMgr ;
   med_int meshDim;
+  med_int meshDimBG;
   std::map<QString, int> myFieldList;
 
 };

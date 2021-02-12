@@ -487,6 +487,7 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
   }
 
   meshDim = 0;
+  meshDimBG = 0;
   // Mesh in
   aMeshIn = new QGroupBox( tr( "MeshIn" ), this );
   aMedfile       = new QRadioButton( tr( "MEDFile" ),    aMeshIn );
@@ -701,6 +702,10 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFileBackgroundbutton()
         int typeStepInField = it->second > 2 ?  2 : it->second ;
         timeStepGroupChanged(typeStepInField, false);
       }
+      // Dimension du maillage de fonds
+      MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(fileName.toStdString());
+      meshDimBG = mfd->getMeshes()->getMeshAtPos(0)->getMeshDimension() ;
+      valueAdaptation ();
     }
   }
   else
@@ -756,8 +761,9 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFilebuttonClicked()
     else
     {
       meshNameLineEdit->setText(aMeshName);
-      ADAPTATION_MODE aMode = meshDim == 3 ? ADAPTATION_MODE::BOTH : ADAPTATION_MODE::SURFACE; // and when dimesh 3 without 2D mesh?
-      emit meshDimSignal(aMode);
+      valueAdaptation ();
+//       ADAPTATION_MODE aMode = meshDim == 3 ? ADAPTATION_MODE::BOTH : ADAPTATION_MODE::SURFACE; // and when dimesh 3 without 2D mesh?
+//       emit meshDimSignal(aMode);
     }
   }
   else
@@ -774,6 +780,20 @@ void SMESHGUI_MgAdaptArguments::onSelectMedFilebuttonClicked()
   selectOutMedFileLineEdit->setText(outF);
   onLocalSelected(myFileInfo.filePath());
 
+}
+
+void SMESHGUI_MgAdaptArguments::valueAdaptation()
+{
+  ADAPTATION_MODE aMode ;
+  if ( meshDimBG < 3 )
+  {
+    aMode = meshDim == 3 ? ADAPTATION_MODE::BOTH : ADAPTATION_MODE::SURFACE;
+  }
+  else
+  {
+    aMode = ADAPTATION_MODE::BOTH;
+  }
+  emit meshDimSignal(aMode);
 }
 
 void SMESHGUI_MgAdaptArguments::onLocalSelected(QString filePath)
@@ -886,7 +906,6 @@ void SMESHGUI_MgAdaptArguments::sizeMapDefChanged( int  theSizeMap )
     valueLabel->hide();
     dvalue->hide();
     sizeMapField->setEnabled(true);
-
   }
   else
   {
@@ -899,6 +918,8 @@ void SMESHGUI_MgAdaptArguments::sizeMapDefChanged( int  theSizeMap )
     dvalue->show();
     sizeMapField->setEnabled(false);
   }
+  meshDimBG = 0;
+  valueAdaptation();
 }
 void SMESHGUI_MgAdaptArguments::timeStepGroupChanged(int timeStepType, bool disableOther, int vmax)
 {
@@ -925,10 +946,10 @@ void SMESHGUI_MgAdaptArguments::clear()
   meshNameLineEdit->clear();
   selectOutMedFileLineEdit->clear();
 }
-med_int SMESHGUI_MgAdaptArguments::getMeshDim() const
-{
-  return meshDim;
-}
+// med_int SMESHGUI_MgAdaptArguments::getMeshDim() const
+// {
+//   return meshDim;
+// }
 QWidget* ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &o, const QModelIndex &index) const
 {
   bool editable = index.data( EDITABLE_ROLE ).toInt();
@@ -1149,7 +1170,7 @@ void MgAdaptAdvWidget::_onWorkingDirectoryPushButton()
 void MgAdaptAdvWidget::onMeshDimChanged(ADAPTATION_MODE aMode)
 {
 /* default adaptation mode
-  * assume that if meshDim == 2 -->adaptation surface
+  * assume that if meshDim == 2 and no 3D backgrounmesh-->adaptation surface
   * if meshDim == 3 and  if there is not 2D mesh -->VOLUME
   * else BOTH
   */
