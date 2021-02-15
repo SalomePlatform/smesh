@@ -7,20 +7,16 @@ Gérald NICOLAS
 +33.1.78.19.43.52
 """
 
-__revision__ = "V04.02"
+__revision__ = "V04.03"
 
 #========================= Les imports - Début ===================================
 
 import sys
+import os
 import salome
 
-import os
 salome.standalone()
 salome.salome_init()
-
-l=list(os.environ.keys())
-l.sort()
-print (l)
 
 import SMESH
 from salome.smesh import smeshBuilder
@@ -30,27 +26,20 @@ smesh = smeshBuilder.New()
 
 #========================= Paramétrage - Début ===================================
 # 1. REPDATA = répertoire du cas
-HOME = os.environ["HOME"]
-REPDATA = os.path.join(HOME, "MAILLAGE", "TEST_REMAILLAGE", "MGAdapt_med_files")
-PATH_SMESH = os.getenv("SMESH_ROOT_DIR")
-print (PATH_SMESH)
-PATH_SMESH = os.getenv("TEST_INSTALL_DIRECTORY")
-print (PATH_SMESH)
-REPDATA = os.path.join(PATH_SMESH, "MGAdapt_med_files")
-print (REPDATA)
+REPDATA = "MGAdapt_med_files"
 #
 # 2. Repérage des données
 D_DATA = dict()
-D_DATA["01"] = "01"
-D_DATA["02"] = "02"
-D_DATA["03"] = "01"
-D_DATA["04"] = "04"
-D_DATA["05"] = "04"
-D_DATA["06"] = "06"
-D_DATA["07"] = "07"
-D_DATA["08"] = "08"
-D_DATA["10"] = "10"
-D_DATA["11"] = "11"
+D_DATA["01"] = "01" # 2D plan ; carte locale
+D_DATA["02"] = "02" # 2D plan ; carte en arrière-plan
+D_DATA["03"] = "01" # 2D plan ; taille constante
+D_DATA["04"] = "04" # 3D ; carte locale et dernier pas de temps
+D_DATA["05"] = "04" # 3D ; carte locale et pas de temps n°1
+D_DATA["06"] = "06" # 2D non plan; carte locale
+D_DATA["07"] = "07" # 2D plan ; carte locale anisotrope
+D_DATA["08"] = "08" # 3D ; carte en arrière-plan anisotrope
+D_DATA["10"] = "10" # 2D plan ; carte locale et maillage initial quadratique
+D_DATA["11"] = "11" # 2D plan ; carte locale et maillage initial en quadrangles
 #========================== Paramétrage - Fin ====================================
 
 class MGAdaptTest (object):
@@ -100,7 +89,7 @@ Le(s) nom du/des tests à passer. Si aucun n'est donné, tous les cas sont pass�
         self.l_cas.append(option)
 
     if not self.l_cas:
-      for cle in D_DATA.keys():
+      for cle in D_DATA:
         self.l_cas.append(cle)
     self.l_cas.sort()
 
@@ -468,7 +457,7 @@ if __name__ == "__main__" :
       sys.stdout.write(MGADAPT_TEST.__doc__+"\n")
       MESSAGE_ERREUR += "\n {} erreur(s)\n".format(ERREUR)
       sys.stderr.write(MESSAGE_ERREUR)
-      raise Exception(MESSAGE_ERREUR)
+      #raise Exception(MESSAGE_ERREUR)
       assert(False)
 
   del MGADAPT_TEST
