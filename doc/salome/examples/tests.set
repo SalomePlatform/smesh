@@ -183,6 +183,7 @@ SET(GOOD_TESTS
   quad_medial_axis_algo.py
   defining_hypotheses_len_near_vertex.py
   test_polyhedron_per_solid.py
+  MGAdaptTests.py
 )
 
 set(SESSION_FREE_TESTS
