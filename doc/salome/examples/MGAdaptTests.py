@@ -1,20 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests des adaptations par MGAdapt en TUI
+"""Tests des adaptations par MGAdapt en standalone
 
 Copyright 2021 EDF
 Gérald NICOLAS
 +33.1.78.19.43.52
 """
 
-__revision__ = "V04.01"
+__revision__ = "V04.02"
 
 #========================= Les imports - Début ===================================
 
-import os
 import sys
-
 import salome
+
+import os
+salome.standalone()
+salome.salome_init()
+
+l=list(os.environ.keys())
+l.sort()
+print (l)
 
 import SMESH
 from salome.smesh import smeshBuilder
@@ -462,6 +468,7 @@ if __name__ == "__main__" :
       sys.stdout.write(MGADAPT_TEST.__doc__+"\n")
       MESSAGE_ERREUR += "\n {} erreur(s)\n".format(ERREUR)
       sys.stderr.write(MESSAGE_ERREUR)
+      raise Exception(MESSAGE_ERREUR)
       assert(False)
 
   del MGADAPT_TEST

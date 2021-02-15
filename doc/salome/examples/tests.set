@@ -183,12 +183,12 @@ SET(GOOD_TESTS
   quad_medial_axis_algo.py
   defining_hypotheses_len_near_vertex.py
   test_polyhedron_per_solid.py
-  MGAdaptTests.py
 )
 
 set(SESSION_FREE_TESTS
   basic_geom_smesh_without_session.py
   basic_shaper_smesh_without_session.py
+  MGAdaptTests.py
 )
 
 SET(EXAMPLES_TESTS ${BAD_TESTS} ${GOOD_TESTS} ${SESSION_FREE_TESTS} testme.py)
