@@ -1244,9 +1244,7 @@ void MgAdapt::checkTimeStepRank(std::string fileIn)
 {
   bool ret = false ;
   MEDCoupling::MCAuto<MEDCoupling::MEDFileData> mfd = MEDCoupling::MEDFileData::New(fileIn);
-  MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>( mfd->getFields()->getFieldWithName(fieldName) );
-//   std::cout << "--- timeStep " << timeStep << std::endl;
-//   std::cout << "--- rank " << rank << std::endl;
+  MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts( mfd->getFields()->getFieldWithName(fieldName) );
   std::vector<double> timevalue;
   std::vector< std::pair<int,int> > timesteprank = fts->getTimeSteps(timevalue);
   std::size_t jaux(timesteprank.size());
@@ -1299,7 +1297,7 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
   {
     checkFieldName(medFileIn) ;
     checkTimeStepRank(medFileIn) ;
-    MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>( mfd->getFields()->getFieldWithName(fieldName) );
+    MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts( mfd->getFields()->getFieldWithName(fieldName) );
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeField1TS> f = fts->getTimeStep(timeStep, rank);
     MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::MEDFileFieldMultiTS::New();
     tmFts->pushBackTimeStep(f);
@@ -1438,8 +1436,8 @@ void MgAdapt::buildBackGroundMeshAndSolFiles(const std::vector<std::string>& fie
 {
   MEDCoupling::MCAuto<MEDCoupling::MEDFileData> tmpMfd = MEDCoupling::MEDFileData::New(sizeMapFile);
   MEDCoupling::MEDFileFields* tmpFields = tmpMfd->getFields();
-  MEDCoupling::MEDFileAnyTypeFieldMultiTS* fts = tmpFields->getFieldWithName(fieldName);
-  MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS>  fts1 = dynamic_cast<MEDCoupling::MEDFileFieldMultiTS *>(fts);
+  MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts( tmpFields->getFieldWithName(fieldName) );
+  MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS>  fts1 = MEDCoupling::DynamicCastSafe<MEDCoupling::MEDFileAnyTypeFieldMultiTS,MEDCoupling::MEDFileFieldMultiTS>(fts);
   MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeField1TS> f = fts1->getTimeStep(timeStep, rank);
   MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::MEDFileFieldMultiTS::New();
   tmFts->pushBackTimeStep(f);

@@ -372,34 +372,25 @@ char* MG_ADAPT_i::getCommandToRun()
   return CORBA::string_dup(myMgAdapt->getCommandToRun().c_str());
 }
 
-//~CORBA::Long MG_ADAPT_i::compute(::CORBA::String_out errStr)
-//~{
-  //~std::string err("");
-  //~CORBA::Long ret = myMgAdapt->compute(err);
-  //~errStr =  err.c_str();
-  //~return ret;
-//~}
-CORBA::Long MG_ADAPT_i::compute()
+void MG_ADAPT_i::compute()
 {
   errStr = "";
-  CORBA::Long ret;
   try
   {
-    ret = myMgAdapt->compute(errStr);
+    myMgAdapt->compute(errStr);
   }
   catch (const std::exception& e)
   {
-    std::cerr<<e.what();
-    ret = -1;
+    std::ostringstream oss; oss << "Exception thrown on MG_ADAPT_i::compute invocation with error message \"" << errStr
+		 << "\" with exception message \"" << e.what() << "\"";
+		THROW_SALOME_CORBA_EXCEPTION(oss.str().c_str(),SALOME::INTERNAL_ERROR);
   }
-  if(ret!=-1 && myMgAdapt->getPublish())
+  if(myMgAdapt->getPublish())
   {
     SMESH_Gen_i* smeshGen_i = SMESH_Gen_i::GetSMESHGen();
     SMESH::DriverMED_ReadStatus theStatus;
     smeshGen_i->CreateMeshesFromMED(myMgAdapt->getMedFileOut().c_str(), theStatus);
   }
-  //~errStr =  err.c_str();
-  return ret;
 }
 char* MG_ADAPT_i::getErrMsg()
 {
@@ -510,7 +501,8 @@ CORBA::Long MG_ADAPT_OBJECT_i::Compute(bool publish)
     return -1;
   }
   hypothesis->setPublish(publish);
-  return hypothesis->compute();
+  hypothesis->compute();
+  return 0;
 }
 
 bool MG_ADAPT_OBJECT_i::checkMeshFileIn()

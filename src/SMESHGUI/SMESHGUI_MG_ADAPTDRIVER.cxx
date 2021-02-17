@@ -385,12 +385,12 @@ bool SMESHGUI_MG_ADAPTDRIVER::PushOnApply()
 
 bool SMESHGUI_MG_ADAPTDRIVER::execute()
 {
-  int err;
-  //~std::string errStr;
+  int err = 1;
   char* errStr;
   try
   {
-    err = getModel()->compute();
+    getModel()->compute();
+    err = 0;
     errStr = getModel()->getErrMsg();
     std::string msg = err == 0 ? " ok" : std::string("Not ok \n")+CORBA::string_dup(errStr) ;
   }
@@ -398,7 +398,7 @@ bool SMESHGUI_MG_ADAPTDRIVER::execute()
   {
     std::cerr<<e.what();
   }
-  return err == 0? true: false;
+  return err == 0;
 }
 
 //=================================================================================

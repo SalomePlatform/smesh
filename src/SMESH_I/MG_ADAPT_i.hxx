@@ -109,8 +109,7 @@ public:
 
   bool setAll();
   char* getCommandToRun() ;
-  //~CORBA::Long compute(::CORBA::String_out errStr);
-  CORBA::Long compute();
+  void compute();
   char* getFileName();
   char* getExeName();
   void copyMgAdaptHypothesisData( const SMESH::MgAdaptHypothesisData& data ) ;

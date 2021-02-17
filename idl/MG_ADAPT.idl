@@ -122,8 +122,7 @@ module SMESH{
     void setSizeMapType(in string f);
     boolean setAll();
     string getCommandToRun() ;
-    //long compute(out string errStr);
-    long compute();
+    void compute() raises(SALOME::SALOME_Exception);
     string getErrMsg();
     string getFileName() ;
     string getExeName();
