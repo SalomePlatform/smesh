@@ -493,8 +493,8 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
   aMedfile       = new QRadioButton( tr( "MEDFile" ),    aMeshIn );
   aBrowser       = new QRadioButton( tr( "Browser" ), aMeshIn );
   aBrowserObject = new QLineEdit(  aMeshIn );
-  selectMedFilebutton = new QPushButton("", aMeshIn);
-  selectMedFileLineEdit      = new QLineEdit(  aMeshIn );
+  selectMedFilebutton = new QPushButton("...", aMeshIn);
+  selectMedFileLineEdit = new QLineEdit(  aMeshIn );
 
   meshIn = new QGridLayout( aMeshIn );
 
@@ -518,7 +518,7 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
   secondHspacer = new QSpacerItem(100, 30);
   meshNameLineEdit = new QLineEdit(aMeshOut) ;
   medFileCheckBox = new QCheckBox(tr("MEDFile"), aMeshOut);
-  selectOutMedFilebutton = new QPushButton("", aMeshOut);
+  selectOutMedFilebutton = new QPushButton("...", aMeshOut);
   thirdHspacer = new QSpacerItem(188, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
   selectOutMedFileLineEdit = new QLineEdit(aMeshOut) ;
   publishOut = new  QCheckBox(tr("Publish_MG_ADAPT"), aMeshOut);
@@ -542,7 +542,7 @@ SMESHGUI_MgAdaptArguments::SMESHGUI_MgAdaptArguments( QWidget* parent )
   backgroundButton = new QRadioButton(tr("BACKGRND_MG_ADAPT"), sizeMapDefinition);
   constantButton = new QRadioButton(tr("CNST_MG_ADAPT"), sizeMapDefinition);
   medFileBackground = new QLabel(tr("MED_FILE_BCKG"), sizeMapDefinition);
-  selectMedFileBackgroundbutton = new QPushButton(tr(""), sizeMapDefinition);
+  selectMedFileBackgroundbutton = new QPushButton("...", sizeMapDefinition);
   selectMedFileBackgroundLineEdit = new QLineEdit(sizeMapDefinition);
   valueLabel = new QLabel(tr("VALUE_MG_ADAPT"), sizeMapDefinition);
   dvalue = new QDoubleSpinBox(sizeMapDefinition);
@@ -1093,6 +1093,7 @@ void MgAdaptAdvWidget::setupWidget()
   gridLayout_4->addWidget(myOptionTable, 0, 0, 1, 2);
 
   addBtn = new QPushButton(this);
+  addBtn->setText(QApplication::translate("SMESH_AdvOptionsWdg", "ADD_OPTION_BTN", Q_NULLPTR));
   addBtn->setObjectName(QString("addBtn"));
 
   gridLayout_4->addWidget(addBtn, 1, 0, 1, 1);
