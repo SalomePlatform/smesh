@@ -7,7 +7,7 @@ Gérald NICOLAS
 +33.1.78.19.43.52
 """
 
-__revision__ = "V04.03"
+__revision__ = "V04.04"
 
 #========================= Les imports - Début ===================================
 
@@ -40,6 +40,7 @@ D_DATA["07"] = "07" # 2D plan ; carte locale anisotrope
 D_DATA["08"] = "08" # 3D ; carte en arrière-plan anisotrope
 D_DATA["10"] = "10" # 2D plan ; carte locale et maillage initial quadratique
 D_DATA["11"] = "11" # 2D plan ; carte locale et maillage initial en quadrangles
+D_DATA["13"] = "13" # 3D ; carte locale en simple précision et dernier pas de temps
 #========================== Paramétrage - Fin ====================================
 
 class MGAdaptTest (object):
@@ -303,18 +304,21 @@ Entrées/Sorties :
           break
 
       #--- Création de l'hypothèse ---
-      if self.nro_cas in ("01", "04", "05", "06", "07", "10"):
+      if self.nro_cas in ("01", "04", "05", "06", "07", "10", "11", "13"):
         maptype = "Local"
-        option = "TAILLE"
+        if self.nro_cas in ("01", "04", "05", "06", "07", "10"):
+          option = "TAILLE"
+        elif self.nro_cas in ("11",):
+          option = "Taille de maille"
+        elif self.nro_cas in ("13",):
+          option = "Elevation"
       elif self.nro_cas in ("02", "08"):
         maptype = "Background"
         option = "TAILLE"
       elif self.nro_cas in ("03",):
         maptype = "Constant"
         option = 0.5
-      if self.nro_cas in ("11",):
-        maptype = "Local"
-        option = "Taille de maille"
+
       if self._verbose:
         niveau = 3
       elif self._verbose_max:
@@ -330,6 +334,8 @@ Entrées/Sorties :
         hypo.setTimeStepRankLast()
       elif self.nro_cas in ("05",):
         hypo.setTimeStepRank(1,1)
+      elif self.nro_cas in ("13",):
+        hypo.setTimeStepRank(0,0)
 
       # options facultatives
       if self.nro_cas in ("03",):
@@ -372,7 +378,7 @@ Sorties :
     if self._verbose:
       print ("Passage du cas '{}'".format(self.nro_cas))
 
-    if ( self.nro_cas in ("01", "02", "03", "04", "05", "06", "07", "08", "10" , "11") ):
+    if ( self.nro_cas in ("01", "02", "03", "04", "05", "06", "07", "08", "10" ,"11" ,"13") ):
       objet_adapt = smesh.Adaptation('MG_Adapt')
       erreur, message = self._test_00 (objet_adapt)
       del objet_adapt
@@ -410,7 +416,7 @@ Sorties :
       erreur_t, message_t = self._traitement_cas ()
       if erreur_t:
         erreur += 1
-        message += "\nErreur n°{} pour le cas {} :\n".format(erreur_t,nom_cas)
+        message += "\nErreur n° {} pour le cas {} :\n".format(erreur_t,nom_cas)
         message += message_t
 
     if ( erreur and self._verbose_max ):
@@ -434,16 +440,17 @@ if __name__ == "__main__" :
   #L_OPTIONS.append("-h")
   #L_OPTIONS.append("-v")
   #L_OPTIONS.append("-vmax")
-  #L_OPTIONS.append("01")
-  #L_OPTIONS.append("02")
-  #L_OPTIONS.append("03")
-  #L_OPTIONS.append("07")
-  #L_OPTIONS.append("10")
-  #L_OPTIONS.append("11")
-  #L_OPTIONS.append("04")
-  #L_OPTIONS.append("05")
-  #L_OPTIONS.append("06")
-  #L_OPTIONS.append("08")
+  L_OPTIONS.append("01")
+  L_OPTIONS.append("02")
+  L_OPTIONS.append("03")
+  L_OPTIONS.append("07")
+  L_OPTIONS.append("10")
+  L_OPTIONS.append("11")
+  L_OPTIONS.append("04")
+  L_OPTIONS.append("05")
+  L_OPTIONS.append("06")
+  L_OPTIONS.append("08")
+  #L_OPTIONS.append("13")
 
 # 2. Lancement de la classe
 
