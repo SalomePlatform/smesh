@@ -1117,7 +1117,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
     TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".RemoveGroup( " << aGroupSO << " )";
 
     // Remove group's SObject
-    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudyServant()->NewBuilder();
+    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::GetSMESHGen()->getStudyServant()->NewBuilder();
     builder->RemoveObjectWithChildren( aGroupSO );
   }
   aGroup->Modified(/*removed=*/true); // notify dependent Filter with FT_BelongToMeshGroup criterion
@@ -3055,7 +3055,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
 
   SALOMEDS::StudyBuilder_var builder;
   SALOMEDS::SObject_wrap     aGroupSO;
-  SALOMEDS::Study_var        aStudy = SMESH_Gen_i::getStudyServant();
+  SALOMEDS::Study_var        aStudy = SMESH_Gen_i::GetSMESHGen()->getStudyServant();
   if ( !aStudy->_is_nil() ) {
     builder  = aStudy->NewBuilder();
     aGroupSO = _gen_i->ObjectToSObject( theGroup );
@@ -3693,7 +3693,7 @@ string SMESH_Mesh_i::prepareMeshNameAndGroups(const char*    file,
   // Perform Export
   PrepareForWriting(file, overwrite);
   string aMeshName = "Mesh";
-  SALOMEDS::Study_var aStudy = SMESH_Gen_i::getStudyServant();
+  SALOMEDS::Study_var aStudy = SMESH_Gen_i::GetSMESHGen()->getStudyServant();
   if ( !aStudy->_is_nil() ) {
     SALOMEDS::SObject_wrap aMeshSO = _gen_i->ObjectToSObject(  _this() );
     if ( !aMeshSO->_is_nil() ) {
@@ -5955,7 +5955,7 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
   if(gen) {
     CORBA::String_var aParameters = GetParameters();
-    SALOMEDS::ListOfListOfStrings_var aSections = SMESH_Gen_i::getStudyServant()->ParseVariables(aParameters);
+    SALOMEDS::ListOfListOfStrings_var aSections = SMESH_Gen_i::GetSMESHGen()->getStudyServant()->ParseVariables(aParameters);
     if ( aSections->length() > 0 ) {
       SALOMEDS::ListOfStrings aVars = aSections[ aSections->length() - 1 ];
       aResult->length( aVars.length() );

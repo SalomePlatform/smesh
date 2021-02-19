@@ -70,6 +70,8 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeIDLKERNEL}
   ${KERNEL_SALOMELocalTrace}
   ${KERNEL_SalomeKernelHelpers}
+  ${KERNEL_SalomeDS}
+  ${KERNEL_SalomeCatalog}
   ${OpenCASCADE_ApplicationFramework_LIBRARIES}
   ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   ${GEOM_GEOMClient}
@@ -88,6 +90,8 @@ SET(_link_LIBRARIES
 # header files / no moc processing
 SET(SMESHEngine_HEADERS
   SMESH_Gen_i.hxx
+  SMESH_Gen_No_Session_i.hxx
+  SMESH_Gen_Session_i.hxx
   SMESH_Algo_i.hxx
   SMESH_0D_Algo_i.hxx
   SMESH_1D_Algo_i.hxx
@@ -115,6 +119,8 @@ SET(SMESHEngine_HEADERS
 SET(SMESHEngine_SOURCES
   SMESH_Gen_i.cxx
   SMESH_Gen_i_1.cxx
+  SMESH_Gen_No_Session_i.cxx
+  SMESH_Gen_Session_i.cxx
   SMESH_PythonDump.cxx
   SMESH_Mesh_i.cxx
   SMESH_subMesh_i.cxx

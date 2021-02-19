@@ -90,7 +90,7 @@ void StdMeshers_LayerDistribution_i::SetLayerDistribution(SMESH::SMESH_Hypothesi
       SALOMEDS::SObject_var  SO = gen->ObjectToSObject( hyp1D );
       if ( ! SO->_is_nil() )
       {
-        SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudyServant()->NewBuilder();
+        SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::GetSMESHGen()->getStudyServant()->NewBuilder();
         builder->RemoveObjectWithChildren( SO );
         SO->UnRegister();
       }

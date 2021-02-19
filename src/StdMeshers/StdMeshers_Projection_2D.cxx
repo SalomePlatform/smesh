@@ -55,8 +55,15 @@
 #include <BRepMesh_Delaun.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_B2d.hxx>
+#include <GeomAPI_ExtremaCurveCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <GeomAdaptor_Curve.hxx>
+#include <GeomAdaptor_HCurve.hxx>
+#include <GeomAdaptor_HSurface.hxx>
+#include <GeomAdaptor_Surface.hxx>
 #include <GeomLib_IsPlanarSurface.hxx>
+#include <Geom_Line.hxx>
+#include <IntCurveSurface_HInter.hxx>
 #include <Precision.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -81,9 +88,15 @@ using namespace std;
 namespace TAssocTool = StdMeshers_ProjectionUtils;
 //typedef StdMeshers_ProjectionUtils TAssocTool;
 
+// allow range iteration on NCollection_IndexedMap
+template < class IMAP >
+typename IMAP::const_iterator begin( const IMAP &  m ) { return m.cbegin(); }
+template < class IMAP >
+typename IMAP::const_iterator end( const IMAP &  m ) { return m.cend(); }
+
 //=======================================================================
 //function : StdMeshers_Projection_2D
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 StdMeshers_Projection_2D::StdMeshers_Projection_2D(int hypId, SMESH_Gen* gen)
@@ -105,7 +118,7 @@ StdMeshers_Projection_2D::~StdMeshers_Projection_2D()
 
 //=======================================================================
 //function : CheckHypothesis
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                          theMesh,
@@ -1224,6 +1237,418 @@ namespace {
                                    tgtHelper.IthVertex( 1,*edgeS ), assocMap );
   }
 
+  //================================================================================
+  /*!
+   * \brief Find sub-shape association such that corresponding VERTEXes of
+   *        two corresponding FACEs lie on lines parallel to thePiercingLine
+   */
+  //================================================================================
+
+  bool findSubShapeAssociationByPiercing( const TopoDS_Face&          theTgtFace,
+                                          SMESH_Mesh *                /*theTgtMesh*/,
+                                          const TopoDS_Shape&         theSrcShape,
+                                          SMESH_Mesh*                 theSrcMesh,
+                                          TAssocTool::TShapeShapeMap& theShape2ShapeMap,
+                                          Handle(Geom_Line) &         thePiercingLine )
+  {
+    list< TopoDS_Edge > tgtEdges, srcEdges;
+    list< int > tgtNbEW, srcNbEW;
+    int tgtNbW = SMESH_Block::GetOrderedEdges( TopoDS::Face( theTgtFace ), tgtEdges, tgtNbEW );
+
+    TopTools_IndexedMapOfShape tgtVV, srcVV;
+    for ( const TopoDS_Edge& tgtEdge : tgtEdges )
+      tgtVV.Add( SMESH_MesherHelper::IthVertex( 0, tgtEdge ));
+    // if ( tgtVV.Size() < 2 )
+    //   return false;
+
+    const int       nbVV = tgtVV.Size();
+    const gp_Pnt   tgtP0 = BRep_Tool::Pnt( TopoDS::Vertex( tgtVV( 1 )));
+    double minVertexDist = Precision::Infinite(), assocTol;
+    gp_Lin      piercingLine;
+    TopoDS_Face assocSrcFace;
+    double      tol;
+
+    for ( TopExp_Explorer faceExp( theSrcShape, TopAbs_FACE ); faceExp.More(); faceExp.Next())
+    {
+      const TopoDS_Face& srcFace = TopoDS::Face( faceExp.Current() );
+
+      int srcNbW = SMESH_Block::GetOrderedEdges( srcFace, srcEdges, srcNbEW );
+      if ( tgtNbW != srcNbW )
+        continue;
+
+      srcVV.Clear( false );
+      for ( const TopoDS_Edge& srcEdge : srcEdges )
+        srcVV.Add( SMESH_MesherHelper::IthVertex( 0, srcEdge ));
+      if ( srcVV.Extent() != tgtVV.Extent() )
+        continue;
+
+      // make srcFace computed
+      SMESH_subMesh* srcFaceSM = theSrcMesh->GetSubMesh( srcFace );
+      if ( !TAssocTool::MakeComputed( srcFaceSM ))
+        continue;
+
+      // compute tolerance
+      double sumLen = 0, nbEdges = 0;
+      for ( const TopoDS_Edge& srcEdge : srcEdges )
+      {
+        SMESH_subMesh* srcSM = theSrcMesh->GetSubMesh( srcEdge );
+        if ( !srcSM->GetSubMeshDS() )
+          continue;
+        SMDS_ElemIteratorPtr edgeIt = srcSM->GetSubMeshDS()->GetElements();
+        while ( edgeIt->more() )
+        {
+          const SMDS_MeshElement* edge = edgeIt->next();
+          sumLen += SMESH_NodeXYZ( edge->GetNode( 0 )).Distance( edge->GetNode( 1 ));
+          nbEdges += 1;
+        }
+      }
+      if ( nbEdges == 0 )
+        continue;
+
+      tol = 0.1 * sumLen / nbEdges;
+
+      // try to find corresponding VERTEXes
+
+      gp_Lin line;
+      double vertexDist;
+      for ( int iSrcV0 = 1; iSrcV0 <= srcVV.Size(); ++iSrcV0 )
+      {
+        const gp_Pnt srcP0 = BRep_Tool::Pnt( TopoDS::Vertex( srcVV( iSrcV0 )));
+        try {
+          line.SetDirection( gp_Vec( srcP0, tgtP0 ));
+        }
+        catch (...) {
+          continue;
+        }
+        bool correspond;
+        for ( int iDir : { -1, 1 }) // move connected VERTEX forward and backward
+        {
+          correspond = true;
+          vertexDist = 0;
+          int iTgtV = 0, iSrcV = iSrcV0 - 1;
+          for ( int i = 1; i < tgtVV.Size() &&   correspond; ++i )
+          {
+            iTgtV = ( iTgtV + 1           ) % nbVV;
+            iSrcV = ( iSrcV + iDir + nbVV ) % nbVV;
+            gp_Pnt tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtVV( iTgtV + 1 )));
+            gp_Pnt srcP = BRep_Tool::Pnt( TopoDS::Vertex( srcVV( iSrcV + 1 )));
+            line.SetLocation( tgtP );
+            correspond = ( line.SquareDistance( srcP ) < tol * tol );
+            vertexDist += tgtP.SquareDistance( srcP );
+          }
+          if ( correspond )
+            break;
+        }
+        if ( correspond )
+        {
+          if ( vertexDist < minVertexDist )
+          {
+            minVertexDist = vertexDist;
+            piercingLine    = line;
+            assocSrcFace  = srcFace;
+            assocTol      = tol;
+          }
+          break;
+        }
+      }
+      continue;
+
+    } // loop on src FACEs
+
+    if ( Precision::IsInfinite( minVertexDist ))
+      return false; // no correspondence found
+
+    thePiercingLine = new Geom_Line( piercingLine );
+
+    // fill theShape2ShapeMap
+
+    TAssocTool::InsertAssociation( theTgtFace, assocSrcFace, theShape2ShapeMap );
+
+    for ( const TopoDS_Shape& tgtV : tgtVV ) // fill theShape2ShapeMap with VERTEXes
+    {
+      gp_Pnt tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtV ));
+      piercingLine.SetLocation( tgtP );
+      bool found = false;
+      for ( const TopoDS_Shape& srcV : srcVV )
+      {
+        gp_Pnt srcP = BRep_Tool::Pnt( TopoDS::Vertex( srcV ));
+        if ( piercingLine.SquareDistance( srcP ) < assocTol * assocTol )
+        {
+          TAssocTool::InsertAssociation( tgtV, srcV, theShape2ShapeMap );
+          found = true;
+          break;
+        }
+      }
+      if ( !found )
+        return false;
+    }
+
+    TopoDS_Vertex vvT[2], vvS[2], vvMapped[2];
+    for ( const TopoDS_Edge& tgtEdge : tgtEdges ) // fill theShape2ShapeMap with EDGEs
+    {
+      if ( SMESH_Algo::isDegenerated( tgtEdge ))
+        continue;
+
+      TopExp::Vertices( tgtEdge, vvT[0], vvT[1], true );
+      if ( !theShape2ShapeMap.IsBound( vvT[0] ) ||
+           !theShape2ShapeMap.IsBound( vvT[1] ))
+        return false;
+
+      vvMapped[0] = TopoDS::Vertex( theShape2ShapeMap( vvT[0] ));
+      vvMapped[1] = TopoDS::Vertex( theShape2ShapeMap( vvT[1] ));
+
+      bool found = false;
+      for ( TopExp_Explorer eExp( assocSrcFace, TopAbs_EDGE ); eExp.More(); eExp.Next())
+      {
+        TopoDS_Edge srcEdge = TopoDS::Edge( eExp.Current() );
+        TopExp::Vertices( srcEdge, vvS[0], vvS[1], true );
+        found = (( vvMapped[0].IsSame( vvS[0] ) && vvMapped[1].IsSame( vvS[1] )) ||
+                 ( vvMapped[0].IsSame( vvS[1] ) && vvMapped[1].IsSame( vvS[0] )));
+
+        if ( found && nbVV < 3 )
+        {
+          BRepAdaptor_Curve tgtCurve( tgtEdge );
+          gp_Pnt tgtP = tgtCurve.Value( 0.5 * ( tgtCurve.FirstParameter() +
+                                                tgtCurve.LastParameter() ));
+          thePiercingLine->SetLocation( tgtP );
+
+          double f,l;
+          Handle(Geom_Curve) srcCurve = BRep_Tool::Curve( srcEdge, f,l );
+          if ( srcCurve.IsNull() )
+          {
+            found = false;
+            continue;
+          }
+          GeomAPI_ExtremaCurveCurve extrema( thePiercingLine, srcCurve );
+          if ( !extrema.Extrema().IsDone() ||
+               extrema.Extrema().IsParallel() ||
+               extrema.NbExtrema() == 0 ||
+               extrema.LowerDistance() > tol )
+            found = false;
+        }
+        if ( found )
+        {
+          if ( !vvMapped[0].IsSame( vvS[0] ))
+            srcEdge.Reverse();
+          TAssocTool::InsertAssociation( tgtEdge, srcEdge, theShape2ShapeMap );
+          break;
+        }
+      }
+      if ( !found )
+        return false;
+    }
+
+    return true;
+
+  } // findSubShapeAssociationByPiercing()
+
+    //================================================================================
+  /*!
+   * \brief Project by piercing theTgtFace by lines parallel to thePiercingLine
+   */
+  //================================================================================
+
+  bool projectByPiercing(Handle(Geom_Line)                  thePiercingLine,
+                         const TopoDS_Face&                 theTgtFace,
+                         const TopoDS_Face&                 theSrcFace,
+                         const TSideVector&                 theTgtWires,
+                         const TSideVector&                 theSrcWires,
+                         const TAssocTool::TShapeShapeMap&  theShape2ShapeMap,
+                         TAssocTool::TNodeNodeMap&          theSrc2tgtNodes,
+                         const bool                         theIs1DComputed)
+  {
+    SMESH_Mesh * tgtMesh = theTgtWires[0]->GetMesh();
+    SMESH_Mesh * srcMesh = theSrcWires[0]->GetMesh();
+
+    if ( thePiercingLine.IsNull() )
+    {
+      // try to set thePiercingLine by VERTEX association of theShape2ShapeMap
+
+      const double tol = 0.1 * theSrcWires[0]->Length() / theSrcWires[0]->NbSegments();
+
+      for ( TopExp_Explorer vExp( theTgtFace, TopAbs_VERTEX ); vExp.More(); vExp.Next() )
+      {
+        const TopoDS_Vertex & tgtV = TopoDS::Vertex( vExp.Current() );
+        const TopoDS_Vertex & srcV = TopoDS::Vertex( theShape2ShapeMap( tgtV ));
+        gp_Pnt tgtP = BRep_Tool::Pnt( tgtV );
+        gp_Pnt srcP = BRep_Tool::Pnt( srcV );
+        if ( thePiercingLine.IsNull() ) // set thePiercingLine
+        {
+          gp_Lin line;
+          try {
+            line.SetDirection( gp_Vec( srcP, tgtP ));
+            line.SetLocation( tgtP );
+            thePiercingLine = new Geom_Line( line );
+          }
+          catch ( ... )
+          {
+            continue;
+          }
+        }
+        else // check thePiercingLine
+        {
+          thePiercingLine->SetLocation( tgtP );
+          if ( thePiercingLine->Lin().SquareDistance( srcP ) > tol * tol )
+            return false;
+        }
+      }
+
+      for ( TopExp_Explorer eExp( theTgtFace, TopAbs_EDGE ); eExp.More(); eExp.Next() )
+      {
+        BRepAdaptor_Curve tgtCurve( TopoDS::Edge( eExp.Current() ));
+        gp_Pnt tgtP = tgtCurve.Value( 0.5 * ( tgtCurve.FirstParameter() +
+                                              tgtCurve.LastParameter() ));
+        thePiercingLine->SetLocation( tgtP );
+
+        double f,l;
+        TopoDS_Edge srcEdge = TopoDS::Edge( theShape2ShapeMap( eExp.Current() ));
+        Handle(Geom_Curve) srcCurve = BRep_Tool::Curve( srcEdge, f,l );
+        if ( srcCurve.IsNull() )
+          continue;
+        GeomAPI_ExtremaCurveCurve extrema( thePiercingLine, srcCurve,
+                                           -Precision::Infinite(), Precision::Infinite(), f, l );
+        if ( !extrema.Extrema().IsDone() ||
+             extrema.Extrema().IsParallel() ||
+             extrema.NbExtrema() == 0 ||
+             extrema.LowerDistance() > tol )
+          return false;
+      }
+    } // if ( thePiercingLine.IsNull() )
+
+    SMESHDS_SubMesh* srcSubDS = srcMesh->GetMeshDS()->MeshElements( theSrcFace );
+
+    SMESH_MesherHelper* helper = theTgtWires[0]->FaceHelper();
+    if ( theIs1DComputed )
+      helper->IsQuadraticSubMesh( theTgtFace );
+    else
+      helper->SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
+    helper->SetElementsOnShape( true );
+    SMESHDS_Mesh* tgtMeshDS = tgtMesh->GetMeshDS();
+
+    Handle(Geom_Surface)             tgtSurface = BRep_Tool::Surface( theTgtFace );
+    Handle(GeomAdaptor_HSurface) tgtSurfAdaptor = new GeomAdaptor_HSurface( tgtSurface );
+    Handle(GeomAdaptor_HCurve)    piercingCurve = new GeomAdaptor_HCurve( thePiercingLine );
+    IntCurveSurface_HInter intersect;
+
+    SMESH_MesherHelper* srcHelper = theSrcWires[0]->FaceHelper();
+
+    const SMDS_MeshNode* nullNode = 0;
+    TAssocTool::TNodeNodeMap::iterator srcN_tgtN;
+    vector< const SMDS_MeshNode* > tgtNodes;
+
+    SMDS_ElemIteratorPtr elemIt = srcSubDS->GetElements();
+    while ( elemIt->more() ) // loop on all mesh faces on srcFace
+    {
+      const SMDS_MeshElement* elem = elemIt->next();
+      const int nbN = elem->NbCornerNodes();
+      tgtNodes.resize( nbN );
+      for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
+      {
+        const SMDS_MeshNode* srcNode = elem->GetNode(i);
+        srcN_tgtN = theSrc2tgtNodes.insert( make_pair( srcNode, nullNode )).first;
+        if ( srcN_tgtN->second == nullNode )
+        {
+          // create a new node
+          thePiercingLine->SetLocation( SMESH_NodeXYZ( srcNode ));
+          intersect.Perform( piercingCurve, tgtSurfAdaptor );
+          bool pierced = ( intersect.IsDone() && intersect.NbPoints() > 0 );
+          double U, V;
+          const SMDS_MeshNode* n = nullNode;
+          if ( pierced )
+          {
+            double W, minW = Precision::Infinite();
+            gp_Pnt tgtP;
+            for ( int iInt = 1; iInt <= intersect.NbPoints(); ++iInt )
+            {
+              W = intersect.Point( iInt ).W();
+              if ( 0 < W && W < minW )
+              {
+                U    = intersect.Point( iInt ).U();
+                V    = intersect.Point( iInt ).V();
+                tgtP = intersect.Point( iInt ).Pnt();
+                minW = W;
+              }
+            }
+            n = tgtMeshDS->AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
+          }
+
+          SMDS_TypeOfPosition shapeType = srcNode->GetPosition()->GetTypeOfPosition();
+          TopoDS_Shape        srcShape;
+          if ( shapeType != SMDS_TOP_FACE )
+          {
+            srcShape = srcHelper->GetSubShapeByNode( srcNode, srcHelper->GetMeshDS() );
+            if ( !theShape2ShapeMap.IsBound( srcShape, /*isSrc=*/true ))
+            {
+              if ( n )  // INTERNAL shape w/o corresponding target shape (3D_mesh_Extrusion_02/E0)
+                shapeType = SMDS_TOP_FACE;
+              else
+                return false;
+            }
+          }
+
+          switch ( shapeType )
+          {
+          case SMDS_TOP_FACE: {
+            if ( !n )
+              return false;
+            tgtMeshDS->SetNodeOnFace( n, helper->GetSubShapeID(), U, V );
+            break;
+          }
+          case SMDS_TOP_EDGE: {
+            TopoDS_Edge  tgtEdge = TopoDS::Edge( theShape2ShapeMap( srcShape, /*isSrc=*/true ));
+            if ( n )
+            {
+              U = Precision::Infinite();
+              helper->CheckNodeU( tgtEdge, n, U, Precision::PConfusion());
+            }
+            else
+            {
+              Handle(Geom_Curve) tgtCurve = BRep_Tool::Curve( tgtEdge, U,V );
+              if ( tgtCurve.IsNull() )
+                return false;
+              GeomAPI_ExtremaCurveCurve extrema( thePiercingLine, tgtCurve );
+              if ( !extrema.Extrema().IsDone() ||
+                   extrema.Extrema().IsParallel() ||
+                   extrema.NbExtrema() == 0 )
+                return false;
+              gp_Pnt pOnLine, pOnEdge;
+              extrema.NearestPoints( pOnLine, pOnEdge );
+              extrema.LowerDistanceParameters( V, U );
+              n = tgtMeshDS->AddNode( pOnEdge.X(), pOnEdge.Y(), pOnEdge.Z() );
+            }
+            tgtMeshDS->SetNodeOnEdge( n, tgtEdge, U );
+            break;
+          }
+          case SMDS_TOP_VERTEX: {
+            TopoDS_Shape tgtV = theShape2ShapeMap( srcShape, /*isSrc=*/true );
+            if ( !n )
+            {
+              gp_Pnt tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtV ));
+              n = tgtMeshDS->AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
+            }
+            tgtMeshDS->SetNodeOnVertex( n, TopoDS::Vertex( tgtV ));
+            break;
+          }
+          default:;
+          }
+          srcN_tgtN->second = n;
+        }
+        tgtNodes[i] = srcN_tgtN->second;
+      }
+      // create a new face (with reversed orientation)
+      switch ( nbN )
+      {
+      case 3: helper->AddFace(tgtNodes[0], tgtNodes[2], tgtNodes[1]); break;
+      case 4: helper->AddFace(tgtNodes[0], tgtNodes[3], tgtNodes[2], tgtNodes[1]); break;
+      }
+    }  // loop on all mesh faces on srcFace
+
+    return true;
+
+  } // projectByPiercing()
+
+
+
 } // namespace
 
 
@@ -1260,20 +1685,29 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( shape2ShapeMap.IsEmpty() )
     initAssoc4Quad2Closed( tgtFace, helper, srcShape, srcMesh, shape2ShapeMap );
+
+  Handle(Geom_Line) piercingLine;
+  bool piercingTried = false;
+
   if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap)  ||
        !shape2ShapeMap.IsBound( tgtFace ))
   {
-    if ( srcShape.ShapeType() == TopAbs_FACE )
+    piercingTried = true;
+    if ( !findSubShapeAssociationByPiercing( tgtFace, tgtMesh, srcShape, srcMesh,
+                                             shape2ShapeMap, piercingLine ))
     {
-      int nbE1 = helper.Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
-      int nbE2 = helper.Count( srcShape, TopAbs_EDGE, /*ignoreSame=*/true );
-      if ( nbE1 != nbE2 )
-        return error(COMPERR_BAD_SHAPE,
-                     SMESH_Comment("Different number of edges in source and target faces: ")
-                     << nbE2 << " and " << nbE1 );
+      if ( srcShape.ShapeType() == TopAbs_FACE )
+      {
+        int nbE1 = helper.Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true );
+        int nbE2 = helper.Count( srcShape, TopAbs_EDGE, /*ignoreSame=*/true );
+        if ( nbE1 != nbE2 )
+          return error(COMPERR_BAD_SHAPE,
+                       SMESH_Comment("Different number of edges in source and target faces: ")
+                       << nbE2 << " and " << nbE1 );
+      }
+      return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
     }
-    return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
   }
   TopoDS_Face srcFace = TopoDS::Face( shape2ShapeMap( tgtFace ).Oriented(TopAbs_FORWARD));
 
@@ -1310,6 +1744,13 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   bool projDone = false;
 
+  if ( !projDone && !piercingLine.IsNull() )
+  {
+    // project by piercing tgtFace by lines parallel to piercingLine
+    projDone = projectByPiercing( piercingLine, tgtFace, srcFace, tgtWires, srcWires,
+                                  shape2ShapeMap, _src2tgtNodes, is1DComputed );
+    piercingTried = true;
+  }
   if ( !projDone )
   {
     // try to project from the same face with different location
@@ -1329,6 +1770,12 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     projDone = projectQuads( tgtFace, srcFace, tgtWires, srcWires,
                              shape2ShapeMap, _src2tgtNodes, is1DComputed);
   }
+  if ( !projDone && !piercingTried )
+  {
+    // project by piercing tgtFace by lines parallel to piercingLine
+    projDone = projectByPiercing( piercingLine, tgtFace, srcFace, tgtWires, srcWires,
+                                  shape2ShapeMap, _src2tgtNodes, is1DComputed );
+  }
 
   // it will remove mesh built on edges and vertices in failure case
   MeshCleaner cleaner( tgtSubMesh );
@@ -1337,7 +1784,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   {
     _src2tgtNodes.clear();
     // --------------------
-    // Prepare to mapping 
+    // Prepare to mapping
     // --------------------
 
     // Check if node projection to a face is needed
@@ -1607,7 +2054,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         if ( u2nodesMaps[ NEW_NODES ].size() > 0 &&
              u2nodesMaps[ OLD_NODES ].size() > 0 )
         {
-          u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
+          u_oldNode = u2nodesMaps[ OLD_NODES ].begin();
           newEnd    = u2nodesMaps[ OLD_NODES ].end();
           for ( ; u_oldNode != newEnd; ++u_oldNode )
             SMESH_Algo::addBadInputElement( u_oldNode->second );
@@ -1640,7 +2087,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
       // Make groups of nodes to merge
 
-      u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
+      u_oldNode = u2nodesMaps[ OLD_NODES ].begin();
       u_newNode = u2nodesMaps[ NEW_NODES ].begin();
       newEnd    = u2nodesMaps[ NEW_NODES ].end();
       u_newOnSeam = u2nodesOnSeam.begin();
@@ -1761,7 +2208,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
 //=======================================================================
 //function : Evaluate
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool StdMeshers_Projection_2D::Evaluate(SMESH_Mesh&         theMesh,
