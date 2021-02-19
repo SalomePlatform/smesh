@@ -30,4 +30,4 @@ from blocFissure.materielCasTests import disque_perce
 from blocFissure.materielCasTests import ellipse_disque
 from blocFissure.materielCasTests import vis
 from blocFissure.materielCasTests import cubeFin
-#from blocFissure.materielCasTests import tube
+from blocFissure.materielCasTests import tube

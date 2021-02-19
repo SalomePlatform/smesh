@@ -30,11 +30,14 @@ from blocFissure.gmu import initLog
 #initLog.setPerfTests()
 
 # ---tous les cas en séquence, ou les cas sélectionnés ...
+torunOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] # OK
+#           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+runall = False
 runall = True
 if runall:
   torun =   [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-else: #       0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
-  torunOK = [ 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0]
+#             0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+else:
   torunPB = list()
   for iaux in torunOK:
     torunPB.append((iaux+1)%2)
@@ -55,140 +58,159 @@ n_cas = 0
 from blocFissure.CasTests.cubeAngle import cubeAngle
 problemes.append(cubeAngle(n_cas))
 
-n_cas += 1
+n_cas = 1
 # matériel : cubeAngle
 from blocFissure.CasTests.cubeAngle2 import cubeAngle2
 problemes.append(cubeAngle2(n_cas))
 
-n_cas += 1
+n_cas = 2
 # matériel : cubeFin
 from blocFissure.CasTests import cubeCoin
 problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, n_cas))
 d_aux[n_cas] = "cubeCoin"
 
-n_cas += 1
+n_cas = 3
 # matériel : cubeFin
 from blocFissure.CasTests import cubeMilieu
 problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, n_cas))
 d_aux[n_cas] = "cubeMilieu"
 
-n_cas += 1
+n_cas = 4
 # matériel : cubeFin
 from blocFissure.CasTests import cubeTransverse
 problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, n_cas))
 d_aux[n_cas] = "cubeTransverse"
 
-n_cas += 1
+n_cas = 5
 # matériel : decoupeCylindre
 from blocFissure.CasTests.cylindre import cylindre
 problemes.append(cylindre(n_cas))
 
-n_cas += 1
+n_cas = 6
 # matériel : decoupeCylindre
 from blocFissure.CasTests.cylindre_2 import cylindre_2
 problemes.append(cylindre_2(n_cas))
 
-n_cas += 1
+n_cas = 7
 # matériel : disque_perce
 # matériel : ellipse_disque
 from blocFissure.CasTests import disquePerce
 problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, n_cas))
 d_aux[n_cas] = "disquePerce"
-# mailleFacesFissure : Erreur au calcul du maillage
-# "Source elements overlap one another" dans l'import du fonds de fissure
 
-n_cas += 1
+n_cas = 8
 from blocFissure.CasTests.ellipse_1 import ellipse_1
 problemes.append(ellipse_1(n_cas))
 
-n_cas += 1
+n_cas = 9
 from blocFissure.CasTests.ellipse_2 import ellipse_2
 problemes.append(ellipse_2(n_cas))
 
-n_cas += 1
+n_cas = 10
 from blocFissure.CasTests.eprouvetteCourbe import eprouvetteCourbe
 problemes.append(eprouvetteCourbe(n_cas))
 
-n_cas += 1
+n_cas = 11
 from blocFissure.CasTests.eprouvetteDroite import eprouvetteDroite
 problemes.append(eprouvetteDroite(n_cas))
 
-n_cas += 1
+n_cas = 12
 from blocFissure.CasTests.eprouvetteDroite_2 import eprouvetteDroite_2
 problemes.append(eprouvetteDroite_2(n_cas))
 
-n_cas += 1
+n_cas = 13
 from blocFissure.CasTests.faceGauche import faceGauche
 problemes.append(faceGauche(n_cas))
 
-n_cas += 1
+n_cas = 14
 # matériel : fissureGauche2
 from blocFissure.CasTests.faceGauche_2 import faceGauche_2
 problemes.append(faceGauche_2(n_cas))
-# mailleFacesFissure : Erreur au calcul du maillage
-# "Source elements don't cover totally the geometrical edge" dans l'import du fonds de fissure
+#"boiteDefaut" has not been computed:
+#-  "algo3d_boiteDefaut" failed. Error: Algorithm failed. Presumably, the surface mesh is not compatible with the domain being processed (warning).
+#An edge is unique (i.e., bounds a hole in the surface).
+#The surface mesh includes at least one hole. The domain is not well defined.
+#See /tmp/GHS3D_18605_10269264.log for more information
+#Traceback (most recent call last):
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 222, in <module>
+    #ok_maillage = cas.executeProbleme()
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 122, in executeProbleme
+    #self.maillageFissureParams, elementsDefaut, step)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/faceGauche_2.py", line 108, in genereMaillageFissure
+    #maillageFissureParams, elementsDefaut, step)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale.py", line 330, in construitFissureGenerale
+    #raise Exception(text)
+#Exception: Erreur au calcul du maillage.
 
-n_cas += 1
+n_cas = 15
 from blocFissure.CasTests.fissureCoude_1 import fissureCoude_1
 problemes.append(fissureCoude_1(n_cas))
 
-n_cas += 1
+n_cas = 16
 from blocFissure.CasTests.fissureCoude_10 import fissureCoude_10
 problemes.append(fissureCoude_10(n_cas))
-# Erreur au calcul du maillage
-# "Source elements overlap one another" dans l'import du fonds de fissure
 
-n_cas += 1
+n_cas = 17
 from blocFissure.CasTests.fissureCoude_2 import fissureCoude_2
 problemes.append(fissureCoude_2(n_cas))
 
-n_cas += 1
+n_cas = 18
 from blocFissure.CasTests.fissureCoude_3 import fissureCoude_3
 problemes.append(fissureCoude_3(n_cas))
 
-n_cas += 1
+n_cas = 19
 from blocFissure.CasTests.fissureCoude_4 import fissureCoude_4
 problemes.append(fissureCoude_4(n_cas))
 
-n_cas += 1
+n_cas = 20
 from blocFissure.CasTests.fissureCoude_5 import fissureCoude_5
 problemes.append(fissureCoude_5(n_cas))
 
-n_cas += 1
+n_cas = 21
 from blocFissure.CasTests.fissureCoude_6 import fissureCoude_6
 problemes.append(fissureCoude_6(n_cas))
 
-n_cas += 1
+n_cas = 22
 from blocFissure.CasTests.fissureCoude_7 import fissureCoude_7
 problemes.append(fissureCoude_7(n_cas))
 
-n_cas += 1
+n_cas = 23
 # matériel : fissureGauche2
 from blocFissure.CasTests.fissureCoude_8 import fissureCoude_8
 problemes.append(fissureCoude_8(n_cas))
-# mailleFacesFissure : Erreur au calcul du maillage
-# "Source elements overlap one another" dans l'import du fonds de fissure
 
-n_cas += 1
+n_cas = 24
 from blocFissure.CasTests.fissureCoude_9 import fissureCoude_9
 problemes.append(fissureCoude_9(n_cas))
 
-n_cas += 1
+n_cas = 25
 from blocFissure.CasTests.fissure_Coude import fissure_Coude
 problemes.append(fissure_Coude(n_cas))
-# mailleFacesFissure : Erreur au calcul du maillage
-# "Source elements overlap one another" dans l'import du fonds de fissure
 
-n_cas += 1
+n_cas = 26
 from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
 problemes.append(fissure_Coude_4(n_cas))
 
-n_cas += 1
+n_cas = 27
 from blocFissure.CasTests.vis_1 import vis_1
 problemes.append(vis_1(n_cas))
-# restreintFaceFissure : Restriction de la face de fissure au domaine solide impossible
+#"Mesh_22" has not been computed:
+#-  "algo2d_faceFiss" failed on FACE #2. Error: Algorithm failed. NgException at Surface meshing: Problem in Surface mesh generation
+#-  "algo1d_edgeFissPeau" failed on EDGE #9. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+#Traceback (most recent call last):
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 233, in <module>
+    #ok_maillage = cas.executeProbleme()
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 122, in executeProbleme
+    #self.maillageFissureParams, elementsDefaut, step)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/vis_1.py", line 116, in genereMaillageFissure
+    #maillageFissureParams, elementsDefaut, step)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale.py", line 282, in construitFissureGenerale
+    #meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/mailleFacesFissure.py", line 69, in mailleFacesFissure
+    #raise Exception(text)
+#Exception: Erreur au calcul du maillage.
 
-n_cas += 1
+n_cas = 28
 from blocFissure.CasTests.tube import tube
 problemes.append(tube(n_cas))
 # restreintFaceFissure : Restriction de la face de fissure au domaine solide impossible
