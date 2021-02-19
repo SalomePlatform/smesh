@@ -75,13 +75,13 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
         fic_stat.write(text+"\n")
         text_2 += "                                          {} = {}, \\\n".format(key,d_resu[key])
 
-# Résultats de référence pour intégration dans le python du cas pour une mise à jour
-    with open(fichierNewRef, "w") as fic_info :
-      fic_info.write(text_2[:-4]+" \\")
 
     if ok_maillage:
       print ("Calcul cohérent avec la référence.")
     else:
+#     Résultats de référence pour intégration dans le python du cas pour une mise à jour
+      with open(fichierNewRef, "w") as fic_info :
+        fic_info.write(text_2[:-4]+" \\")
       text = "Calcul différent de la référence.\n"
       text += "Voir le fichier {}\n".format(fichierStatMaillageFissure)
       text += "La nouvelle référence est disponible dans le fichier :\n{}\n".format(fichierNewRef)
