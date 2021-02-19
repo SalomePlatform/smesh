@@ -44,8 +44,9 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
     boutFromIfil[idFillingFromBout[0]] = 0
     boutFromIfil[idFillingFromBout[1]] = 1
 
-  logging.debug("---------------------------- maillage faces de peau --------------")
-  meshesFacesPeau = []
+  logging.info("---------------------------- maillage faces de peau --------------")
+  logging.info("nbFacesFilling = %d", nbFacesFilling)
+  meshesFacesPeau = list()
   for ifil in range(nbFacesFilling):
     meshFacePeau = None
     if partitionsPeauFissFond[ifil] is None: # face de peau maillage sain intacte
@@ -68,7 +69,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
 
     else:
 
-      logging.debug("meshFacePeau %d coupée par la fissure", ifil)
+      logging.info("meshFacePeau %d coupée par la fissure", ifil)
       facePeau           = facesPeaux[ifil] # pour chaque face : la face de peau finale a mailler (percée des faces débouchantes)
       edgesCircPeau      = edCircPeau[ifil] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
       verticesCircPeau   = ptCircPeau[ifil] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
@@ -76,6 +77,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
       bordsVifs          = gpedgeVifs[ifil] # pour chaque face de peau : groupe subshape des edges aux bords correspondant à des arêtes vives
       edgesFissurePeau   = edFissPeau[ifil] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
 
+      print ("a")
       meshFacePeau = smesh.Mesh(facePeau)
 
       algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
@@ -84,12 +86,14 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
       putName(algo1d, "algo1d_bordsLibres", ifil)
       putName(hypo1d, "hypo1d_bordsLibres", ifil)
 
+      print ("b")
       algo1d = meshFacePeau.UseExisting1DElements(geom=geompy.MakeCompound(edgesFissurePeau))
       hypo1d = algo1d.SourceEdges([ grpEdgesPeauFissureExterne ],0,0)
       putName(algo1d.GetSubMesh(), "edgePeauFiss", ifil)
       putName(algo1d, "algo1d_edgePeauFiss", ifil)
       putName(hypo1d, "hypo1d_edgePeauFiss", ifil)
 
+      print ("bordsVifs = {}".format(bordsVifs))
       if bordsVifs is not None:
         algo1d = meshFacePeau.UseExisting1DElements(geom=bordsVifs)
         hypo1d = algo1d.SourceEdges([ grpAretesVives ],0,0)
@@ -98,6 +102,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
         putName(hypo1d, "hypo1d_bordsVifs", ifil)
 
       for i, edgeCirc in enumerate(edgesCircPeau):
+        print ("i = {}".format(i))
         if edgeCirc is not None:
           algo1d = meshFacePeau.UseExisting1DElements(geom=edgeCirc)
           if boutFromIfil[ifil] is None:
@@ -109,6 +114,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
           putName(algo1d, "algo1d_" + name, ifil)
           putName(hypo1d, "hypo1d_" + name, ifil)
 
+    print ("c")
     algo2d = meshFacePeau.Triangle(algo=smeshBuilder.NETGEN_1D2D)
     hypo2d = algo2d.Parameters()
     hypo2d.SetMaxSize( dmoyen )
@@ -116,6 +122,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
     hypo2d.SetQuadAllowed( 0 )
+    print ("d")
     putName(algo2d.GetSubMesh(), "facePeau", ifil)
     putName(algo2d, "algo2d_facePeau", ifil)
     putName(hypo2d, "hypo2d_facePeau", ifil)
