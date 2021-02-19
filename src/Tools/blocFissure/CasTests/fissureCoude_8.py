@@ -83,7 +83,7 @@ class fissureCoude_8(fissureCoude):
                                    externe     = False)
 
   # ---------------------------------------------------------------------------
-                                   
+
   def setParamMaillageFissure(self):
     """
     Paramètres du maillage de la fissure pour le tuyau coudé
@@ -98,16 +98,16 @@ class fissureCoude_8(fissureCoude):
                                       nbsegRad      = 4,
                                       nbsegCercle   = 16,
                                       areteFaceFissure = 5)
-    
+
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
     self.referencesMaillageFissure = dict( \
-                                          Entity_Quad_Quadrangle = 7758, \
-                                          Entity_Quad_Hexa = 10696, \
-                                          Entity_Node = 71535, \
-                                          Entity_Quad_Edge = 882, \
-                                          Entity_Quad_Triangle = 1378, \
-                                          Entity_Quad_Tetra = 10847, \
-                                          Entity_Quad_Pyramid = 668, \
-                                          Entity_Quad_Penta = 612 \
+                                          Entity_Quad_Quadrangle = 4572, \
+                                          Entity_Quad_Hexa = 5128, \
+                                          Entity_Node = 45641, \
+                                          Entity_Quad_Edge = 648, \
+                                          Entity_Quad_Triangle = 1282, \
+                                          Entity_Quad_Tetra = 11122, \
+                                          Entity_Quad_Pyramid = 768, \
+                                          Entity_Quad_Penta = 752 \
                                          )
