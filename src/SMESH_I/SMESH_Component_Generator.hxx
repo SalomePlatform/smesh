@@ -17,17 +17,13 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#include "SMeshHelper.h"
+#pragma once
 
-#include "SALOME_KernelServices.hxx"
+#include "SMESH.hxx"
 
-#include "SMESH_Component_Generator.hxx"
+#include "SALOMEconfig.h"
 
-#include <cstring>
+#include CORBA_SERVER_HEADER(SMESH_Gen)
 
-std::string BuildSMESHInstanceInternal()
-{
-  Engines::EngineComponent_var zeRef = RetrieveSMESHInstance();
-  CORBA::String_var ior = KERNEL::getORB()->object_to_string(zeRef);
-  return std::string(ior.in());
-}
+SMESH_I_EXPORT Engines::EngineComponent_var RetrieveSMESHInstance();
+SMESH_I_EXPORT Engines::EngineComponent_var GetSMESHInstanceHasThis();
