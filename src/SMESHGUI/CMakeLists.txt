@@ -42,6 +42,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/Controls
   ${PROJECT_SOURCE_DIR}/src/SMESHClient
   ${PROJECT_SOURCE_DIR}/src/MEDWrapper
+  ${PROJECT_SOURCE_DIR}/src/SMESH_I
   ${PROJECT_BINARY_DIR}
   ${PROJECT_BINARY_DIR}/idl
 )
@@ -73,6 +74,7 @@ SET(_link_LIBRARIES
   SMDS
   SMESHControls
   SMESHObject
+  SMESHEngine
 )
 
 # --- headers ---

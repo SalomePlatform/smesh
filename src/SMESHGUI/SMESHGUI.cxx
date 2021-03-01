@@ -104,6 +104,7 @@
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ScalarBarActor.h"
 #include "SMESH_TypeFilter.hxx"
+#include "SMESH_Component_Generator.hxx"
 
 // SALOME GUI includes
 #include <LightApp_DataOwner.h>
@@ -2155,13 +2156,20 @@ SMESH::SMESH_Gen_var SMESHGUI::myComponentSMESH = SMESH::SMESH_Gen::_nil();
  *
  */
 //=============================================================================
-SMESHGUI::SMESHGUI() :
-SalomeApp_Module( "SMESH" )
+SMESHGUI::SMESHGUI() : SalomeApp_Module( "SMESH" )
 {
   if ( CORBA::is_nil( myComponentSMESH ) )
   {
     CORBA::Boolean anIsEmbeddedMode;
-    myComponentSMESH = SMESH_Client::GetSMESHGen(getApp()->orb(),anIsEmbeddedMode);
+    SALOME_NamingService_Abstract *ns = SalomeApp_Application::namingService();
+    if( dynamic_cast<SALOME_NamingService *>(ns) )
+      myComponentSMESH = SMESH_Client::GetSMESHGen(getApp()->orb(),anIsEmbeddedMode);
+    else
+      {
+        Engines::EngineComponent_var comp = RetrieveSMESHInstance();
+        myComponentSMESH = SMESH::SMESH_Gen::_narrow(comp);
+      }
+    
     //MESSAGE("-------------------------------> anIsEmbeddedMode=" << anIsEmbeddedMode);
 
     //  0019923: EDF 765 SMESH : default values of hypothesis

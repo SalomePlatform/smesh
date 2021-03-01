@@ -28,6 +28,7 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_Script.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_Component_Generator.hxx"
 
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
@@ -783,26 +784,35 @@ SMESH_Client::GetSMESHGen(CORBA::ORB_ptr theORB,
 {
   static SMESH::SMESH_Gen_var aMeshGen;
 
-  if(CORBA::is_nil(aMeshGen.in())){
+  if(CORBA::is_nil(aMeshGen.in()))
+  {
+    Engines::EngineComponent_var isCompoInSSLMode = GetSMESHInstanceHasThis();
+    if( CORBA::is_nil(isCompoInSSLMode) )
+    {
 #ifdef WIN32
-    long aClientPID = (long)_getpid();
+      long aClientPID = (long)_getpid();
 #else
-    long aClientPID =  (long)getpid();
+      long aClientPID =  (long)getpid();
 #endif
 
-    SALOME_NamingService aNamingService(theORB);
-    SALOME_LifeCycleCORBA aLifeCycleCORBA(&aNamingService);
-    Engines::EngineComponent_var aComponent = aLifeCycleCORBA.FindOrLoad_Component("FactoryServer","SMESH");
-    aMeshGen = SMESH::SMESH_Gen::_narrow(aComponent);
+      SALOME_NamingService aNamingService(theORB);
+      SALOME_LifeCycleCORBA aLifeCycleCORBA(&aNamingService);
+      Engines::EngineComponent_var aComponent = aLifeCycleCORBA.FindOrLoad_Component("FactoryServer","SMESH");
+      aMeshGen = SMESH::SMESH_Gen::_narrow(aComponent);
 
-    std::string aClientHostName = Kernel_Utils::GetHostname();
-    Engines::Container_var aServerContainer = aMeshGen->GetContainerRef();
-    CORBA::String_var aServerHostName = aServerContainer->getHostName();
-    CORBA::Long aServerPID = aServerContainer->getPID();
-    aMeshGen->SetEmbeddedMode((aClientPID == aServerPID) && (aClientHostName == aServerHostName.in()));
+      std::string aClientHostName = Kernel_Utils::GetHostname();
+      Engines::Container_var aServerContainer = aMeshGen->GetContainerRef();
+      CORBA::String_var aServerHostName = aServerContainer->getHostName();
+      CORBA::Long aServerPID = aServerContainer->getPID();
+      aMeshGen->SetEmbeddedMode((aClientPID == aServerPID) && (aClientHostName == aServerHostName.in()));
+    }
+    else
+    {
+      aMeshGen = SMESH::SMESH_Gen::_narrow(isCompoInSSLMode);
+    }
+    
   }
   theIsEmbeddedMode = aMeshGen->IsEmbeddedMode();
-
   return aMeshGen;
 }
 
