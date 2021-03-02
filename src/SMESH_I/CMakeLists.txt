@@ -31,6 +31,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/Controls
   ${PROJECT_SOURCE_DIR}/src/SMDS
   ${PROJECT_SOURCE_DIR}/src/SMESHDS
+  ${PROJECT_SOURCE_DIR}/src/SMESH_I
   ${PROJECT_SOURCE_DIR}/src/MEDWrapper
   ${PROJECT_SOURCE_DIR}/src/Driver
   ${PROJECT_SOURCE_DIR}/src/DriverMED
@@ -111,6 +112,7 @@ SET(SMESHEngine_HEADERS
   SMESH_PreMeshInfo.hxx
   SMESH_MeshPartDS.hxx
   SMESH.hxx
+  SMESH_Component_Generator.hxx
 )
 
 # --- sources ---
@@ -138,6 +140,7 @@ SET(SMESHEngine_SOURCES
   SMESH_NoteBook.cxx
   SMESH_Measurements_i.cxx
   SMESH_PreMeshInfo.cxx
+  SMESH_Component_Generator.cxx
 )
 
 # --- rules ---

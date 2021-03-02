@@ -164,9 +164,9 @@ static int MYDEBUG = 0;
 GEOM::GEOM_Gen_var      SMESH_Gen_i::myGeomGen;
 CORBA::ORB_var          SMESH_Gen_i::myOrb;
 PortableServer::POA_var SMESH_Gen_i::myPoa;
-SALOME_NamingService*   SMESH_Gen_i::myNS  = NULL;
-SALOME_LifeCycleCORBA*  SMESH_Gen_i::myLCC = NULL;
-SMESH_Gen_i*            SMESH_Gen_i::mySMESHGen = NULL;
+SALOME_NamingService_Abstract*   SMESH_Gen_i::myNS  = nullptr;
+SALOME_LifeCycleCORBA*  SMESH_Gen_i::myLCC = nullptr;
+SMESH_Gen_i*            SMESH_Gen_i::mySMESHGen = nullptr;
 
 
 const int nbElemPerDiagonal = 10;
@@ -245,7 +245,7 @@ CORBA::Object_var SMESH_Gen_i::SObjectToObject( SALOMEDS::SObject_ptr theSObject
  */
 //=============================================================================
 
-SALOME_NamingService* SMESH_Gen_i::GetNS()
+SALOME_NamingService_Abstract* SMESH_Gen_i::GetNS()
 {
   if ( myNS == NULL ) {
     myNS = SINGLETON_<SALOME_NamingService>::Instance();
@@ -340,7 +340,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   // SMESH_Gen_i::SetEmbeddedMode(), have wrong IsEmbeddedMode flag
   if(checkNS)
   {
-    if ( SALOME_NamingService* ns = GetNS() )
+    if ( SALOME_NamingService_Abstract* ns = GetNS() )
     {
       CORBA::Object_var obj = ns->Resolve( "/Kernel/Session" );
       SALOME::Session_var session = SALOME::Session::_narrow( obj ) ;

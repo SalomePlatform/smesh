@@ -20,6 +20,7 @@
 #include "SMESH_Gen_No_Session_i.hxx"
 #include "SALOMEDS_Study_i.hxx"
 #include "SALOME_KernelServices.hxx"
+#include "SALOME_Fake_NamingService.hxx"
 #include "SALOME_ModuleCatalog_impl.hxx"
 
 SMESH_Gen_No_Session_i::SMESH_Gen_No_Session_i( CORBA::ORB_ptr orb,
@@ -28,7 +29,7 @@ SMESH_Gen_No_Session_i::SMESH_Gen_No_Session_i( CORBA::ORB_ptr orb,
                                                 const char*               instanceName,
                                                 const char*               interfaceName):SMESH_Gen_i(orb,poa,contId,instanceName,interfaceName,false)
 {
-
+  myNS = new SALOME_Fake_NamingService;
 }
 
 GEOM::GEOM_Gen_var SMESH_Gen_No_Session_i::GetGeomEngine( bool isShaper )

@@ -104,7 +104,7 @@ public:
   // Get SMESH module's POA object
   static PortableServer::POA_var GetPOA() { return myPoa;}
   // Get Naming Service object
-  static SALOME_NamingService* GetNS();
+  static SALOME_NamingService_Abstract* GetNS();
   // Get SALOME_LifeCycleCORBA object
   static SALOME_LifeCycleCORBA* GetLCC();
   // Retrieve and get GEOM engine reference
@@ -646,10 +646,10 @@ private:
 
 protected:
   static GEOM::GEOM_Gen_var      myGeomGen;
+  static SALOME_NamingService_Abstract*   myNS;          // Naming Service
 private:
   static CORBA::ORB_var          myOrb;         // ORB reference
   static PortableServer::POA_var myPoa;         // POA reference
-  static SALOME_NamingService*   myNS;          // Naming Service
   static SALOME_LifeCycleCORBA*  myLCC;         // Life Cycle CORBA
   static SMESH_Gen_i*            mySMESHGen;    // Point to last created instance of the class
   ::SMESH_Gen                    myGen;         // SMESH_Gen local implementation
