@@ -213,7 +213,12 @@ problemes.append(vis_1(n_cas))
 n_cas = 28
 from blocFissure.CasTests.tube import tube
 problemes.append(tube(n_cas))
-# restreintFaceFissure : Restriction de la face de fissure au domaine solide impossible
+#"Mesh_13" has not been computed:
+#-  "algo2d_facePeau_0" failed on "FACE_12 to mesh". Error: Algorithm failed. NgException at Surface meshing: Problem in Surface mesh generation
+#-  "algo1d_cercle1_0" failed on EDGE #20. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+#-  "algo1d_cercle1_0" failed on EDGE #17. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+#-  "algo1d_cercle1_0" failed on EDGE #15. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+#-  "algo1d_cercle1_0" failed on EDGE #12. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
 
 #=============================================================
 while True:
