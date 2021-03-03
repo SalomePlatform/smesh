@@ -58,7 +58,7 @@ class tube(fissureGenerique):
     """
     texte = "genereMaillageSain pour '{}'".format(self.nomCas)
     logging.info(texte)
-    self.shapeFissureParams = dict(lgInfluence = 0.6,
+    self.shapeFissureParams = dict(lgInfluence = 0.4,
                                    rayonPipe   = 0.05)
 
   # ---------------------------------------------------------------------------
