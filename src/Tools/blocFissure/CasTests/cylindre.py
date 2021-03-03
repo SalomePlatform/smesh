@@ -85,7 +85,7 @@ class cylindre(fissureGenerique):
   def setParamMaillageFissure(self):
     self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
-                                      nomFicFissure    = 'fissure_' + self.nomCas,
+                                      nomFicFissure    = self.nomCas + "_fissure",
                                       nbsegRad         = 5,
                                       nbsegCercle      = 8,
                                       areteFaceFissure = 20)

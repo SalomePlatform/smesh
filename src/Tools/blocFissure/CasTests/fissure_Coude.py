@@ -481,7 +481,7 @@ class fissure_Coude(fissureGenerique):
   def setParamMaillageFissure(self):
     self.maillageFissureParams = dict(nomRep        = os.curdir,
                                       nomFicSain    = self.nomCas,
-                                      nomFicFissure = 'fissure_' + self.nomCas,
+                                      nomFicFissure = self.nomCas + "_fissure",
                                       nbsegExt      = 5,
                                       nbsegGen      = 25,
                                       nbsegRad      = 5,

@@ -94,7 +94,7 @@ class fissureCoude_10(fissureCoude):
     """
     self.maillageFissureParams = dict(nomRep        = os.curdir,
                                       nomFicSain    = self.nomCas,
-                                      nomFicFissure = 'fissure_' + self.nomCas,
+                                      nomFicFissure = self.nomCas + "_fissure",
                                       nbsegRad      = 3,
                                       nbsegCercle   = 8,
                                       areteFaceFissure = 2.5)

@@ -71,7 +71,7 @@ class fissure_Coude_4(fissure_Coude):
     print("setParamShapeFissure", self.nomCas)
     self.shapeFissureParams = dict(nomRep        = os.curdir,
                                    nomFicSain    = self.nomCas,
-                                   nomFicFissure = 'fissure_' + self.nomCas,
+                                   nomFicFissure = self.nomCas + "_fissure",
                                    profondeur  = 10,
                                    azimut      = 90,
                                    alpha       = 20,
