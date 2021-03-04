@@ -70,6 +70,7 @@ SET(_link_LIBRARIES
   SMESHimpl
   SMESHDS
   SMESHControls
+  SMESHEngine 
   MEDWrapper
 )
 
