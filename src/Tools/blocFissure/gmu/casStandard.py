@@ -116,8 +116,8 @@ class casStandard(fissureGenerique):
                                      lenSegPipe  = self.lenSegPipe)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
-    logging.info("genereShapeFissure %s", self.nomCas)
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
@@ -147,7 +147,8 @@ class casStandard(fissureGenerique):
     geomPublishInFather(initLog.debug, shellFiss, fondFiss, 'fondFiss' )
 
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, self.dicoParams['meshBrep'][0] ,self.dicoParams['meshBrep'][1])
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, self.dicoParams['meshBrep'][0] ,self.dicoParams['meshBrep'][1], \
+                                                     mailleur)
 
     centre = None
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
@@ -168,12 +169,14 @@ class casStandard(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
     maillageFissure = construitFissureGenerale(maillagesSains, \
-                                              shapesFissure, shapeFissureParams, \
-                                              maillageFissureParams, elementsDefaut, step)
+                                               shapesFissure, shapeFissureParams, \
+                                               maillageFissureParams, elementsDefaut, \
+                                               step, mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

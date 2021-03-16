@@ -62,7 +62,8 @@ class tube(fissureGenerique):
                                    rayonPipe   = 0.05)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     """Importe la géométrie de la fissure"""
     texte = "genereShapeFissure pour '{}'".format(self.nomCas)
     logging.info(texte)
@@ -79,7 +80,8 @@ class tube(fissureGenerique):
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.025, 0.1)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.025, 0.1, mailleur)
 
     centre = None
 
@@ -104,12 +106,17 @@ class tube(fissureGenerique):
   # ---------------------------------------------------------------------------
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
+                            maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
+
     texte = "genereMaillageFissure pour '{}'".format(self.nomCas)
     logging.info(texte)
+
+    mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(maillagesSains,
                                                shapesFissure, shapeFissureParams,
-                                               maillageFissureParams, elementsDefaut, step)
+                                               maillageFissureParams, elementsDefaut, step, \
+                                               mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

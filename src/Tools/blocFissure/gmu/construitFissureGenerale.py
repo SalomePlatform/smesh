@@ -77,13 +77,15 @@ from .fissError import fissError
 # -----------------------------------------------------------------------------
 # --- procédure complète fissure générale
 
-def construitFissureGenerale(maillagesSains,
-                             shapesFissure, shapeFissureParams,
-                             maillageFissureParams, elementsDefaut, step=-1):
+def construitFissureGenerale(maillagesSains, \
+                             shapesFissure, shapeFissureParams, \
+                             maillageFissureParams, elementsDefaut, \
+                             step=-1, mailleur="MeshGems"):
   """
   TODO: a completer
   """
   logging.info('start')
+  logging.info(mailleur)
 
   shapeDefaut       = shapesFissure[0] # faces de fissure, débordant
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
@@ -277,16 +279,19 @@ def construitFissureGenerale(maillagesSains,
 
   # --- maillage faces de fissure
 
-  (meshFaceFiss, grpFaceFissureExterne,
-   grpEdgesPeauFissureExterne, grpEdgesPipeFissureExterne) = mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFissureExterneC,
-                                                                                meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad)
+  (meshFaceFiss, grpFaceFissureExterne, grpEdgesPeauFissureExterne, grpEdgesPipeFissureExterne) = \
+      mailleFacesFissure(faceFissureExterne, \
+                         edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
+                         meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad, \
+                         mailleur)
 
   # --- maillage faces de peau
 
-  meshesFacesPeau = mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
-                                    facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau,
-                                    bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives,
-                                    edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad)
+  meshesFacesPeau = mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
+                                    facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, \
+                                    bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives, \
+                                    edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad, \
+                                    mailleur)
 
   # --- regroupement des maillages du défaut
 
@@ -309,13 +314,17 @@ def construitFissureGenerale(maillagesSains,
       elif grp.GetName() == "fisInPi":
         group_faceFissInPipe = grp
 
-  # le maillage NETGEN ne passe pas toujours ==> utiliser GHS3D
-  distene=True
-  if distene:
-    algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.GHS3D)
+  # le maillage NETGEN ne passe pas toujours ==> on force l'usage de MG_Tetra
+  mailleur = "MeshGems"
+  logging.info("Maillage avec %s", mailleur)
+  if ( mailleur == "MeshGems"):
+    algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.MG_Tetra)
   else:
     algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.NETGEN)
     hypo3d = algo3d.MaxElementVolume(1000.0)
+    hypo3d.SetVerboseLevel( 0 )
+    hypo3d.SetStandardOutputLog( 0 )
+    hypo3d.SetRemoveLogOnSuccess( 1 )
   putName(algo3d.GetSubMesh(), "boiteDefaut")
   putName(algo3d, "algo3d_boiteDefaut")
   putName(meshBoiteDefaut, "boiteDefaut")

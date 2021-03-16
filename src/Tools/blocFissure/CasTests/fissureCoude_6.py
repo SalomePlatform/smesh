@@ -82,7 +82,7 @@ class fissureCoude_6(fissureCoude):
                                    externe     = True)
 
   # ---------------------------------------------------------------------------
-                                   
+
   def setParamMaillageFissure(self):
     """
     Paramètres du maillage de la fissure pour le tuyau coudé
@@ -96,7 +96,7 @@ class fissureCoude_6(fissureCoude):
                                       nomFicFissure = self.nomCas + "_fissure",
                                       nbsegRad      = 5,
                                       nbsegCercle   = 12,
-                                      areteFaceFissure = 5)                                   
+                                      areteFaceFissure = 5)
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):

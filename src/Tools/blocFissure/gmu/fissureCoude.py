@@ -29,9 +29,6 @@ import math
 import GEOM
 import SALOMEDS
 import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
 import logging
 
 from .fissureGenerique import fissureGenerique
@@ -72,6 +69,7 @@ class fissureCoude(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereGeometrieSaine(self, geomParams):
+    """a écrire"""
     logging.info("genereGeometrieSaine %s", self.nomCas)
 
     angleCoude = geomParams['angleCoude']
@@ -304,14 +302,14 @@ class fissureCoude(fissureGenerique):
       logging.info(text)
       raise Exception(text)
 
-    mp1 = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
-    mp2 = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
-    ext = maillageSain.GroupOnGeom(EXTUBE,'EXTUBE',SMESH.FACE)
-    btu = maillageSain.GroupOnGeom(BORDTU,'BORDTU',SMESH.EDGE)
-    clg = maillageSain.GroupOnGeom(CLGV,'CLGV',SMESH.FACE)
-    pei = maillageSain.GroupOnGeom(PEAUINT,'PEAUINT',SMESH.FACE)
-    pex = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
-    cou = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
+    _ = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
+    _ = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
+    _ = maillageSain.GroupOnGeom(EXTUBE,'EXTUBE',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(BORDTU,'BORDTU',SMESH.EDGE)
+    _ = maillageSain.GroupOnGeom(CLGV,'CLGV',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(PEAUINT,'PEAUINT',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
 
     return [maillageSain, True] # True : maillage hexa
 
@@ -344,7 +342,8 @@ class fissureCoude(fissureGenerique):
                                    externe     = True)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     logging.info("genereShapeFissure %s", self.nomCas)
     logging.info("shapeFissureParams %s", shapeFissureParams)
 
@@ -652,7 +651,8 @@ class fissureCoude(fissureGenerique):
       centre = geompy.MakeRotation(pc, axe, alfrd)
       geomPublish(initLog.debug,  centre, 'centrefissPlace' )
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, profondeur/2. ,profondeur)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, profondeur/2. ,profondeur, \
+                                                     mailleur)
 
     return [facefiss, centre, lgInfluence, coordsNoeudsFissure, wiretube, edgetube]
 
@@ -678,12 +678,14 @@ class fissureCoude(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
-    maillageFissure = construitFissureGenerale(maillagesSains,
-                                               shapesFissure, shapeFissureParams,
-                                               maillageFissureParams, elementsDefaut, step)
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                            shapesFissure, shapeFissureParams, \
+                            maillageFissureParams, elementsDefaut, step, \
+                            mailleur="MeshGems"):
+    maillageFissure = construitFissureGenerale(maillagesSains, \
+                                               shapesFissure, shapeFissureParams, \
+                                               maillageFissureParams, elementsDefaut, \
+                                               step, mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------
@@ -696,4 +698,3 @@ class fissureCoude(fissureGenerique):
                                           Entity_Quad_Hexa       = 8994,
                                           Entity_Quad_Penta      = 972,
                                           Entity_Quad_Pyramid    = 1038)
-

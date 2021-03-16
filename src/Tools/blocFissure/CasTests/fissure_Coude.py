@@ -258,14 +258,14 @@ class fissure_Coude(fissureGenerique):
     smesh.SetName(algo1d_long_p2, "algo1d_long_p2")
     smesh.SetName(hypo1d_long_p2, "hypo1d_long_p2")
 
-    mp1 = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
-    mp2 = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
-    ext = maillageSain.GroupOnGeom(EXTUBE,'EXTUBE',SMESH.FACE)
-    btu = maillageSain.GroupOnGeom(BORDTU,'BORDTU',SMESH.EDGE)
-    clg = maillageSain.GroupOnGeom(CLGV,'CLGV',SMESH.FACE)
-    pei = maillageSain.GroupOnGeom(PEAUINT,'PEAUINT',SMESH.FACE)
-    pex = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
-    cou = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
+    _ = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
+    _ = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
+    _ = maillageSain.GroupOnGeom(EXTUBE,'EXTUBE',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(BORDTU,'BORDTU',SMESH.EDGE)
+    _ = maillageSain.GroupOnGeom(CLGV,'CLGV',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(PEAUINT,'PEAUINT',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
 
     isDone = maillageSain.Compute()
 
@@ -294,7 +294,8 @@ class fissure_Coude(fissureGenerique):
                                    externe     = True)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     logging.info("genereShapeFissure %s", self.nomCas)
     logging.info("shapeFissureParams %s", shapeFissureParams)
 
@@ -473,7 +474,8 @@ class fissure_Coude(fissureGenerique):
     else:
       pass
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, 5 ,10)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, 5 ,10, mailleur)
 
     return [facefiss, centre, lgInfluence, coordsNoeudsFissure, wiretube, facetubel, facetuber, planfiss, pipefiss]
 
@@ -498,10 +500,14 @@ class fissure_Coude(fissureGenerique):
   # ---------------------------------------------------------------------------
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
+                            maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
+
+    mailleur = self.mailleur2d3d()
     maillageFissure = insereFissureLongue(geometriesSaines, maillagesSains,
                                           shapesFissure, shapeFissureParams,
-                                          maillageFissureParams, elementsDefaut, step)
+                                          maillageFissureParams, elementsDefaut, step, \
+                                               mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

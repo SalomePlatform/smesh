@@ -54,9 +54,10 @@ from blocFissure.gmu.insereFissureLongue_d import insereFissureLongue_d
 # -----------------------------------------------------------------------------
 # --- procedure complete fissure longue
 
-def insereFissureLongue(geometriesSaines, maillagesSains,
-                        shapesFissure, shapeFissureParams,
-                        maillageFissureParams, elementsDefaut, step=-1):
+def insereFissureLongue(geometriesSaines, maillagesSains, \
+                        shapesFissure, shapeFissureParams, \
+                        maillageFissureParams, elementsDefaut, \
+                        step=-1, mailleur="MeshGems"):
   """
   TODO: a completer
   """
@@ -436,10 +437,9 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
 
   # --- maillage meshBoiteDefaut
 
-  distene=True
   meshBoiteDefaut, group_faceFissInPipe, group_faceFissOutPipe = \
             insereFissureLongue_d (internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
-            distene)
+            mailleur)
 
 
   groups = maillageSain.GetGroups()

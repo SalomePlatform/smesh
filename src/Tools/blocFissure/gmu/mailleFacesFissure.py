@@ -27,22 +27,32 @@ import SMESH
 
 from .putName import putName
 
-def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
-                        meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad):
+def mailleFacesFissure(faceFissureExterne, \
+                       edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
+                       meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad, \
+                       mailleur="MeshGems"):
   """maillage faces de fissure"""
   logging.info('start')
-  texte = "Maillage de {}".format(faceFissureExterne.GetName())
-  logging.info(texte)
 
   meshFaceFiss = smesh.Mesh(faceFissureExterne)
-  algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_1D2D)
-  hypo2d = algo2d.Parameters()
-  hypo2d.SetMaxSize( areteFaceFissure )
-  hypo2d.SetSecondOrder( 0 )
-  hypo2d.SetOptimize( 1 )
-  hypo2d.SetFineness( 2 )
-  hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
-  hypo2d.SetQuadAllowed( 0 )
+  logging.info("Maillage avec %s", mailleur)
+  if ( mailleur == "MeshGems"):
+    algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.MG_CADSurf)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetPhySize( areteFaceFissure )
+    hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
+    hypo2d.SetMaxSize( areteFaceFissure*3. )
+    hypo2d.SetChordalError( areteFaceFissure*0.25 )
+    hypo2d.SetVerbosity( 0 )
+  else:
+    algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_1D2D)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetMaxSize( areteFaceFissure )
+    hypo2d.SetSecondOrder( 0 )
+    hypo2d.SetOptimize( 1 )
+    hypo2d.SetFineness( 2 )
+    hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
+    hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "faceFiss")
   putName(algo2d, "algo2d_faceFiss")
   putName(hypo2d, "hypo2d_faceFiss")
