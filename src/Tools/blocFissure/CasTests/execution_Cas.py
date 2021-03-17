@@ -315,7 +315,7 @@ while True:
   if ( len(L_PROBLEMES) != len(TORUN) ):
     TEXTE  = "\nNombre de problèmes définis  : {}\n".format(len(L_PROBLEMES))
     TEXTE += "Longueur de la liste 'TORUN' : {}\n".format(len(TORUN))
-    TEXTE += "\t==> Incohérence de programmation à corriger."
+    TEXTE += "\t==> Incohérence de programmation à corriger dans {}".format(__name__)
     print (TEXTE)
     break
 

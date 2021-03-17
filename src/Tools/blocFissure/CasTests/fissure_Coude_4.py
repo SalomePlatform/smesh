@@ -74,7 +74,6 @@ class fissure_Coude_4(fissure_Coude):
     orientation : 0° : longitudinale, 90° : circonférentielle, autre : uniquement fissures elliptiques
     externe     : True : fissure face externe, False : fissure face interne
     """
-    print("setParamShapeFissure", self.nomCas)
     self.shapeFissureParams = dict(nomRep        = os.curdir,
                                    nomFicSain    = self.nomCas,
                                    nomFicFissure = self.nomCas + "_fissure",
@@ -90,11 +89,13 @@ class fissure_Coude_4(fissure_Coude):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 948,
-                                          Entity_Quad_Triangle   = 1562,
-                                          Entity_Quad_Edge       = 1192,
-                                          Entity_Quad_Penta      = 732,
-                                          Entity_Quad_Hexa       = 22208,
-                                          Entity_Node            = 133418,
-                                          Entity_Quad_Tetra      = 18759,
-                                          Entity_Quad_Quadrangle = 11852)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 11852, \
+                                          Entity_Quad_Hexa       = 22208, \
+                                          Entity_Node            = 133418, \
+                                          Entity_Quad_Edge       = 1192, \
+                                          Entity_Quad_Triangle   = 1562, \
+                                          Entity_Quad_Tetra      = 18759, \
+                                          Entity_Quad_Pyramid    = 948, \
+                                          Entity_Quad_Penta      = 732, \
+                                         )
