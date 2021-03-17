@@ -32,7 +32,8 @@ from .putName import putName
 def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circles, faces, \
                 gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli, \
                 aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords, \
-                nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle, nbsegFis, dmoyen, lensegEllipsoide):
+                nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle, nbsegFis, dmoyen, lensegEllipsoide, \
+                mailleur="MeshGems"):
   """Maillage du bloc partitionné
 
   TODO: a completer

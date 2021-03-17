@@ -30,18 +30,29 @@ from .putName import putName
 
 def insereFissureLongue_b (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibres, \
                            groupsDemiCerclesPeau, groups_demiCercles, verticesOutCercles, \
-                           nbSegGenLong, nbSegGenBout, profondeur):
+                           nbSegGenLong, nbSegGenBout, profondeur, \
+                           mailleur="MeshGems"):
   """maillage face de peau"""
   logging.info('start')
 
   meshFacePeau = smesh.Mesh(facePeau)
-  algo2d = meshFacePeau.Triangle(algo=smeshBuilder.NETGEN_2D)
-  hypo2d = algo2d.Parameters()
-  hypo2d.SetMaxSize( 1000 )
-  hypo2d.SetOptimize( 1 )
-  hypo2d.SetFineness( 2 )
-  hypo2d.SetMinSize( 2 )
-  hypo2d.SetQuadAllowed( 0 )
+  logging.info("Maillage avec %s", mailleur)
+  if ( mailleur == "MeshGems"):
+    algo2d = meshFacePeau.Triangle(algo=smeshBuilder.MG_CADSurf)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetPhySize( 1000 )
+    hypo2d.SetMinSize( 100 )
+    hypo2d.SetMaxSize( 3000. )
+    hypo2d.SetChordalError( 250. )
+    hypo2d.SetVerbosity( 0 )
+  else:
+    algo2d = meshFacePeau.Triangle(algo=smeshBuilder.NETGEN_2D)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetMaxSize( 1000 )
+    hypo2d.SetOptimize( 1 )
+    hypo2d.SetFineness( 2 )
+    hypo2d.SetMinSize( 2 )
+    hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "facePeau")
   putName(algo2d, "algo2d_facePeau")
   putName(hypo2d, "hypo2d_facePeau")

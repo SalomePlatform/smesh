@@ -70,7 +70,8 @@ class vis_1(fissureGenerique):
                                    rayonPipe   = 0.1)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     """Importe la géométrie de la fissure et crée le groupe du fond de la fissure"""
     texte = "genereShapeFissure pour '{}'".format(self.nomCas)
     logging.info(texte)
@@ -83,7 +84,8 @@ class vis_1(fissureGenerique):
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.1 ,0.2)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.1 ,0.2, mailleur)
 
     centre = None
 
@@ -108,12 +110,17 @@ class vis_1(fissureGenerique):
   # ---------------------------------------------------------------------------
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
+                            maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
+
     texte = "genereMaillageFissure pour '{}'".format(self.nomCas)
     logging.info(texte)
+
+    mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(maillagesSains,
                                                shapesFissure, shapeFissureParams,
-                                               maillageFissureParams, elementsDefaut, step)
+                                               maillageFissureParams, elementsDefaut, step, \
+                                               mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

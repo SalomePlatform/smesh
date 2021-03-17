@@ -25,10 +25,7 @@ import logging
 
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
-from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
 import GEOM
 import SALOMEDS
@@ -42,7 +39,8 @@ class ellipse_2(ellipse_1):
   nomProbleme = "ellipse2"
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     """Importe la géométrie de la fissure"""
     texte = "genereShapeFissure pour '{}'".format(self.nomCas)
     logging.info(texte)
@@ -55,7 +53,8 @@ class ellipse_2(ellipse_1):
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25, mailleur)
 
     centre = None
 

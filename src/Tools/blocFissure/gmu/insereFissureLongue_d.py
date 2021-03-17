@@ -28,9 +28,10 @@ import SMESH
 from .putName import putName
 
 def insereFissureLongue_d (internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
-                           distene = True):
+                           mailleur="MeshGems"):
   """maillage meshBoiteDefaut"""
   logging.info('start')
+  logging.info("insereFissureLongue_d (%s)", mailleur)
 
   meshBoiteDefaut = smesh.Concatenate( [internalBoundary.GetMesh(), \
                                         meshFondFiss.GetMesh(), \
@@ -51,12 +52,17 @@ def insereFissureLongue_d (internalBoundary, meshFondFiss, meshFacePeau, meshFac
       elif grp.GetName() == "fisInPi":
         group_faceFissInPipe = grp
 
-  # le maillage NETGEN ne passe pas toujours ==> utiliser GHS3D
-  if distene:
-    algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.GHS3D)
+  # le maillage NETGEN ne passe pas toujours ==> on force l'usage de MG_Tetra
+  mailleur = "MeshGems"
+  logging.info("Maillage avec %s", mailleur)
+  if ( mailleur == "MeshGems"):
+    algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.MG_Tetra)
   else:
     algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.NETGEN)
     hypo3d = algo3d.MaxElementVolume(1000.0)
+    hypo3d.SetVerboseLevel( 0 )
+    hypo3d.SetStandardOutputLog( 0 )
+    hypo3d.SetRemoveLogOnSuccess( 1 )
   putName(algo3d.GetSubMesh(), "boiteDefaut")
   putName(algo3d, "algo3d_boiteDefaut")
   putName(meshBoiteDefaut, "boiteDefaut")

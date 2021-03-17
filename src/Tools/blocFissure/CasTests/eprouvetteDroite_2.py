@@ -35,8 +35,6 @@ from .eprouvetteDroite import eprouvetteDroite
 
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
 O, OX, OY, OZ = triedreBase()
 
@@ -46,7 +44,8 @@ class eprouvetteDroite_2(eprouvetteDroite):
   nomProbleme = "eprouvetteDroite_2"
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     logging.info("genereShapeFissure %s", self.nomCas)
 
     lgInfluence = shapeFissureParams['lgInfluence']
@@ -57,8 +56,8 @@ class eprouvetteDroite_2(eprouvetteDroite):
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,10)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,10, mailleur)
 
     centre = None
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]

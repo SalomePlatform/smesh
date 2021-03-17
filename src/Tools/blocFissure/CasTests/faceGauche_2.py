@@ -22,7 +22,6 @@ import os
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
 
-import math
 import GEOM
 import SALOMEDS
 import SMESH
@@ -50,7 +49,7 @@ class faceGauche_2(fissureGenerique):
   def genereMaillageSain(self, geometriesSaines, meshParams):
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "boiteSaine.med"))
+    ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "boiteSaine.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -69,7 +68,8 @@ class faceGauche_2(fissureGenerique):
                                    rayonPipe   = 20)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     logging.info("genereShapeFissure %s", self.nomCas)
 
     lgInfluence = shapeFissureParams['lgInfluence']
@@ -80,7 +80,8 @@ class faceGauche_2(fissureGenerique):
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25, mailleur)
 
     centre = None
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
@@ -102,10 +103,14 @@ class faceGauche_2(fissureGenerique):
   # ---------------------------------------------------------------------------
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
                             shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
+                            maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
+
+    mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(maillagesSains,
                                                shapesFissure, shapeFissureParams,
-                                               maillageFissureParams, elementsDefaut, step)
+                                               maillageFissureParams, elementsDefaut, step, \
+                                               mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

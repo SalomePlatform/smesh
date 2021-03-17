@@ -30,18 +30,30 @@ from .putName import putName
 import math
 
 def insereFissureLongue_c (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
-                           profondeur, rayonPipe):
+                           profondeur, rayonPipe, \
+                           mailleur="MeshGems"):
   """maillage face de fissure"""
   logging.info('start')
 
   meshFaceFiss = smesh.Mesh(faceFiss)
-  algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_2D)
-  hypo2d = algo2d.Parameters()
-  hypo2d.SetMaxSize( (profondeur - rayonPipe)/math.sqrt(3.0) ) # pour avoir deux couches de triangles equilateraux partout sur la fissure
-  hypo2d.SetOptimize( 1 )
-  hypo2d.SetFineness( 2 )
-  hypo2d.SetMinSize( 2 )
-  hypo2d.SetQuadAllowed( 0 )
+  mesh_size = (profondeur - rayonPipe)/math.sqrt(3.0) # pour avoir deux couches de triangles equilateraux partout sur la fissure
+  logging.info("Maillage avec %s", mailleur)
+  if ( mailleur == "MeshGems"):
+    algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.MG_CADSurf)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetPhySize( mesh_size )
+    hypo2d.SetMinSize( mesh_size/10. )
+    hypo2d.SetMaxSize( mesh_size*3. )
+    hypo2d.SetChordalError( mesh_size*0.25 )
+    hypo2d.SetVerbosity( 0 )
+  else:
+    algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_2D)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetMaxSize( mesh_size )
+    hypo2d.SetOptimize( 1 )
+    hypo2d.SetFineness( 2 )
+    hypo2d.SetMinSize( 2 )
+    hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "faceFiss")
   putName(algo2d, "algo2d_faceFiss")
   putName(hypo2d, "hypo2d_faceFiss")
