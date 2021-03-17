@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Fissure dans un coude"""
 
 import os
 
@@ -48,6 +49,13 @@ class fissure_Coude(fissureGenerique):
   """
 
   nomProbleme = "fissure_Coude"
+  geomParams = dict()
+  meshParams = dict()
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
+  circonferentielle = False
+  longitudinale = False
 
   # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
@@ -267,7 +275,7 @@ class fissure_Coude(fissureGenerique):
     _ = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
     _ = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
 
-    isDone = maillageSain.Compute()
+    _ = maillageSain.Compute()
 
     return [maillageSain, True] # True : maillage hexa
 
@@ -299,10 +307,10 @@ class fissure_Coude(fissureGenerique):
     logging.info("genereShapeFissure %s", self.nomCas)
     logging.info("shapeFissureParams %s", shapeFissureParams)
 
-    angleCoude = geomParams['angleCoude']
+    #angleCoude = geomParams['angleCoude']
     r_cintr    = geomParams['r_cintr']
     l_tube_p1  = geomParams['l_tube_p1']
-    l_tube_p2  = geomParams['l_tube_p2']
+    #l_tube_p2  = geomParams['l_tube_p2']
     epais      = geomParams['epais']
     de         = geomParams['de']
 
@@ -320,13 +328,8 @@ class fissure_Coude(fissureGenerique):
     if not lgInfluence:
       lgInfluence = profondeur
 
-    if longueur > 2*profondeur:
-      self.fissureLongue=True
-    else:
-      self.fissureLongue=False
+    self.fissureLongue = bool(longueur > 2*profondeur)
 
-    self.circonferentielle = False
-    self.longitudinale = False
     if self.fissureLongue and (abs(orientation) < 45) :
       self.longitudinale = True
     elif self.fissureLongue:
@@ -522,4 +525,3 @@ class fissure_Coude(fissureGenerique):
                                           Entity_Quad_Pyramid = 1232, \
                                           Entity_Quad_Penta = 1176 \
                                          )
-

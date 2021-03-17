@@ -18,7 +18,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-"""problème de fissure plane dans un tube"""
+"""problème de fissure plane dans un tube ; passage par fichier xao"""
 
 import os
 import logging
@@ -38,6 +38,9 @@ class tube(fissureGenerique):
   """problème de fissure plane dans un tube"""
 
   nomProbleme = "tube"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
@@ -104,9 +107,9 @@ class tube(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step, \
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
 
     texte = "genereMaillageFissure pour '{}'".format(self.nomCas)

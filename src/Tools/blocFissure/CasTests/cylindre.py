@@ -38,6 +38,9 @@ class cylindre(fissureGenerique):
   """problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle"""
 
   nomProbleme = "cylindre"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
@@ -97,9 +100,9 @@ class cylindre(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step, \
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
 
     mailleur = self.mailleur2d3d()

@@ -17,26 +17,20 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""problème de fissure plane coupant 3 faces (éprouvette), débouches non normaux, objet plan"""
 
 import os
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
 
-import math
 import GEOM
 import SALOMEDS
 import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
 import logging
 
 from .eprouvetteDroite import eprouvetteDroite
 
-from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-
-O, OX, OY, OZ = triedreBase()
 
 class eprouvetteDroite_2(eprouvetteDroite):
   """problème de fissure plane coupant 3 faces (éprouvette), débouches non normaux, objet plan"""
@@ -74,4 +68,3 @@ class eprouvetteDroite_2(eprouvetteDroite):
                                           Entity_Quad_Pyramid = 396, \
                                           Entity_Quad_Penta = 96 \
                                          )
-

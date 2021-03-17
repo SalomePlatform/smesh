@@ -72,14 +72,14 @@ class fissureGenerique(object):
     """setParamMaillageFissure"""
     self.maillageFissureParams = dict()
 
-  def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, maillageFissureParams):
+  def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams):
     """genereZoneDefaut"""
     elementsDefaut = [None]
     return elementsDefaut
 
   def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
-                                  shapesFissure, maillageFissureParams, \
-                                  elementsDefaut, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
     """genereMaillageFissure"""
     maillageFissure = None

@@ -17,20 +17,26 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Fissure dans un coude - cas test ASCOU17"""
 
 import os
 
 from blocFissure.gmu.fissureCoude  import fissureCoude
 
 class fissureCoude_10(fissureCoude):
-  # cas test ASCOU17
+  """Fissure dans un coude - cas test ASCOU17"""
 
   nomProbleme = "fissureCoude_10"
+  geomParams = dict()
+  meshParams = dict()
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
 # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
     """
-    Paramètres géométriques du tuyau coudé sain:
+    Paramètres géométriques du tuyau coudé sain
     angleCoude
     r_cintr
     l_tube_p1
@@ -111,4 +117,3 @@ class fissureCoude_10(fissureCoude):
                                             Entity_Quad_Pyramid = 1232, \
                                             Entity_Quad_Penta = 1136 \
                                           )
-

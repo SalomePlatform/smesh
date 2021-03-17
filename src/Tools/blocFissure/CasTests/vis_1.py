@@ -17,18 +17,15 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""problème de fissure non plane, débouchante non normale"""
 
 import os
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
 
-import math
 import GEOM
 import SALOMEDS
 import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
 import logging
 
 from blocFissure.gmu.fissureGenerique import fissureGenerique
@@ -44,6 +41,9 @@ class vis_1(fissureGenerique):
   """problème de fissure non plane, débouchante non normale"""
 
   nomProbleme = "vis_1"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
@@ -108,9 +108,9 @@ class vis_1(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step, \
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
 
     texte = "genereMaillageFissure pour '{}'".format(self.nomCas)
@@ -135,4 +135,3 @@ class vis_1(fissureGenerique):
                                           Entity_Quad_Pyramid    = 1284, \
                                           Entity_Quad_Penta      = 984 \
                                          )
-

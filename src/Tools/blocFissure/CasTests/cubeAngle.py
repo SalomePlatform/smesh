@@ -38,6 +38,9 @@ class cubeAngle(fissureGenerique):
   """problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan"""
 
   nomProbleme = "cubeAngle"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
@@ -100,8 +103,8 @@ class cubeAngle(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                                  shapesFissure, shapeFissureParams,
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
                                   maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
     texte = "genereMaillageFissure pour '{}'".format(self.nomCas)

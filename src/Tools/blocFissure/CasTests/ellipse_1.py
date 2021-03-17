@@ -38,6 +38,9 @@ class ellipse_1(fissureGenerique):
   """problème de fissure non plane, débouchante non normale"""
 
   nomProbleme = "ellipse1"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
 #  # ---------------------------------------------------------------------------
 #  def genereGeometrieSaine(self, geomParams):
@@ -108,9 +111,9 @@ class ellipse_1(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step, \
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
 
     texte = "genereMaillageFissure pour '{}'".format(self.nomCas)

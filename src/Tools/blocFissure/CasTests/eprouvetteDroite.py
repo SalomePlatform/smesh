@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""problème de fissure plane coupant 3 faces (éprouvette), débouches normaux, objet plan"""
 
 import os
 from blocFissure import gmu
@@ -40,11 +41,12 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class eprouvetteDroite(fissureGenerique):
-  """
-  problème de fissure plane coupant 3 faces (éprouvette), débouches normaux, objet plan
-  """
+  """problème de fissure plane coupant 3 faces (éprouvette), débouches normaux, objet plan"""
 
   nomProbleme = "eprouvetteDroite"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
@@ -103,9 +105,9 @@ class eprouvetteDroite(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step, \
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
 
     mailleur = self.mailleur2d3d()
@@ -127,4 +129,3 @@ class eprouvetteDroite(fissureGenerique):
                                           Entity_Quad_Pyramid = 376, \
                                           Entity_Quad_Penta = 96 \
                                          )
-

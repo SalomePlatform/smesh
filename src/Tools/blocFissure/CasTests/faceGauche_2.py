@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""problème de fissure non plane, débouchante non normale"""
 
 import os
 from blocFissure import gmu
@@ -44,6 +45,9 @@ class faceGauche_2(fissureGenerique):
   """problème de fissure non plane, débouchante non normale"""
 
   nomProbleme = "faceGauche_2"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
@@ -101,9 +105,9 @@ class faceGauche_2(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step, \
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
 
     mailleur = self.mailleur2d3d()
@@ -125,4 +129,3 @@ class faceGauche_2(fissureGenerique):
                                           Entity_Quad_Pyramid = 859, \
                                           Entity_Quad_Penta = 288 \
                                          )
-

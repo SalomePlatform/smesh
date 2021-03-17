@@ -38,6 +38,9 @@ class eprouvetteCourbe(fissureGenerique):
   """problème de fissure plane coupant 3 faces (éprouvette), faces au débouché non planes, incidence presque normale"""
 
   nomProbleme = "eprouvetteCourbe"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
@@ -102,9 +105,9 @@ class eprouvetteCourbe(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step, \
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
 
     texte = "genereMaillageFissure pour '{}'".format(self.nomCas)

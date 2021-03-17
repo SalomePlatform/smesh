@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Fissure dans un coude - ASCOU09A"""
 
 import os
 
@@ -26,6 +27,11 @@ class fissureCoude_4(fissureCoude):
   """problème de fissure du Coude : ASCOU09A - adaptation maillage"""
 
   nomProbleme = "fissureCoude_4"
+  geomParams = dict()
+  meshParams = dict()
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
 # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
@@ -109,4 +115,3 @@ class fissureCoude_4(fissureCoude):
                                           Entity_Quad_Pyramid = 642, \
                                           Entity_Quad_Penta = 426 \
                                          )
-
