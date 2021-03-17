@@ -173,8 +173,7 @@ class casStandard(fissureGenerique):
                                   shapesFissure, shapeFissureParams, \
                                   maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
-    maillageFissure = construitFissureGenerale(maillagesSains, \
-                                               shapesFissure, shapeFissureParams, \
+    maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
                                                step, mailleur)
     return maillageFissure

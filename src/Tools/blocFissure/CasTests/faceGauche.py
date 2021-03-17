@@ -27,9 +27,7 @@ import math
 import GEOM
 import SALOMEDS
 import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
+
 import logging
 
 from blocFissure.gmu.fissureGenerique import fissureGenerique
@@ -111,10 +109,9 @@ class faceGauche(fissureGenerique):
                                   mailleur="MeshGems"):
 
     mailleur = self.mailleur2d3d()
-    maillageFissure = construitFissureGenerale(maillagesSains,
-                                               shapesFissure, shapeFissureParams,
-                                               maillageFissureParams, elementsDefaut, step, \
-                                               mailleur)
+    maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
+                                               maillageFissureParams, elementsDefaut, \
+                                               step, mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

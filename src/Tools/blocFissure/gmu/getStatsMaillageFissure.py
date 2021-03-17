@@ -25,9 +25,8 @@ import SMESH
 
 
 def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissureParams):
-  """
-  TODO: a completer
-  """
+  """"Statistiques maillage"""
+
   logging.debug('start')
 
   if 'nomRep' in maillageFissureParams:
@@ -75,17 +74,17 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
         fic_stat.write(text+"\n")
         text_2 += "                                          {} = {}, \\\n".format(key,d_resu[key])
 
-
     if ok_maillage:
-      print ("Calcul cohérent avec la référence.")
+      text = "Calcul cohérent avec la référence."
     else:
-#     Résultats de référence pour intégration dans le python du cas pour une mise à jour
-      with open(fichierNewRef, "w") as fic_info :
-        fic_info.write(text_2[:-4]+" \\")
       text = "Calcul différent de la référence.\n"
       text += "Voir le fichier {}\n".format(fichierStatMaillageFissure)
       text += "La nouvelle référence est disponible dans le fichier :\n{}\n".format(fichierNewRef)
       text += "Il faut l'insérer pour créer le dictionnaire 'referencesMaillageFissure' dans le paramétrage du cas."
-      print (text)
+#     Résultats de référence pour intégration dans le python du cas pour une mise à jour
+      with open(fichierNewRef, "w") as fic_info :
+        fic_info.write(text_2[:-4]+" \\")
+
+    print (text)
 
   return ok_maillage

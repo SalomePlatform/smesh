@@ -22,8 +22,8 @@
 import logging
 
 from blocFissure import gmu
-from blocFissure.gmu.initEtude import initEtude
-from blocFissure.gmu.getStatsMaillageFissure import getStatsMaillageFissure
+from .initEtude import initEtude
+from .getStatsMaillageFissure import getStatsMaillageFissure
 
 class fissureGenerique(object):
   """classe générique problème fissure:
@@ -34,12 +34,17 @@ class fissureGenerique(object):
   """
 
   nomProbleme = "fissureGenerique"
+  geomParams = dict()
+  meshParams = dict()
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
 
   def __init__(self, numeroCas):
     initEtude()
     self.numeroCas = numeroCas
     self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
     self.fissureLongue = False
+    self.referencesMaillageFissure = None
 
   def setParamGeometrieSaine(self):
     """setParamGeometrieSaine"""
@@ -109,33 +114,28 @@ class fissureGenerique(object):
     geometriesSaines = self.genereGeometrieSaine(self.geomParams)
     if step == 1:
       return
-    logging.info("AAAAAAAAAAAAAAAAAAAA")
 
     self.setParamMaillageSain()
     maillagesSains = self.genereMaillageSain(geometriesSaines, self.meshParams)
     if step == 2:
       return
-    logging.info("BBBBBBBBBBBBBBBBBBBBB")
 
     self.setParamShapeFissure()
     mailleur = self.mailleur2d3d()
     shapesFissure = self.genereShapeFissure(geometriesSaines, self.geomParams, self.shapeFissureParams, mailleur)
     if step == 3:
       return
-    logging.info("CCCCCCCCCCCCCCCCCCCCCCCC")
 
     self.setParamMaillageFissure()
     elementsDefaut = self.genereZoneDefaut(geometriesSaines, maillagesSains, \
                                            shapesFissure, self.shapeFissureParams, self.maillageFissureParams)
     if step == 4:
       return
-    logging.info("DDDDDDDDDDDDDDDDDDDD")
 
     maillageFissure = self.genereMaillageFissure(geometriesSaines, maillagesSains, \
                                                  shapesFissure, self.shapeFissureParams, self.maillageFissureParams, \
                                                  elementsDefaut, step, mailleur)
 
-    logging.info("EEEEEEEEEEEEEEEEEES")
     self.setReferencesMaillageFissure()
     ok_maillage = getStatsMaillageFissure(maillageFissure, self.referencesMaillageFissure, self.maillageFissureParams)
     return ok_maillage

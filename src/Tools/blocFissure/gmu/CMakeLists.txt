@@ -31,6 +31,9 @@ SET(plugin_SCRIPTS
   compoundFromList.py
   construitEdgesRadialesDebouchantes.py
   construitFissureGenerale.py
+  construitFissureGenerale_a.py
+  construitFissureGenerale_b.py
+  construitFissureGenerale_c.py
   construitMaillagePipe.py
   construitPartitionsPeauFissure.py
   creePointsPipePeau.py

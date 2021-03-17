@@ -114,10 +114,9 @@ class eprouvetteCourbe(fissureGenerique):
     logging.info(texte)
 
     mailleur = self.mailleur2d3d()
-    maillageFissure = construitFissureGenerale(maillagesSains,
-                                               shapesFissure, shapeFissureParams,
-                                               maillageFissureParams, elementsDefaut, step, \
-                                               mailleur)
+    maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
+                                               maillageFissureParams, elementsDefaut, \
+                                               step, mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""procédure complète de construction d'une fissure longue"""
 
 import os
 
@@ -46,27 +47,22 @@ from .shapeSurFissure import shapeSurFissure
 from .regroupeSainEtDefaut import RegroupeSainEtDefaut
 from .triedreBase import triedreBase
 
-from blocFissure.gmu.insereFissureLongue_a import insereFissureLongue_a
-from blocFissure.gmu.insereFissureLongue_b import insereFissureLongue_b
-from blocFissure.gmu.insereFissureLongue_c import insereFissureLongue_c
-from blocFissure.gmu.insereFissureLongue_d import insereFissureLongue_d
+from .insereFissureLongue_a import insereFissureLongue_a
+from .insereFissureLongue_b import insereFissureLongue_b
+from .insereFissureLongue_c import insereFissureLongue_c
+from .insereFissureLongue_d import insereFissureLongue_d
 
 # -----------------------------------------------------------------------------
-# --- procedure complete fissure longue
 
-def insereFissureLongue(geometriesSaines, maillagesSains, \
+def insereFissureLongue(geometriesSaines, \
                         shapesFissure, shapeFissureParams, \
                         maillageFissureParams, elementsDefaut, \
                         step=-1, mailleur="MeshGems"):
-  """
-  TODO: a completer
-  """
+  """procedure complete fissure longue"""
   logging.info('start')
   logging.info("Usage du mailleur %s", mailleur)
 
   #geometrieSaine    = geometriesSaines[0]
-  #maillageSain      = maillagesSains[0]
-  #isHexa            = maillagesSains[1]
   shapeDefaut       = shapesFissure[0] # face de fissure, debordant
   #tailleDefaut      = shapesFissure[2]
   wiretube          = shapesFissure[4] # wire fond de fissure, debordant
