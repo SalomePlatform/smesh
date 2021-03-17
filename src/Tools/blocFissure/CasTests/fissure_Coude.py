@@ -502,13 +502,13 @@ class fissure_Coude(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):
 
     mailleur = self.mailleur2d3d()
-    maillageFissure = insereFissureLongue(geometriesSaines, maillagesSains,
-                                          shapesFissure, shapeFissureParams,
+    maillageFissure = insereFissureLongue(geometriesSaines, maillagesSains, \
+                                          shapesFissure, shapeFissureParams, \
                                           maillageFissureParams, elementsDefaut, step, \
                                                mailleur)
     return maillageFissure
