@@ -331,13 +331,13 @@ void StdMeshers_CartesianParameters3D::ComputeCoordinates(const double    x0,
     const double p1 = x0 * ( 1. - points[i+1]) + x1 * points[i+1];
     const double length = p1 - p0;
 
-    const size_t nbSections = 1000;
+    const int    nbSections = 1000;
     const double sectionLen = ( p1 - p0 ) / nbSections;
     vector< double > nbSegments( nbSections + 1 );
     nbSegments[ 0 ] = 0.;
 
     double t, spacing = 0;
-    for ( size_t i = 1; i <= nbSections; ++i )
+    for ( int i = 1; i <= nbSections; ++i )
     {
       t = double( i ) / nbSections;
       if ( !fun.value( t, spacing ) || spacing < std::numeric_limits<double>::min() )
@@ -350,11 +350,11 @@ void StdMeshers_CartesianParameters3D::ComputeCoordinates(const double    x0,
 
     if ( coords.empty() ) coords.push_back( p0 );
 
-    for ( size_t iCell = 1, i = 1; i <= nbSections; ++i )
+    for ( int iCell = 1, j = 1; j <= nbSections; ++j )
     {
-      if ( nbSegments[i]*corr >= iCell )
+      if ( nbSegments[j]*corr >= iCell )
       {
-        t = (i - ( nbSegments[i] - iCell/corr )/( nbSegments[i] - nbSegments[i-1] )) / nbSections;
+        t = (j - ( nbSegments[j] - iCell/corr )/( nbSegments[j] - nbSegments[j-1] )) / nbSections;
         coords.push_back( p0 + t * length );
         ++iCell;
       }
@@ -379,9 +379,9 @@ void StdMeshers_CartesianParameters3D::ComputeCoordinates(const double    x0,
     const double tol = minLen * 1e-3;
     int iRem = -1;
     if (( iF > 1 ) && ( coords[iF] - coords[iF-1] < tol ))
-      iRem = iF-1;
+      iRem = (int) iF-1;
     else if (( iF < coords.size()-2 ) && ( coords[iF+1] - coords[iF] < tol ))
-      iRem = iF+1;
+      iRem = (int) iF+1;
     if ( iRem > 0 )
       coords.erase( coords.begin() + iRem );
   }

@@ -28,6 +28,7 @@
 
 #include "SALOME_GenericObj.idl"
 #include "SMESH_Mesh.idl"
+#include "SMESH_smIdType.idl"
 
 module SMESH
 {
@@ -37,8 +38,8 @@ module SMESH
   struct Measure {
     double minX, minY, minZ;
     double maxX, maxY, maxZ;
-    long node1, node2;
-    long elem1, elem2;
+    smIdType node1, node2;
+    smIdType elem1, elem2;
     double value;
   };
 

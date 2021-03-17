@@ -32,6 +32,7 @@
 
 #include <TopoDS_Shape.hxx>
 #include <NCollection_DataMap.hxx>
+#include <smIdType.hxx>
 
 #include <map>
 #include <vector>
@@ -66,8 +67,8 @@ public:
     const SMDS_MeshNode* GetProxyNode( const SMDS_MeshNode* n ) const;
     const UVPtStructVec& GetUVPtStructVec() const { return _uvPtStructVec; }
     virtual void         AddElement(const SMDS_MeshElement * e);
-    virtual int          NbElements() const;
-    virtual int          NbNodes() const;
+    virtual smIdType     NbElements() const;
+    virtual smIdType     NbNodes() const;
     virtual SMDS_ElemIteratorPtr GetElements() const;
     virtual SMDS_NodeIteratorPtr GetNodes() const;
     virtual void         Clear();
@@ -127,7 +128,7 @@ public:
   SMDS_ElemIteratorPtr   GetFaces(const TopoDS_Shape& face) const;
 
   // Return total nb of faces taking into account substitutions
-  int                    NbFaces() const;
+  smIdType               NbFaces() const;
 
   bool                   IsTemporary(const SMDS_MeshElement* elem ) const;
 

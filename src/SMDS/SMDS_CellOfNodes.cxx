@@ -25,18 +25,18 @@
 
 #include "SMDS_CellOfNodes.hxx"
 
-SMDS_CellOfNodes::SMDS_CellOfNodes( int id, int shapeID )
+SMDS_CellOfNodes::SMDS_CellOfNodes( smIdType id, int shapeID )
   : myID( id )
 {
   setShapeID( shapeID );
 }
 
-void SMDS_CellOfNodes::setID(const int id)
+void SMDS_CellOfNodes::setID(const smIdType id)
 {
   myID = id;
 }
 
-int SMDS_CellOfNodes::GetID() const
+smIdType SMDS_CellOfNodes::GetID() const
 {
   return myID;
 }

@@ -33,6 +33,8 @@
 #include "SMESH_Comment.hxx"
 #include "SMESH_TypeDefs.hxx"
 
+#include <smIdType.hxx>
+
 #include <gp_XYZ.hxx>
 
 #include <cgnslib.h>
@@ -59,9 +61,9 @@ namespace
   struct TZoneData
   {
     int                    _id;
-    int                    _nodeIdShift; // nb nodes in previously read zones
-    int                    _elemIdShift; // nb faces in previously read zones
-    int                    _nbNodes, _nbElems;
+    smIdType               _nodeIdShift; // nb nodes in previously read zones
+    smIdType               _elemIdShift; // nb faces in previously read zones
+    smIdType               _nbNodes, _nbElems;
     int                    _meshDim;
     int                    _sizeX, _sizeY, _sizeZ, _nbCells; // structured
     cgsize_t               _sizes[NB_ZONE_SIZE_VAL];
@@ -550,10 +552,10 @@ namespace
     nbNodes = ids[0];
     ++ids;
 #endif
-    vector<int> idVec( nbNodes );
-    for ( int i = 0; i < nbNodes; ++i )
-      idVec[ i ] = (int) ids[ i ];
-    return mesh->AddPolygonalFaceWithID( idVec, ID );
+    vector<smIdType> idVec( ids[0] );
+    for ( int i = 0; i < ids[0]; ++i )
+      idVec[ i ] = ToSmIdType( ids[ i + 1]);
+    return mesh->AddPolygonalFaceWithID( idVec, ToSmIdType(ID) );
   }
 
   typedef SMDS_MeshElement* (* PAddElemFun) (cgsize_t* ids, SMESHDS_Mesh* mesh, int ID);
@@ -1172,7 +1174,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
             case 2: addElemFun = & add_QUAD_4; break;
             case 3: addElemFun = & add_HEXA_8; break;
             }
-            int elemID = meshInfo.NbElements();
+            smIdType elemID = meshInfo.NbElements();
             const SMDS_MeshElement* elem = 0;
             for ( size_t i = 0; i < ids.size(); i += nbElemNodes )
             {

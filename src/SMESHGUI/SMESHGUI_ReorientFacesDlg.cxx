@@ -518,7 +518,7 @@ void SMESHGUI_ReorientFacesOp::selectionDone()
 
       if ( nbSelected == 1 )
       {
-        TColStd_IndexedMapOfInteger faceIndices;
+        SVTK_TIndexedMapOfVtkId faceIndices;
         selector()->GetIndex( anIO, faceIndices );
         if ( faceIndices.Extent() == 1 )
         {
@@ -558,7 +558,7 @@ void SMESHGUI_ReorientFacesOp::selectionDone()
         }
         else
         {
-          TColStd_IndexedMapOfInteger nodeIndices;
+          SVTK_TIndexedMapOfVtkId nodeIndices;
           selector()->GetIndex( anIO, nodeIndices );
           if ( nodeIndices.Extent() > 0 && nodeIndices.Extent() <=2 )
           {
@@ -620,7 +620,7 @@ void SMESHGUI_ReorientFacesOp::onTextChange( const QString& theText )
       myDlg->activateObject( EFace );
       myDlg->setObjectText( EFace, theText );
     }
-    TColStd_MapOfInteger ids;
+    SVTK_TVtkIDsMap ids;
     if ( !theText.isEmpty() && theText.toInt() > 0 )
       ids.Add( theText.toInt() );
 

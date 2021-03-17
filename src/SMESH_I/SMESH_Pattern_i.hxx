@@ -66,15 +66,15 @@ class SMESH_I_EXPORT SMESH_Pattern_i:
                                      GEOM::GEOM_Object_ptr theVertex000,
                                      GEOM::GEOM_Object_ptr theVertex001);
 
-  SMESH::point_array* ApplyToMeshFaces(SMESH::SMESH_Mesh_ptr    theMesh,
-                                       const SMESH::long_array& theFacesIDs,
-                                       CORBA::Long              theNodeIndexOnKeyPoint1,
-                                       CORBA::Boolean           theReverse);
+  SMESH::point_array* ApplyToMeshFaces(SMESH::SMESH_Mesh_ptr        theMesh,
+                                       const SMESH::smIdType_array& theFacesIDs,
+                                       CORBA::Short                 theNodeIndexOnKeyPoint1,
+                                       CORBA::Boolean               theReverse);
 
-  SMESH::point_array* ApplyToHexahedrons(SMESH::SMESH_Mesh_ptr    theMesh,
-                                         const SMESH::long_array& theVolumesIDs,
-                                         CORBA::Long              theNode000Index,
-                                         CORBA::Long              theNode001Index);
+  SMESH::point_array* ApplyToHexahedrons(SMESH::SMESH_Mesh_ptr        theMesh,
+                                         const SMESH::smIdType_array& theVolumesIDs,
+                                         CORBA::Short                 theNode000Index,
+                                         CORBA::Short                 theNode001Index);
 
   //for omniORB conflict compilation
   /*CORBA::Boolean MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,

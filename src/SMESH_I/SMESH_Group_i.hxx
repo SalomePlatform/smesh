@@ -61,13 +61,13 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
   void SetName(const char* name);
   char* GetName();
   SMESH::ElementType GetType();
-  CORBA::Long Size();
+  SMESH::smIdType Size();
   CORBA::Boolean IsEmpty();
-  CORBA::Boolean Contains(CORBA::Long elem_id);
-  CORBA::Long GetID(CORBA::Long elem_index);
-  SMESH::long_array* GetListOfID();
-  SMESH::long_array* GetNodeIDs();
-  CORBA::Long GetNumberOfNodes();
+  CORBA::Boolean Contains(SMESH::smIdType elem_id);
+  SMESH::smIdType GetID(SMESH::smIdType elem_index);
+  SMESH::smIdType_array* GetListOfID();
+  SMESH::smIdType_array* GetNodeIDs();
+  SMESH::smIdType GetNumberOfNodes();
   CORBA::Boolean IsNodeInfoAvailable(); // for gui
 
   virtual SMESH::SMESH_Mesh_ptr GetMesh();
@@ -77,15 +77,15 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
    * Result array of number of elements per \a EntityType
    * Inherited from SMESH_IDSource
    */
-  virtual SMESH::long_array* GetMeshInfo();
+  virtual SMESH::smIdType_array* GetMeshInfo();
   /*!
    * Returns number of mesh elements of each \a ElementType
    */
-  virtual SMESH::long_array* GetNbElementsByType();
+  virtual SMESH::smIdType_array* GetNbElementsByType();
   /*!
    * Returns a sequence of all element IDs
    */
-  virtual SMESH::long_array* GetIDs();
+  virtual SMESH::smIdType_array* GetIDs();
   /*!
    * Returns types of elements it contains
    * Inherited from SMESH_IDSource interface
@@ -150,13 +150,13 @@ class SMESH_I_EXPORT SMESH_Group_i:
                  const int               theLocalID );
   // CORBA interface implementation
   void Clear();
-  CORBA::Long Add( const SMESH::long_array& theIDs );
-  CORBA::Long Remove( const SMESH::long_array& theIDs );
+  SMESH::smIdType Add( const SMESH::smIdType_array& theIDs );
+  SMESH::smIdType Remove( const SMESH::smIdType_array& theIDs );
 
-  CORBA::Long AddByPredicate( SMESH::Predicate_ptr thePredicate );
-  CORBA::Long RemoveByPredicate( SMESH::Predicate_ptr thePredicate );
+  SMESH::smIdType AddByPredicate( SMESH::Predicate_ptr thePredicate );
+  SMESH::smIdType RemoveByPredicate( SMESH::Predicate_ptr thePredicate );
 
-  CORBA::Long AddFrom( SMESH::SMESH_IDSource_ptr theSource );
+  SMESH::smIdType AddFrom( SMESH::SMESH_IDSource_ptr theSource );
 };
 
 // =========================
@@ -199,8 +199,8 @@ class SMESH_I_EXPORT SMESH_GroupOnFilter_i:
   void SetFilter(SMESH::Filter_ptr theFilter);
   SMESH::Filter_ptr GetFilter();
   virtual CORBA::Boolean IsUpToDate();
-  virtual SMESH::long_array* GetListOfID();
-  virtual SMESH::long_array* GetMeshInfo();
+  virtual SMESH::smIdType_array* GetListOfID();
+  virtual SMESH::smIdType_array* GetMeshInfo();
   //! @return false in two cases: 1) if mesh not loaded and GetMeshInfo() returns
   //! incorrect information 2) mesh loaded but group contents is not computed.
   virtual bool IsMeshInfoCorrect();

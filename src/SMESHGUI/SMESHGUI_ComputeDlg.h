@@ -87,7 +87,7 @@ protected:
                                                     const QString& );
   SMESHGUI_ComputeDlg*           evaluateDlg() const;
   void                           evaluateMesh();
-  void                           showEvaluateResult(const SMESH::long_array& theRes,
+  void                           showEvaluateResult(const SMESH::smIdType_array& theRes,
                                                     const bool,
                                                     const bool,
                                                     SMESH::compute_error_array_var&,

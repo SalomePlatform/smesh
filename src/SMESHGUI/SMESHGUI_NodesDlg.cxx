@@ -55,7 +55,7 @@
 
 #include <SVTK_ViewWindow.h>
 #include <VTKViewer_Algorithm.h>
-#include <VTKViewer_CellLocationsArray.h>
+//#include <VTKViewer_CellLocationsArray.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_Study.hxx>
@@ -152,7 +152,7 @@ namespace SMESH
       aCells->InsertNextCell( anIdList );
       aCellTypesArray->InsertNextValue( VTK_VERTEX );
 
-      VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
+      vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
       aCellLocationsArray->SetNumberOfComponents( 1 );
       aCellLocationsArray->SetNumberOfTuples( 1 );
 
@@ -497,7 +497,7 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
     }
 
     if ( !aGroupUsed->_is_nil() ) {
-      SMESH::long_array_var anIdList = new SMESH::long_array;
+      SMESH::smIdType_array_var anIdList = new SMESH::smIdType_array;
       anIdList->length( 1 );
       anIdList[0] = aNodeId;
       aGroupUsed->Add( anIdList.inout() );

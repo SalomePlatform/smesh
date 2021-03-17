@@ -1146,8 +1146,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
   if( aResMap.count(sm) )
     return false;
 
-  vector<int>& aResVec =
-    aResMap.insert( make_pair(sm, vector<int>(SMDSEntity_Last,0))).first->second;
+  vector<smIdType>& aResVec =
+    aResMap.insert( make_pair(sm, vector<smIdType>(SMDSEntity_Last,0))).first->second;
 
   myHelper = new SMESH_MesherHelper( aMesh );
   myHelper->SetSubShape( aShape );
@@ -1204,23 +1204,23 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
   for ( TopExp_Explorer edge( aShape, TopAbs_EDGE ); edge.More() &&  !isQuadratic ; edge.Next() )
   {
     sm = aMesh.GetSubMesh( edge.Current() );
-    vector<int>& nbElems = aResMap[ sm ];
+    vector<smIdType>& nbElems = aResMap[ sm ];
     if ( SMDSEntity_Quad_Edge < (int) nbElems.size() )
       isQuadratic = nbElems[ SMDSEntity_Quad_Edge ];
   }
 
-  int nbCircSegments = 0;
+  smIdType nbCircSegments = 0;
   for ( int iE = 0; iE < circSide->NbEdges(); ++iE )
   {
     sm = aMesh.GetSubMesh( circSide->Edge( iE ));
-    vector<int>& nbElems = aResMap[ sm ];
+    vector<smIdType>& nbElems = aResMap[ sm ];
     if ( SMDSEntity_Quad_Edge < (int) nbElems.size() )
       nbCircSegments += ( nbElems[ SMDSEntity_Edge ] + nbElems[ SMDSEntity_Quad_Edge ]);
   }
   
-  int nbQuads = nbCircSegments * ( layerPositions.size() - 1 );
-  int nbTria  = nbCircSegments;
-  int nbNodes = ( nbCircSegments - 1 ) * ( layerPositions.size() - 2 );
+  smIdType nbQuads = nbCircSegments * ( layerPositions.size() - 1 );
+  smIdType nbTria  = nbCircSegments;
+  smIdType nbNodes = ( nbCircSegments - 1 ) * ( layerPositions.size() - 2 );
   if ( isQuadratic )
   {
     nbNodes += (( nbCircSegments - 1 ) * ( layerPositions.size() - 1 ) + // radial
@@ -1238,7 +1238,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
   if ( linSide1 )
   {
     // evaluation for linSides
-    vector<int> aResVec(SMDSEntity_Last, 0);
+    vector<smIdType> aResVec(SMDSEntity_Last, 0);
     if ( isQuadratic ) {
       aResVec[SMDSEntity_Node     ] = 2 * ( layerPositions.size() - 1 ) + 1;
       aResVec[SMDSEntity_Quad_Edge] = layerPositions.size() - 1;

@@ -60,8 +60,8 @@ class TopoDS_Vertex;
 class TopoDS_Wire;
 class gp_XYZ;
 
-typedef std::map< SMESH_subMesh*, std::vector<int> >           MapShapeNbElems;
-typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsItr;
+typedef std::map< SMESH_subMesh*, std::vector<smIdType> >           MapShapeNbElems;
+typedef std::map< SMESH_subMesh*, std::vector<smIdType> >::iterator MapShapeNbElemsItr;
 
 // ==================================================================================
 /*!
@@ -339,7 +339,7 @@ public:
    */
   static double EdgeLength(const TopoDS_Edge & E);
 
-  int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
+  smIdType NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
 
   /*!
    * \brief Return continuity of two edges

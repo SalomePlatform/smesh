@@ -156,7 +156,7 @@ double FunctionTable::integral( const double a, const double b ) const
 
 bool FunctionTable::findBounds( const double x, int& x_ind_1, int& x_ind_2 ) const
 {
-  int n = myData.size() / 2;
+  int n = (int) myData.size() / 2;
   if( n==0 || x<myData[0] )
   {
     x_ind_1 = x_ind_2 = 0;
@@ -289,35 +289,35 @@ double dihotomySolve( Function& f, const double val, const double _start, const 
 }
 
 bool buildDistribution( const TCollection_AsciiString& f, const int conv, const double start, const double end,
-                        const int nbSeg, vector<double>& data, const double eps )
+                        const smIdType nbSeg, vector<double>& data, const double eps )
 {
   FunctionExpr F( f.ToCString(), conv );
   return buildDistribution( F, start, end, nbSeg, data, eps );
 }
 
 bool buildDistribution( const std::vector<double>& f, const int conv, const double start, const double end,
-                        const int nbSeg, vector<double>& data, const double eps )
+                        const smIdType nbSeg, vector<double>& data, const double eps )
 {
   FunctionTable F( f, conv );
   return buildDistribution( F, start, end, nbSeg, data, eps );
 }
 
-bool buildDistribution( const Function& func, const double start, const double end, const int nbSeg,
-                        vector<double>& data, const double eps )
+bool buildDistribution( const Function& func, const double start, const double end,
+                        const smIdType nbSeg, vector<double>& data, const double eps )
 {
   if( nbSeg<=0 )
     return false;
 
   data.resize( nbSeg+1 );
   data[0] = start;
-  double J = func.integral( start, end ) / nbSeg;
+  double J = func.integral( start, end ) / double( nbSeg );
   if( J<1E-10 )
     return false;
 
   bool ok;
   //MESSAGE( "distribution:" );
   //char buf[1024];
-  for( int i=1; i<nbSeg; i++ )
+  for( smIdType i = 1; i < nbSeg; i++ )
   {
     FunctionIntegral f_int( &func, data[i-1] );
     data[i] = dihotomySolve( f_int, J, data[i-1], end, eps, ok );

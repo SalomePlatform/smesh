@@ -209,7 +209,7 @@ SMESH::ElementType SMESH_GroupBase_i::GetType()
  */
 //=============================================================================
 
-CORBA::Long SMESH_GroupBase_i::Size()
+SMESH::smIdType SMESH_GroupBase_i::Size()
 {
   if ( myPreMeshInfo )
     return GetType() == SMESH::NODE ? myPreMeshInfo->NbNodes() : myPreMeshInfo->NbElements();
@@ -281,7 +281,7 @@ void SMESH_Group_i::Clear()
  */
 //=============================================================================
 
-CORBA::Boolean SMESH_GroupBase_i::Contains( CORBA::Long theID )
+CORBA::Boolean SMESH_GroupBase_i::Contains( SMESH::smIdType theID )
 {
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
@@ -298,7 +298,7 @@ CORBA::Boolean SMESH_GroupBase_i::Contains( CORBA::Long theID )
  */
 //=============================================================================
 
-CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
+SMESH::smIdType  SMESH_Group_i::Add( const SMESH::smIdType_array& theIDs )
 {
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
@@ -329,7 +329,7 @@ CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
  */
 //=============================================================================
 
-CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
+SMESH::smIdType  SMESH_Group_i::Remove( const SMESH::smIdType_array& theIDs )
 {
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
@@ -361,7 +361,7 @@ CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
  */
 //=============================================================================
 
-typedef bool (SMESHDS_Group::*TFunChangeGroup)(const int);
+typedef bool (SMESHDS_Group::*TFunChangeGroup)(const smIdType);
 
 CORBA::Long 
 ChangeByPredicate( SMESH::Predicate_i* thePredicate,
@@ -386,7 +386,7 @@ ChangeByPredicate( SMESH::Predicate_i* thePredicate,
   return aNb;
 }
 
-CORBA::Long 
+SMESH::smIdType  
 SMESH_Group_i::
 AddByPredicate( SMESH::Predicate_ptr thePredicate )
 {
@@ -401,7 +401,7 @@ AddByPredicate( SMESH::Predicate_ptr thePredicate )
   return 0;
 }
 
-CORBA::Long 
+SMESH::smIdType  
 SMESH_Group_i::
 RemoveByPredicate( SMESH::Predicate_ptr thePredicate )
 {
@@ -416,7 +416,7 @@ RemoveByPredicate( SMESH::Predicate_ptr thePredicate )
   return 0;
 }
 
-CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
+SMESH::smIdType  SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
 {
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
@@ -445,7 +445,7 @@ CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
  */
 //=============================================================================
 
-CORBA::Long SMESH_GroupBase_i::GetID( CORBA::Long theIndex )
+SMESH::smIdType  SMESH_GroupBase_i::GetID( SMESH::smIdType theIndex )
 {
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
@@ -463,19 +463,19 @@ CORBA::Long SMESH_GroupBase_i::GetID( CORBA::Long theIndex )
  */
 //=============================================================================
 
-SMESH::long_array* SMESH_GroupBase_i::GetListOfID()
+SMESH::smIdType_array* SMESH_GroupBase_i::GetListOfID()
 {
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
 
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
   {
-    int aSize = aGroupDS->Extent();
+    smIdType aSize = aGroupDS->Extent();
     aRes->length(aSize);
     SMDS_ElemIteratorPtr it = aGroupDS->GetElements();
-    for (int i = 0; it->more(); i++)
+    for (smIdType i = 0; it->more(); i++)
       aRes[i] = it->next()->GetID();
 
     if ( 0 < aSize && aSize < 100 ) // for comfortable testing ;)
@@ -509,7 +509,7 @@ namespace
  */
 //================================================================================
 
-CORBA::Long SMESH_GroupBase_i::GetNumberOfNodes()
+SMESH::smIdType  SMESH_GroupBase_i::GetNumberOfNodes()
 {
   if ( GetType() == SMESH::NODE )
     return Size();
@@ -553,7 +553,7 @@ CORBA::Boolean SMESH_GroupBase_i::IsNodeInfoAvailable()
  */
 //================================================================================
 
-SMESH::long_array* SMESH_GroupBase_i::GetNodeIDs()
+SMESH::smIdType_array* SMESH_GroupBase_i::GetNodeIDs()
 {
   if ( GetType() == SMESH::NODE )
     return GetListOfID();
@@ -561,7 +561,7 @@ SMESH::long_array* SMESH_GroupBase_i::GetNodeIDs()
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
 
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   if ( SMESHDS_GroupBase* g = GetGroupDS())
   {
     std::set<const SMDS_MeshNode* > nodes;
@@ -651,7 +651,7 @@ void SMESH_GroupBase_i::SetColor(const SALOMEDS::Color& color)
  *
  */
 //=============================================================================
-CORBA::Long SMESH_GroupBase_i::GetColorNumber()
+CORBA::Long  SMESH_GroupBase_i::GetColorNumber()
 {
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
@@ -684,12 +684,12 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
  */
 //=============================================================================
 
-SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
+SMESH::smIdType_array* SMESH_GroupBase_i::GetMeshInfo()
 {
   if ( myPreMeshInfo )
     return myPreMeshInfo->GetMeshInfo();
 
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   aRes->length(SMESH::Entity_Last);
   for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
     aRes[i] = 0;
@@ -712,9 +712,9 @@ SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
  */
 //=============================================================================
 
-SMESH::long_array* SMESH_GroupBase_i::GetNbElementsByType()
+SMESH::smIdType_array* SMESH_GroupBase_i::GetNbElementsByType()
 {
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   aRes->length(SMESH::NB_ELEMENT_TYPES);
   for (int i = 0; i < SMESH::NB_ELEMENT_TYPES; i++)
     aRes[ i ] = 0;
@@ -732,7 +732,7 @@ SMESH::long_array* SMESH_GroupBase_i::GetNbElementsByType()
 //purpose  : Return ids of members
 //=======================================================================
 
-SMESH::long_array* SMESH_GroupBase_i::GetIDs()
+SMESH::smIdType_array* SMESH_GroupBase_i::GetIDs()
 {
   return GetListOfID();
 }
@@ -893,12 +893,12 @@ bool SMESH_GroupOnFilter_i::IsMeshInfoCorrect()
 //purpose  : Return ids of members
 //=======================================================================
 
-SMESH::long_array* SMESH_GroupOnFilter_i::GetListOfID()
+SMESH::smIdType_array* SMESH_GroupOnFilter_i::GetListOfID()
 {
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
 
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
   {
@@ -921,12 +921,12 @@ SMESH::long_array* SMESH_GroupOnFilter_i::GetListOfID()
  */
 //=============================================================================
 
-SMESH::long_array* SMESH_GroupOnFilter_i::GetMeshInfo()
+SMESH::smIdType_array* SMESH_GroupOnFilter_i::GetMeshInfo()
 {
   if ( myPreMeshInfo )
     return myPreMeshInfo->GetMeshInfo();
 
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   aRes->length(SMESH::Entity_Last);
   for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
     aRes[i] = 0;
@@ -938,7 +938,7 @@ SMESH::long_array* SMESH_GroupOnFilter_i::GetMeshInfo()
 
     if ( g->GetType() != SMDSAbs_Node )
     {
-      std::vector< int > nbElems = static_cast< SMESHDS_GroupOnFilter* >( g )->GetMeshInfo();
+      std::vector< SMESH::smIdType > nbElems = static_cast< SMESHDS_GroupOnFilter* >( g )->GetMeshInfo();
       for ( size_t i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
         if ( i < nbElems.size() )
           aRes[i] = nbElems[ i ];

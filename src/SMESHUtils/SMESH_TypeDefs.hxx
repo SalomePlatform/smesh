@@ -32,6 +32,8 @@
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_MeshNode.hxx"
 
+#include <smIdType.hxx>
+
 #include <gp_XYZ.hxx>
 #include <gp_XY.hxx>
 
@@ -154,7 +156,7 @@ struct SMESH_TLink: public NLink
   // methods for usage of SMESH_TLink as a hasher in NCollection maps
   static int HashCode(const SMESH_TLink& link, int aLimit)
   {
-    return ::HashCode( link.node1()->GetID() + link.node2()->GetID(), aLimit );
+    return smIdHasher::HashCode( link.node1()->GetID() + link.node2()->GetID(), aLimit );
   }
   static Standard_Boolean IsEqual(const SMESH_TLink& l1, const SMESH_TLink& l2)
   {
@@ -215,7 +217,7 @@ struct SMESH_Hasher
 {
   static Standard_Integer HashCode(const SMDS_MeshElement* e, const Standard_Integer upper)
   {
-    return ::HashCode( e->GetID(), upper );
+    return smIdHasher::HashCode( e->GetID(), upper );
   }
   static Standard_Boolean IsEqual( const SMDS_MeshElement* e1, const SMDS_MeshElement* e2 )
   {

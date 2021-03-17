@@ -418,7 +418,7 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
  */
 // =========================================================================================
 
-void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
+void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::smIdType_array& theInfo)
 {
   // nodes
   myNbNode       ->setText( QString("%1").arg( theInfo[SMDSEntity_Node] ));

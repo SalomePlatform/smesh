@@ -461,8 +461,8 @@ void SMDS_MeshCell::init( SMDSAbs_EntityType theEntity, int theNbNodes, ... )
   }
   va_end( vl );
 
-  int vtkType = toVtkType( theEntity );
-  int   vtkID = getGrid()->InsertNextLinkedCell( vtkType, theNbNodes, vtkIds );
+  int     vtkType = toVtkType( theEntity );
+  vtkIdType vtkID = getGrid()->InsertNextLinkedCell( vtkType, theNbNodes, vtkIds );
   setVtkID( vtkID );
 }
 
@@ -473,17 +473,17 @@ void SMDS_MeshCell::init( SMDSAbs_EntityType                       theEntity,
   for ( size_t i = 0; i < nodes.size(); ++i )
     vtkIds[i] = nodes[i]->GetVtkID();
 
-  int vtkType = toVtkType( theEntity );
-  int   vtkID = getGrid()->InsertNextLinkedCell( vtkType, nodes.size(), &vtkIds[0] );
+  int     vtkType = toVtkType( theEntity );
+  vtkIdType vtkID = getGrid()->InsertNextLinkedCell( vtkType, nodes.size(), &vtkIds[0] );
   setVtkID( vtkID );
 }
 
 void SMDS_MeshCell::init( SMDSAbs_EntityType            theEntity,
                           const std::vector<vtkIdType>& vtkNodeIds )
 {
-  int vtkType = toVtkType( theEntity );
-  int   vtkID = getGrid()->InsertNextLinkedCell( vtkType, vtkNodeIds.size(),
-                                                 const_cast< vtkIdType* > ( &vtkNodeIds[0] ));
+  int     vtkType = toVtkType( theEntity );
+  vtkIdType vtkID = getGrid()->InsertNextLinkedCell( vtkType, vtkNodeIds.size(),
+                                                     const_cast< vtkIdType* > ( &vtkNodeIds[0] ));
   setVtkID( vtkID );
 }
 

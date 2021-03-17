@@ -69,7 +69,7 @@ public:
   void SetLibName( const char* theLibName );
 
   // Get unique id of hypothesis
-  virtual CORBA::Long GetId();
+  virtual CORBA::Short GetId();
 
   // Return true if a hypothesis has parameters
   virtual CORBA::Boolean HasParameters();

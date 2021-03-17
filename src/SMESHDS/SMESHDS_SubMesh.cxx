@@ -235,12 +235,12 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
 //purpose  :
 //=======================================================================
 
-int SMESHDS_SubMesh::NbElements() const
+smIdType SMESHDS_SubMesh::NbElements() const
 {
   if ( !IsComplexSubmesh() )
     return myNbElements;
 
-  int nbElems = 0;
+  smIdType nbElems = 0;
   TSubMeshSet::const_iterator it = mySubMeshes.begin();
   for ( ; it != mySubMeshes.end(); it++ )
     nbElems += (*it)->NbElements();
@@ -253,12 +253,12 @@ int SMESHDS_SubMesh::NbElements() const
 //purpose  :
 //=======================================================================
 
-int SMESHDS_SubMesh::NbNodes() const
+smIdType SMESHDS_SubMesh::NbNodes() const
 {
   if ( !IsComplexSubmesh() )
     return myNbNodes;
 
-  int nbElems = 0;
+  smIdType nbElems = 0;
   TSubMeshSet::const_iterator it = mySubMeshes.begin();
   for ( ; it != mySubMeshes.end(); it++ )
     nbElems += (*it)->NbNodes();

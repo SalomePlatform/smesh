@@ -31,7 +31,7 @@
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_FaceOrientationFilter.h"
-#include "VTKViewer_CellLocationsArray.h"
+//#include "VTKViewer_CellLocationsArray.h"
 #include "VTKViewer_PolyDataMapper.h"
 
 #include <VTKViewer_Transform.h>
@@ -161,7 +161,7 @@ SMESH_DeviceActor
 
   myTransformFilter->Delete();
 
-  for(int i = 0, iEnd = myPassFilter.size(); i < iEnd; i++)
+  for(size_t i = 0, iEnd = myPassFilter.size(); i < iEnd; i++)
     myPassFilter[i]->Delete();
 
   myShrinkFilter->Delete();
@@ -426,7 +426,7 @@ SMESH_DeviceActor
       aCellTypesArray->SetNumberOfTuples( aNbCells );
       aScalars->SetNumberOfTuples( aNbCells );
 
-      VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
+      vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
       aCellLocationsArray->SetNumberOfComponents( 1 );
       aCellLocationsArray->SetNumberOfTuples( aNbCells );
 
@@ -491,7 +491,7 @@ SMESH_DeviceActor
       aCellTypesArray->SetNumberOfTuples( aNbCells );
       aScalars->SetNumberOfTuples( aNbCells );
 
-      VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
+      vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
       aCellLocationsArray->SetNumberOfComponents( 1 );
       aCellLocationsArray->SetNumberOfTuples( aNbCells );
 
@@ -586,7 +586,7 @@ SMESH_DeviceActor
       }
     }
     
-    VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
+    vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
     aCellLocationsArray->SetNumberOfComponents( 1 );
     aCellLocationsArray->SetNumberOfTuples( aNbCells );
     
@@ -604,7 +604,7 @@ SMESH_DeviceActor
            ( aPredicate = dynamic_cast<CoincidentNodes*>(theFunctor.get())))
   {
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
-    vtkIdType aNbNodes = myVisualObj->GetNbEntities(SMDSAbs_Node);
+    vtkIdType aNbNodes = FromSmIdType<vtkIdType>(myVisualObj->GetNbEntities(SMDSAbs_Node));
     for( vtkIdType i = 0; i < aNbNodes; i++ ){
       vtkIdType anObjId = myVisualObj->GetNodeObjId(i);
       if(aPredicate->IsSatisfy(anObjId))
@@ -783,6 +783,8 @@ SMESH_DeviceActor
     myGeomFilter->SetInside(false);
     myGeomFilter->SetWireframeMode(false);
     GetProperty()->SetRepresentation(theMode);
+  case eNoneRepr:
+    return;
   }
   SetMarkerEnabled(theMode == ePoint);
   myRepresentation = theMode;
@@ -839,9 +841,9 @@ SMESH_DeviceActor
 }
 
 
-int
+vtkIdType
 SMESH_DeviceActor
-::GetNodeObjId(int theVtkID)
+::GetNodeObjId(vtkIdType theVtkID)
 {
   vtkIdType anID = theVtkID;
 
@@ -855,7 +857,7 @@ SMESH_DeviceActor
 
 double* 
 SMESH_DeviceActor
-::GetNodeCoord(int theObjID)
+::GetNodeCoord(vtkIdType theObjID)
 {
   vtkDataSet* aDataSet = myMergeFilter->GetOutput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
@@ -864,16 +866,16 @@ SMESH_DeviceActor
   return aCoord;
 }
 
-int
+vtkIdType
 SMESH_DeviceActor
-::GetNodeVtkId(int theObjID) 
+::GetNodeVtkId(vtkIdType theObjID) 
 {
   return myVisualObj->GetNodeVTKId(theObjID);
 }
 
-int
+vtkIdType
 SMESH_DeviceActor
-::GetElemObjId(int theVtkID)
+::GetElemObjId(vtkIdType theVtkID)
 {
   vtkIdType anId = myGeomFilter->GetElemObjId(theVtkID);
   if(anId < 0) 
@@ -897,7 +899,7 @@ SMESH_DeviceActor
 
 vtkCell* 
 SMESH_DeviceActor
-::GetElemCell(int theObjID)
+::GetElemCell(vtkIdType theObjID)
 {
   vtkDataSet* aDataSet = myVisualObj->GetUnstructuredGrid();
   vtkIdType aGridID = myVisualObj->GetElemVTKId(theObjID);

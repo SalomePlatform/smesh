@@ -27,6 +27,8 @@
 #include <SMESHGUI.h>
 #include "SMESH_StdMeshersGUI.hxx"
 
+#include <smIdType.hxx>
+
 // Qt includes
 #include <QWidget>
 #include <QStringList>
@@ -56,8 +58,8 @@ public:
   SMESH::double_array_var        GetListOfPoints();
   void                           SetListOfPoints( SMESH::double_array_var );
 
-  SMESH::long_array_var          GetListOfSegments();
-  void                           SetListOfSegments( SMESH::long_array_var );
+  SMESH::smIdType_array_var      GetListOfSegments();
+  void                           SetListOfSegments( SMESH::smIdType_array_var );
 
   QString                        GetValue() const { return myParamValue; }
 
@@ -72,8 +74,8 @@ private:
   void                           addPoint( double ); 
   void                           removePoints(); 
   double                         point( int ) const;
-  void                           setNbSegments( int, int );
-  int                            nbSegments( int ) const;
+  void                           setNbSegments( int, SMESH::smIdType );
+  smIdType                       nbSegments( int ) const;
 
   static QTreeWidgetItem*        newTreeItem( double v1, double v2 );
   static QListWidgetItem*        newListItem( double v1 );

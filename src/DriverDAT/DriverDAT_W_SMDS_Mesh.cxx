@@ -37,7 +37,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   Kernel_Utils::Localizer loc;
   Status aResult = DRS_OK;
 
-  int nbNodes, nbCells;
+  smIdType nbNodes, nbCells;
 #if defined(WIN32) && defined(UNICODE)
   std::wstring file2Read = Kernel_Utils::utf8_decode_s(myFile);
   FILE* aFileId = _wfopen(file2Read.c_str(), L"w+");
@@ -60,7 +60,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   nbNodes = myMesh->NbNodes();
 
   /* Combien de mailles, faces ou aretes ? */
-  int nb_of_edges, nb_of_faces, nb_of_volumes;
+  smIdType nb_of_edges, nb_of_faces, nb_of_volumes;
   nb_of_edges = myMesh->NbEdges();
   nb_of_faces = myMesh->NbFaces();
   nb_of_volumes = myMesh->NbVolumes();
@@ -70,7 +70,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   SCRUTE(nb_of_volumes);
 
   //fprintf(stdout, "%d %d\n", nbNodes, nbCells);
-  fprintf(aFileId, "%d %d\n", nbNodes, nbCells);
+  fprintf(aFileId, "%ld %ld\n", nbNodes, nbCells);
 
   /****************************************************************************
    *                       ECRITURE DES NOEUDS                                 *
@@ -104,10 +104,10 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
 
     for ( SMDS_ElemIteratorPtr it = elem->nodesIterator(); it->more(); )
     {
-      int nodeID = it->next()->GetID();
+      smIdType nodeID = it->next()->GetID();
       if ( !nodeNumByID.empty() )
         nodeID = nodeNumByID[ nodeID ];
-      fprintf(aFileId, "%d ", nodeID );
+      fprintf(aFileId, "%ld ", nodeID );
     }
     fprintf(aFileId, "\n");
   }
@@ -120,10 +120,10 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
 
     for( SMDS_ElemIteratorPtr it = elem->nodesIterator(); it->more(); )
     {
-      int nodeID = it->next()->GetID();
+      smIdType nodeID = it->next()->GetID();
       if ( !nodeNumByID.empty() )
         nodeID = nodeNumByID[ nodeID ];
-      fprintf(aFileId, "%d ", nodeID );
+      fprintf(aFileId, "%ld ", nodeID );
     }
     fprintf(aFileId, "\n");
   }
@@ -155,10 +155,10 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
 
     for( SMDS_ElemIteratorPtr it = elem->nodesIterator(); it->more(); )
     {
-      int nodeID = it->next()->GetID();
+      smIdType nodeID = it->next()->GetID();
       if ( !nodeNumByID.empty() )
         nodeID = nodeNumByID[ nodeID ];
-      fprintf(aFileId, "%d ", nodeID );
+      fprintf(aFileId, "%ld ", nodeID );
     }
 
     fprintf(aFileId, "\n");

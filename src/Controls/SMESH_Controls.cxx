@@ -34,6 +34,7 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_OctreeNode.hxx"
+#include "SMESH_Comment.hxx"
 
 #include <GEOMUtils.hxx>
 #include <Basics_Utils.hxx>
@@ -127,7 +128,7 @@ namespace {
     return aDist;
   }
 
-  int getNbMultiConnection( const SMDS_Mesh* theMesh, const int theId )
+  int getNbMultiConnection( const SMDS_Mesh* theMesh, const smIdType theId )
   {
     if ( theMesh == 0 )
       return 0;
@@ -225,7 +226,7 @@ void NumericalFunctor::SetMesh( const SMDS_Mesh* theMesh )
   myMesh = theMesh;
 }
 
-bool NumericalFunctor::GetPoints(const int       theId,
+bool NumericalFunctor::GetPoints(const smIdType       theId,
                                  TSequenceOfXYZ& theRes ) const
 {
   theRes.clear();
@@ -322,12 +323,12 @@ bool NumericalFunctor::IsApplicable( long theElementId ) const
  */
 //================================================================================
 
-void NumericalFunctor::GetHistogram(int                     nbIntervals,
-                                    std::vector<int>&       nbEvents,
-                                    std::vector<double>&    funValues,
-                                    const std::vector<int>& elements,
-                                    const double*           minmax,
-                                    const bool              isLogarithmic)
+void NumericalFunctor::GetHistogram(int                          nbIntervals,
+                                    std::vector<int>&            nbEvents,
+                                    std::vector<double>&         funValues,
+                                    const std::vector<smIdType>& elements,
+                                    const double*                minmax,
+                                    const bool                   isLogarithmic)
 {
   if ( nbIntervals < 1 ||
        !myMesh ||
@@ -346,7 +347,7 @@ void NumericalFunctor::GetHistogram(int                     nbIntervals,
   }
   else
   {
-    std::vector<int>::const_iterator id = elements.begin();
+    std::vector<smIdType>::const_iterator id = elements.begin();
     for ( ; id != elements.end(); ++id )
       values.insert( GetValue( *id ));
   }
@@ -1971,7 +1972,7 @@ void Length2D::GetValues(TValues& theValues)
       {
         // use special nodes iterator
         SMDS_NodeIteratorPtr anIter = anElem->interlacedNodesIterator();
-        long aNodeId[4] = { 0,0,0,0 };
+        smIdType aNodeId[4] = { 0,0,0,0 };
         gp_Pnt P[4];
 
         double aLength = 0;
@@ -2008,7 +2009,7 @@ void Length2D::GetValues(TValues& theValues)
       }
       else {
         SMDS_NodeIteratorPtr aNodesIter = anElem->nodeIterator();
-        long aNodeId[2] = {0,0};
+        smIdType aNodeId[2] = {0,0};
         gp_Pnt P[3];
 
         double aLength;
@@ -2023,7 +2024,7 @@ void Length2D::GetValues(TValues& theValues)
         for( ; aNodesIter->more(); )
         {
           aNode = aNodesIter->next();
-          long anId = aNode->GetID();
+          smIdType anId = aNode->GetID();
 
           P[2] = SMESH_NodeXYZ( aNode );
 
@@ -2192,7 +2193,7 @@ double MultiConnection2D::GetValue( long theElementId )
       if (!anIter) break;
 
       const SMDS_MeshNode *aNode, *aNode0 = 0;
-      TColStd_MapOfInteger aMap, aMapPrev;
+      NCollection_Map< smIdType, smIdHasher > aMap, aMapPrev;
 
       for (i = 0; i <= len; i++) {
         aMapPrev = aMap;
@@ -2214,7 +2215,7 @@ double MultiConnection2D::GetValue( long theElementId )
         while (anElemIter->more()) {
           const SMDS_MeshElement* anElem = anElemIter->next();
           if (anElem != 0 && anElem->GetType() == SMDSAbs_Face) {
-            int anId = anElem->GetID();
+            smIdType anId = anElem->GetID();
 
             aMap.Add(anId);
             if (aMapPrev.Contains(anId)) {
@@ -2675,14 +2676,14 @@ void FreeEdges::SetMesh( const SMDS_Mesh* theMesh )
   myMesh = theMesh;
 }
 
-bool FreeEdges::IsFreeEdge( const SMDS_MeshNode** theNodes, const int theFaceId  )
+bool FreeEdges::IsFreeEdge( const SMDS_MeshNode** theNodes, const smIdType theFaceId  )
 {
   SMDS_ElemIteratorPtr anElemIter = theNodes[ 0 ]->GetInverseElementIterator(SMDSAbs_Face);
   while( anElemIter->more() )
   {
     if ( const SMDS_MeshElement* anElem = anElemIter->next())
     {
-      const int anId = anElem->GetID();
+      const smIdType anId = anElem->GetID();
       if ( anId != theFaceId && anElem->GetNodeIndex( theNodes[1] ) >= 0 )
         return false;
     }
@@ -2967,8 +2968,8 @@ void GroupColor::SetMesh( const SMDS_Mesh* theMesh )
     SMDSAbs_ElementType aGrpElType = (SMDSAbs_ElementType)aGrp->GetType();
     if ( myType == aGrpElType || (myType == SMDSAbs_All && aGrpElType != SMDSAbs_Node) ) {
       // add elements IDS into control
-      int aSize = aGrp->Extent();
-      for (int i = 0; i < aSize; i++)
+      smIdType aSize = aGrp->Extent();
+      for (smIdType i = 0; i < aSize; i++)
         myIDs.insert( aGrp->GetID(i+1) );
     }
   }
@@ -3119,7 +3120,7 @@ ConnectedElements::ConnectedElements():
 SMDSAbs_ElementType ConnectedElements::GetType() const
 { return myType; }
 
-int ConnectedElements::GetNode() const
+smIdType ConnectedElements::GetNode() const
 { return myXYZ.empty() ? myNodeID : 0; } // myNodeID can be found by myXYZ
 
 std::vector<double> ConnectedElements::GetPoint() const
@@ -3146,7 +3147,7 @@ void ConnectedElements::SetMesh( const SMDS_Mesh* theMesh )
   }
 }
 
-void ConnectedElements::SetNode( int nodeID )
+void ConnectedElements::SetNode( smIdType nodeID )
 {
   myNodeID = nodeID;
   myXYZ.clear();
@@ -3206,7 +3207,7 @@ bool ConnectedElements::IsSatisfy( long theElementId )
       return false;
 
     std::list< const SMDS_MeshNode* > nodeQueue( 1, node0 );
-    std::set< int > checkedNodeIDs;
+    std::set< smIdType > checkedNodeIDs;
     // algo:
     // foreach node in nodeQueue:
     //   foreach element sharing a node:
@@ -3231,7 +3232,7 @@ bool ConnectedElements::IsSatisfy( long theElementId )
         while ( nIt->more() )
         {
           const SMDS_MeshNode* n = static_cast< const SMDS_MeshNode* >( nIt->next() );
-          if ( checkedNodeIDs.insert( n->GetID() ).second )
+          if ( checkedNodeIDs.insert( n->GetID()).second )
             nodeQueue.push_back( n );
         }
       }
@@ -3378,56 +3379,56 @@ void RangeOfIds::GetRangeStr( TCollection_AsciiString& theResStr )
 {
   theResStr.Clear();
 
-  TColStd_SequenceOfInteger     anIntSeq;
-  TColStd_SequenceOfAsciiString aStrSeq;
+  TIDsSeq                             anIntSeq;
+  NCollection_Sequence< std::string > aStrSeq;
 
-  TColStd_MapIteratorOfMapOfInteger anIter( myIds );
+  TIDsMap::Iterator anIter( myIds );
   for ( ; anIter.More(); anIter.Next() )
   {
-    int anId = anIter.Key();
-    TCollection_AsciiString aStr( anId );
+    smIdType anId = anIter.Key();
+    SMESH_Comment aStr( anId );
     anIntSeq.Append( anId );
     aStrSeq.Append( aStr );
   }
 
-  for ( int i = 1, n = myMin.Length(); i <= n; i++ )
+  for ( smIdType i = 1, n = myMin.size(); i <= n; i++ )
   {
-    int aMinId = myMin( i );
-    int aMaxId = myMax( i );
+    smIdType aMinId = myMin[i];
+    smIdType aMaxId = myMax[i];
 
-    TCollection_AsciiString aStr;
+    SMESH_Comment aStr;
     if ( aMinId != IntegerFirst() )
-      aStr += aMinId;
+      aStr << aMinId;
 
-    aStr += "-";
+    aStr << "-";
 
-    if ( aMaxId != IntegerLast() )
-      aStr += aMaxId;
+    if ( aMaxId != std::numeric_limits<smIdType>::max() )
+      aStr << aMaxId;
 
     // find position of the string in result sequence and insert string in it
     if ( anIntSeq.Length() == 0 )
     {
       anIntSeq.Append( aMinId );
-      aStrSeq.Append( aStr );
+      aStrSeq.Append( (const char*)aStr );
     }
     else
     {
       if ( aMinId < anIntSeq.First() )
       {
         anIntSeq.Prepend( aMinId );
-        aStrSeq.Prepend( aStr );
+        aStrSeq.Prepend( (const char*)aStr );
       }
       else if ( aMinId > anIntSeq.Last() )
       {
         anIntSeq.Append( aMinId );
-        aStrSeq.Append( aStr );
+        aStrSeq.Append( (const char*)aStr );
       }
       else
         for ( int j = 1, k = anIntSeq.Length(); j <= k; j++ )
           if ( aMinId < anIntSeq( j ) )
           {
             anIntSeq.InsertBefore( j, aMinId );
-            aStrSeq.InsertBefore( j, aStr );
+            aStrSeq.InsertBefore( j, (const char*)aStr );
             break;
           }
     }
@@ -3435,13 +3436,14 @@ void RangeOfIds::GetRangeStr( TCollection_AsciiString& theResStr )
 
   if ( aStrSeq.Length() == 0 )
     return;
-
-  theResStr = aStrSeq( 1 );
+  std::string aResStr;
+  aResStr = aStrSeq( 1 );
   for ( int j = 2, k = aStrSeq.Length(); j <= k; j++  )
   {
-    theResStr += ",";
-    theResStr += aStrSeq( j );
+    aResStr += ",";
+    aResStr += aStrSeq( j );
   }
+  theResStr = aResStr.c_str();
 }
 
 //=======================================================================
@@ -3451,8 +3453,8 @@ void RangeOfIds::GetRangeStr( TCollection_AsciiString& theResStr )
 //=======================================================================
 bool RangeOfIds::SetRangeStr( const TCollection_AsciiString& theStr )
 {
-  myMin.Clear();
-  myMax.Clear();
+  myMin.clear();
+  myMax.clear();
   myIds.Clear();
 
   TCollection_AsciiString aStr = theStr;
@@ -3490,8 +3492,8 @@ bool RangeOfIds::SetRangeStr( const TCollection_AsciiString& theStr )
            (!aMaxStr.IsEmpty() && !aMaxStr.IsIntegerValue()) )
         return false;
 
-      myMin.Append( aMinStr.IsEmpty() ? IntegerFirst() : aMinStr.IntegerValue() );
-      myMax.Append( aMaxStr.IsEmpty() ? IntegerLast()  : aMaxStr.IntegerValue() );
+      myMin.push_back( aMinStr.IsEmpty() ? IntegerFirst() : aMinStr.IntegerValue() );
+      myMax.push_back( aMaxStr.IsEmpty() ? IntegerLast()  : aMaxStr.IntegerValue() );
     }
   }
 
@@ -3540,8 +3542,8 @@ bool RangeOfIds::IsSatisfy( long theId )
   if ( myIds.Contains( theId ) )
     return true;
 
-  for ( int i = 1, n = myMin.Length(); i <= n; i++ )
-    if ( theId >= myMin( i ) && theId <= myMax( i ) )
+  for ( size_t i = 0; i < myMin.size(); i++ )
+    if ( theId >= myMin[i] && theId <= myMax[i] )
       return true;
 
   return false;
@@ -3917,7 +3919,7 @@ bool ManifoldPart::process()
 
   // the map of non manifold links and bad geometry
   TMapOfLink aMapOfNonManifold;
-  TColStd_MapOfInteger aMapOfTreated;
+  TIDsMap    aMapOfTreated;
 
   // begin cycle on faces from start index and run on vector till the end
   //  and from begin to start index to cover whole vector
@@ -3930,18 +3932,18 @@ bool ManifoldPart::process()
     // as result next time when fi will be equal to aStartIndx
 
     SMDS_MeshFace* aFacePtr = myAllFacePtr[ fi ];
-    if ( aMapOfTreated.Contains( aFacePtr->GetID() ) )
+    if ( aMapOfTreated.Contains( aFacePtr->GetID()) )
       continue;
 
     aMapOfTreated.Add( aFacePtr->GetID() );
-    TColStd_MapOfInteger aResFaces;
+    TIDsMap aResFaces;
     if ( !findConnected( myAllFacePtrIntDMap, aFacePtr,
                          aMapOfNonManifold, aResFaces ) )
       continue;
-    TColStd_MapIteratorOfMapOfInteger anItr( aResFaces );
+    TIDsMap::Iterator anItr( aResFaces );
     for ( ; anItr.More(); anItr.Next() )
     {
-      int aFaceId = anItr.Key();
+      smIdType aFaceId = anItr.Key();
       aMapOfTreated.Add( aFaceId );
       myMapIds.Add( aFaceId );
     }
@@ -3977,7 +3979,7 @@ bool ManifoldPart::findConnected
                  ( const ManifoldPart::TDataMapFacePtrInt& theAllFacePtrInt,
                   SMDS_MeshFace*                           theStartFace,
                   ManifoldPart::TMapOfLink&                theNonManifold,
-                  TColStd_MapOfInteger&                    theResFaces )
+                  TIDsMap&                                 theResFaces )
 {
   theResFaces.Clear();
   if ( !theAllFacePtrInt.size() )
@@ -4045,7 +4047,7 @@ bool ManifoldPart::findConnected
         SMDS_MeshFace* aNextFace = *pFace;
         if ( aPrevFace == aNextFace )
           continue;
-        int anNextFaceID = aNextFace->GetID();
+        smIdType anNextFaceID = aNextFace->GetID();
         if ( myIsOnlyManifold && theResFaces.Contains( anNextFaceID ) )
          // should not be with non manifold restriction. probably bad topology
           continue;
@@ -4276,7 +4278,9 @@ void ElementsOnSurface::process()
   if ( !myMeshModifTracer.GetMesh() )
     return;
 
-  myIds.ReSize( myMeshModifTracer.GetMesh()->GetMeshInfo().NbElements( myType ));
+  int nbElems = FromSmIdType<int>( myMeshModifTracer.GetMesh()->GetMeshInfo().NbElements( myType ));
+  if ( nbElems > 0 )
+    myIds.ReSize( nbElems );
 
   SMDS_ElemIteratorPtr anIter = myMeshModifTracer.GetMesh()->elementsIterator( myType );
   for(; anIter->more(); )

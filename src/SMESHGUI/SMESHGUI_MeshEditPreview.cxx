@@ -34,7 +34,7 @@
 // SALOME GUI includes
 #include <SVTK_Renderer.h>
 #include <SVTK_ViewWindow.h>
-#include <VTKViewer_CellLocationsArray.h>
+//#include <VTKViewer_CellLocationsArray.h>
 
 // VTK includes
 #include <vtkCellArray.h>
@@ -217,7 +217,7 @@ void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct& previewD
   anIdList->Delete();
 
   // Insert cells in grid
-  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
+  vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( aNbCells );
 

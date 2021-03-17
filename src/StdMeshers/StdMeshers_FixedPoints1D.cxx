@@ -62,20 +62,26 @@ StdMeshers_FixedPoints1D::~StdMeshers_FixedPoints1D()
 
 void StdMeshers_FixedPoints1D::SetPoints(const std::vector<double>& listParams)
 {
-  _params = listParams;
-  NotifySubMeshesHypothesisModification();
+  if ( _params != listParams )
+  {
+    _params = listParams;
+    NotifySubMeshesHypothesisModification();
+  }
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
-void StdMeshers_FixedPoints1D::SetNbSegments(const std::vector<int>& listNbSeg) 
+void StdMeshers_FixedPoints1D::SetNbSegments(const std::vector<smIdType>& listNbSeg)
 {
-  _nbsegs = listNbSeg;
-  NotifySubMeshesHypothesisModification();
+  if ( _nbsegs != listNbSeg )
+  {
+    _nbsegs = listNbSeg;
+    NotifySubMeshesHypothesisModification();
+  }
 }
 
 ostream & StdMeshers_FixedPoints1D::SaveTo(ostream & save)
@@ -113,7 +119,7 @@ ostream & StdMeshers_FixedPoints1D::SaveTo(ostream & save)
 istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
 {
   bool isOK = true;
-  int intVal;
+  smIdType intVal;
   double dblVal;
 
   isOK = static_cast<bool>(load >> intVal);

@@ -71,14 +71,14 @@ StdMeshers_FixedPoints1D_i::~StdMeshers_FixedPoints1D_i()
  */
 //=============================================================================
 
-void StdMeshers_FixedPoints1D_i::SetNbSegments(const SMESH::long_array& listNbSeg) 
-     
+void StdMeshers_FixedPoints1D_i::SetNbSegments(const SMESH::smIdType_array& listNbSeg)
+
 {
   ASSERT( myBaseImpl );
   try {
-    std::vector<int> nbsegs( listNbSeg.length() );
-    CORBA::Long iEnd = listNbSeg.length();
-    for ( CORBA::Long i = 0; i < iEnd; i++ )
+    std::vector<smIdType> nbsegs( listNbSeg.length() );
+    CORBA::ULong iEnd = listNbSeg.length();
+    for ( CORBA::ULong i = 0; i < iEnd; i++ )
       nbsegs[ i ] = listNbSeg[ i ];
     this->GetImpl()->SetNbSegments( nbsegs );
   }
@@ -130,7 +130,7 @@ SMESH::double_array* StdMeshers_FixedPoints1D_i::GetPoints()
   ASSERT( myBaseImpl );
   SMESH::double_array_var anArray = new SMESH::double_array;
   std::vector<double> params = this->GetImpl()->GetPoints();
-  anArray->length( params.size() );
+  anArray->length( static_cast<CORBA::ULong>( params.size() ));
   for ( CORBA::ULong i = 0; i < params.size(); i++)
     anArray [ i ] = params [ i ];
 
@@ -145,12 +145,12 @@ SMESH::double_array* StdMeshers_FixedPoints1D_i::GetPoints()
  */
 //=============================================================================
 
-SMESH::long_array* StdMeshers_FixedPoints1D_i::GetNbSegments()
+SMESH::smIdType_array* StdMeshers_FixedPoints1D_i::GetNbSegments()
 {
   ASSERT( myBaseImpl );
-  SMESH::long_array_var anArray = new SMESH::long_array;
-  std::vector<int> nbsegs = this->GetImpl()->GetNbSegments();
-  anArray->length( nbsegs.size() );
+  SMESH::smIdType_array_var anArray = new SMESH::smIdType_array;
+  std::vector<smIdType> nbsegs = this->GetImpl()->GetNbSegments();
+  anArray->length( static_cast<CORBA::ULong>( nbsegs.size() ));
   for ( CORBA::ULong i = 0; i < nbsegs.size(); i++)
     anArray [ i ] = nbsegs [ i ];
 

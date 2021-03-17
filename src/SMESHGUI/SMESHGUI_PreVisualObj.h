@@ -51,18 +51,18 @@ class SMESHGUI_EXPORT SMESHGUI_PreVisualObj : public SMESH_VisualObj
   virtual bool Update( int theIsClear );
   virtual bool NulData() { return false; }
   virtual void UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
-  virtual int  GetElemDimension( const int theObjId );
-  virtual int  GetNbEntities( const SMDSAbs_ElementType theType) const;
+  virtual int  GetElemDimension( const smIdType theObjId );
+  virtual smIdType  GetNbEntities( const SMDSAbs_ElementType theType) const;
   virtual bool IsValid() const;
-  virtual bool GetEdgeNodes( const int theElemId,
-                             const int theEdgeNum,
-                             int&      theNodeId1,
-                             int&      theNodeId2 ) const;
+  virtual bool GetEdgeNodes( const smIdType theElemId,
+                             const int      theEdgeNum,
+                             smIdType&      theNodeId1,
+                             smIdType&      theNodeId2 ) const;
 
-  virtual vtkIdType GetNodeObjId( int theVTKID );
-  virtual vtkIdType GetNodeVTKId( int theObjID );
-  virtual vtkIdType GetElemObjId( int theVTKID );
-  virtual vtkIdType GetElemVTKId( int theObjID );
+  virtual vtkIdType GetNodeObjId( vtkIdType theVTKID );
+  virtual vtkIdType GetNodeVTKId( vtkIdType theObjID );
+  virtual vtkIdType GetElemObjId( vtkIdType theVTKID );
+  virtual vtkIdType GetElemVTKId( vtkIdType theObjID );
   virtual void                  ClearEntitiesFlags();
   virtual bool                  GetEntitiesFlag();
   virtual unsigned int          GetEntitiesState();

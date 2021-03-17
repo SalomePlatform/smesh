@@ -174,7 +174,7 @@ static double getNumericalValue(SMESH::SMESH_IDSource_ptr            theSource,
     if ( aMesh ) {
       theFunctor->SetMesh( aMesh );
       
-      SMESH::long_array_var anElementsId = theSource->GetIDs();
+      SMESH::smIdType_array_var anElementsId = theSource->GetIDs();
       for ( CORBA::ULong i = 0; i < anElementsId->length(); i++) {
         value += theFunctor->GetValue( anElementsId[i] );
       }
@@ -209,8 +209,8 @@ SMESH::Measure Measurements_i::MinDistance
   bool isNode1 = isNodeType(types1);
   bool isNode2 = isOrigin || isNodeType(types2);
 
-  SMESH::long_array_var aElementsId1 = theSource1->GetIDs();
-  SMESH::long_array_var aElementsId2;
+  SMESH::smIdType_array_var aElementsId1 = theSource1->GetIDs();
+  SMESH::smIdType_array_var aElementsId2;
 
   // compute distance between two entities
   /* NOTE: currently only node-to-node case is implemented
@@ -297,7 +297,7 @@ static void enlargeBoundingBox(const SMESH::SMESH_IDSource_ptr theObject,
   else
   {
     SMESH::array_of_ElementType_var types = theObject->GetTypes();
-    SMESH::long_array_var     aElementsId = theObject->GetIDs();
+    SMESH::smIdType_array_var aElementsId = theObject->GetIDs();
     // here we assume that type of all IDs defined by first type in array
     const bool isNode = isNodeType( types );
     for(int i = 0, n = aElementsId->length(); i < n; i++)

@@ -318,7 +318,7 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
     TopoDS_Edge E = TopoDS::Edge(exp.Current());
     MapShapeNbElemsItr anIt = aResMap.find( aMesh.GetSubMesh(E) );
     if( anIt == aResMap.end() ) continue;
-    std::vector<int> aVec = (*anIt).second;
+    std::vector<smIdType> aVec = (*anIt).second;
     int nbe = Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
     NbSeg += nbe;
     if(IsFirst) {
@@ -339,7 +339,7 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
     }
   }
   if(NbSeg<1) {
-    std::vector<int> aResVec(SMDSEntity_Last);
+    std::vector<smIdType> aResVec(SMDSEntity_Last);
     for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
     aResMap.insert(std::make_pair(sm,aResVec));
@@ -361,7 +361,7 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
     (int)( anArea/(tmpLength*tmpLength*sqrt(3.)/4) );
   int nbNodes = (int) ( nbFaces*3 - (NbSeg-1)*2 ) / 6;
 
-  std::vector<int> aVec(SMDSEntity_Last);
+  std::vector<smIdType> aVec(SMDSEntity_Last);
   for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
   if(IsQuadratic) {
     aVec[SMDSEntity_Quad_Triangle] = nbFaces;

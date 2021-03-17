@@ -47,7 +47,7 @@ class SMESHDS_EXPORT SMESHDS_GroupOnGeom: public SMESHDS_GroupBase
 
   TopoDS_Shape GetShape() const { return myShape; }
 
-  virtual bool Contains (const int theID);
+  virtual bool Contains (const smIdType theID);
 
   virtual bool Contains (const SMDS_MeshElement* elem);
 

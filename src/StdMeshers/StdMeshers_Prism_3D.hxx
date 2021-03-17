@@ -154,7 +154,7 @@ class STDMESHERS_EXPORT StdMeshers_PrismAsBlock: public SMESH_Block
    * \brief Return number of nodes on every vertical edge
     * \retval int - number of nodes including end nodes
    */
-  int VerticalSize() const { return myParam2ColumnMaps[0].begin()->second.size(); }
+  size_t VerticalSize() const { return myParam2ColumnMaps[0].begin()->second.size(); }
 
   bool HasNotQuadElemOnTop() const { return myNotQuadOnTop; }
 

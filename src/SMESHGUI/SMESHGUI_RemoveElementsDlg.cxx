@@ -231,7 +231,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
     SUIT_OverrideCursor wc;
 
     QStringList aListId = myEditCurrentArgument->text().split(" ", QString::SkipEmptyParts);
-    SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
+    SMESH::smIdType_array_var anArrayOfIdeces = new SMESH::smIdType_array;
     anArrayOfIdeces->length(aListId.count());
     for (int i = 0; i < aListId.count(); i++)
       anArrayOfIdeces[i] = aListId[ i ].toInt();
@@ -348,7 +348,7 @@ void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
       
-      TColStd_MapOfInteger newIndices;
+      SVTK_TVtkIDsMap newIndices;
       
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       for (int i = 0; i < aListId.count(); i++) {

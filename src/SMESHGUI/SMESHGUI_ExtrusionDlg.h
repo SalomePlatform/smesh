@@ -100,7 +100,7 @@ class SMESHGUI_EXPORT SMESHGUI_3TypesSelector : public QWidget
 
  private:
 
-  void                             addTmpIdSource( SMESH::long_array_var& ids,
+  void                             addTmpIdSource( SMESH::smIdType_array_var& ids,
                                                    int iType, int index);
 
   QGroupBox*                       myGroups   [3];

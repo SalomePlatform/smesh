@@ -197,7 +197,8 @@ void SMESHGUI_TransparencyDlg::SetTransparency()
 {
   if ( myViewWindow ) {
     SUIT_OverrideCursor wc;
-    float opacity = ( 100 - Slider1->value() ) / 100.;
+    //float opacity = ( 100.f - Slider1->value() ) / 100.;
+    float opacity = float( 100 - Slider1->value() ) / 100.;
 
     SALOME_ListIO aList;
     mySelectionMgr->selectedObjects( aList );

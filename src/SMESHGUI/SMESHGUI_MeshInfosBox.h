@@ -46,7 +46,7 @@ class SMESHGUI_EXPORT SMESHGUI_MeshInfosBox : public QGroupBox
 public:
   SMESHGUI_MeshInfosBox( const bool, QWidget* );
 
-  void    SetMeshInfo( const SMESH::long_array& theInfo );
+  void    SetMeshInfo( const SMESH::smIdType_array& theInfo );
 
 private:
   bool    myFull;

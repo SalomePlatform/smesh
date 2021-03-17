@@ -28,6 +28,7 @@
 #define _INCLUDE_DRIVER_MESH
 
 #include "SMESH_ComputeError.hxx"
+#include "SMDS_Mesh.hxx"
 
 #include <string>
 #include <vector>
@@ -50,12 +51,13 @@ class MESHDRIVER_EXPORT Driver_Mesh
 
   enum Status {
     DRS_OK,
-    DRS_EMPTY,          // a file contains no mesh with the given name
-    DRS_WARN_RENUMBER,  // a file has overlapped ranges of element numbers,
-                        // so the numbers from the file are ignored
-    DRS_WARN_SKIP_ELEM, // some elements were skipped due to incorrect file data
+    DRS_EMPTY,           // a file contains no mesh with the given name
+    DRS_WARN_RENUMBER,   // a file has overlapped ranges of element numbers,
+                         // so the numbers from the file are ignored
+    DRS_WARN_SKIP_ELEM,  // some elements were skipped due to incorrect file data
     DRS_WARN_DESCENDING, // some elements were skipped due to descending connectivity
-    DRS_FAIL            // general failure (exception etc.)
+    DRS_FAIL,            // general failure (exception etc.)
+    DRS_TOO_LARGE_MESH   // mesh is too large for export
   };
 
   void                SetMeshId(int theMeshId);
@@ -69,6 +71,22 @@ class MESHDRIVER_EXPORT Driver_Mesh
   virtual Status Perform() = 0;
 
   virtual SMESH_ComputeErrorPtr GetError();
+
+  //virtual bool CanExportMesh() const { return false; } //= 0;
+
+  // check if a mesh is too large to export it using IDTYPE;
+  // check either max ID or number of elements
+  template< typename IDTYPE >
+    static bool IsMeshTooLarge( const SMDS_Mesh* mesh, bool checkIDs )
+  {
+    if ( sizeof( IDTYPE ) < sizeof( smIdType ))
+    {
+      const smIdType maxNB = std::numeric_limits< IDTYPE >::max();
+      return (( checkIDs ? mesh->MaxNodeID()    : mesh->NbNodes() )  > maxNB ||
+              ( checkIDs ? mesh->MaxElementID() : mesh->NbElements() > maxNB ));
+    }
+    return false;
+  }
 
  protected:
   std::string myFile;

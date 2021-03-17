@@ -65,11 +65,14 @@
 
 //-------------------------------------------------------------------------------------
 // A macro makes description of a caught exception and calls onExceptionFun(const char*).
-// Two onExceptionFun() are defined here: SMESH::throwSalomeEx() and SMESH::doNothing().
+// Several onExceptionFun() are defined here: throwSalomeEx(), doNothing() and returnError().
 // To add your own catch close, define SMY_OWN_CATCH macro before including this file.
 
 #define SMESH_CATCH( onExceptionFun )                                   \
   }                                                                     \
+                                                                        \
+  SMY_OWN_CATCH                                                         \
+                                                                        \
   catch (Standard_Failure& ex)                                          \
   {                                                                     \
     SMESH_Comment text("OCCT Exception: ");                             \
@@ -92,9 +95,6 @@
   {                                                                     \
     SMESH_CAUGHT onExceptionFun( ex.what() );                           \
   }                                                                     \
-                                                                        \
-  SMY_OWN_CATCH                                                         \
-                                                                        \
   catch (...)                                                           \
   {                                                                     \
     SMESH_CAUGHT onExceptionFun("Unknown Exception caught");            \

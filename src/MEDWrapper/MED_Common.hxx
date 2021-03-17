@@ -32,6 +32,7 @@
 #include <map>
 
 #include <med.h>
+#include <smIdType.hxx>
 
 #ifdef WIN32
 #pragma warning(disable:4099)
@@ -77,6 +78,7 @@ namespace MED
   typedef enum {eCOOR, eCONN, eNOM, eNUM, eFAM, eCOOR_IND1, eCOOR_IND2, eCOOR_IND3} ETable;
 
   typedef TVector<TInt> TIntVector;
+  typedef TVector<smIdType> TIDVector;
   typedef TVector<TFloat> TFloatVector;
   typedef TVector<std::string> TStringVector;
   typedef std::set<std::string> TStringSet;

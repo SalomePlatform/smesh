@@ -27,6 +27,7 @@
 
 #include <vtkCellType.h>
 #include <vtkCellLinks.h>
+#include <smIdType.hxx>
 
 #include <map>
 
@@ -232,7 +233,7 @@ void SMDS_Down1D::compactStorage()
   _cellIds.resize(_nbDownCells * _maxId);
   _vtkCellIds.resize(_maxId);
 
-  int sizeUpCells = 0;
+  smIdType sizeUpCells = 0;
   for (int i = 0; i < _maxId; i++)
     sizeUpCells += _upCellIdsVector[i].size();
   _upCellIds.resize(sizeUpCells, -1);
@@ -258,8 +259,8 @@ void SMDS_Down1D::compactStorage()
 void SMDS_Down1D::addUpCell(int cellId, int upCellId, unsigned char aType)
 {
   //ASSERT((cellId >=0) && (cellId < _maxId));
-  int nbFaces = _upCellIdsVector[cellId].size();
-  for (int i = 0; i < nbFaces; i++)
+  smIdType nbFaces = _upCellIdsVector[cellId].size();
+  for (smIdType i = 0; i < nbFaces; i++)
     {
       if ((_upCellIdsVector[cellId][i] == upCellId) && (_upCellTypesVector[cellId][i] == aType))
         {

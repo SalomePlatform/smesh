@@ -108,7 +108,7 @@ class SMESHUtils_EXPORT SMESH_OctreeNode : public SMESH_Octree
   /*!
    * \brief Return nb nodes in a tree
    */
-  int                         NbNodes() const { return myNodes.size(); }
+  size_t                      NbNodes() const { return myNodes.size(); }
 
 protected:
 

@@ -34,15 +34,15 @@ typedef std::vector< vtkIdType > TVtkIdList;
  */
 struct _GetVtkNodes
 {
-  _GetVtkNodes( TVtkIdList& nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+  _GetVtkNodes( TVtkIdList& nodeIds, SMDS_Mesh* mesh, vtkIdType vtkCellId, SMDSAbs_EntityType type);
 };
 struct _GetVtkNodesToUNV
 {
-  _GetVtkNodesToUNV( TVtkIdList& nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+  _GetVtkNodesToUNV( TVtkIdList& nodeIds, SMDS_Mesh* mesh, vtkIdType vtkCellId, SMDSAbs_EntityType type);
 };
 struct _GetVtkNodesPolyh
 {
-  _GetVtkNodesPolyh( TVtkIdList& nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+  _GetVtkNodesPolyh( TVtkIdList& nodeIds, SMDS_Mesh* mesh, vtkIdType vtkCellId, SMDSAbs_EntityType type);
 };
 
 //--------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ class SMDS_VtkCellIterator: public SMDS_ITERATOR
 public:
   typedef typename SMDS_ITERATOR::value_type result_type;
 
-  SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType)
+  SMDS_VtkCellIterator(SMDS_Mesh* mesh, vtkIdType vtkCellId, SMDSAbs_EntityType aType)
     : _mesh(mesh), _index(0)
   {
     GET_VTK_NODES getNodes( _vtkIdList, mesh, vtkCellId, aType );
@@ -78,7 +78,7 @@ class SMDS_VtkCellIteratorToUNV: public SMDS_VtkCellIterator< SMDS_ITERATOR, _Ge
 {
   typedef SMDS_VtkCellIterator< SMDS_ITERATOR, _GetVtkNodesToUNV > parent_t;
 public:
-  SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type):
+  SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, vtkIdType vtkCellId, SMDSAbs_EntityType type):
     parent_t( mesh, vtkCellId, type ) {}
 };
 
@@ -88,7 +88,7 @@ class SMDS_VtkCellIteratorPolyH: public SMDS_VtkCellIterator< SMDS_ITERATOR, _Ge
 {
   typedef SMDS_VtkCellIterator< SMDS_ITERATOR, _GetVtkNodesPolyh > parent_t;
 public:
-  SMDS_VtkCellIteratorPolyH(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type):
+  SMDS_VtkCellIteratorPolyH(SMDS_Mesh* mesh, vtkIdType vtkCellId, SMDSAbs_EntityType type):
     parent_t( mesh, vtkCellId, type ) {}
 };
 

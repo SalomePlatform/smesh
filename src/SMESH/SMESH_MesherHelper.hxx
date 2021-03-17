@@ -343,13 +343,13 @@ public:
   /*!
    * Creates a node (!Note ID before u=0.,v0.)
    */
-  SMDS_MeshNode* AddNode(double x, double y, double z, int ID = 0, double u=0., double v=0.);
+  SMDS_MeshNode* AddNode(double x, double y, double z, smIdType ID = 0, double u=0., double v=0.);
   /*!
    * Creates quadratic or linear edge
    */
   SMDS_MeshEdge* AddEdge(const SMDS_MeshNode* n1,
                          const SMDS_MeshNode* n2,
-                         const int id = 0, 
+                         const smIdType id = 0, 
                          const bool force3d = true);
   /*!
    * Creates quadratic or linear triangle
@@ -357,7 +357,7 @@ public:
   SMDS_MeshFace* AddFace(const SMDS_MeshNode* n1,
                          const SMDS_MeshNode* n2,
                          const SMDS_MeshNode* n3,
-                         const int id=0, 
+                         const smIdType id=0, 
                          const bool force3d = false);
   /*!
    * Creates bi-quadratic, quadratic or linear quadrangle
@@ -366,13 +366,13 @@ public:
                          const SMDS_MeshNode* n2,
                          const SMDS_MeshNode* n3,
                          const SMDS_MeshNode* n4,
-                         const int id = 0,
+                         const smIdType id = 0,
                          const bool force3d = false);
   /*!
    * Creates polygon, with additional nodes in quadratic mesh
    */
   SMDS_MeshFace* AddPolygonalFace (const std::vector<const SMDS_MeshNode*>& nodes,
-                                   const int id = 0,
+                                   const smIdType id = 0,
                                    const bool force3d = false);
   /*!
    * Creates quadratic or linear tetrahedron
@@ -381,7 +381,7 @@ public:
                              const SMDS_MeshNode* n2,
                              const SMDS_MeshNode* n3,
                              const SMDS_MeshNode* n4,
-                             const int id = 0,
+                             const smIdType id = 0,
                              const bool force3d = true);
   /*!
    * Creates quadratic or linear pyramid
@@ -391,7 +391,7 @@ public:
                              const SMDS_MeshNode* n3,
                              const SMDS_MeshNode* n4,
                              const SMDS_MeshNode* n5,
-                             const int id = 0,
+                             const smIdType id = 0,
                              const bool force3d = true);
   /*!
    * Creates quadratic or linear pentahedron
@@ -402,7 +402,7 @@ public:
                              const SMDS_MeshNode* n4,
                              const SMDS_MeshNode* n5,
                              const SMDS_MeshNode* n6,
-                             const int id = 0, 
+                             const smIdType id = 0, 
                              const bool force3d = true);
   /*!
    * Creates bi-quadratic, quadratic or linear hexahedron
@@ -415,7 +415,7 @@ public:
                              const SMDS_MeshNode* n6,
                              const SMDS_MeshNode* n7,
                              const SMDS_MeshNode* n8,
-                             const int id = 0, 
+                             const smIdType id = 0, 
                              bool force3d = true);
 
   /*!
@@ -433,7 +433,7 @@ public:
                              const SMDS_MeshNode* n10,
                              const SMDS_MeshNode* n11,
                              const SMDS_MeshNode* n12,
-                             const int id = 0, 
+                             const smIdType id = 0, 
                              bool force3d = true);
 
   /*!
@@ -441,7 +441,7 @@ public:
    */
   SMDS_MeshVolume* AddPolyhedralVolume (const std::vector<const SMDS_MeshNode*>& nodes,
                                         const std::vector<int>&                  quantities,
-                                        const int                                ID=0,
+                                        const smIdType                           ID=0,
                                         const bool                               force3d = true);
   /*!
    * \brief Enables fixing node parameters on EDGEs and FACEs by
@@ -753,7 +753,7 @@ public:
   SMESH_MesherHelper (const SMESH_MesherHelper& theOther);
 
   // key of a map of bi-quadratic face to it's central node
-  struct TBiQuad: public std::pair<int, std::pair<int, int> >
+  struct TBiQuad: public std::pair<smIdType, std::pair<smIdType, smIdType> >
   {
     TBiQuad(const SMDS_MeshNode* n1,
             const SMDS_MeshNode* n2, 

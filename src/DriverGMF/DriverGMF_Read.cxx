@@ -89,7 +89,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
 
   int ref;
 
-  const int nodeIDShift = myMesh->GetMeshInfo().NbNodes();
+  const smIdType nodeIDShift = myMesh->GetMeshInfo().NbNodes();
   if ( version != GmfFloat )
   {
     double x, y, z;
@@ -114,7 +114,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   int iN[28]; // 28 - nb nodes in HEX27 (+ 1 for safety :)
 
   /* Read edges */
-  const int edgeIDShift = myMesh->GetMeshInfo().NbElements();
+  const smIdType edgeIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbEdges = GmfStatKwd(meshID, GmfEdges))
   {
     // read extra vertices for quadratic edges
@@ -150,7 +150,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   }
 
   /* Read triangles */
-  const int triaIDShift = myMesh->GetMeshInfo().NbElements();
+  const smIdType triaIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbTria = GmfStatKwd(meshID, GmfTriangles))
   {
     // read extra vertices for quadratic triangles
@@ -194,7 +194,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   }
 
   /* Read quadrangles */
-  const int quadIDShift = myMesh->GetMeshInfo().NbElements();
+  const smIdType quadIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbQuad = GmfStatKwd(meshID, GmfQuadrilaterals))
   {
     // read extra vertices for quadratic quadrangles
@@ -248,7 +248,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   }
 
   /* Read terahedra */
-  const int tetIDShift = myMesh->GetMeshInfo().NbElements();
+  const smIdType tetIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbTet = GmfStatKwd( meshID, GmfTetrahedra ))
   {
     // read extra vertices for quadratic tetrahedra
@@ -273,14 +273,14 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
     for ( int i = 1; i <= nbTet; ++i )
     {
       GmfGetLin(meshID, GmfTetrahedra, &iN[0], &iN[1], &iN[2], &iN[3], &ref);
-      std::vector<int>& midN = quadNodesAtTetrahedra[ i ];  
+      std::vector<int>& midN = quadNodesAtTetrahedra[ i ];
       if ( midN.size() >= 10-4 ) // TETRA10
       {
-        if ( !myMesh->AddVolumeWithID( iN[0], iN[2], iN[1], iN[3], 
+        if ( !myMesh->AddVolumeWithID( iN[0], iN[2], iN[1], iN[3],
                                        midN[2], midN[1], midN[0], midN[3], midN[5], midN[4],
                                        tetIDShift + i ))
           status = storeBadNodeIds( "GmfTetrahedra + GmfExtraVerticesAtTetrahedra",i, 10,
-                                    iN[0], iN[2], iN[1], iN[3], 
+                                    iN[0], iN[2], iN[1], iN[3],
                                     midN[2], midN[1], midN[0], midN[3], midN[5], midN[4] );
       }
       else // TETRA4
@@ -293,7 +293,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   }
 
   /* Read pyramids */
-  const int pyrIDShift = myMesh->GetMeshInfo().NbElements();
+  const smIdType pyrIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbPyr = GmfStatKwd(meshID, GmfPyramids))
   {
     GmfGotoKwd(meshID, GmfPyramids);
@@ -306,7 +306,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   }
 
   /* Read hexahedra */
-  const int hexIDShift = myMesh->GetMeshInfo().NbElements();
+  const smIdType hexIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbHex = GmfStatKwd(meshID, GmfHexahedra))
   {
     // read extra vertices for quadratic hexahedra
@@ -321,7 +321,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
                   &iN[6], &iN[7], &iN[8], &iN[9],
                   &iN[10], &iN[11], &iN[12], &iN[13], // HEXA20
                   &iN[14],
-                  &iN[15], &iN[16], &iN[17], &iN[18], 
+                  &iN[15], &iN[16], &iN[17], &iN[18],
                   &iN[19],
                   &iN[20]);                          // HEXA27
         if ( iN[0] <= nbHex )
@@ -347,7 +347,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
                                        midN[7], midN[6], midN[5], midN[4],
                                        midN[8], midN[11], midN[10], midN[9],
                                        hexIDShift + i ))
-          status = storeBadNodeIds( "GmfHexahedra + GmfExtraVerticesAtHexahedra",i, 20, 
+          status = storeBadNodeIds( "GmfHexahedra + GmfExtraVerticesAtHexahedra",i, 20,
                                     iN[0], iN[3], iN[2], iN[1],
                                     iN[4], iN[7], iN[6], iN[5],
                                     midN[3], midN[2], midN[1], midN[0],
@@ -366,7 +366,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
                                        midN[17],
                                        midN[18],
                                        hexIDShift + i ))
-          status = storeBadNodeIds( "GmfHexahedra + GmfExtraVerticesAtHexahedra",i, 27, 
+          status = storeBadNodeIds( "GmfHexahedra + GmfExtraVerticesAtHexahedra",i, 27,
                                     iN[0], iN[3], iN[2], iN[1],
                                     iN[4], iN[7], iN[6], iN[5],
                                     midN[3], midN[2], midN[1], midN[0],
@@ -389,7 +389,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   }
 
   /* Read prism */
-  const int prismIDShift = myMesh->GetMeshInfo().NbElements();
+  const smIdType prismIDShift = myMesh->GetMeshInfo().NbElements();
   if ( int nbPrism = GmfStatKwd(meshID, GmfPrisms))
   {
     GmfGotoKwd(meshID, GmfPrisms);
@@ -405,33 +405,33 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   // Read some entities into groups
   // see MeshGems/Docs/meshgems_formats_description.pdf
 
-    // get ids of existing groups
-    std::set< int > groupIDs;
-    const std::set<SMESHDS_GroupBase*>&          groups = myMesh->GetGroups();
-    std::set<SMESHDS_GroupBase*>::const_iterator grIter = groups.begin();
-    for ( ; grIter != groups.end(); ++grIter )
-      groupIDs.insert( (*grIter)->GetID() );
-    if ( groupIDs.empty() ) groupIDs.insert( 0 );
+  // get ids of existing groups
+  std::set< int > groupIDs;
+  const std::set<SMESHDS_GroupBase*>&          groups = myMesh->GetGroups();
+  std::set<SMESHDS_GroupBase*>::const_iterator grIter = groups.begin();
+  for ( ; grIter != groups.end(); ++grIter )
+    groupIDs.insert( (*grIter)->GetID() );
+  if ( groupIDs.empty() ) groupIDs.insert( 0 );
 
   // Read required entities into groups
   if ( _makeRequiredGroups )
   {
 
-    const int kes[4][3] = { { GmfRequiredVertices,      SMDSAbs_Node, nodeIDShift },
-                            { GmfRequiredEdges,         SMDSAbs_Edge, edgeIDShift },
-                            { GmfRequiredTriangles,     SMDSAbs_Face, triaIDShift },
-                            { GmfRequiredQuadrilaterals,SMDSAbs_Face, quadIDShift }
-                          };
+    const smIdType kes[4][3] = { { GmfRequiredVertices,      SMDSAbs_Node, nodeIDShift },
+                                 { GmfRequiredEdges,         SMDSAbs_Edge, edgeIDShift },
+                                 { GmfRequiredTriangles,     SMDSAbs_Face, triaIDShift },
+                                 { GmfRequiredQuadrilaterals,SMDSAbs_Face, quadIDShift }
+    };
     const char* names[4] = { "_required_Vertices"      ,
                              "_required_Edges"         ,
                              "_required_Triangles"     ,
-                             "_required_Quadrilaterals" 
-                           };
+                             "_required_Quadrilaterals"
+    };
     for ( int i = 0; i < 4; ++i )
     {
-      int                 gmfKwd = kes[i][0];
+      int                 gmfKwd = FromSmIdType<int>( kes[i][0] );
       SMDSAbs_ElementType entity = (SMDSAbs_ElementType) kes[i][1];
-      int                 shift  = kes[i][2];
+      smIdType            shift  = kes[i][2];
       if ( int nb = GmfStatKwd(meshID, gmfKwd))
       {
         const int newID = *groupIDs.rbegin() + 1;
@@ -454,27 +454,27 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   if ( _makeFaultGroups )
   {
 
-    const int kes[7][3] = { { GmfFault_SmallTri,     SMDSAbs_Face, triaIDShift },
-                            { GmfFault_BadShape,     SMDSAbs_Face, triaIDShift },
-                            { GmfFault_Overlap,      SMDSAbs_Face, triaIDShift },
-                            { GmfFault_Inter,        SMDSAbs_Face, triaIDShift },
-                            { GmfFault_NearTri,      SMDSAbs_Face, triaIDShift },
-                            { GmfFault_FreeEdge,     SMDSAbs_Face, triaIDShift },
-                            { GmfFault_MultipleEdge, SMDSAbs_Face, triaIDShift }
-                          };
+    const smIdType kes[7][3] = { { GmfFault_SmallTri,     SMDSAbs_Face, triaIDShift },
+                                 { GmfFault_BadShape,     SMDSAbs_Face, triaIDShift },
+                                 { GmfFault_Overlap,      SMDSAbs_Face, triaIDShift },
+                                 { GmfFault_Inter,        SMDSAbs_Face, triaIDShift },
+                                 { GmfFault_NearTri,      SMDSAbs_Face, triaIDShift },
+                                 { GmfFault_FreeEdge,     SMDSAbs_Face, triaIDShift },
+                                 { GmfFault_MultipleEdge, SMDSAbs_Face, triaIDShift }
+    };
     const char* names[7] = { "Fault_SmallTri",
                              "Fault_BadShape",
                              "Fault_Overlap",
-                             "Fault_Inter", 
+                             "Fault_Inter",
                              "Fault_NearTri",
                              "Fault_FreeEdge",
                              "Fault_MultipleEdge"
-                           };
+    };
     for ( int i = 0; i < 7; ++i )
     {
-      int                 gmfKwd = kes[i][0];
+      int                 gmfKwd = FromSmIdType<int>( kes[i][0] );
       SMDSAbs_ElementType entity = (SMDSAbs_ElementType) kes[i][1];
-      int                 shift  = kes[i][2];
+      smIdType            shift  = kes[i][2];
       if ( int nb = GmfStatKwd(meshID, gmfKwd))
       {
         const int newID = *groupIDs.rbegin() + 1;

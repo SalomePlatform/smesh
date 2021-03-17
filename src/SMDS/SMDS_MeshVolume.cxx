@@ -50,7 +50,7 @@ void SMDS_MeshVolume::init( const std::vector<const SMDS_MeshNode*>& nodes,
       ptIds.push_back( nodes[ iN++ ]->GetVtkID() );
   }
 
-  int vtkID = getGrid()->InsertNextLinkedCell(VTK_POLYHEDRON, nbFaces, &ptIds[0]);
+  vtkIdType vtkID = getGrid()->InsertNextLinkedCell(VTK_POLYHEDRON, nbFaces, &ptIds[0]);
   setVtkID( vtkID );
 }
 

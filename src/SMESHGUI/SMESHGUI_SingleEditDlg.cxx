@@ -349,8 +349,8 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& /*theNewText*/)
       aList.Append(anIO);
       mySelectionMgr->setSelectedObjects(aList,false);
       
-      SVTK_IndexedMapOfIds selectedIndices;
-      SVTK_ListOfInteger newIndices;
+      SVTK_IndexedMapOfVtkIds selectedIndices;
+      SVTK_ListOfVtk newIndices;
       mySelector->GetCompositeIndex(anIO,selectedIndices);
 
       int id1, id2;
@@ -412,7 +412,7 @@ void SMESHGUI_SingleEditDlg::onSelectionDone()
       const SMDS_MeshElement* tria[2];
 
       bool valid = false;
-      SVTK_IndexedMapOfIds anIds;
+      SVTK_IndexedMapOfVtkIds anIds;
       mySelector->GetCompositeIndex(anIO,anIds);
       if( anIds.Extent() == 1 && anIds(1).size() == 2 ) {
         anId1 = anIds(1)[0];

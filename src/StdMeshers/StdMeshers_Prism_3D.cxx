@@ -554,7 +554,7 @@ namespace
     {
       SMESH_subMesh* faceSm = *smIt;
       SMESHDS_SubMesh* faceSmDS = faceSm->GetSubMeshDS();
-      int nbQuads = faceSmDS ? faceSmDS->NbElements() : 0;
+      smIdType nbQuads = faceSmDS ? faceSmDS->NbElements() : 0;
       bool toRemove;
       if ( nbQuads > 0 )
         toRemove = helper->IsStructured( faceSm );
@@ -1025,7 +1025,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
         SMESH_subMesh*                 faceSM = theMesh.GetSubMesh( face );
         if ( !faceSM->IsEmpty() )
         {
-          int nbFaces = faceSM->GetSubMeshDS()->NbElements();
+          smIdType nbFaces = faceSM->GetSubMeshDS()->NbElements();
           if ( prevNbFaces < nbFaces )
           {
             if ( !meshedFaces.empty() ) meshedFaces.pop_back();
@@ -1749,7 +1749,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       }
 
       // assure that all the source (left) EDGEs are meshed
-      int nbSrcSegments = 0;
+      smIdType nbSrcSegments = 0;
       for ( int i = 0; i < lftSide->NbEdges(); ++i )
       {
         if ( isArtificialQuad )
@@ -2146,9 +2146,9 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh&         theMesh,
     if( anIt==aResMap.end() )
       return toSM( error( "Submesh can not be evaluated"));
 
-    std::vector<int> aVec = (*anIt).second;
-    int nbtri = Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
-    int nbqua = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+    std::vector<smIdType> aVec = (*anIt).second;
+    smIdType nbtri = std::max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
+    smIdType nbqua = std::max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
     if( nbtri==0 && nbqua>0 ) {
       NbQFs++;
     }
@@ -2158,7 +2158,7 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh&         theMesh,
   }
 
   if(NbQFs<4) {
-    std::vector<int> aResVec(SMDSEntity_Last);
+    std::vector<smIdType> aResVec(SMDSEntity_Last);
     for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
     aResMap.insert(std::make_pair(sm,aResVec));
@@ -2168,7 +2168,7 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh&         theMesh,
   if(NumBase==0) NumBase = 1; // only quads => set 1 faces as base
 
   // find number of 1d elems for base face
-  int nb1d = 0;
+  smIdType nb1d = 0;
   TopTools_MapOfShape Edges1;
   for (TopExp_Explorer exp(aFaces.Value(NumBase), TopAbs_EDGE); exp.More(); exp.Next()) {
     Edges1.Add(exp.Current());
@@ -2176,8 +2176,8 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh&         theMesh,
     if( sm ) {
       MapShapeNbElemsItr anIt = aResMap.find(sm);
       if( anIt == aResMap.end() ) continue;
-      std::vector<int> aVec = (*anIt).second;
-      nb1d += Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
+      std::vector<smIdType> aVec = (*anIt).second;
+      nb1d += std::max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
     }
   }
   // find face opposite to base face
@@ -2197,25 +2197,25 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh&         theMesh,
     }
   }
   // find number of 2d elems on side faces
-  int nb2d = 0;
+  smIdType nb2d = 0;
   for(i=1; i<=6; i++) {
     if( i==OppNum || i==NumBase ) continue;
     MapShapeNbElemsItr anIt = aResMap.find( meshFaces[i-1] );
     if( anIt == aResMap.end() ) continue;
-    std::vector<int> aVec = (*anIt).second;
-    nb2d += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+    std::vector<smIdType> aVec = (*anIt).second;
+    nb2d += std::max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
   }
 
   MapShapeNbElemsItr anIt = aResMap.find( meshFaces[NumBase-1] );
-  std::vector<int> aVec = (*anIt).second;
+  std::vector<smIdType> aVec = (*anIt).second;
   bool IsQuadratic = (aVec[SMDSEntity_Quad_Triangle]>aVec[SMDSEntity_Triangle]) ||
                      (aVec[SMDSEntity_Quad_Quadrangle]>aVec[SMDSEntity_Quadrangle]);
-  int nb2d_face0_3 = Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
-  int nb2d_face0_4 = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
-  int nb0d_face0 = aVec[SMDSEntity_Node];
-  int nb1d_face0_int = ( nb2d_face0_3*3 + nb2d_face0_4*4 - nb1d ) / 2;
+  smIdType nb2d_face0_3 = std::max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
+  smIdType nb2d_face0_4 = std::max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+  smIdType nb0d_face0 = aVec[SMDSEntity_Node];
+  smIdType nb1d_face0_int = ( nb2d_face0_3*3 + nb2d_face0_4*4 - nb1d ) / 2;
 
-  std::vector<int> aResVec(SMDSEntity_Last);
+  std::vector<smIdType> aResVec(SMDSEntity_Last);
   for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
   if(IsQuadratic) {
     aResVec[SMDSEntity_Quad_Penta] = nb2d_face0_3 * ( nb2d/nb1d );
@@ -2484,7 +2484,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf
 
   // Fill myBotToColumnMap
 
-  int zSize = myBlock.VerticalSize();
+  size_t zSize = myBlock.VerticalSize();
   TNodeNodeMap::const_iterator bN_tN = n2nMapPtr->begin();
   for ( ; bN_tN != n2nMapPtr->end(); ++bN_tN )
   {
@@ -2556,7 +2556,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop( const gp_Trsf &             bottom
 
   // Fill myBotToColumnMap
 
-  int zSize = myBlock.VerticalSize();
+  size_t zSize = myBlock.VerticalSize();
   Prism_3D::TNode prevTNode;
   SMDS_NodeIteratorPtr nIt = botSMDS->GetNodes();
   while ( nIt->more() )
@@ -3911,7 +3911,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
         return error(COMPERR_BAD_INPUT_MESH, TCom("Can't find regular quadrangle mesh ")
                      << "on a side face #" << MeshDS()->ShapeToIndex( (*quad)->face ));
     }
-    if ( !faceColumns.empty() && (int)faceColumns.begin()->second.size() != VerticalSize() )
+    if ( !faceColumns.empty() && faceColumns.begin()->second.size() != VerticalSize() )
       return error(COMPERR_BAD_INPUT_MESH, "Different 'vertical' discretization");
 
     // edge columns
@@ -4227,7 +4227,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
                                                       const Prism_3D::TPrismTopo& prism) const
 {
   const bool itTopMeshed = !SubMesh( ID_BOT_FACE )->IsEmpty();
-  const int zSize = VerticalSize();
+  const size_t zSize = VerticalSize();
   if ( zSize < 3 && !itTopMeshed ) return true;
   trsf.resize( zSize - 1 );
 
@@ -4274,7 +4274,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
   gp_Ax3 cs0 = getLayerCoordSys(0, columns, xCol );
   //double dist0 = cs0.Location().Distance( gpXYZ( (*columns[0])[0]));
   toCs0.SetTransformation( cs0 );
-  for ( int z = 1; z < zSize; ++z )
+  for ( size_t z = 1; z < zSize; ++z )
   {
     gp_Ax3 csZ = getLayerCoordSys(z, columns, xCol );
     //double distZ = csZ.Location().Distance( gpXYZ( (*columns[0])[z]));
@@ -5615,7 +5615,7 @@ bool StdMeshers_Sweeper::ComputeNodesOnStraight()
   int    botTriaNodes[3], topTriaNodes[3];
   bool   checkUV = true;
 
-  int nbInternalNodes = myIntColumns.size();
+  size_t nbInternalNodes = myIntColumns.size();
   myBotDelaunay->InitTraversal( nbInternalNodes );
 
   while (( botNode = myBotDelaunay->NextNode( botBC, botTriaNodes )))
@@ -5764,7 +5764,7 @@ bool StdMeshers_Sweeper::findDelaunayTriangles()
   TopBotTriangles          tbTrias;
   bool  checkUV = true;
 
-  int nbInternalNodes = myIntColumns.size();
+  size_t nbInternalNodes = myIntColumns.size();
   myTopBotTriangles.resize( nbInternalNodes );
 
   myBotDelaunay->InitTraversal( nbInternalNodes );

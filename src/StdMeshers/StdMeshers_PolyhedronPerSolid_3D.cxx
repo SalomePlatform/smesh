@@ -576,7 +576,7 @@ bool StdMeshers_PolyhedronPerSolid_3D::Evaluate(SMESH_Mesh&         theMesh,
     case TopAbs_FACE:
     {
       myFaceMesher->Evaluate( theMesh, shape, theResMap );
-      std::vector<int> & quantities = theResMap[ sm ];
+      std::vector<smIdType> & quantities = theResMap[ sm ];
       _quadraticMesh = ( !quantities.empty() &&
                          ( quantities[ SMDSEntity_Quad_Triangle   ] +
                            quantities[ SMDSEntity_Quad_Quadrangle ] +
@@ -586,7 +586,7 @@ bool StdMeshers_PolyhedronPerSolid_3D::Evaluate(SMESH_Mesh&         theMesh,
 
     case TopAbs_SOLID:
     {
-      std::vector<int> & quantities = theResMap[ sm ];
+      std::vector<smIdType> & quantities = theResMap[ sm ];
       quantities.resize( SMDSEntity_Last, 0 );
 
       SMESH_MesherHelper helper( theMesh );

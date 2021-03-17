@@ -1038,12 +1038,12 @@ void SMESH_Algo::addBadInputElements(const SMESHDS_SubMesh* sm,
  */
 //=============================================================================
 
-int SMESH_Algo::NumberOfPoints(SMESH_Mesh& aMesh, const TopoDS_Wire& W)
+smIdType SMESH_Algo::NumberOfPoints(SMESH_Mesh& aMesh, const TopoDS_Wire& W)
 {
-  int nbPoints = 0;
+  smIdType nbPoints = 0;
   for (TopExp_Explorer exp(W,TopAbs_EDGE); exp.More(); exp.Next()) {
     const TopoDS_Edge& E = TopoDS::Edge(exp.Current());
-    int nb = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
+    smIdType nb = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
     if(_quadraticMesh)
       nb = nb/2;
     nbPoints += nb + 1; // internal points plus 1 vertex of 2 (last point ?)

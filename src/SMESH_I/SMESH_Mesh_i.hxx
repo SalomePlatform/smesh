@@ -244,89 +244,89 @@ public:
 
   CORBA::Double GetComputeProgress();
 
-  CORBA::Long NbNodes();
+  SMESH::smIdType NbNodes();
 
-  CORBA::Long NbElements();
+  SMESH::smIdType NbElements();
 
-  CORBA::Long Nb0DElements();
+  SMESH::smIdType Nb0DElements();
 
-  CORBA::Long NbBalls();
+  SMESH::smIdType NbBalls();
 
-  CORBA::Long NbEdges();
+  SMESH::smIdType NbEdges();
 
-  CORBA::Long NbEdgesOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbEdgesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbFaces();
+  SMESH::smIdType NbFaces();
 
-  CORBA::Long NbFacesOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbFacesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbTriangles();
+  SMESH::smIdType NbTriangles();
 
-  CORBA::Long NbTrianglesOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbTrianglesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbBiQuadTriangles();
+  SMESH::smIdType NbBiQuadTriangles();
 
-  CORBA::Long NbQuadrangles();
+  SMESH::smIdType NbQuadrangles();
 
-  CORBA::Long NbQuadranglesOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbQuadranglesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbBiQuadQuadrangles();
+  SMESH::smIdType NbBiQuadQuadrangles();
 
-  CORBA::Long NbPolygons();
+  SMESH::smIdType NbPolygons();
 
-  CORBA::Long NbPolygonsOfOrder(SMESH::ElementOrder order = SMESH::ORDER_ANY);
+  SMESH::smIdType NbPolygonsOfOrder(SMESH::ElementOrder order = SMESH::ORDER_ANY);
 
-  CORBA::Long NbVolumes();
+  SMESH::smIdType NbVolumes();
 
-  CORBA::Long NbVolumesOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbVolumesOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbTetras();
+  SMESH::smIdType NbTetras();
 
-  CORBA::Long NbTetrasOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbTetrasOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbHexas();
+  SMESH::smIdType NbHexas();
 
-  CORBA::Long NbHexasOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbHexasOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbTriQuadraticHexas();
+  SMESH::smIdType NbTriQuadraticHexas();
 
-  CORBA::Long NbPyramids();
+  SMESH::smIdType NbPyramids();
 
-  CORBA::Long NbPyramidsOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbPyramidsOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbPrisms();
+  SMESH::smIdType NbPrisms();
 
-  CORBA::Long NbPrismsOfOrder(SMESH::ElementOrder order);
+  SMESH::smIdType NbPrismsOfOrder(SMESH::ElementOrder order);
 
-  CORBA::Long NbHexagonalPrisms();
+  SMESH::smIdType NbHexagonalPrisms();
 
-  CORBA::Long NbPolyhedrons();
+  SMESH::smIdType NbPolyhedrons();
 
-  CORBA::Long NbSubMesh();
+  SMESH::smIdType NbSubMesh();
 
-  SMESH::long_array* GetElementsId();
+  SMESH::smIdType_array* GetElementsId();
 
-  SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType );
+  SMESH::smIdType_array* GetElementsByType( SMESH::ElementType theElemType );
 
-  SMESH::long_array* GetNodesId();
+  SMESH::smIdType_array* GetNodesId();
 
-  SMESH::ElementType GetElementType( CORBA::Long id, bool iselem );
+  SMESH::ElementType GetElementType( SMESH::smIdType id, bool iselem );
 
-  SMESH::EntityType GetElementGeomType( CORBA::Long id );
+  SMESH::EntityType GetElementGeomType( SMESH::smIdType id );
 
-  SMESH::GeometryType GetElementShape( CORBA::Long id );
+  SMESH::GeometryType GetElementShape( SMESH::smIdType id );
 
   /*!
    * Returns ID of elements for given submesh
    */
-  SMESH::long_array* GetSubMeshElementsId(CORBA::Long ShapeID);
+  SMESH::smIdType_array* GetSubMeshElementsId(CORBA::Long ShapeID);
 
   /*!
    * Returns ID of nodes for given submesh
    * If param all==true - returns all nodes, else -
    * returns only nodes on shapes.
    */
-  SMESH::long_array* GetSubMeshNodesId(CORBA::Long ShapeID, CORBA::Boolean all);
+  SMESH::smIdType_array* GetSubMeshNodesId(CORBA::Long ShapeID, CORBA::Boolean all);
 
   /*!
    * Returns type of elements for given submesh
@@ -419,82 +419,82 @@ public:
    * Get XYZ coordinates of node as list of double
    * If there is not node for given ID - returns empty list
    */
-  SMESH::double_array* GetNodeXYZ(CORBA::Long id);
+  SMESH::double_array* GetNodeXYZ(SMESH::smIdType id);
 
   /*!
    * For given node returns list of IDs of inverse elements
    * If there is not node for given ID - returns empty list
    */
-  SMESH::long_array* GetNodeInverseElements(CORBA::Long        id,
+  SMESH::smIdType_array* GetNodeInverseElements(SMESH::smIdType    id,
                                             SMESH::ElementType elemType);
 
   /*!
    * \brief Return position of a node on shape
    */
-  SMESH::NodePosition* GetNodePosition(CORBA::Long NodeID);
+  SMESH::NodePosition* GetNodePosition(SMESH::smIdType NodeID);
 
   /*!
    * \brief Return position of an element on shape
    */
-  SMESH::ElementPosition GetElementPosition(CORBA::Long ElemID);
+  SMESH::ElementPosition GetElementPosition(SMESH::smIdType ElemID);
 
   /*!
    * If given element is node returns IDs of shape from position
    * If there is not node for given ID - returns -1
    */
-  CORBA::Long GetShapeID(CORBA::Long id);
+  CORBA::Long GetShapeID(SMESH::smIdType id);
 
   /*!
    * For given element returns ID of result shape after
    * ::FindShape() from SMESH_MeshEditor
    * If there is not element for given ID - returns -1
    */
-  CORBA::Long GetShapeIDForElem(CORBA::Long id);
+  CORBA::Long GetShapeIDForElem(SMESH::smIdType id);
 
   /*!
    * Returns number of nodes for given element
    * If there is not element for given ID - returns -1
    */
-  CORBA::Long GetElemNbNodes(CORBA::Long id);
+  CORBA::Short GetElemNbNodes(SMESH::smIdType id);
 
   /*!
    * Returns IDs of nodes of given element
    */
-  SMESH::long_array* GetElemNodes(CORBA::Long id);
+  SMESH::smIdType_array* GetElemNodes(SMESH::smIdType id);
 
   /*!
    * Returns ID of node by given index for given element
    * If there is not element for given ID - returns -1
    * If there is not node for given index - returns -2
    */
-  CORBA::Long GetElemNode(CORBA::Long id, CORBA::Long index);
+  SMESH::smIdType GetElemNode(SMESH::smIdType id, CORBA::Short index);
 
   /*!
    * Returns true if given node is medium node
    * in given quadratic element
    */
-  CORBA::Boolean IsMediumNode(CORBA::Long ide, CORBA::Long idn);
+  CORBA::Boolean IsMediumNode(SMESH::smIdType ide, SMESH::smIdType idn);
 
   /*!
    * Returns true if given node is medium node
    * in one of quadratic elements
    */
-  CORBA::Boolean IsMediumNodeOfAnyElem(CORBA::Long        idn,
+  CORBA::Boolean IsMediumNodeOfAnyElem(SMESH::smIdType    idn,
                                        SMESH::ElementType elemType);
 
   /*!
    * Returns number of edges for given element
    */
-  CORBA::Long ElemNbEdges(CORBA::Long id);
+  CORBA::Long ElemNbEdges(SMESH::smIdType id);
 
   /*!
    * Returns number of faces for given element
    */
-  CORBA::Long ElemNbFaces(CORBA::Long id);
+  CORBA::Long ElemNbFaces(SMESH::smIdType id);
   /*!
    * Returns nodes of given face (counted from zero) for given element.
    */
-  SMESH::long_array* GetElemFaceNodes(CORBA::Long elemId, CORBA::Short faceIndex);
+  SMESH::smIdType_array* GetElemFaceNodes(SMESH::smIdType elemId, CORBA::Short faceIndex);
 
   /*!
    * Returns three components of normal of given mesh face (or an empty array in KO case)
@@ -504,33 +504,33 @@ public:
   /*!
    * Returns an element based on all given nodes.
    */
-  CORBA::Long FindElementByNodes(const SMESH::long_array& nodes);
+  SMESH::smIdType FindElementByNodes(const SMESH::smIdType_array& nodes);
 
   /*!
    * Return elements including all given nodes.
    */
-  SMESH::long_array* GetElementsByNodes(const SMESH::long_array& nodes,
+  SMESH::smIdType_array* GetElementsByNodes(const SMESH::smIdType_array& nodes,
                                         SMESH::ElementType       elemType);
 
   /*!
    * Returns true if given element is polygon
    */
-  CORBA::Boolean IsPoly(CORBA::Long id);
+  CORBA::Boolean IsPoly(SMESH::smIdType id);
 
   /*!
    * Returns true if given element is quadratic
    */
-  CORBA::Boolean IsQuadratic(CORBA::Long id);
+  CORBA::Boolean IsQuadratic(SMESH::smIdType id);
 
   /*!
    * Returns diameter of ball discrete element or zero in case of an invalid \a id
    */
-  CORBA::Double GetBallDiameter(CORBA::Long id);
+  CORBA::Double GetBallDiameter(SMESH::smIdType id);
 
   /*!
    * Returns bary center for given element
    */
-  SMESH::double_array* BaryCenter(CORBA::Long id);
+  SMESH::double_array* BaryCenter(SMESH::smIdType id);
 
   /*!
    * Returns information about imported MED file
@@ -582,7 +582,7 @@ public:
    * Collect statistic of mesh elements given by iterator
    */
   static void CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
-                              SMESH::long_array&         theInfo);
+                              SMESH::smIdType_array&     theInfo);
   /*!
    * \brief Return iterator on elements of given type in given object
    */
@@ -593,17 +593,17 @@ public:
   // SMESH_IDSource interface
   // =========================
 
-  virtual SMESH::long_array* GetIDs();
+  virtual SMESH::smIdType_array* GetIDs();
   /*!
    * Returns number of mesh elements of each \a EntityType
    * Result array of number of elements per \a EntityType
    * Inherited from SMESH_IDSource
    */
-  virtual SMESH::long_array* GetMeshInfo();
+  virtual SMESH::smIdType_array* GetMeshInfo();
   /*!
    * Returns number of mesh elements of each \a ElementType
    */
-  virtual SMESH::long_array* GetNbElementsByType();
+  virtual SMESH::smIdType_array* GetNbElementsByType();
   /*!
    * Returns types of elements it contains
    */

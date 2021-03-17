@@ -29,6 +29,7 @@
 #define _SMESH_PATTERN_IDL_
 
 #include "SMESH_Mesh.idl"
+#include "SMESH_smIdType.idl"
 
 module SMESH
 {
@@ -85,10 +86,10 @@ module SMESH
      * the loaded pattern to mesh faces. The first key-point
      * will be mapped into <theNodeIndexOnKeyPoint1>-th node of each face
      */
-    point_array  ApplyToMeshFaces(in SMESH_Mesh theMesh,
-                                  in long_array theFacesIDs,
-                                  in long       theNodeIndexOnKeyPoint1,
-                                  in boolean    theReverse);
+    point_array  ApplyToMeshFaces(in SMESH_Mesh     theMesh,
+                                  in smIdType_array theFacesIDs,
+                                  in short          theNodeIndexOnKeyPoint1,
+                                  in boolean        theReverse);
 
     /*!
      * Compute nodes coordinates applying
@@ -97,10 +98,10 @@ module SMESH
      * The (0,0,1) key-point will be mapped into <theNode001Index>-th
      * node of each volume.
      */
-    point_array  ApplyToHexahedrons(in SMESH_Mesh theMesh,
-                                    in long_array theVolumesIDs,
-                                    in long       theNode000Index,
-                                    in long       theNode001Index);
+    point_array  ApplyToHexahedrons(in SMESH_Mesh     theMesh,
+                                    in smIdType_array theVolumesIDs,
+                                    in short          theNode000Index,
+                                    in short          theNode001Index);
 
     /*!
      * Create nodes and elements in <theMesh> using nodes

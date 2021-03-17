@@ -41,6 +41,8 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
+#include <smIdType.hxx>
+
 class SMESHGUI;
 class SMESHGUI_FilterDlg;
 class SMESHGUI_SpinBox;
@@ -113,14 +115,14 @@ protected:
   QWidget*                  createButtonFrame( QWidget* );
   QWidget*                  createMainFrame( QWidget*, const bool );
   virtual bool              isValid( const bool );
-  SMESH::long_array_var     getIds(SMESH::SMESH_IDSource_var& obj);
+  SMESH::smIdType_array_var getIds(SMESH::SMESH_IDSource_var& obj);
   void                      updateButtons();
   virtual void              setSelectionMode();
   virtual bool              isIdValid( const int ) const;
   virtual bool              process( SMESH::SMESH_MeshEditor_ptr, 
-                                     const SMESH::long_array& ,
+                                     const SMESH::smIdType_array& ,
                                      SMESH::SMESH_IDSource_ptr obj) = 0;
-  virtual int               nbElemsInMesh() = 0;
+  virtual smIdType          nbElemsInMesh() = 0;
   int                       entityType();
 
 protected:
@@ -182,9 +184,9 @@ public:
 
 protected:
   virtual bool process( SMESH::SMESH_MeshEditor_ptr,
-                        const SMESH::long_array& ,
+                        const SMESH::smIdType_array& ,
                         SMESH::SMESH_IDSource_ptr obj);
-  virtual int  nbElemsInMesh();
+  virtual smIdType nbElemsInMesh();
 };
 
 /*!
@@ -202,9 +204,9 @@ public:
 protected:
   virtual bool      isValid( const bool );
   virtual bool      process( SMESH::SMESH_MeshEditor_ptr,
-                             const SMESH::long_array&,
+                             const SMESH::smIdType_array&,
                              SMESH::SMESH_IDSource_ptr obj );
-  virtual int       nbElemsInMesh();
+  virtual smIdType  nbElemsInMesh();
 
 protected slots:
    virtual void     onDisplaySimulation( bool );
@@ -227,9 +229,9 @@ public:
 
 protected:
   virtual bool  process( SMESH::SMESH_MeshEditor_ptr,
-                         const SMESH::long_array& ,
+                         const SMESH::smIdType_array& ,
                          SMESH::SMESH_IDSource_ptr obj);
-  virtual int   nbElemsInMesh();
+  virtual smIdType nbElemsInMesh();
 
 protected slots:
   virtual void  reject();
@@ -269,9 +271,9 @@ protected slots:
 protected:
 
   virtual bool process( SMESH::SMESH_MeshEditor_ptr,
-                        const SMESH::long_array&,
+                        const SMESH::smIdType_array&,
                         SMESH::SMESH_IDSource_ptr obj );
-  virtual int  nbElemsInMesh();
+  virtual smIdType nbElemsInMesh();
 
   virtual void setSelectionMode();
   void         showFacetByElement( int id );

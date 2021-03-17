@@ -90,7 +90,7 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
   }
 
   // find out "MED order" of elements - sort elements by geom type
-  int nbElems;
+  smIdType nbElems;
   if ( _nbElemsByGeom.empty() || _elemType != type )
   {
     _elemType = type;

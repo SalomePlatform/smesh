@@ -277,7 +277,7 @@ namespace
 
     static Standard_Integer HashCode(const CutFace& f, const Standard_Integer upper)
     {
-      return ::HashCode( f.myInitFace->GetID(), upper );
+      return ::HashCode( FromSmIdType<int>(f.myInitFace->GetID()), upper );
     }
     static Standard_Boolean IsEqual(const CutFace& f1, const CutFace& f2 )
     {
@@ -1933,8 +1933,8 @@ namespace SMESH_MeshAlgos
       for ( ; cutFacesIt != myCutFaces.cend(); ++cutFacesIt )
       {
         const CutFace& cf = *cutFacesIt;
-        int index = cf.myInitFace->GetID(); // index in theNew2OldFaces
-        if ((int) theNew2OldFaces.size() <= index )
+        smIdType index = cf.myInitFace->GetID(); // index in theNew2OldFaces
+        if ((smIdType) theNew2OldFaces.size() <= index )
           theNew2OldFaces.resize( index + 1 );
         theNew2OldFaces[ index ] = std::make_pair( cf.myInitFace, index );
       }
@@ -2004,7 +2004,7 @@ namespace SMESH_MeshAlgos
       // erase loops that are cut off by face intersections
       cf.CutOffLoops( loopSet, theSign, myNormals, cutOffLinks, cutOffCoplanarLinks );
 
-      int index = cf.myInitFace->GetID(); // index in theNew2OldFaces
+      smIdType index = cf.myInitFace->GetID(); // index in theNew2OldFaces
 
       const SMDS_MeshElement* tria;
       for ( size_t iL = 0; iL < loopSet.myNbLoops; ++iL )
@@ -2094,7 +2094,7 @@ namespace SMESH_MeshAlgos
           continue;
         for ( size_t iF = 0; iF < faces.size(); ++iF )
         {
-          int index = faces[iF]->GetID();
+          smIdType index = faces[iF]->GetID();
           // if ( //faces[iF]->isMarked()         ||  // kept part of cutFace
           //      !theNew2OldFaces[ index ].first ) // already removed
           //   continue;
@@ -2126,7 +2126,7 @@ namespace SMESH_MeshAlgos
       if ( cf.myInitFace->IsNull() )
         continue;
 
-      int index = cf.myInitFace->GetID(); // index in theNew2OldFaces
+      smIdType index = cf.myInitFace->GetID(); // index in theNew2OldFaces
       if ( !theNew2OldFaces[ index ].first )
         continue; // already cut off
 
@@ -3226,7 +3226,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
     for ( SMDS_ElemIteratorPtr fIt = newNode->GetInverseElementIterator(); fIt->more(); )
     {
       const SMDS_MeshElement* newFace = fIt->next();
-      const int             faceIndex = newFace->GetID();
+      const smIdType        faceIndex = newFace->GetID();
       const gp_XYZ&           oldNorm = normals[ faceIndex ];
       const gp_XYZ             newXYZ = oldXYZ + oldNorm * theOffset;
       if ( multiPos.empty() )
@@ -3275,7 +3275,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
       for ( SMDS_ElemIteratorPtr fIt = newNode->GetInverseElementIterator(); fIt->more(); )
       {
         const SMDS_MeshElement* newFace = fIt->next();
-        const int             faceIndex = newFace->GetID();
+        const smIdType        faceIndex = newFace->GetID();
         const gp_XYZ&           oldNorm = normals[ faceIndex ];
         if ( !SMESH_MeshAlgos::FaceNormal( newFace, faceNorm, /*normalize=*/false ) ||
              //faceNorm * moveVec < 0 )

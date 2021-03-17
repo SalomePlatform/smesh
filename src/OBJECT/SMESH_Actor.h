@@ -148,7 +148,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetControl(SMESH::Controls::FunctorPtr) = 0;
   virtual eControl GetControlMode() = 0;
   virtual SMESH::Controls::FunctorPtr GetFunctor() = 0;
-  virtual int GetNumberControlEntities() = 0;
+  virtual smIdType GetNumberControlEntities() = 0;
 
   virtual SMESH_ScalarBarActor* GetScalarBarActor() = 0;
 

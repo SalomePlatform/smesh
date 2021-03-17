@@ -30,7 +30,7 @@
 void SMDS_BallElement::init(const SMDS_MeshNode * node, double diameter )
 {
   vtkIdType nodeVtkID = node->GetVtkID();
-  int vtkID = getGrid()->InsertNextLinkedCell( toVtkType( SMDSEntity_Ball ), 1, &nodeVtkID );
+  vtkIdType vtkID = getGrid()->InsertNextLinkedCell( toVtkType( SMDSEntity_Ball ), 1, &nodeVtkID );
   setVtkID( vtkID );
   getGrid()->SetBallDiameter( GetVtkID(), diameter );
 }

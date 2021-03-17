@@ -172,13 +172,13 @@ public:
    *        Call it with update == true if mesh of this side can be recomputed
    *        since creation of this side
    */
-  int NbPoints(const bool update = false) const;
+  smIdType NbPoints(const bool update = false) const;
   /*!
    * \brief Return nb edges
    *        Call it with update == true if mesh of this side can be recomputed
    *        since creation of this side
    */
-  int NbSegments(const bool update = false) const;
+  smIdType NbSegments(const bool update = false) const;
   /*!
    * \brief Return mesh
    */
@@ -255,7 +255,7 @@ public:
   /*!
    * \brief Return nb of wrapped edges
    */
-  int NbEdges() const { return myEdge.size(); }
+  int NbEdges() const { return (int)myEdge.size(); }
   /*!
    * \brief Return i-th edge (count starts from zero)
    */
@@ -346,7 +346,7 @@ protected:
   std::vector<double>               myEdgeLength;
   std::vector<int>                  myIsUniform;
   double                            myLength;
-  int                               myNbPonits, myNbSegments;
+  smIdType                          myNbPonits, myNbSegments;
   SMESH_ProxyMesh::Ptr              myProxyMesh;
   bool                              myMissingVertexNodes, myIgnoreMediumNodes;
   gp_Pnt2d                          myDefaultPnt2d;
@@ -364,7 +364,7 @@ protected:
 
 inline int StdMeshers_FaceSide::EdgeIndex( double U ) const
 {
-  int i = myNormPar.size() - 1;
+  int i = (int)myNormPar.size() - 1;
   while ( i > 0 && U < myNormPar[ i-1 ] ) --i;
   return i;
 }

@@ -95,7 +95,16 @@ protected:
                                          double                theLength,
                                          std::list< double > & theParameters,
                                          const TopoDS_Vertex & theVf,
-                                         const TopoDS_Vertex & theVl);
+                                         const TopoDS_Vertex & thieve);
+
+  bool divideIntoEqualSegments( SMESH_Mesh &        theMesh,
+                                Adaptor3d_Curve &   theC3d,
+                                smIdType            theNbPoints,
+                                double              theTol,
+                                double              theLength,
+                                double              theFirstU,
+                                double              theLastU,
+                                std::list<double> & theParameters );
 
   /*!
    * \brief Return StdMeshers_SegmentLengthAroundVertex assigned to vertex
@@ -133,8 +142,8 @@ protected:
   const StdMeshers_FixedPoints1D* _fpHyp;
   const StdMeshers_Adaptive1D*    _adaptiveHyp;
 
-  double _value[2];
-  int    _ivalue[3];
+  double              _value [2];
+  smIdType            _ivalue[3];
   std::vector<double> _vvalue[1];
   std::string         _svalue[1];
   std::vector<int>    _revEdgesIDs;

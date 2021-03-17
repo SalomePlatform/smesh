@@ -59,8 +59,7 @@ SMDS_ElementHolder::~SMDS_ElementHolder()
 
 void SMDS_ElementHolder::beforeCompacting()
 {
-  int i = 0;
-  for ( SMDS_ElemIteratorPtr it = getElements(); it->more(); ++i )
+  for ( SMDS_ElemIteratorPtr it = getElements(); it->more(); )
   {
     const SMDS_MeshElement* e = it->next();
     if ( !e ) continue;
@@ -74,7 +73,7 @@ void SMDS_ElementHolder::beforeCompacting()
     else
     {
       myExternalElems.push_back( e );
-      myVtkIDs.push_back( -1 * (int)myExternalElems.size() );
+      myVtkIDs.push_back( -1 * (vtkIdType) myExternalElems.size() );
     }
   }
 }
@@ -84,8 +83,8 @@ void SMDS_ElementHolder::beforeCompacting()
 //purpose  : restore pointers to elements
 //=======================================================================
 
-void SMDS_ElementHolder::restoreElements( const std::vector<int>& idNodesOldToNew,
-                                          const std::vector<int>& idCellsOldToNew )
+void SMDS_ElementHolder::restoreElements( const std::vector<smIdType>& idNodesOldToNew,
+                                          const std::vector<smIdType>& idCellsOldToNew )
 {
   tmpClear();
 
@@ -94,21 +93,21 @@ void SMDS_ElementHolder::restoreElements( const std::vector<int>& idNodesOldToNe
   std::vector< bool >::iterator isNode = myIsNode.begin();
   for ( size_t i = 0; i < myVtkIDs.size(); ++i, ++isNode )
   {
-    int vtkID = myVtkIDs[i];
+    vtkIdType vtkID = myVtkIDs[i];
     if ( vtkID < 0 )
     {
       elem = myExternalElems[ (-vtkID)-1 ];
     }
     else if ( *isNode )
     {
-      if ( vtkID < (int)idNodesOldToNew.size() )
+      if ( vtkID < (vtkIdType)idNodesOldToNew.size() )
         elem = myMesh->FindNodeVtk( idNodesOldToNew[ vtkID ]);
       else
         elem = myMesh->FindNodeVtk( vtkID );
     }
     else
     {
-      if ( vtkID < (int)idCellsOldToNew.size() )
+      if ( vtkID < (vtkIdType)idCellsOldToNew.size() )
         elem = myMesh->FindElementVtk( idCellsOldToNew[ vtkID ]);
       else
         elem = myMesh->FindElementVtk( vtkID );

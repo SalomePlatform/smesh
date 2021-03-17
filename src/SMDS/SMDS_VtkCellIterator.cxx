@@ -25,7 +25,7 @@
 
 _GetVtkNodes::_GetVtkNodes( TVtkIdList&        vtkIds,
                             SMDS_Mesh*         mesh,
-                            int                vtkCellId,
+                            vtkIdType          vtkCellId,
                             SMDSAbs_EntityType type )
 {
   vtkUnstructuredGrid*         grid = mesh->GetGrid();
@@ -47,7 +47,7 @@ _GetVtkNodes::_GetVtkNodes( TVtkIdList&        vtkIds,
 
 _GetVtkNodesToUNV::_GetVtkNodesToUNV( TVtkIdList&        vtkIds,
                                       SMDS_Mesh*         mesh,
-                                      int                vtkCellId,
+                                      vtkIdType          vtkCellId,
                                       SMDSAbs_EntityType type )
 {
   vtkUnstructuredGrid* grid = mesh->GetGrid();
@@ -133,7 +133,7 @@ _GetVtkNodesToUNV::_GetVtkNodesToUNV( TVtkIdList&        vtkIds,
 
 _GetVtkNodesPolyh::_GetVtkNodesPolyh( TVtkIdList&        vtkIds,
                                       SMDS_Mesh*         mesh,
-                                      int                vtkCellId,
+                                      vtkIdType          vtkCellId,
                                       SMDSAbs_EntityType type )
 {
   vtkUnstructuredGrid* grid = mesh->GetGrid();

@@ -484,7 +484,7 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
   if (myNbOkElements) {
     QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
 
-    SMESH::long_array_var anElementsId = new SMESH::long_array;
+    SMESH::smIdType_array_var anElementsId = new SMESH::smIdType_array;
 
     anElementsId->length(aListElementsId.count());
     for (int i = 0; i < aListElementsId.count(); i++)
@@ -713,7 +713,7 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
   if (aMesh) {
     Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
 
-    TColStd_MapOfInteger newIndices;
+    SVTK_TVtkIDsMap newIndices;
 
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
@@ -1182,7 +1182,7 @@ void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview )
     {
       QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
 
-      SMESH::long_array_var anElementsId = new SMESH::long_array;
+      SMESH::smIdType_array_var anElementsId = new SMESH::smIdType_array;
 
       anElementsId->length(aListElementsId.count());
       for (int i = 0; i < aListElementsId.count(); i++)

@@ -1216,7 +1216,7 @@ namespace {
          tgtNbEW.front() != 4 || srcNbEW.front() != 4 )
       return; // not quads
 
-    int srcNbSeg[4];
+    smIdType srcNbSeg[4];
     list< TopoDS_Edge >::iterator edgeS = srcEdges.begin(), edgeT = tgtEdges.begin();
     for ( int i = 0; edgeS != srcEdges.end(); ++i, ++edgeS )
       if ( SMESHDS_SubMesh* sm = srcMesh->GetMeshDS()->MeshElements( *edgeS ))
@@ -1891,7 +1891,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
           // compare nb nodes on srcEdge1 and srcEdge2
           if ( srcEdge2 != srcEdges.end() )
           {
-            int nbN1 = 0, nbN2 = 0;
+            smIdType nbN1 = 0, nbN2 = 0;
             if ( SMESHDS_SubMesh* sm = srcMesh->GetMeshDS()->MeshElements( srcEdge1 ))
               nbN1 = sm->NbNodes();
             if ( SMESHDS_SubMesh* sm = srcMesh->GetMeshDS()->MeshElements( *srcEdge2 ))
@@ -2113,9 +2113,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // Merge
 
     SMESH_MeshEditor editor( tgtMesh );
-    int nbFaceBeforeMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
+    smIdType nbFaceBeforeMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
     editor.MergeNodes( groupsOfNodes );
-    int nbFaceAtferMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
+    smIdType nbFaceAtferMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
     if ( nbFaceBeforeMerge != nbFaceAtferMerge && !helper.HasDegeneratedEdges() )
       return error(COMPERR_BAD_INPUT_MESH, "Probably invalid node parameters on geom faces");
 
@@ -2243,7 +2243,7 @@ bool StdMeshers_Projection_2D::Evaluate(SMESH_Mesh&         theMesh,
   // Assure that mesh on a source Face is computed/evaluated
   // -------------------------------------------------------
 
-  std::vector<int> aVec;
+  std::vector<smIdType> aVec;
 
   SMESH_subMesh* srcSubMesh = srcMesh->GetSubMesh( srcFace );
   if ( srcSubMesh->IsMeshComputed() )

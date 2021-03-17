@@ -58,7 +58,7 @@
 
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
-#include <VTKViewer_CellLocationsArray.h>
+//#include <VTKViewer_CellLocationsArray.h>
 
 // SALOME KERNEL includes 
 #include <SALOMEDS_SObject.hxx>
@@ -479,9 +479,9 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       }
       QList<int> ids;
       getIds(ids);
-      SMESH::long_array_var varIds = new SMESH::long_array();
+      SMESH::smIdType_array_var varIds = new SMESH::smIdType_array();
       varIds->length(ids.count());
-      int i = 0;
+      CORBA::ULong i = 0;
       for (QList<int>::iterator it = ids.begin(); it != ids.end(); ++it)
         varIds[i++] = *it;
       myType == Type_2d
@@ -1258,9 +1258,9 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
     SMESH::point_array_var pnts;
     QList<int> ids;
     if (isRefine() && getIds(ids)) {
-      SMESH::long_array_var varIds = new SMESH::long_array();
+      SMESH::smIdType_array_var varIds = new SMESH::smIdType_array();
       varIds->length(ids.count());
-      int i = 0;
+      CORBA::ULong i = 0;
       for (QList<int>::iterator it = ids.begin(); it != ids.end(); ++it)
         varIds[i++] = *it;
       pnts = myType == Type_2d
@@ -1339,7 +1339,7 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
       else aCellTypesArray->InsertNextValue(VTK_EMPTY_CELL);
     }
 
-    VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
+    vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
     aCellLocationsArray->SetNumberOfComponents(1);
     aCellLocationsArray->SetNumberOfTuples(aNbCells);
 
@@ -1411,7 +1411,7 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
   if (aMesh) {
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
-    TColStd_MapOfInteger newIndices;
+    SVTK_TVtkIDsMap newIndices;
 
     for (int i = 0; i < aListId.count(); i++) {
       const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());

@@ -553,7 +553,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
   if (myNbOkNodes && !SMESHGUI::isStudyLocked()) {
     myBusy = true;
     QStringList aListId = myEditCurrentArgument->text().split(" ", QString::SkipEmptyParts);
-    SMESH::long_array_var anArrayOfIndices = new SMESH::long_array;
+    SMESH::smIdType_array_var anArrayOfIndices = new SMESH::smIdType_array;
     anArrayOfIndices->length(aListId.count());
     const std::vector<int>& revIndex = SMDS_MeshCell::reverseSmdsOrder( myGeomType );
     if ( ReverseOrDulicate && ReverseOrDulicate->isChecked() && (int)revIndex.size() == aListId.count() )
@@ -598,10 +598,10 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     }
 
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-    SMESH::long_array_var anIdList = new SMESH::long_array;
+    SMESH::smIdType_array_var anIdList = new SMESH::smIdType_array;
     anIdList->length( 1 );
     anIdList[0] = -1;
-    int nbElemsBefore = 0;
+    smIdType nbElemsBefore = 0;
 
     switch (myElementType) {
     case SMDSAbs_0DElement: {
@@ -611,7 +611,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
       for ( size_t i = 0; i < anArrayOfIndices->length(); ++i )
         anIdList[i] = aMeshEditor->Add0DElement(anArrayOfIndices[i], duplicateElements);
 
-      CORBA::ULong nbAdded = myMesh->Nb0DElements() - nbElemsBefore;
+      SMESH::smIdType nbAdded = myMesh->Nb0DElements() - nbElemsBefore;
       if ( !duplicateElements && nbAdded < anArrayOfIndices->length() )
         SUIT_MessageBox::information(SMESHGUI::desktop(),
                                      tr("SMESH_INFORMATION"),
@@ -784,7 +784,7 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
     aMesh = myActor->GetObject()->GetMesh();
 
   if (aMesh) {
-    TColStd_MapOfInteger newIndices;
+    SVTK_TVtkIDsMap newIndices;
 
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
     bool allOk = true;

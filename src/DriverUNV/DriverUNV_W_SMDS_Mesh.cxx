@@ -45,6 +45,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 {
   Kernel_Utils::Localizer loc;
   Status aResult = DRS_OK;
+
+  if ( Driver_Mesh::IsMeshTooLarge< int >( myMesh, /*checkIDs =*/ false))
+    return DRS_TOO_LARGE_MESH;
+
 #if defined(WIN32) && defined(UNICODE)
   std::wstring aFile = Kernel_Utils::utf8_decode_s(myFile);
   std::ofstream out_stream(aFile.c_str());
@@ -113,7 +117,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           {
             const SMDS_MeshNode* aNode = aNodesIter->next();
             if ( nodeLabelByID.empty() )
-              aRec.node_labels.push_back( aNode->GetID() );
+              aRec.node_labels.push_back( FromSmIdType<int>(aNode->GetID()) );
             else
               aRec.node_labels.push_back( nodeLabelByID[ aNode->GetID() ]);
           }
@@ -137,7 +141,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           for ( aRec.node_labels.clear(); aNodesIter->more();  ) {
             const SMDS_MeshNode* aNode = aNodesIter->next();
             if ( nodeLabelByID.empty() )
-              aRec.node_labels.push_back( aNode->GetID() );
+              aRec.node_labels.push_back( FromSmIdType<int>(aNode->GetID()) );
             else
               aRec.node_labels.push_back( nodeLabelByID[ aNode->GetID() ]);
           }
@@ -195,7 +199,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           {
             const SMDS_MeshElement* aNode = aNodesIter->next();
             if ( nodeLabelByID.empty() )
-              aRec.node_labels.push_back( aNode->GetID() );
+              aRec.node_labels.push_back( FromSmIdType<int>(aNode->GetID()) );
             else
               aRec.node_labels.push_back( nodeLabelByID[ aNode->GetID() ]);
           }
@@ -226,7 +230,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
             while ( aIter->more() ) {
               const SMDS_MeshElement* aNode = aIter->next();
               if ( nodeLabelByID.empty() )
-                aRec.NodeList.push_back( aNode->GetID() );
+                aRec.NodeList.push_back( FromSmIdType<int>(aNode->GetID()) );
               else
                 aRec.NodeList.push_back( nodeLabelByID[ aNode->GetID() ]);
             }
@@ -236,7 +240,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
             while ( aIter->more() ) {
               const SMDS_MeshElement* aElem = aIter->next();
               if ( elemLabelByID.empty() )
-                aRec.ElementList.push_back( aElem->GetID() );
+                aRec.ElementList.push_back( FromSmIdType<int>(aElem->GetID()) );
               else
                 aRec.ElementList.push_back( elemLabelByID[ aElem->GetID() ]);
             }
@@ -256,11 +260,11 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       EXCEPTION(runtime_error,"ERROR: Output file not good.");
   }
   catch(const std::exception& exc){
-    INFOS("Follow exception was cought:\n\t"<<exc.what());
+    INFOS("Follow exception was caught:\n\t"<<exc.what());
     throw;
   }
   catch(...){
-    INFOS("Unknown exception was cought !!!");
+    INFOS("Unknown exception was caught !!!");
     throw;
   }
   return aResult;

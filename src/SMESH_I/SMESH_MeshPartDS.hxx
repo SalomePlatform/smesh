@@ -28,6 +28,7 @@
 
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_TypeDefs.hxx"
+#include <smIdType.hxx>
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -59,10 +60,10 @@ public:
   virtual const SMDS_MeshElement *FindElement(int IDelem) const;
 
   virtual bool HasNumerationHoles();
-  virtual int MaxNodeID() const;
-  virtual int MinNodeID() const;
-  virtual int MaxElementID() const;
-  virtual int MinElementID() const;
+  virtual smIdType MaxNodeID() const;
+  virtual smIdType MinNodeID() const;
+  virtual smIdType MaxElementID() const;
+  virtual smIdType MinElementID() const;
 
 private:
   TIDSortedElemSet _elements[ SMDSAbs_NbElementTypes ];

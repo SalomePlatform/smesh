@@ -1147,7 +1147,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   }
   else if ( theNoCompError && theNoHypoError )
   {
-    SMESH::long_array_var aRes = myMesh->GetMeshInfo();
+    SMESH::smIdType_array_var aRes = myMesh->GetMeshInfo();
     aCompDlg->myFullInfo->SetMeshInfo( aRes );
     aCompDlg->myFullInfo->show();
     aCompDlg->myBriefInfo->hide();
@@ -1162,7 +1162,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
                        theCompErrors[ i ].code == SMESH::COMPERR_NO_MESH_ON_SHAPE );
 
     // full or brief mesh info
-    SMESH::long_array_var aRes = myMesh->GetMeshInfo();
+    SMESH::smIdType_array_var aRes = myMesh->GetMeshInfo();
     if ( onlyWarnings ) {
       aCompDlg->myFullInfo->SetMeshInfo( aRes );
       aCompDlg->myFullInfo->show();
@@ -2211,7 +2211,7 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
   QString                        aHypErrors;
 
   bool evaluateFailed = true, memoryLack = false;
-  SMESH::long_array_var aRes;
+  SMESH::smIdType_array_var aRes;
 
   _PTR(SObject) aMeshSObj = SMESH::FindSObject(myMesh);
   if ( !aMeshSObj ) //  IPAL21340
@@ -2286,7 +2286,7 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
 }
 
 
-void SMESHGUI_BaseComputeOp::showEvaluateResult(const SMESH::long_array& theRes,
+void SMESHGUI_BaseComputeOp::showEvaluateResult(const SMESH::smIdType_array& theRes,
                                                 const bool theMemoryLack,
                                                 const bool theNoCompError,
                                                 SMESH::compute_error_array_var& theCompErrors,

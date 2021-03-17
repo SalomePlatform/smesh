@@ -61,7 +61,7 @@ class SMESHUtils_EXPORT SMESH_Delaunay
   const SMDS_MeshNode* NextNode( double bc[3], int triaNodes[3] );
 
   // return nb of nodes returned by NextNode()
-  int NbVisitedNodes() const { return _nbVisitedNodes; }
+  size_t NbVisitedNodes() const { return _nbVisitedNodes; }
 
 
   // find a triangle containing an UV, starting from a given triangle;

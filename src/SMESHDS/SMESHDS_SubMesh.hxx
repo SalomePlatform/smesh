@@ -31,6 +31,7 @@
 
 #include "SMDS_ElementHolder.hxx"
 #include "SMDS_Mesh.hxx"
+#include <smIdType.hxx>
 #include <vector>
 
 #include <boost/container/flat_set.hpp>
@@ -62,12 +63,12 @@ class SMESHDS_EXPORT SMESHDS_SubMesh : public SMDS_ElementHolder
   bool RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh );
   void RemoveAllSubmeshes();
   bool ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const;
-  int  NbSubMeshes() const { return mySubMeshes.size(); }
+  size_t NbSubMeshes() const { return mySubMeshes.size(); }
   SMESHDS_SubMeshIteratorPtr GetSubMeshIterator() const;
 
   // for both types
-  virtual int NbElements() const;
-  virtual int NbNodes() const;
+  virtual smIdType NbElements() const;
+  virtual smIdType NbNodes() const;
   virtual SMDS_ElemIteratorPtr GetElements() const;
   virtual SMDS_NodeIteratorPtr GetNodes() const;
   virtual bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
@@ -89,8 +90,8 @@ class SMESHDS_EXPORT SMESHDS_SubMesh : public SMDS_ElementHolder
  private:
 
   int                     myIndex;
-  int                     myNbElements;
-  int                     myNbNodes;
+  smIdType                myNbElements;
+  smIdType                myNbNodes;
   const SMDS_MeshElement* my1stElemNode[2]; // elem and node with least ID, to optimize iteration
   const SMESHDS_Mesh *    myParent;
   TSubMeshSet             mySubMeshes;

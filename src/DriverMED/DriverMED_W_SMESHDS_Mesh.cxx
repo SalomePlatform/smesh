@@ -246,7 +246,7 @@ namespace
     const SMDS_MeshNode* GetNode(){
       return myCurrentNode;
     }
-    MED::TIntVector::value_type GetID(){
+    MED::TIDVector::value_type GetID(){
       return myCurrentNode->GetID();
     }
     MED::TFloatVector::value_type GetCoord(TInt theCoodId){
@@ -343,11 +343,20 @@ namespace
   }
 }
 
+//================================================================================
+/*!
+ * \brief Write my mesh
+ */
+//================================================================================
+
 Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 {
   Status aResult = DRS_OK;
   try {
     //MESSAGE("Perform - myFile : "<<myFile);
+
+    if ( Driver_Mesh::IsMeshTooLarge< TInt >( myMesh, /*checkIDs =*/ true ))
+      return DRS_TOO_LARGE_MESH;
 
     // Creating the MED mesh for corresponding SMDS structure
     //-------------------------------------------------------
@@ -475,12 +484,12 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     int myEdgesDefaultFamilyId      = 0;
     int myFacesDefaultFamilyId      = 0;
     int myVolumesDefaultFamilyId    = 0;
-    int nbNodes      = myMesh->NbNodes();
-    int nb0DElements = myMesh->Nb0DElements();
-    int nbBalls      = myMesh->NbBalls();
-    int nbEdges      = myMesh->NbEdges();
-    int nbFaces      = myMesh->NbFaces();
-    int nbVolumes    = myMesh->NbVolumes();
+    smIdType nbNodes      = myMesh->NbNodes();
+    smIdType nb0DElements = myMesh->Nb0DElements();
+    smIdType nbBalls      = myMesh->NbBalls();
+    smIdType nbEdges      = myMesh->NbEdges();
+    smIdType nbFaces      = myMesh->NbFaces();
+    smIdType nbVolumes    = myMesh->NbVolumes();
     if (myDoGroupOfNodes)   myNodesDefaultFamilyId      = REST_NODES_FAMILY;
     if (myDoGroupOfEdges)   myEdgesDefaultFamilyId      = REST_EDGES_FAMILY;
     if (myDoGroupOfFaces)   myFacesDefaultFamilyId      = REST_FACES_FAMILY;
@@ -539,7 +548,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     const EBooleen      theIsElemNames = eFAUX;
     const EConnectivite theConnMode    = eNOD;
 
-    TInt aNbNodes = myMesh->NbNodes();
+    TInt aNbNodes = FromSmIdType<TInt>( myMesh->NbNodes() );
     PNodeInfo aNodeInfo = myMed->CrNodeInfo(aMeshInfo, aNbNodes,
                                             theMode, theSystem, theIsElemNum, theIsElemNames);
 
@@ -559,7 +568,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         aTCoordSlice[2] = 0.;
 
       // node number
-      int aNodeID = aCoordHelperPtr->GetID();
+      TInt aNodeID = FromSmIdType<TInt>( aCoordHelperPtr->GetID() );
       aNodeInfo->SetElemNum( iNode, aNodeID );
 #ifdef _EDF_NODE_IDS_
       aNodeIdMap.insert( aNodeIdMap.end(), make_pair( aNodeID, iNode+1 ));
@@ -625,66 +634,66 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 #endif
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eBALL,
-                                             nbElemInfo.NbBalls(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbBalls()),
                                              SMDSAbs_Ball));
 #ifdef _ELEMENTS_BY_DIM_
     anEntity = eARETE;
 #endif
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eSEG2,
-                                             nbElemInfo.NbEdges( ORDER_LINEAR ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbEdges( ORDER_LINEAR )),
                                              SMDSAbs_Edge));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eSEG3,
-                                             nbElemInfo.NbEdges( ORDER_QUADRATIC ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbEdges( ORDER_QUADRATIC )),
                                              SMDSAbs_Edge));
 #ifdef _ELEMENTS_BY_DIM_
     anEntity = eFACE;
 #endif
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eTRIA3,
-                                             nbElemInfo.NbTriangles( ORDER_LINEAR ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbTriangles( ORDER_LINEAR )),
                                              SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eTRIA6,
-                                             nbElemInfo.NbTriangles( ORDER_QUADRATIC ) -
-                                             nbElemInfo.NbBiQuadTriangles(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbTriangles( ORDER_QUADRATIC ) -
+                                             nbElemInfo.NbBiQuadTriangles()),
                                              SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eTRIA7,
-                                             nbElemInfo.NbBiQuadTriangles(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbBiQuadTriangles()),
                                              SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eQUAD4,
-                                             nbElemInfo.NbQuadrangles( ORDER_LINEAR ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbQuadrangles( ORDER_LINEAR )),
                                              SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eQUAD8,
-                                             nbElemInfo.NbQuadrangles( ORDER_QUADRATIC ) -
-                                             nbElemInfo.NbBiQuadQuadrangles(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbQuadrangles( ORDER_QUADRATIC ) -
+                                             nbElemInfo.NbBiQuadQuadrangles()),
                                              SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eQUAD9,
-                                             nbElemInfo.NbBiQuadQuadrangles(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbBiQuadQuadrangles()),
                                              SMDSAbs_Face));
     if ( polyTypesSupported ) {
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYGONE,
-                                               nbElemInfo.NbPolygons( ORDER_LINEAR ),
+                                               FromSmIdType<TInt>(nbElemInfo.NbPolygons( ORDER_LINEAR )),
                                                SMDSAbs_Face));
       // we need one more loop on poly elements to count nb of their nodes
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYGONE,
-                                               nbElemInfo.NbPolygons( ORDER_LINEAR ),
+                                               FromSmIdType<TInt>(nbElemInfo.NbPolygons( ORDER_LINEAR )),
                                                SMDSAbs_Face));
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYGON2,
-                                               nbElemInfo.NbPolygons( ORDER_QUADRATIC ),
+                                               FromSmIdType<TInt>(nbElemInfo.NbPolygons( ORDER_QUADRATIC )),
                                                SMDSAbs_Face));
       // we need one more loop on QUAD poly elements to count nb of their nodes
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYGON2,
-                                               nbElemInfo.NbPolygons( ORDER_QUADRATIC ),
+                                               FromSmIdType<TInt>(nbElemInfo.NbPolygons( ORDER_QUADRATIC )),
                                                SMDSAbs_Face));
     }
 #ifdef _ELEMENTS_BY_DIM_
@@ -692,58 +701,58 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 #endif
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eTETRA4,
-                                             nbElemInfo.NbTetras( ORDER_LINEAR ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbTetras( ORDER_LINEAR )),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eTETRA10,
-                                             nbElemInfo.NbTetras( ORDER_QUADRATIC ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbTetras( ORDER_QUADRATIC )),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              ePYRA5,
-                                             nbElemInfo.NbPyramids( ORDER_LINEAR ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbPyramids( ORDER_LINEAR )),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              ePYRA13,
-                                             nbElemInfo.NbPyramids( ORDER_QUADRATIC ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbPyramids( ORDER_QUADRATIC )),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              ePENTA6,
-                                             nbElemInfo.NbPrisms( ORDER_LINEAR ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbPrisms( ORDER_LINEAR )),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              ePENTA15,
-                                             nbElemInfo.NbQuadPrisms(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbQuadPrisms()),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              ePENTA18,
-                                             nbElemInfo.NbBiQuadPrisms(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbBiQuadPrisms()),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eHEXA8,
-                                             nbElemInfo.NbHexas( ORDER_LINEAR ),
+                                             FromSmIdType<TInt>(nbElemInfo.NbHexas( ORDER_LINEAR )),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eHEXA20,
-                                             nbElemInfo.NbHexas( ORDER_QUADRATIC )-
-                                             nbElemInfo.NbTriQuadHexas(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbHexas( ORDER_QUADRATIC )-
+                                             nbElemInfo.NbTriQuadHexas()),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eHEXA27,
-                                             nbElemInfo.NbTriQuadHexas(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbTriQuadHexas()),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eOCTA12,
-                                             nbElemInfo.NbHexPrisms(),
+                                             FromSmIdType<TInt>(nbElemInfo.NbHexPrisms()),
                                              SMDSAbs_Volume));
     if ( polyTypesSupported ) {
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYEDRE,
-                                               nbElemInfo.NbPolyhedrons(),
+                                               FromSmIdType<TInt>(nbElemInfo.NbPolyhedrons()),
                                                SMDSAbs_Volume));
       // we need one more loop on poly elements to count nb of their nodes
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYEDRE,
-                                               nbElemInfo.NbPolyhedrons(),
+                                               FromSmIdType<TInt>(nbElemInfo.NbPolyhedrons()),
                                                SMDSAbs_Volume));
     }
 
@@ -822,13 +831,13 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
             for(TInt iNode = 0; iNode < aNbNodes; iNode++) {
               const SMDS_MeshElement* aNode = anElem->GetNode( iNode );
 #ifdef _EDF_NODE_IDS_
-              aTConnSlice[ iNode ] = aNodeIdMap[aNode->GetID()];
+              aTConnSlice[ iNode ] = aNodeIdMap[FromSmIdType<TInt>(aNode->GetID())];
 #else
               aTConnSlice[ iNode ] = aNode->GetID();
 #endif
             }
             // element number
-            aPolygoneInfo->SetElemNum( iElem, anElem->GetID() );
+            aPolygoneInfo->SetElemNum( iElem, FromSmIdType<TInt>(anElem->GetID()) );
 
             // family number
             int famNum = getFamilyId( anElemFamMap, anElem, defaultFamilyId );
@@ -896,14 +905,14 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
             while ( nodeIt->more() ) {
               const SMDS_MeshElement* aNode = nodeIt->next();
 #ifdef _EDF_NODE_IDS_
-              conn[ iNode ] = aNodeIdMap[aNode->GetID()];
+              conn[ iNode ] = aNodeIdMap[FromSmIdType<TInt>(aNode->GetID())];
 #else
               conn[ iNode ] = aNode->GetID();
 #endif
               ++iNode;
             }
             // element number
-            aPolyhInfo->SetElemNum( iElem, anElem->GetID() );
+            aPolyhInfo->SetElemNum( iElem, FromSmIdType<TInt>(anElem->GetID()) );
 
             // family number
             int famNum = getFamilyId( anElemFamMap, anElem, defaultFamilyId );
@@ -930,12 +939,12 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           // connectivity
           const SMDS_MeshElement* aNode = anElem->GetNode( 0 );
 #ifdef _EDF_NODE_IDS_
-          (*aBallInfo->myConn)[ iElem ] = aNodeIdMap[aNode->GetID()];
+          (*aBallInfo->myConn)[ iElem ] = aNodeIdMap[FromSmIdType<TInt>(aNode->GetID())];
 #else
           (*aBallInfo->myConn)[ iElem ] = aNode->GetID();
 #endif
           // element number
-          aBallInfo->SetElemNum( iElem, anElem->GetID() );
+          aBallInfo->SetElemNum( iElem, FromSmIdType<TInt>(anElem->GetID()) );
 
           // diameter
           aBallInfo->myDiameters[ iElem ] =
@@ -978,13 +987,13 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           for (TInt iNode = 0; iNode < aNbNodes; iNode++) {
             const SMDS_MeshElement* aNode = anElem->GetNode( iNode );
 #ifdef _EDF_NODE_IDS_
-            aTConnSlice[ iNode ] = aNodeIdMap[aNode->GetID()];
+            aTConnSlice[ iNode ] = aNodeIdMap[FromSmIdType<TInt>(aNode->GetID())];
 #else
             aTConnSlice[ iNode ] = aNode->GetID();
 #endif
           }
           // element number
-          aCellInfo->SetElemNum( iElem, anElem->GetID() );
+          aCellInfo->SetElemNum( iElem, FromSmIdType<TInt>(anElem->GetID()) );
 
           // family number
           int famNum = getFamilyId( anElemFamMap, anElem, defaultFamilyId );

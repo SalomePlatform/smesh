@@ -448,7 +448,7 @@ bool StdMeshers_Projection_1D::Evaluate(SMESH_Mesh& theMesh,
 
   int nbNodes = params.size();
 
-  std::vector<int> aVec(SMDSEntity_Last);
+  std::vector<smIdType> aVec(SMDSEntity_Last);
   for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
 
   aVec[SMDSEntity_Node] = nbNodes;

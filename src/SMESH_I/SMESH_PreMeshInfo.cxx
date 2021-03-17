@@ -242,9 +242,9 @@ namespace
    */
   //================================================================================
 
-  void meshInfo2hdf( SMESH::long_array_var meshInfo,
-                     const std::string&    name,
-                     HDFgroup*             hdfGroup)
+  void meshInfo2hdf( SMESH::smIdType_array_var meshInfo,
+                     const std::string&        name,
+                     HDFgroup*                 hdfGroup)
   {
     // we use med identification of element (MED::EGeometrieElement) types
     // but not enum SMDSAbs_EntityType because values of SMDSAbs_EntityType may
@@ -1198,9 +1198,9 @@ SMESH::array_of_ElementType* SMESH_PreMeshInfo::GetTypes() const
  */
 //================================================================================
 
-SMESH::long_array* SMESH_PreMeshInfo::GetMeshInfo() const
+SMESH::smIdType_array* SMESH_PreMeshInfo::GetMeshInfo() const
 {
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   aRes->length(SMESH::Entity_Last);
   for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
     aRes[i] = 0;

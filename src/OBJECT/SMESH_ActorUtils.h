@@ -84,7 +84,7 @@ SMESHOBJECT_EXPORT
               QString def);
    
  SMESHOBJECT_EXPORT
-   std::map<SMDSAbs_ElementType,int>
+   std::map<SMDSAbs_ElementType,smIdType>
    GetEntitiesFromObject(SMESH_VisualObj *theObject);
    
 SMESHOBJECT_EXPORT

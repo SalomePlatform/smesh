@@ -245,11 +245,21 @@ class SMESH_EXPORT SMESH_Mesh
    */
   typedef TopTools_IndexedDataMapOfShapeListOfShape TAncestorMap;
   const TAncestorMap& GetAncestorMap() const { return _mapAncestors; }
+
   /*!
    * \brief Check group names for duplications.
    *  Consider maximum group name length stored in MED file
    */
   bool HasDuplicatedGroupNamesMED();
+
+  /*!
+   * \brief Exception thrown by Export*() in case if a mesh is too large for export
+   *        due to limitation of a format
+   */
+  struct TooLargeForExport : public std::runtime_error
+  {
+    TooLargeForExport(const char* format):runtime_error(format) {}
+  };
 
   void ExportMED(const char *        theFile,
                  const char*         theMeshName = NULL,
@@ -282,33 +292,33 @@ class SMESH_EXPORT SMESH_Mesh
 
   double GetComputeProgress() const;
   
-  int NbNodes() const;
-  int Nb0DElements() const;
-  int NbBalls() const;
+  smIdType NbNodes() const;
+  smIdType Nb0DElements() const;
+  smIdType NbBalls() const;
   
-  int NbEdges(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbEdges(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   
-  int NbFaces(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbTriangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbBiQuadQuadrangles() const;
-  int NbBiQuadTriangles() const;
-  int NbPolygons(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbFaces(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbTriangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbBiQuadQuadrangles() const;
+  smIdType NbBiQuadTriangles() const;
+  smIdType NbPolygons(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   
-  int NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbHexas(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbTriQuadraticHexas() const;
-  int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbQuadPrisms() const;
-  int NbBiQuadPrisms() const;
-  int NbHexagonalPrisms() const;
-  int NbPolyhedrons() const;
+  smIdType NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbHexas(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbTriQuadraticHexas() const;
+  smIdType NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbQuadPrisms() const;
+  smIdType NbBiQuadPrisms() const;
+  smIdType NbHexagonalPrisms() const;
+  smIdType NbPolyhedrons() const;
   
-  int NbSubMesh() const;
+  smIdType NbSubMesh() const;
   
-  int NbGroup() const { return _mapGroup.size(); }
+  size_t NbGroup() const { return _mapGroup.size(); }
 
   int NbMeshes() const; // nb meshes in the Study
 
@@ -345,7 +355,7 @@ class SMESH_EXPORT SMESH_Mesh
   bool SynchronizeGroups();
 
 
-  SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
+  SMDSAbs_ElementType GetElementType( const smIdType id, const bool iselem );
 
   void ClearMeshOrder();
   void SetMeshOrder(const TListOfListOfInt& theOrder );
