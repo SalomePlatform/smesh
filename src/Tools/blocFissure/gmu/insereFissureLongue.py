@@ -62,6 +62,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains, \
   TODO: a completer
   """
   logging.info('start')
+  logging.info("Usage du mailleur %s", mailleur)
 
   #geometrieSaine    = geometriesSaines[0]
   #maillageSain      = maillagesSains[0]
@@ -425,21 +426,23 @@ def insereFissureLongue(geometriesSaines, maillagesSains, \
   # --- maillage face de peau
 
   meshFacePeau, groupEdgesPeauFiss = \
-            insereFissureLongue_b (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibres, \
-            groupsDemiCerclesPeau, groups_demiCercles, verticesOutCercles, \
-            nbSegGenLong, nbSegGenBout, profondeur)
+            insereFissureLongue_b ( facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibres, \
+                                    groupsDemiCerclesPeau, groups_demiCercles, verticesOutCercles, \
+                                    nbSegGenLong, nbSegGenBout, profondeur, \
+                                    mailleur )
 
   # --- maillage face de fissure
 
   meshFaceFiss = \
-            insereFissureLongue_c (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
-            profondeur, rayonPipe)
+            insereFissureLongue_c ( faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
+                                    profondeur, rayonPipe, \
+                                    mailleur )
 
   # --- maillage meshBoiteDefaut
 
   meshBoiteDefaut, group_faceFissInPipe, group_faceFissOutPipe = \
-            insereFissureLongue_d (internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
-            mailleur)
+            insereFissureLongue_d ( internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
+                                    mailleur )
 
 
   groups = maillageSain.GetGroups()
