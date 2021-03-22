@@ -36,7 +36,6 @@ SET(SalomeIDLSMESH_IDLSOURCES
   SMESH_Pattern.idl
   SMESH_MeshEditor.idl
   SMESH_Measurements.idl
-  MG_ADAPT.idl
 )
 
 SET(_idl_include_dirs

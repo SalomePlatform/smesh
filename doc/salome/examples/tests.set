@@ -45,7 +45,6 @@ SET(BAD_TESTS
   radial_prism_3d_algo.py
   test_smeshplugin_mg_tetra_parallele.py
   test_smeshplugins.py
-  MGAdaptTests_without_session.py
   )
 
 SET(GOOD_TESTS

@@ -23,7 +23,7 @@ meshes. It can be used to create an empty mesh or to import mesh from the data f
 As soon as a mesh is created, it is possible to manage it via its own
 methods, described in class :class:`smeshBuilder.Mesh` documentation.
 
-Class :class:`smeshstudytools.SMeshStudyTools` provides several methods to manipulate mesh objects in Salome study.
+Class :class:`smeshstudytools.SMeshStudyTools` provides several methods to manipulate mesh objects in Salome study. 
 
 A usual workflow to generate a mesh on geometry is following:
 
@@ -54,14 +54,14 @@ A usual workflow to generate a mesh on geometry is following:
 		maxArea  = mefisto.LocalLength( 100. )
 		netgen.SetMaxSize( 20. )
 		netgen.SetFineness( smeshBuilder.VeryCoarse )
-
+  
 #. :ref:`Compute the mesh <compute_anchor>` (generate mesh nodes and elements):
 	.. code-block:: python
 
 		mesh.Compute()
 
 An easiest way to start with Python scripting is to do something in
-GUI and then to get a corresponding Python script via
+GUI and then to get a corresponding Python script via 
 **File > Dump Study** menu item. Don't forget that you can get
 all methods of any object in hand (e.g. a mesh group or a hypothesis)
 by calling *dir()* Python built-in function.
@@ -95,7 +95,6 @@ the following links:
    tui_transforming_meshes
    tui_viewing_meshes
    tui_quality_controls
-   tui_adaptation
    tui_measurements
    tui_work_on_objects_from_gui
    tui_notebook_smesh

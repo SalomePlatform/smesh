@@ -84,10 +84,6 @@
             <translation>mesh_groups_from_gemetry.png</translation>
         </message>
         <message>
-            <source>ICON_MG_ADAPT</source>
-            <translation>adapt_mg_adapt.png</translation>
-        </message>
-        <message>
             <source>ICON_CONV_TO_QUAD</source>
             <translation>mesh_conv_to_quad.png</translation>
         </message>
@@ -658,7 +654,7 @@
         <message>
             <source>ICON_MEASURE_AREA</source>
             <translation>mesh_measure_area.png</translation>
-        </message>
+        </message>	
         <message>
             <source>ICON_MEASURE_VOLUME</source>
             <translation>mesh_measure_volume.png</translation>

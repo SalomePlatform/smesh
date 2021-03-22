@@ -38,7 +38,6 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/SMDS
   ${PROJECT_SOURCE_DIR}/src/SMESHDS
   ${PROJECT_SOURCE_DIR}/src/SMESHUtils
-  ${MEDCOUPLING_INCLUDE_DIRS}
 )
 
 # additional preprocessor / compiler flags
@@ -68,7 +67,6 @@ SET(_link_LIBRARIES
   MeshDriverUNV
   MeshDriverGMF
   ${DriverCGNS_LIB}
-  ${MEDCoupling_medloader}
 )
 
 # --- headers ---
@@ -88,7 +86,6 @@ SET(SMESHimpl_HEADERS
   SMESH_MesherHelper.hxx
   SMESH_ProxyMesh.hxx
   SMESH_SMESH.hxx
-  MG_ADAPT.hxx
 )
 
 # --- sources ---
@@ -107,7 +104,6 @@ SET(SMESHimpl_SOURCES
   SMESH_HypoFilter.cxx
   SMESH_ProxyMesh.cxx
   SMESH_MesherHelper.cxx
-  MG_ADAPT.cxx
 )
 
 # --- rules ---

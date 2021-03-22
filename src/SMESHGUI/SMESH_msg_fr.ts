@@ -341,126 +341,6 @@
         <translation>Construire un groupe</translation>
     </message>
     <message>
-        <source>MEN_MG_ADAPT</source>
-        <translation>Remaillage avec MG_Adapt</translation>
-    </message>
-    <message>
-        <source>Args</source>
-        <translation>Arguments</translation>
-    </message>
-    <message>
-        <source>MeshOut</source>
-        <translation>Maillage en sortie</translation>
-    </message>
-    <message>
-        <source>MeshIn</source>
-        <translation>Maillage en entrée</translation>
-    </message>
-    <message>
-        <source>MEDFile</source>
-        <translation>Fichier MED</translation>
-    </message>
-    <message>
-        <source>Browser</source>
-        <translation>Arbre d'études</translation>
-    </message>
-    <message>
-        <source>Publish_MG_ADAPT</source>
-        <translation>Publication</translation>
-    </message>
-    <message>
-        <source>SIZE_MAP_FIELD</source>
-        <translation>Champ de la carte de taille</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_FIELD_NAME</source>
-        <translation>Nom du champ</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_1</source>
-        <translation>Ce fichier MED est illisible.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_2</source>
-        <translation>Ce fichier MED ne contient aucun maillage.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_3</source>
-        <translation>Ce fichier MED contient plus d'un maillage.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_4</source>
-        <translation>Impossible de lire le maillage de ce fichier MED.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_5</source>
-        <translation>Ce fichier MED ne contient aucun champ.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_ERROR</source>
-        <translation>Erreur</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_CH_ST</source>
-        <translation>Pas de temps choisi</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_RANK</source>
-        <translation>Numéro d'ordre</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_TSTP</source>
-        <translation>Pas de temps </translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_NO_T_ST</source>
-        <translation>Sans pas de temps</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_L_ST</source>
-        <translation>Dernier pas de temps</translation>
-    </message>
-    <message>
-        <source>MeshName</source>
-        <translation>Nom du maillage</translation>
-    </message>
-    <message>
-        <source>LOCAL_MG_ADAPT</source>
-        <translation>Locale</translation>
-    </message>
-    <message>
-        <source>BACKGRND_MG_ADAPT</source>
-        <translation>Arrière-plan</translation>
-    </message>
-    <message>
-        <source>CNST_MG_ADAPT</source>
-        <translation>Constante</translation>
-    </message>
-    <message>
-        <source>MED_FILE_BCKG</source>
-        <translation>Fichier MED de la carte en arrière-plan</translation>
-    </message>
-    <message>
-        <source>VALUE_MG_ADAPT</source>
-        <translation>Valeur</translation>
-    </message>
-    <message>
-        <source>SIZE_MAP_DEF</source>
-        <translation>Définition de la carte de taille</translation>
-    </message>
-    <message>
-        <source>ADVOP</source>
-        <translation>Options avancées</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_DIAG_1</source>
-        <translation>Adaptation réussie.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_DIAG_2</source>
-        <translation>Echec de l'adaptation.</translation>
-    </message>
-    <message>
         <source>MEN_CONV_TO_QUAD</source>
         <translation>Convertir vers/depuis quadratique</translation>
     </message>
@@ -602,7 +482,7 @@
     </message>
     <message>
         <source>MEN_EDIT</source>
-        <translation>Editer</translation>
+        <translation>Edition</translation>
     </message>
     <message>
         <source>MEN_EDIT_GROUP</source>
@@ -907,10 +787,6 @@
     <message>
         <source>MEN_MODIFY</source>
         <translation>Modification</translation>
-    </message>
-    <message>
-        <source>MEN_ADAPT</source>
-        <translation>Adaptation</translation>
     </message>
     <message>
         <source>MEN_MEASURE</source>
@@ -3020,82 +2896,6 @@ Référez-vous à la documentation sur l'algorithme et la géométrie supportée
         <translation>Multicouleur</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_TAB_GENERAL</source>
-        <translation>Adaptation</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_NONE</source>
-        <translation>Sans</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT</source>
-        <translation>Adaptation avec MG-Adapt</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_FILE_MAILLAGE_OUT</source>
-        <translation>Ecriture du maillage de sortie</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_PUBLICATION_MAILLAGE_OUT</source>
-        <translation>Publication du maillage de sortie</translation>
-    </message>
-    <message>
-        <source>OPTION_VALUE_COLUMN</source>
-        <translation>Option</translation>
-    </message>
-    <message>
-        <source>OPTION_NAME_COLUMN</source>
-        <translation>Valeur</translation>
-    </message>
-    <message>
-        <source>compute_ridges</source>
-        <translation>Calcul des crêtes</translation>
-    </message>
-    <message>
-        <source>max_memory</source>
-        <translation>Maximum mémoire (Mb)</translation>
-    </message>
-    <message>
-        <source>Adaption</source>
-        <translation>Adaptation</translation>
-    </message>
-    <message>
-        <source>components</source>
-        <translation>Composantes</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP</source>
-        <translation>Carte de tailles</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP_LOCAL</source>
-        <translation>Locale</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP_BACKGROUND</source>
-        <translation>Arrière-plan</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_LAST</source>
-        <translation>Dernier</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP</source>
-        <translation>Choix du pas de temps</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_C</source>
-        <translation>Valeur</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_SELECT_FILE_0</source>
-        <translation>MG-ADAPT selection fichier MED</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_ADVOP</source>
-        <translation>Options avancées</translation>
-    </message>
-    <message>
         <source>SMESH_VISU_PROBLEM</source>
         <translation>Impossible de visualiser le maillage, probablement à cause d'un manque de mémoire</translation>
     </message>
@@ -3310,10 +3110,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_CONSTRUCT_GROUP</source>
         <translation>Construire un groupe</translation>
-    </message>
-    <message>
-        <source>STB_MG_ADAPT</source>
-        <translation>Remaillage avec MG_Adapt</translation>
     </message>
     <message>
         <source>STB_CONV_TO_QUAD</source>
@@ -3912,10 +3708,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Barre des contrôles des volumes</translation>
     </message>
     <message>
-        <source>TB_ADAPTATION</source>
-        <translation>Barre de l'adaptation</translation>
-    </message>
-    <message>
         <source>TB_MEASUREM</source>
         <translation>Barre des mesures</translation>
     </message>
@@ -4018,10 +3810,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
         <translation>Construire un groupe</translation>
-    </message>
-    <message>
-        <source>TOP_MG_ADAPT</source>
-        <translation>Remaillage avec MG_Adapt</translation>
     </message>
     <message>
         <source>TOP_CONV_TO_QUAD</source>

@@ -186,8 +186,6 @@ namespace SMESHOp {
     OpConvertMeshToQuadratic = 4513,   // MENU MODIFICATION - CONVERT TO/FROM QUADRATIC
     OpCreateBoundaryElements = 4514,   // MENU MODIFICATION - CREATE BOUNDARY ELEMENTS
     OpSplitBiQuadratic       = 4515,   // MENU MODIFICATION - SPLIT BI-QUADRATIC TO LINEAR
-    // Adaptation ---------------------//--------------------------------
-    OpMGAdapt                = 8020,   // MENU ADAPTATION - MG-ADAPT
     // Measurements -------------------//--------------------------------
     OpPropertiesLength       = 5000,   // MENU MEASUREMENTS - BASIC PROPERTIES - LENGTH
     OpPropertiesArea         = 5001,   // MENU MEASUREMENTS - BASIC PROPERTIES - AREA

@@ -45,7 +45,6 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/SMESH_I
   ${PROJECT_BINARY_DIR}
   ${PROJECT_BINARY_DIR}/idl
-  ${MEDCOUPLING_INCLUDE_DIRS}
 )
 
 # additional preprocessor / compiler flags
@@ -76,7 +75,6 @@ SET(_link_LIBRARIES
   SMESHControls
   SMESHObject
   SMESHEngine
-  ${MEDCoupling_medloader}
 )
 
 # --- headers ---
@@ -149,9 +147,6 @@ SET(_moc_HEADERS
   SMESHGUI_SplitBiQuad.h
   SMESHGUI_IdPreview.h
   SMESHGUI_PreVisualObj.h
-  SMESHGUI_AdaptDlg.h
-  SMESHGUI_MG_ADAPTDRIVER.h
-  MG_ADAPTGUI.hxx # to replace in ../ADAPTGUI/
 )
 
 # header files / no moc processing
@@ -174,7 +169,6 @@ SET(_other_HEADERS
   SMESHGUI_FileValidator.h
   SMESHGUI_SelectionProxy.h
   SMESH_SMESHGUI.hxx
-  #~MG_ADAPT.hxx # to replace in ../ADAPT/
 )
 
 # header files / to install
@@ -268,10 +262,6 @@ SET(_other_SOURCES
   SMESHGUI_SplitBiQuad.cxx
   SMESHGUI_PreVisualObj.cxx
   SMESHGUI_IdPreview.cxx
-  SMESHGUI_AdaptDlg.cxx
-  SMESHGUI_MG_ADAPTDRIVER.cxx
-  MG_ADAPTGUI.cxx # to replace in ../ADAPTGUI/
-  #MG_ADAPT.cxx
 )
 
 # sources / to compile
@@ -285,7 +275,7 @@ SET(_ts_RESOURCES
   SMESH_msg_en.ts
   SMESH_msg_fr.ts
   SMESH_msg_ja.ts
-)
+) 
 
 # --- rules ---
 

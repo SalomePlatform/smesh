@@ -477,10 +477,6 @@ public:
 
   int CountInPyDump(const TCollection_AsciiString& text);
 
-  SMESH::MG_ADAPT_ptr CreateMG_ADAPT();
-  SMESH::MG_ADAPT_ptr CreateAdaptationHypothesis();
-  SMESH::MG_ADAPT_OBJECT_ptr Adaptation( const char* adaptationType);
-
   // *****************************************
   // Internal methods
   // *****************************************

@@ -341,126 +341,6 @@
         <translation>Construct Group</translation>
     </message>
     <message>
-        <source>MEN_MG_ADAPT</source>
-        <translation>Remesh with MG_Adapt</translation>
-    </message>
-    <message>
-        <source>Args</source>
-        <translation>Arguments</translation>
-    </message>
-    <message>
-        <source>MeshOut</source>
-        <translation>Mesh Out</translation>
-    </message>
-    <message>
-        <source>MeshIn</source>
-        <translation>Mesh In</translation>
-    </message>
-    <message>
-        <source>MEDFile</source>
-        <translation>MED file</translation>
-    </message>
-    <message>
-        <source>Browser</source>
-        <translation>Browser</translation>
-    </message>
-    <message>
-        <source>Publish_MG_ADAPT</source>
-        <translation>Publish</translation>
-    </message>
-    <message>
-        <source>SIZE_MAP_FIELD</source>
-        <translation>Size map field</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_FIELD_NAME</source>
-        <translation>Field Name</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_1</source>
-        <translation>This MED file cannot be read.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_2</source>
-        <translation>No mesh in this MED file.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_3</source>
-        <translation>More than one mesh in this MED file.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_4</source>
-        <translation>The mesh in this MED file cannot be read.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_MED_FILE_5</source>
-        <translation>No field in this MED file.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_ERROR</source>
-        <translation>Error</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_CH_ST</source>
-        <translation>Chosen time step</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_RANK</source>
-        <translation>Rank</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_TSTP</source>
-        <translation>Time step </translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_NO_T_ST</source>
-        <translation>No time step</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_L_ST</source>
-        <translation>Last time step</translation>
-    </message>
-    <message>
-        <source>MeshName</source>
-        <translation>Mesh name</translation>
-    </message>
-    <message>
-        <source>LOCAL_MG_ADAPT</source>
-        <translation>Local</translation>
-    </message>
-    <message>
-        <source>BACKGRND_MG_ADAPT</source>
-        <translation>Background</translation>
-    </message>
-    <message>
-        <source>CNST_MG_ADAPT</source>
-        <translation>Constant</translation>
-    </message>
-    <message>
-        <source>MED_FILE_BCKG</source>
-        <translation>MED file background size map</translation>
-    </message>
-    <message>
-        <source>VALUE_MG_ADAPT</source>
-        <translation>Value</translation>
-    </message>
-    <message>
-        <source>SIZE_MAP_DEF</source>
-        <translation>Size map definition</translation>
-    </message>
-    <message>
-        <source>ADVOP</source>
-        <translation>Advanced Options</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_DIAG_1</source>
-        <translation>Adaptation succeeded.</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_DIAG_2</source>
-        <translation>Adaptation failed.</translation>
-    </message>
-    <message>
         <source>MEN_CONV_TO_QUAD</source>
         <translation>Convert to/from quadratic</translation>
     </message>
@@ -907,10 +787,6 @@
     <message>
         <source>MEN_MODIFY</source>
         <translation>Modification</translation>
-    </message>
-    <message>
-        <source>MEN_ADAPT</source>
-        <translation>Adaptation</translation>
     </message>
     <message>
         <source>MEN_MEASURE</source>
@@ -1625,10 +1501,6 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_AVAILABLE</source>
         <translation>Available</translation>
-    </message>
-    <message>
-        <source>SMESH_NOT_AVAILABLE</source>
-        <translation>Not available</translation>
     </message>
     <message>
         <source>SMESH_AVAILABLE_ALGORITHMS</source>
@@ -3026,82 +2898,6 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Multicolor</translation>
     </message>
     <message>
-        <source>ADAPT_PREF_TAB_GENERAL</source>
-        <translation>Adaptation</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_NONE</source>
-        <translation>None</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT</source>
-        <translation>Adaptation with MG-Adapt</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_FILE_MAILLAGE_OUT</source>
-        <translation>Write the OUT mesh</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_PUBLICATION_MAILLAGE_OUT</source>
-        <translation>Publication of the OUT mesh</translation>
-    </message>
-    <message>
-        <source>OPTION_VALUE_COLUMN</source>
-        <translation>Option</translation>
-    </message>
-    <message>
-        <source>OPTION_NAME_COLUMN</source>
-        <translation>Value</translation>
-    </message>
-    <message>
-        <source>compute_ridges</source>
-        <translation>Compute ridges</translation>
-    </message>
-    <message>
-        <source>max_memory</source>
-        <translation>Maximum memory (Mb)</translation>
-    </message>
-    <message>
-        <source>Adaption</source>
-        <translation>adaptation</translation>
-    </message>
-    <message>
-        <source>components</source>
-        <translation>Components</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP</source>
-        <translation>Size map</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP_LOCAL</source>
-        <translation>Local</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_SIZE_MAP_BACKGROUND</source>
-        <translation>Background</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_LAST</source>
-        <translation>Last</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP</source>
-        <translation>Choosen time step</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_TIME_STEP_C</source>
-        <translation>Value</translation>
-    </message>
-    <message>
-        <source>MG_ADAPT_SELECT_FILE_0</source>
-        <translation>MG-ADAPT select file</translation>
-    </message>
-    <message>
-        <source>ADAPT_PREF_MG_ADAPT_ADVOP</source>
-        <translation>Advanced Options</translation>
-    </message>
-    <message>
         <source>SMESH_VISU_PROBLEM</source>
         <translation>Mesh visualization failed</translation>
     </message>
@@ -3315,10 +3111,6 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_CONSTRUCT_GROUP</source>
         <translation>Construct Group</translation>
-    </message>
-    <message>
-        <source>STB_MG_ADAPT</source>
-        <translation>Remesh with MG_Adapt</translation>
     </message>
     <message>
         <source>STB_CONV_TO_QUAD</source>
@@ -3917,10 +3709,6 @@ Use Display Entity menu command to show them.
         <translation>Volume Controls Toolbar</translation>
     </message>
     <message>
-        <source>TB_ADAPTATION</source>
-        <translation>Adaptation Toolbar</translation>
-    </message>
-    <message>
         <source>TB_MEASUREM</source>
         <translation>Measurements Toolbar</translation>
     </message>
@@ -4023,10 +3811,6 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
         <translation>Construct Group</translation>
-    </message>
-    <message>
-        <source>TOP_MG_ADAPT</source>
-        <translation>Remesh with MG_Adapt</translation>
     </message>
     <message>
         <source>TOP_CONV_TO_QUAD</source>
@@ -4659,8 +4443,8 @@ Use Display Entity menu command to show them.
     <message>
         <source>FULL_RECOMPUTE_QUESTION</source>
         <translation>
-The mesh has been edited since a last total re-compute
-that may prevent successful computation.
+The mesh has been edited since a last total re-compute 
+that may prevent successful computation. 
 Do you wish to re-compute the mesh totally to discard the modifications?
 </translation>
     </message>
@@ -6853,7 +6637,7 @@ Please specify them and try again</translation>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</source>
         <translation>Geometry object is not defined.
-Do you want to create an empty mesh
+Do you want to create an empty mesh 
 without algorithms and hypotheses? </translation>
     </message>
     <message>
@@ -6928,7 +6712,7 @@ select mesh or sub-mesh and try again</translation>
     <message>
         <source>CONCURRENT_SUBMESH_APPEARS</source>
         <translation>
-The assigned algorithm has the same priority as one assigned to an
+The assigned algorithm has the same priority as one assigned to an 
 adjacent sub-mesh, hence it&apos;s undefined which algorithm to use for
 meshing boundary shared by two sub-meshes. Would you like to set
 the order of sub-mesh computation? </translation>
@@ -8538,7 +8322,7 @@ as they are of improper type:
     <message>
         <source>SUBSHAPES_NOT_FOUND_MSG</source>
         <translation>
-Some sub-shapes not found in the new geometry. They are listed
+Some sub-shapes not found in the new geometry. They are listed 
 below along with dependent mesh objects that are marked with
 red in the Object Browser.</translation>
     </message>
