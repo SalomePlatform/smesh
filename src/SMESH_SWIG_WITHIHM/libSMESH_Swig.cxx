@@ -2052,7 +2052,7 @@ public:
 
     for ( int i = 1; i <= idMap.Extent(); i++ ) {
       myResult.push_back( std::make_pair( (int)idMap(i)[0], (int)idMap(i)[1]) );
-	}
+    }
   }
 };
 

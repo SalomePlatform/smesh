@@ -60,6 +60,7 @@
 #include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_HypothesesUtils.h"
+#include "SMESHGUI_MG_ADAPTDRIVER.h"
 #include "SMESHGUI_Make2DFrom3DOp.h"
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
 #include "SMESHGUI_Measurements.h"
@@ -167,21 +168,21 @@
 #include <vtkRenderer.h>
 
 // SALOME KERNEL includes
+#include <Basics_Utils.hxx>
 #include <SALOMEDSClient_ClientFactory.hxx>
 #include <SALOMEDSClient_IParameters.hxx>
 #include <SALOMEDSClient_SComponent.hxx>
 #include <SALOMEDSClient_StudyBuilder.hxx>
-#include <SALOMEDS_Study.hxx>
 #include <SALOMEDS_SObject.hxx>
-#include "utilities.h"
+#include <SALOMEDS_Study.hxx>
+#include <SALOME_GenericObj_wrap.hxx>
 #include <SALOME_LifeCycleCORBA.hxx>
+#include <utilities.h>
 
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
 #include <NCollection_DataMap.hxx>
 #include <NCollection_DoubleMap.hxx>
-
-#include <Basics_Utils.hxx>
 
 // Below macro, when uncommented, switches on simplified (more performant) algorithm
 // of auto-color picking up
@@ -1971,12 +1972,12 @@ void SMESHGUI::OnEditDelete()
   int objectCount = 0;
   QString aNameList;
   QString aParentComponent = QString::null;
-  
+
   for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
   {
     Handle(SALOME_InteractiveObject) anIO = anIt.Value();
     if ( anIO.IsNull() ) continue;
-    
+
     QString father = "unknown", name;
 
     _PTR(SObject) aSO = aStudy->FindObjectID( anIO->getEntry() );
@@ -3042,6 +3043,21 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
+  // Adaptation - begin
+#ifndef DISABLE_MG_ADAPT
+  case SMESHOp::OpMGAdapt:
+    {
+      if ( isStudyLocked() )
+        break;
+      EmitSignalDeactivateDialog();
+
+      SALOME::GenericObj_wrap< SMESH::MG_ADAPT > model = GetSMESHGen()->CreateMG_ADAPT();
+      bool isCreation = false;
+      ( new SMESHGUI_MG_ADAPTDRIVER( this, model, isCreation ))->show();
+      break;
+    }
+#endif
+  // Adaptation - end
   case SMESHOp::OpSplitBiQuadratic:
   case SMESHOp::OpConvertMeshToQuadratic:
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh from 3D
@@ -4279,6 +4295,12 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpAutoColor,        "AUTO_COLOR" );
   createSMESHAction( SMESHOp::OpDisableAutoColor, "DISABLE_AUTO_COLOR" );
 
+  // Adaptation - begin
+#ifndef DISABLE_MG_ADAPT
+  createSMESHAction( SMESHOp::OpMGAdapt, "MG_ADAPT", "ICON_MG_ADAPT" );
+#endif
+  // Adaptation - end
+
   createSMESHAction( SMESHOp::OpMinimumDistance,  "MEASURE_MIN_DIST", "ICON_MEASURE_MIN_DIST" );
   createSMESHAction( SMESHOp::OpBoundingBox,      "MEASURE_BND_BOX",  "ICON_MEASURE_BND_BOX" );
   createSMESHAction( SMESHOp::OpPropertiesLength, "MEASURE_LENGTH",   "ICON_MEASURE_LENGTH" );
@@ -4320,6 +4342,9 @@ void SMESHGUI::initialize( CAM_Application* app )
       meshId    = createMenu( tr( "MEN_MESH" ),    -1, 70, 10 ),
       ctrlId    = createMenu( tr( "MEN_CTRL" ),    -1, 60, 10 ),
       modifyId  = createMenu( tr( "MEN_MODIFY" ),  -1, 40, 10 ),
+#ifndef DISABLE_MG_ADAPT
+      adaptId   = createMenu( tr( "MEN_ADAPT" ),   -1, 80, 10 ),
+#endif
       measureId = createMenu( tr( "MEN_MEASURE" ), -1, 50, 10 ),
       viewId    = createMenu( tr( "MEN_VIEW" ),    -1,  2 );
 
@@ -4492,6 +4517,12 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpSmoothing,              modifyId, -1 );
   createMenu( SMESHOp::OpPatternMapping,         modifyId, -1 );
 
+  // Adaptation - begin
+#ifndef DISABLE_MG_ADAPT
+  createMenu( SMESHOp::OpMGAdapt, adaptId, -1 );
+#endif
+  // Adaptation - end
+
   createMenu( SMESHOp::OpMinimumDistance,  measureId,   -1 );
   createMenu( SMESHOp::OpBoundingBox,      measureId,   -1 );
   createMenu( SMESHOp::OpAngle,            measureId,   -1 );
@@ -4506,22 +4537,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   connect( volumeMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
 
   // ----- create toolbars --------------
-  int meshTb       = createTool( tr( "TB_MESH" ),      QString( "SMESHMeshToolbar" ) ),
-      info         = createTool( tr( "TB_INFO" ),      QString( "SMESHInformationToolbar" ) ),
-      groupTb      = createTool( tr( "TB_GROUP" ),     QString( "SMESHGroupToolbar" ) ),
-      ctrl0dTb     = createTool( tr( "TB_CTRL0D" ),    QString( "SMESHNodeControlsToolbar" ) ),
-      ctrl1dTb     = createTool( tr( "TB_CTRL1D" ),    QString( "SMESHEdgeControlsToolbar" ) ),
-      ctrl2dTb     = createTool( tr( "TB_CTRL2D" ),    QString( "SMESHFaceControlsToolbar" ) ),
-      ctrl3dTb     = createTool( tr( "TB_CTRL3D" ),    QString( "SMESHVolumeControlsToolbar" ) ),
-      addElemTb    = createTool( tr( "TB_ADD" ),       QString( "SMESHAddElementToolbar" ) ),
-      addNonElemTb = createTool( tr( "TB_ADDNON" ),    QString( "SMESHAddElementToolbar" ) ),
-      remTb        = createTool( tr( "TB_REM" ),       QString( "SMESHRemoveToolbar" ) ),
-    //renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ),
-      transformTb  = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ),
-      modifyTb     = createTool( tr( "TB_MODIFY" ),    QString( "SMESHModificationToolbar" ) ),
-      measuremTb   = createTool( tr( "TB_MEASUREM" ),  QString( "SMESHMeasurementsToolbar" ) ),
-      dispModeTb   = createTool( tr( "TB_DISP_MODE" ), QString( "SMESHDisplayModeToolbar" ) );
-
+  int meshTb = createTool( tr( "TB_MESH" ), QString( "SMESHMeshToolbar" ) ) ;
   createTool( SMESHOp::OpCreateMesh,        meshTb );
   createTool( SMESHOp::OpCreateSubMesh,     meshTb );
   createTool( SMESHOp::OpEditMeshOrSubMesh, meshTb );
@@ -4533,25 +4549,30 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpEvaluate,          meshTb );
   createTool( SMESHOp::OpMeshOrder,         meshTb );
 
+  int infoTb = createTool( tr( "TB_INFO" ), QString( "SMESHInformationToolbar" ) ) ;
+  createTool( SMESHOp::OpMeshInformation,    infoTb );
+  //createTool( SMESHOp::OpStdInfo, meshTb );
+  //createTool( SMESHOp::OpWhatIs, meshTb ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
+  createTool( SMESHOp::OpFindElementByPoint, infoTb );
+
+  int groupTb = createTool( tr( "TB_GROUP" ), QString( "SMESHGroupToolbar" ) ) ;
   createTool( SMESHOp::OpCreateGroup,         groupTb );
   createTool( SMESHOp::OpCreateGeometryGroup, groupTb );
   createTool( SMESHOp::OpConstructGroup,      groupTb );
   createTool( SMESHOp::OpEditGroup,           groupTb );
 
-  createTool( SMESHOp::OpMeshInformation,    info );
-  //createTool( SMESHOp::OpStdInfo, meshTb );
-  //createTool( SMESHOp::OpWhatIs, meshTb ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
-  createTool( SMESHOp::OpFindElementByPoint, info );
-
+  int ctrl0dTb = createTool( tr( "TB_CTRL0D" ), QString( "SMESHNodeControlsToolbar" ) ) ;
   createTool( SMESHOp::OpFreeNode,  ctrl0dTb );
   createTool( SMESHOp::OpEqualNode, ctrl0dTb );
   //createTool( SMESHOp::OpNodeConnectivityNb, ctrl0dTb );
 
+  int ctrl1dTb = createTool( tr( "TB_CTRL1D" ), QString( "SMESHEdgeControlsToolbar" ) ) ;
   createTool( SMESHOp::OpFreeBorder, ctrl1dTb );
   createTool( SMESHOp::OpLength,     ctrl1dTb );
   createTool( SMESHOp::OpConnection, ctrl1dTb );
   createTool( SMESHOp::OpEqualEdge,  ctrl1dTb );
 
+  int ctrl2dTb = createTool( tr( "TB_CTRL2D" ), QString( "SMESHFaceControlsToolbar" ) ) ;
   createTool( SMESHOp::OpFreeEdge,            ctrl2dTb );
   createTool( SMESHOp::OpFreeFace,            ctrl2dTb );
   createTool( SMESHOp::OpBareBorderFace,      ctrl2dTb );
@@ -4568,6 +4589,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpEqualFace,           ctrl2dTb );
   createTool( SMESHOp::OpDeflection2D,        ctrl2dTb );
 
+  int ctrl3dTb = createTool( tr( "TB_CTRL3D" ), QString( "SMESHVolumeControlsToolbar" ) ) ;
   createTool( SMESHOp::OpAspectRatio3D,         ctrl3dTb );
   createTool( SMESHOp::OpVolume,                ctrl3dTb );
   createTool( SMESHOp::OpMaxElementLength3D,    ctrl3dTb );
@@ -4575,6 +4597,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpOverConstrainedVolume, ctrl3dTb );
   createTool( SMESHOp::OpEqualVolume,           ctrl3dTb );
 
+  int addElemTb = createTool( tr( "TB_ADD" ), QString( "SMESHAddElementToolbar" ) ) ;
   createTool( SMESHOp::OpNode,              addElemTb );
   createTool( SMESHOp::OpElem0D,            addElemTb );
   createTool( SMESHOp::OpElem0DOnElemNodes, addElemTb );
@@ -4590,6 +4613,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpHexagonalPrism,    addElemTb );
   createTool( SMESHOp::OpPolyhedron,        addElemTb );
 
+  int addNonElemTb = createTool( tr( "TB_ADDNON" ), QString( "SMESHAddElementToolbar" ) ) ;
   createTool( SMESHOp::OpQuadraticEdge,          addNonElemTb );
   createTool( SMESHOp::OpQuadraticTriangle,      addNonElemTb );
   createTool( SMESHOp::OpBiQuadraticTriangle,    addNonElemTb );
@@ -4603,14 +4627,17 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpQuadraticHexahedron,    addNonElemTb );
   createTool( SMESHOp::OpTriQuadraticHexahedron, addNonElemTb );
 
+  int remTb = createTool( tr( "TB_REM" ), QString( "SMESHRemoveToolbar" ) ) ;
   createTool( SMESHOp::OpRemoveNodes,       remTb );
   createTool( SMESHOp::OpRemoveElements,    remTb );
   createTool( SMESHOp::OpRemoveOrphanNodes, remTb );
   createTool( SMESHOp::OpClearMesh,         remTb );
 
+//   int renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ) ;
   //createTool( SMESHOp::OpRenumberingNodes,    renumbTb );
   //createTool( SMESHOp::OpRenumberingElements, renumbTb );
 
+  int transformTb = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ) ;
   createTool( SMESHOp::OpMergeNodes,     transformTb );
   createTool( SMESHOp::OpMergeElements,  transformTb );
   createTool( SMESHOp::OpTranslation,    transformTb );
@@ -4621,6 +4648,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpSewing,         transformTb );
   createTool( SMESHOp::OpDuplicateNodes, transformTb );
 
+  int modifyTb = createTool( tr( "TB_MODIFY" ), QString( "SMESHModificationToolbar" ) ) ;
   createTool( SMESHOp::OpConvertMeshToQuadratic, modifyTb );
   createTool( SMESHOp::OpCreateBoundaryElements, modifyTb );
   createTool( SMESHOp::OpExtrusion,              modifyTb );
@@ -4638,8 +4666,17 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpSmoothing,              modifyTb );
   createTool( SMESHOp::OpPatternMapping,         modifyTb );
 
+  // Adaptation - begin
+#ifndef DISABLE_MG_ADAPT
+  int adaptTb = createTool( tr( "TB_ADAPTATION" ), QString( "SMESHAdaptationToolbar" ) ) ;
+  createTool( SMESHOp::OpMGAdapt, adaptTb );
+#endif
+  // Adaptation - end
+
+  int measuremTb = createTool( tr( "TB_MEASUREM" ), QString( "SMESHMeasurementsToolbar" ) ) ;
   createTool( SMESHOp::OpMinimumDistance, measuremTb );
 
+  int dispModeTb = createTool( tr( "TB_DISP_MODE" ), QString( "SMESHDisplayModeToolbar" ) );
   createTool( SMESHOp::OpUpdate, dispModeTb );
 
   QString lc = "$";        // VSR : instead of QtxPopupSelection::defEquality();
@@ -4715,9 +4752,14 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh_submesh, "&& " + hasElems );
   createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh_group, "&& selcount=1 && dim>=2");
-  //popupMgr()->insert( separator(), -1, 0 );
 
-  //popupMgr()->insert( separator(), -1, 0 );
+  // Adaptation - begin
+#ifndef DISABLE_MG_ADAPT
+  popupMgr()->insert( separator(), -1, 0 );
+  createPopupItem( SMESHOp::OpMGAdapt, OB, mesh );
+  popupMgr()->insert( separator(), -1, 0 );
+#endif
+  // Adaptation - end
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
   QString multiple_non_empty = QString( " && %1>0 && numberOfNodes>0" ).arg( dc );
@@ -5139,7 +5181,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   lab = lab + tr("INFO_COMPUTE") + "<br/>";
   lab = lab + tr("INFO_REFINE") + ":";
   items << wrap(tr("INFO_REFINE_LOCAL_SIZE"), "li")
-	<< wrap(tr("INFO_REFINE_SUBMESH"), "li");
+        << wrap(tr("INFO_REFINE_SUBMESH"), "li");
   lab = lab + wrap(items.join(""), "ul");
   items.clear();
 
@@ -5147,26 +5189,26 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   gb = app->infoPanel()->addGroup(tr("INFO_GRP_IMPORT_MESH"));
   items << wrap("UNV", "li")
-	<< wrap("MED", "li")
-	<< wrap("STL", "li")
-	<< wrap("CGNS", "li")
-	<< wrap("SAUV", "li")
-	<< wrap("GMF", "li");
+        << wrap("MED", "li")
+        << wrap("STL", "li")
+        << wrap("CGNS", "li")
+        << wrap("SAUV", "li")
+        << wrap("GMF", "li");
   lab = tr("INFO_AVAILABLE_FORMATS") + ":" + wrap(items.join(""), "ul");
   items.clear();
-  
+
   app->infoPanel()->addLabel(lab, gb);
-    
+
   gb = app->infoPanel()->addGroup(tr("INFO_GRP_CHECK_MESH"));
   lab = tr("INFO_DISPLAY") + "<br/>";
   items << wrap(tr("INFO_QUALITY_AREA"), "li")
-	<< wrap(tr("INFO_QUALITY_VOLUME"), "li")
-	<< wrap(tr("INFO_QUALITY_ASPECT_RATION"), "li")
-	<< wrap("...", "li");
+        << wrap(tr("INFO_QUALITY_VOLUME"), "li")
+        << wrap(tr("INFO_QUALITY_ASPECT_RATION"), "li")
+        << wrap("...", "li");
   lab = lab + tr("INFO_QUALITY_INFO") + ":" + wrap(items.join(""), "ul");
   items.clear();
   lab = lab + tr("INFO_CLIPPING");
-  
+
   app->infoPanel()->addLabel(lab, gb);
   // << Help Panel
 
@@ -5374,7 +5416,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( dispgroup, "columns", 2 );
 
   addPreference( tr( "PREF_FITALL_ON_DISPLAYONLY" ), dispgroup, LightApp_Preferences::Bool, "SMESH", "fitall_on_displayonly" );
-  
+
   int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
   QStringList modes;
   modes.append( tr("MEN_WIRE") );
@@ -5751,6 +5793,30 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( coloringType, "indexes", indices );
   addPreference( tr( "SMESH_DISTRIBUTION_COLOR" ), distributionGr, LightApp_Preferences::Color, "SMESH", "distribution_color" );
 
+  // Adaptation - begin
+#ifndef DISABLE_MG_ADAPT
+  // Adaptation tab ------------------------------------------------------------------------
+  int adaptTab = addPreference( tr( "ADAPT_PREF_TAB_GENERAL" ) );
+  int bloc, pref ;
+  // MG-Adapt
+  bloc = addPreference( tr( "ADAPT_PREF_MG_ADAPT" ), adaptTab );
+  setPreferenceProperty( bloc, "columns", 1 );
+  pref = addPreference( tr( "ADAPT_PREF_MG_ADAPT_FILE_MAILLAGE_OUT" ), bloc, LightApp_Preferences::Bool, "HOMARD", "mg_adapt_file_mesh_out" );
+  pref = addPreference( tr( "ADAPT_PREF_MG_ADAPT_PUBLICATION_MAILLAGE_OUT" ), bloc, LightApp_Preferences::Bool, "HOMARD", "mg_adapt_publish_mesh_out" );
+  pref = addPreference( tr( "ADAPT_PREF_MG_ADAPT_SIZE_MAP" ), bloc, LightApp_Preferences::Selector, "HOMARD", "mg_adapt_size_map" );
+  QStringList aListOfSizeMap;
+  aListOfSizeMap << tr( "ADAPT_PREF_MG_ADAPT_SIZE_MAP_LOCAL" );
+  aListOfSizeMap << tr( "ADAPT_PREF_MG_ADAPT_SIZE_MAP_BACKGROUND" );
+  aListOfSizeMap << tr( "ADAPT_PREF_NONE" );;
+  setPreferenceProperty( pref, "strings", aListOfSizeMap );
+  pref = addPreference( tr( "ADAPT_PREF_MG_ADAPT_TIME_STEP" ), bloc, LightApp_Preferences::Selector, "HOMARD", "mg_adapt_time_step" );
+  QStringList aListOfTimeStep;
+  aListOfTimeStep << tr( "ADAPT_PREF_NONE" );
+  aListOfTimeStep << tr( "ADAPT_PREF_MG_ADAPT_TIME_STEP_LAST" );
+  aListOfTimeStep << tr( "ADAPT_PREF_MG_ADAPT_TIME_STEP_C" );;
+  setPreferenceProperty( pref, "strings", aListOfTimeStep );
+#endif
+  // Adaptation - end
 }
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )

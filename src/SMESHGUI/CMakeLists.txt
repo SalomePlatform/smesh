@@ -147,6 +147,8 @@ SET(_moc_HEADERS
   SMESHGUI_SplitBiQuad.h
   SMESHGUI_IdPreview.h
   SMESHGUI_PreVisualObj.h
+  SMESHGUI_MG_ADAPTDRIVER.h
+  SMESHGUI_MgAdaptDlg.h
 )
 
 # header files / no moc processing
@@ -262,6 +264,8 @@ SET(_other_SOURCES
   SMESHGUI_SplitBiQuad.cxx
   SMESHGUI_PreVisualObj.cxx
   SMESHGUI_IdPreview.cxx
+  SMESHGUI_MG_ADAPTDRIVER.cxx
+  SMESHGUI_MgAdaptDlg.cxx
 )
 
 # sources / to compile
@@ -275,7 +279,7 @@ SET(_ts_RESOURCES
   SMESH_msg_en.ts
   SMESH_msg_fr.ts
   SMESH_msg_ja.ts
-) 
+)
 
 # --- rules ---
 

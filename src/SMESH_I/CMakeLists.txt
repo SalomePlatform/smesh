@@ -113,6 +113,7 @@ SET(SMESHEngine_HEADERS
   SMESH_MeshPartDS.hxx
   SMESH.hxx
   SMESH_Component_Generator.hxx
+  MG_ADAPT_i.hxx
 )
 
 # --- sources ---
@@ -141,6 +142,7 @@ SET(SMESHEngine_SOURCES
   SMESH_Measurements_i.cxx
   SMESH_PreMeshInfo.cxx
   SMESH_Component_Generator.cxx
+  MG_ADAPT_i.cxx
 )
 
 # --- rules ---
