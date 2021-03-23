@@ -1,6 +1,6 @@
 //  MEFISTO2: a library to compute 2D triangulation from segmented boundaries
 //
-// Copyright (C) 2006-2020  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2006-2021  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
