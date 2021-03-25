@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2020  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2021  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -997,6 +997,102 @@ namespace{
     return aHeight;
   }
 
+  //================================================================================
+  /*!
+   * \brief Standard quality of a tetrahedron but not normalized
+   */
+  //================================================================================
+
+  double tetQualityByHomardMethod( const gp_XYZ & p1,
+                                   const gp_XYZ & p2,
+                                   const gp_XYZ & p3,
+                                   const gp_XYZ & p4 )
+  {
+    gp_XYZ edgeVec[6];
+    edgeVec[0] = ( p1 - p2 );
+    edgeVec[1] = ( p2 - p3 );
+    edgeVec[2] = ( p3 - p1 );
+    edgeVec[3] = ( p4 - p1 );
+    edgeVec[4] = ( p4 - p2 );
+    edgeVec[5] = ( p4 - p3 );
+
+    double maxEdgeLen2            = edgeVec[0].SquareModulus();
+    maxEdgeLen2 = Max( maxEdgeLen2, edgeVec[1].SquareModulus() );
+    maxEdgeLen2 = Max( maxEdgeLen2, edgeVec[2].SquareModulus() );
+    maxEdgeLen2 = Max( maxEdgeLen2, edgeVec[3].SquareModulus() );
+    maxEdgeLen2 = Max( maxEdgeLen2, edgeVec[4].SquareModulus() );
+    maxEdgeLen2 = Max( maxEdgeLen2, edgeVec[5].SquareModulus() );
+    double maxEdgeLen = Sqrt( maxEdgeLen2 );
+
+    gp_XYZ cross01 = edgeVec[0] ^ edgeVec[1];
+    double sumArea = ( cross01                 ).Modulus(); // actually double area
+    sumArea       += ( edgeVec[0] ^ edgeVec[3] ).Modulus();
+    sumArea       += ( edgeVec[1] ^ edgeVec[4] ).Modulus();
+    sumArea       += ( edgeVec[2] ^ edgeVec[5] ).Modulus();
+
+    double sixVolume = Abs( cross01 * edgeVec[4] ); // 6 * volume
+    double quality   = maxEdgeLen * sumArea / sixVolume; // not normalized!!!
+    return quality;
+  }
+
+  //================================================================================
+  /*!
+   * \brief HOMARD method of hexahedron quality
+   * 1. Decompose the hexa into 24 tetra: each face is splitted into 4 triangles by
+   *    adding the diagonals and every triangle is connected to the center of the hexa.
+   * 2. Compute the quality of every tetra with the same formula as for the standard quality,
+   *    except that the factor for the normalization is not the same because the final goal
+   *    is to have a quality equal to 1 for a perfect cube. So the formula is:
+   *    qual = max(lengthes of 6 edges) * (sum of surfaces of 4 faces) / (7.6569*6*volume)
+   * 3. The quality of the hexa is the highest value of the qualities of the 24 tetra
+   */
+  //================================================================================
+
+  double hexQualityByHomardMethod( const TSequenceOfXYZ& P )
+  {
+    gp_XYZ quadCenter[6];
+    quadCenter[0] = ( P(1) + P(2) + P(3) + P(4) ) / 4.;
+    quadCenter[1] = ( P(5) + P(6) + P(7) + P(8) ) / 4.;
+    quadCenter[2] = ( P(1) + P(2) + P(6) + P(5) ) / 4.;
+    quadCenter[3] = ( P(2) + P(3) + P(7) + P(6) ) / 4.;
+    quadCenter[4] = ( P(3) + P(4) + P(8) + P(7) ) / 4.;
+    quadCenter[5] = ( P(1) + P(4) + P(8) + P(5) ) / 4.;
+
+    gp_XYZ hexCenter = ( P(1) + P(2) + P(3) + P(4) + P(5) + P(6) + P(7) + P(8) ) / 8.;
+
+    // quad 1 ( 1 2 3 4 )
+    double quality =        tetQualityByHomardMethod( P(1), P(2), quadCenter[0], hexCenter );
+    quality = Max( quality, tetQualityByHomardMethod( P(2), P(3), quadCenter[0], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(3), P(4), quadCenter[0], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(4), P(1), quadCenter[0], hexCenter ));
+    // quad 2 ( 5 6 7 8 )
+    quality = Max( quality, tetQualityByHomardMethod( P(5), P(6), quadCenter[1], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(6), P(7), quadCenter[1], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(7), P(8), quadCenter[1], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(8), P(5), quadCenter[1], hexCenter ));
+    // quad 3 ( 1 2 6 5 )
+    quality = Max( quality, tetQualityByHomardMethod( P(1), P(2), quadCenter[2], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(2), P(6), quadCenter[2], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(6), P(5), quadCenter[2], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(5), P(1), quadCenter[2], hexCenter ));
+    // quad 4 ( 2 3 7 6 )
+    quality = Max( quality, tetQualityByHomardMethod( P(2), P(3), quadCenter[3], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(3), P(7), quadCenter[3], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(7), P(6), quadCenter[3], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(6), P(2), quadCenter[3], hexCenter ));
+    // quad 5 ( 3 4 8 7 )
+    quality = Max( quality, tetQualityByHomardMethod( P(3), P(4), quadCenter[4], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(4), P(8), quadCenter[4], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(8), P(7), quadCenter[4], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(7), P(3), quadCenter[4], hexCenter ));
+    // quad 6 ( 1 4 8 5 )
+    quality = Max( quality, tetQualityByHomardMethod( P(1), P(4), quadCenter[5], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(4), P(8), quadCenter[5], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(8), P(5), quadCenter[5], hexCenter ));
+    quality = Max( quality, tetQualityByHomardMethod( P(5), P(1), quadCenter[5], hexCenter ));
+
+    return quality / 7.65685424949;
+  }
 }
 
 double AspectRatio3D::GetValue( long theId )
@@ -1126,6 +1222,10 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     break;
   }
   case 8:{
+
+    return hexQualityByHomardMethod( P ); // bos #23982
+
+
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 3 )};
       aQuality = GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4]));
