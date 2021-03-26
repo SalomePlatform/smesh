@@ -51,7 +51,7 @@ ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 # CGNS
 ##
 IF(SALOME_SMESH_USE_CGNS)
-  SET(SUBDIRS_CGNS 
+  SET(SUBDIRS_CGNS
     DriverCGNS
   )
 ENDIF(SALOME_SMESH_USE_CGNS)
@@ -60,9 +60,9 @@ ENDIF(SALOME_SMESH_USE_CGNS)
 # GUI
 ##
 IF(SALOME_BUILD_GUI)
-  SET(SUBDIRS_GUI OBJECT 
-                  SMESHFiltersSelection 
-                  SMESHGUI 
+  SET(SUBDIRS_GUI OBJECT
+                  SMESHFiltersSelection
+                  SMESHGUI
                   PluginUtils
 	          SMESH_SWIG_WITHIHM
 	          StdMeshersGUI
