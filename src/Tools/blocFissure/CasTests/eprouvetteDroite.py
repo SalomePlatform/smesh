@@ -17,13 +17,12 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""problème de fissure plane coupant 3 faces (éprouvette), débouches normaux, objet plan"""
 
 import os
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
 
-import os
-import math
 import GEOM
 import SALOMEDS
 import SMESH
@@ -42,17 +41,18 @@ from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 O, OX, OY, OZ = triedreBase()
 
 class eprouvetteDroite(fissureGenerique):
-  """
-  problème de fissure plane coupant 3 faces (éprouvette), débouches normaux, objet plan
-  """
+  """problème de fissure plane coupant 3 faces (éprouvette), débouches normaux, objet plan"""
 
   nomProbleme = "eprouvetteDroite"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests/eprouvetteDroite.med"))
+    ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "eprouvetteDroite.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -72,28 +72,29 @@ class eprouvetteDroite(fissureGenerique):
                                    lenSegPipe  = 6)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     logging.info("genereShapeFissure %s", self.nomCas)
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_1.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteDroiteFiss_1.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [8])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,10)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,10, mailleur)
 
     centre = None
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep           = '.',
+    self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
-                                      nomFicFissure    = 'fissure_' + self.nomCas,
+                                      nomFicFissure    = self.nomCas + "_fissure",
                                       nbsegRad         = 5,
                                       nbsegCercle      = 8,
                                       areteFaceFissure = 15)
@@ -104,22 +105,26 @@ class eprouvetteDroite(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
-    maillageFissure = construitFissureGenerale(maillagesSains,
-                                               shapesFissure, shapeFissureParams,
-                                               maillageFissureParams, elementsDefaut, step)
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
+
+    mailleur = self.mailleur2d3d()
+    maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
+                                               maillageFissureParams, elementsDefaut, \
+                                               step, mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 368,
-                                          Entity_Quad_Triangle   = 798,
-                                          Entity_Quad_Edge       = 491,
-                                          Entity_Quad_Penta      = 88,
-                                          Entity_Quad_Hexa       = 9692,
-                                          Entity_Node            = 52652,
-                                          Entity_Quad_Tetra      = 5093,
-                                          Entity_Quad_Quadrangle = 3750)
-
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 3768, \
+                                          Entity_Quad_Hexa = 9724, \
+                                          Entity_Node = 52337, \
+                                          Entity_Quad_Edge = 457, \
+                                          Entity_Quad_Triangle = 570, \
+                                          Entity_Quad_Tetra = 4919, \
+                                          Entity_Quad_Pyramid = 376, \
+                                          Entity_Quad_Penta = 96 \
+                                         )

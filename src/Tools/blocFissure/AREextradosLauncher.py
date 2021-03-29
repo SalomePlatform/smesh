@@ -38,8 +38,8 @@ crack = 'fissureExtrados.brep'
 
 dicoParams = dict(nomCas            = 'fissTuyau',
                   maillageSain      = '/local00/home/I48174/Documents/soudure/essaiFissure/{0}'.format(mesh),
-                  brepFaceFissure   = '/local00/home/I48174/Documents/soudure/essaiFissure/{0}'.format(crack),
-                  edgeFissIds       = [4],
+                  CAOFaceFissure    = '/local00/home/I48174/Documents/soudure/essaiFissure/{0}'.format(crack),
+                  edgeFiss          = [4],
                   lgInfluence       = 12,
                   meshBrep          = (0.05, 2.0),
                   rayonPipe         = 1.0,

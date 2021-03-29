@@ -31,6 +31,9 @@ SET(plugin_SCRIPTS
   compoundFromList.py
   construitEdgesRadialesDebouchantes.py
   construitFissureGenerale.py
+  construitFissureGenerale_a.py
+  construitFissureGenerale_b.py
+  construitFissureGenerale_c.py
   construitMaillagePipe.py
   construitPartitionsPeauFissure.py
   creePointsPipePeau.py
@@ -72,6 +75,10 @@ SET(plugin_SCRIPTS
   insereFissureElliptique.py
   insereFissureGenerale.py
   insereFissureLongue.py
+  insereFissureLongue_a.py
+  insereFissureLongue_b.py
+  insereFissureLongue_c.py
+  insereFissureLongue_d.py
   listOfExtraFunctions.py
   mailleAretesEtJonction.py
   mailleFacesFissure.py

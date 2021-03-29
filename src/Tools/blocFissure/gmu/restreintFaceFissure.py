@@ -28,8 +28,8 @@ import traceback
 from .fissError import fissError
 
 def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
-  """
-  restriction de la face de fissure au domaine solide
+  """restriction de la face de fissure au domaine solide
+
   partition face fissure étendue par fillings
   """
   logging.info('start')
@@ -39,7 +39,7 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
   if pointInterne is not None:
     distfaces = [(geompy.MinDistance(face,pointInterne), i, face) for i, face in enumerate(facesPartShapeDefaut)]
     distfaces.sort()
-    logging.debug("selection de la face la plus proche du point interne, distance=%s",distfaces[0][0])
+    logging.debug("selection de la face la plus proche du point interne, distance={}".format(distfaces[0][0]))
     facesPortFissure = distfaces[0][2]
   else:
     try:
@@ -52,8 +52,8 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
       texte += "<li>le prémaillage de la face de fissure est trop grossier, les mailles à enlever dans le maillage sain "
       texte += "n'ont pas toutes été détectées.</li></ul>"
       raise fissError(traceback.extract_stack(),texte)
-    logging.debug("surfaces faces fissure étendue, min %s, max %s", minSurf, maxSurf)
+    logging.debug("surfaces faces fissure étendue, min {}, max {}".format(minSurf, maxSurf))
     facesPortFissure = facesPartShapeDefautSorted[-1]
-  
+
   geomPublish(initLog.debug, facesPortFissure, "facesPortFissure")
   return facesPortFissure

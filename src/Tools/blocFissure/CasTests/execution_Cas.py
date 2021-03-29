@@ -17,152 +17,332 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Lancement des cas-tests de blocFissure"""
 
-import sys, traceback
+import traceback
 import logging
 from blocFissure import gmu
 from blocFissure.gmu import initLog
-
-# -----------------------------------------------------------------------------------------------
-#initLog.setDebug()
-initLog.setVerbose()
-#initLog.setRelease()
-#initLog.setPerfTests()
-
-# ---tous les cas en sequence, ou les cas selectionnés ...
-runall = True
-if runall:
-  torun = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-else: #prob 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29
-  torun = [ 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# -----------------------------------------------------------------------------------------------
-
 from blocFissure.gmu import geomsmesh
 from blocFissure.gmu.casStandard import casStandard
 
-problemes = list()
+# -----------------------------------------------------------------------------------------------
+#initLog.setDebug()
+#initLog.setVerbose()
+#initLog.setRelease()
+#initLog.setPerfTests()
 
-cas=0
-from blocFissure.CasTests.cubeAngle import cubeAngle
-problemes.append(cubeAngle(cas))
+# ---tous les cas en séquence, ou les cas sélectionnés ...
+TORUNOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0] # OK
+#           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+#RUNALL = False
+RUNALL = True
+if RUNALL:
+  TORUN =   [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+#             0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+else:
+  TORUNPB = list()
+  for IAUX in TORUNOK:
+    TORUNPB.append((IAUX+1)%2)
+  print ("TORUN = {} # OK".format(TORUNOK))
+  print ("TORUN = {} # PB".format(TORUNPB))
+#                                                                                                    genereMateriel
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] # aucun
+  TORUN = [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # cubeAngle
+  TORUN = [ 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # cubeFin
+  TORUN = [ 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # decoupeCylindre
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # disque_perce + ellipse_disque
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # ellipse + fissureGauche2
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # ellipse_probleme + fissureGauche2
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # eprouvetteCourbe
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # eprouvetteDroite
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # fissureGauche + fissureGauche2
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0] # vis
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] # tube
+#           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+  TORUN = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0] # OK
+# -----------------------------------------------------------------------------------------------
 
-cas+=1
-from blocFissure.CasTests.cubeAngle2 import cubeAngle2
-problemes.append(cubeAngle2(cas))
+def caract_l_problemes ():
+  """Caractérisation des problèmes"""
+  d_aux = dict()
+  l_problemes = list()
 
-cas+=1
-from blocFissure.CasTests import cubeCoin
-problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, cas))
+  n_cas = 0
+  # genereMateriel : cubeAngle
+  from blocFissure.CasTests.cubeAngle import cubeAngle
+  l_problemes.append(cubeAngle(n_cas))
 
-cas+=1
-from blocFissure.CasTests import cubeMilieu
-problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, cas))
+  n_cas = 1
+  # genereMateriel : cubeAngle
+  from blocFissure.CasTests.cubeAngle2 import cubeAngle2
+  l_problemes.append(cubeAngle2(n_cas))
 
-cas+=1
-from blocFissure.CasTests import cubeTransverse
-problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, cas))
+  n_cas = 2
+  # genereMateriel : cubeFin
+  from blocFissure.CasTests import cubeCoin
+  l_problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, n_cas))
+  d_aux[n_cas] = "cubeCoin"
 
-cas+=1
-from blocFissure.CasTests.cylindre import cylindre
-problemes.append(cylindre(cas))
+  n_cas = 3
+  # genereMateriel : cubeFin
+  from blocFissure.CasTests import cubeMilieu
+  l_problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, n_cas))
+  d_aux[n_cas] = "cubeMilieu"
 
-cas+=1
-from blocFissure.CasTests.cylindre_2 import cylindre_2
-problemes.append(cylindre_2(cas))
+  n_cas = 4
+  # genereMateriel : cubeFin
+  from blocFissure.CasTests import cubeTransverse
+  l_problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, n_cas))
+  d_aux[n_cas] = "cubeTransverse"
 
-cas+=1
-from blocFissure.CasTests import disquePerce
-problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, cas))
+  n_cas = 5
+  # genereMateriel : decoupeCylindre
+  from blocFissure.CasTests.cylindre import cylindre
+  l_problemes.append(cylindre(n_cas))
 
-cas+=1
-from blocFissure.CasTests.ellipse_1 import ellipse_1
-problemes.append(ellipse_1(cas))
+  n_cas = 6
+  # genereMateriel : decoupeCylindre
+  from blocFissure.CasTests.cylindre_2 import cylindre_2
+  l_problemes.append(cylindre_2(n_cas))
 
-cas+=1
-from blocFissure.CasTests.ellipse_2 import ellipse_2
-problemes.append(ellipse_2(cas))
+  n_cas = 7
+  # genereMateriel : disque_perce
+  # genereMateriel : ellipse_disque
+  from blocFissure.CasTests import disquePerce
+  l_problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, n_cas))
+  d_aux[n_cas] = "disquePerce"
 
-cas+=1
-from blocFissure.CasTests.eprouvetteCourbe import eprouvetteCourbe
-problemes.append(eprouvetteCourbe(cas))
+  n_cas = 8
+  # genereMateriel: ellipse
+  # genereMateriel : fissureGauche2
+  from blocFissure.CasTests.ellipse_1 import ellipse_1
+  l_problemes.append(ellipse_1(n_cas))
 
-cas+=1
-from blocFissure.CasTests.eprouvetteDroite import eprouvetteDroite
-problemes.append(eprouvetteDroite(cas))
+  n_cas = 9
+  # genereMateriel: ellipse_probleme
+  # genereMateriel : fissureGauche2
+  from blocFissure.CasTests.ellipse_2 import ellipse_2
+  l_problemes.append(ellipse_2(n_cas))
 
-cas+=1
-from blocFissure.CasTests.eprouvetteDroite_2 import eprouvetteDroite_2
-problemes.append(eprouvetteDroite_2(cas))
+  n_cas = 10
+  # genereMateriel : eprouvetteCourbe
+  from blocFissure.CasTests.eprouvetteCourbe import eprouvetteCourbe
+  l_problemes.append(eprouvetteCourbe(n_cas))
 
-cas+=1
-from blocFissure.CasTests.faceGauche import faceGauche
-problemes.append(faceGauche(cas))
+  n_cas = 11
+  # genereMateriel : eprouvetteDroite
+  from blocFissure.CasTests.eprouvetteDroite import eprouvetteDroite
+  l_problemes.append(eprouvetteDroite(n_cas))
 
-cas+=1
-from blocFissure.CasTests.faceGauche_2 import faceGauche_2
-problemes.append(faceGauche_2(cas))
+  n_cas = 12
+  # genereMateriel : eprouvetteDroite
+  from blocFissure.CasTests.eprouvetteDroite_2 import eprouvetteDroite_2
+  l_problemes.append(eprouvetteDroite_2(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissure_Coude import fissure_Coude
-problemes.append(fissure_Coude(cas))
+  n_cas = 13
+  # genereMateriel : fissureGauche
+  # genereMateriel : fissureGauche2
+  from blocFissure.CasTests.faceGauche import faceGauche
+  l_problemes.append(faceGauche(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
-problemes.append(fissure_Coude_4(cas))
+  n_cas = 14
+  # genereMateriel : aucun
+  from blocFissure.CasTests.faceGauche_2 import faceGauche_2
+  l_problemes.append(faceGauche_2(n_cas))
+  #"boiteDefaut" has not been computed:
+  #-  "algo3d_boiteDefaut" failed. Error: Algorithm failed. Presumably, the surface mesh is not compatible with the domain being processed (warning).
+  #An edge is unique (i.e., bounds a hole in the surface).
+  #The surface mesh includes at least one hole. The domain is not well defined.
+  #See /tmp/GHS3D_18605_10269264.log for more information
+  #Traceback (most recent call last):
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 222, in <module>
+      #ok_maillage = cas.executeProbleme()
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 122, in executeProbleme
+      #self.maillageFissureParams, elementsDefaut, step)
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/faceGauche_2.py", line 108, in genereMaillageFissure
+      #maillageFissureParams, elementsDefaut, step)
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale.py", line 330, in construitFissureGenerale
+      #raise Exception(text)
+  #Exception: Erreur au calcul du maillage.
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_1 import fissureCoude_1
-problemes.append(fissureCoude_1(cas))
+  n_cas = 15
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_1 import fissureCoude_1
+  l_problemes.append(fissureCoude_1(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_2 import fissureCoude_2
-problemes.append(fissureCoude_2(cas))
+  n_cas = 16
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_2 import fissureCoude_2
+  l_problemes.append(fissureCoude_2(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_3 import fissureCoude_3
-problemes.append(fissureCoude_3(cas))
+  n_cas = 17
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_3 import fissureCoude_3
+  l_problemes.append(fissureCoude_3(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
-problemes.append(fissure_Coude_4(cas))
+  n_cas = 18
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_4 import fissureCoude_4
+  l_problemes.append(fissureCoude_4(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_4 import fissureCoude_4
-problemes.append(fissureCoude_4(cas))
+  n_cas = 19
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_5 import fissureCoude_5
+  l_problemes.append(fissureCoude_5(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_5 import fissureCoude_5
-problemes.append(fissureCoude_5(cas))
+  n_cas = 20
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_6 import fissureCoude_6
+  l_problemes.append(fissureCoude_6(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_6 import fissureCoude_6
-problemes.append(fissureCoude_6(cas))
+  n_cas = 21
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_7 import fissureCoude_7
+  l_problemes.append(fissureCoude_7(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_7 import fissureCoude_7
-problemes.append(fissureCoude_7(cas))
+  n_cas = 22
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_8 import fissureCoude_8
+  l_problemes.append(fissureCoude_8(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_8 import fissureCoude_8
-problemes.append(fissureCoude_8(cas))
+  n_cas = 23
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_9 import fissureCoude_9
+  l_problemes.append(fissureCoude_9(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_9 import fissureCoude_9
-problemes.append(fissureCoude_9(cas))
+  n_cas = 24
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissureCoude_10 import fissureCoude_10
+  l_problemes.append(fissureCoude_10(n_cas))
 
-cas+=1
-from blocFissure.CasTests.fissureCoude_10 import fissureCoude_10
-problemes.append(fissureCoude_10(cas))
+  n_cas = 25
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissure_Coude import fissure_Coude
+  l_problemes.append(fissure_Coude(n_cas))
+#"Mesh_366" has not been computed:
+#-  global 1D algorithm is missing
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 274, in calcul_cas
+    #ok_maillage = cas.executeProbleme()
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 137, in executeProbleme
+    #elementsDefaut, step, mailleur)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/fissure_Coude.py", line 513, in genereMaillageFissure
+    #step, mailleur)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/insereFissureLongue.py", line 435, in insereFissureLongue
+    #mailleur )
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/insereFissureLongue_c.py", line 82, in insereFissureLongue_c
+    #raise Exception(text)
 
-cas+=1
-from blocFissure.CasTests.vis_1 import vis_1
-problemes.append(vis_1(cas))
+  n_cas = 26
+  # genereMateriel : aucun
+  from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
+  l_problemes.append(fissure_Coude_4(n_cas))
+#"Mesh_375" has not been computed:
+#-  global 1D algorithm is missing
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 274, in calcul_cas
+    #ok_maillage = cas.executeProbleme()
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 137, in executeProbleme
+    #elementsDefaut, step, mailleur)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/fissure_Coude.py", line 513, in genereMaillageFissure
+    #step, mailleur)
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/insereFissureLongue.py", line 435, in insereFissureLongue
+    #mailleur )
+  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/insereFissureLongue_c.py", line 82, in insereFissureLongue_c
+    #raise Exception(text)
 
-for iaux, cas in enumerate(problemes):
-  if torun[iaux]:
-    logging.critical("=== Execution cas {}".format(iaux))
-    try:
-      cas.executeProbleme()
-    except:
-      traceback.print_exc()
-    print("---------------------------------------------------------------------")
+  n_cas = 27
+  # genereMateriel : vis
+  from blocFissure.CasTests.vis_1 import vis_1
+  l_problemes.append(vis_1(n_cas))
+  #"Mesh_22" has not been computed:
+  #-  "algo2d_faceFiss" failed on FACE #2. Error: Algorithm failed. NgException at Surface meshing: Problem in Surface mesh generation
+  #-  "algo1d_edgeFissPeau" failed on EDGE #9. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+  #Traceback (most recent call last):
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 233, in <module>
+      #ok_maillage = cas.executeProbleme()
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 122, in executeProbleme
+      #self.maillageFissureParams, elementsDefaut, step)
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/vis_1.py", line 116, in genereMaillageFissure
+      #maillageFissureParams, elementsDefaut, step)
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale.py", line 282, in construitFissureGenerale
+      #meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad)
+    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/mailleFacesFissure.py", line 69, in mailleFacesFissure
+      #raise Exception(text)
+  #Exception: Erreur au calcul du maillage.
+
+  n_cas = 28
+  # genereMateriel : tube
+  from blocFissure.CasTests.tube import tube
+  l_problemes.append(tube(n_cas))
+  #"Mesh_13" has not been computed:
+  #-  "algo2d_facePeau_0" failed on "FACE_12 to mesh". Error: Algorithm failed. NgException at Surface meshing: Problem in Surface mesh generation
+  #-  "algo1d_cercle1_0" failed on EDGE #20. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+  #-  "algo1d_cercle1_0" failed on EDGE #17. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+  #-  "algo1d_cercle1_0" failed on EDGE #15. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+  #-  "algo1d_cercle1_0" failed on EDGE #12. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
+
+  return l_problemes, d_aux
+#=============================================================
+def calcul_cas (n_cas, cas, d_aux, ligne):
+  """Calcul d'un cas"""
+  texte = ""
+  if n_cas in d_aux:
+    nom = d_aux[n_cas]
+  else:
+    nom = cas.nomProbleme
+  texte_a = "\n=== Exécution du cas n° {}, '{}'".format(n_cas,nom)
+  logging.critical(ligne+texte_a)
+  try:
+    ok_maillage = cas.executeProbleme()
+  except:
+    traceback.print_exc()
+    texte = "Problème avec le cas n° {}, '{}'\n".format(n_cas,nom)
+    ok_maillage = False
+  print(ligne)
+  return ok_maillage, texte
+#=============================================================
+def calcul_tout (l_problemes, d_aux):
+  """Calcul de tous les cas"""
+
+  ligne = "---------------------------------------------------------------------"
+  texte = ""
+  nb_cas_ok = 0
+  nb_cas_nook = 0
+  for n_cas, cas in enumerate(l_problemes):
+    #print ("Cas n° {}, '{}'".format(n_cas,cas.nomProbleme))
+    if TORUN[n_cas]:
+      ok_maillage, texte_a = calcul_cas (n_cas, cas, d_aux, ligne)
+      texte += texte_a
+      if ok_maillage:
+        nb_cas_ok += 1
+      else:
+        nb_cas_nook += 1
+      print(ligne)
+
+  nb_cas = nb_cas_nook + nb_cas_ok
+  if ( nb_cas > 1):
+    if nb_cas_nook:
+      texte += ". Nombre de cas_tests OK   : {}\n".format(nb_cas_ok)
+      texte += ". Nombre de cas_tests NOOK : {}\n".format(nb_cas_nook)
+    else:
+      texte += "Les {} tests se sont bien passés.\n".format(nb_cas)
+  print (texte+ligne)
+
+  return
+#=============================================================
+#=============================================================
+
+while True:
+
+  L_PROBLEMES, D_AUX = caract_l_problemes()
+
+  if ( len(L_PROBLEMES) != len(TORUN) ):
+    TEXTE  = "\nNombre de problèmes définis  : {}\n".format(len(L_PROBLEMES))
+    TEXTE += "Longueur de la liste 'TORUN' : {}\n".format(len(TORUN))
+    TEXTE += "\t==> Incohérence de programmation à corriger dans {}".format(__name__)
+    print (TEXTE)
+    break
+
+  calcul_tout (L_PROBLEMES, D_AUX)
+
+  break

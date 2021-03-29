@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2021  EDF R&D
+# Copyright (C) 2014-2020  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,57 +17,60 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Insertion de fissure longue - maillage face de fissure"""
 
 import logging
-
-from .geomsmesh import geompy
+import salome
 from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
 
 from .putName import putName
 
-def mailleFacesFissure(faceFissureExterne, \
-                       edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
-                       meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad, \
-                       mailleur="MeshGems"):
-  """maillage faces de fissure"""
+import math
+
+def insereFissureLongue_c (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
+                           profondeur, rayonPipe, \
+                           mailleur="MeshGems"):
+  """maillage face de fissure"""
   logging.info('start')
 
-  meshFaceFiss = smesh.Mesh(faceFissureExterne)
+  meshFaceFiss = smesh.Mesh(faceFiss)
+  mesh_size = (profondeur - rayonPipe)/math.sqrt(3.0) # pour avoir deux couches de triangles equilateraux partout sur la fissure
   logging.info("Maillage avec %s", mailleur)
   if ( mailleur == "MeshGems"):
     algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.MG_CADSurf)
     hypo2d = algo2d.Parameters()
-    hypo2d.SetPhySize( areteFaceFissure )
-    hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
-    hypo2d.SetMaxSize( areteFaceFissure*3. )
-    hypo2d.SetChordalError( areteFaceFissure*0.25 )
+    hypo2d.SetPhySize( mesh_size )
+    hypo2d.SetMinSize( mesh_size/10. )
+    hypo2d.SetMaxSize( mesh_size*3. )
+    hypo2d.SetChordalError( mesh_size*0.25 )
     hypo2d.SetVerbosity( 0 )
   else:
-    algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_1D2D)
+    algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.NETGEN_2D)
     hypo2d = algo2d.Parameters()
-    hypo2d.SetMaxSize( areteFaceFissure )
-    hypo2d.SetSecondOrder( 0 )
+    hypo2d.SetMaxSize( mesh_size )
     hypo2d.SetOptimize( 1 )
     hypo2d.SetFineness( 2 )
-    hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
+    hypo2d.SetMinSize( 2 )
     hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "faceFiss")
   putName(algo2d, "algo2d_faceFiss")
   putName(hypo2d, "hypo2d_faceFiss")
-
-  texte = "Récupération des arêtes de '{}'".format(edgesPipeFissureExterneC.GetName())
-  logging.info(texte)
-  algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
-  hypo1d = algo1d.SourceEdges([ meshPipeGroups['edgeFaceFissGroup'] ],0,0)
+  #
+  algo1d = meshFaceFiss.UseExisting1DElements(geom=edgePeauFiss)
+  hypo1d = algo1d.SourceEdges([ groupEdgesPeauFiss ],0,0)
+  putName(algo1d.GetSubMesh(), "edgeFissPeau")
+  putName(algo1d, "algo1d_edgeFissPeau")
+  putName(hypo1d, "hypo1d_edgeFissPeau")
+  #
+  algo1d = meshFaceFiss.UseExisting1DElements(geom=groupEdgesFaceFissPipe)
+  hypo1d = algo1d.SourceEdges([ group_generFiss ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau")
   putName(algo1d, "algo1d_edgeFissPeau")
   putName(hypo1d, "hypo1d_edgeFissPeau")
 
-  grpFaceFissureExterne = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
-  grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
-  grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
+  _ = meshFaceFiss.GroupOnGeom(faceFiss, "fisOutPi", SMESH.FACE)
 
   is_done = meshFaceFiss.Compute()
   text = "meshFaceFiss.Compute"
@@ -78,4 +81,4 @@ def mailleFacesFissure(faceFissureExterne, \
     logging.info(text)
     raise Exception(text)
 
-  return (meshFaceFiss, grpFaceFissureExterne, grpEdgesPeauFissureExterne, grpEdgesPipeFissureExterne)
+  return meshFaceFiss

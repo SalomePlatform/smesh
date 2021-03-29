@@ -18,60 +18,57 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""problème de fissure non plane, débouchante non normale"""
+
 import os
+import logging
+
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
+from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 
-import math
 import GEOM
 import SALOMEDS
 import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
-import logging
 
 from .ellipse_1 import ellipse_1
 
-from blocFissure.gmu.triedreBase import triedreBase
-from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
-
-O, OX, OY, OZ = triedreBase()
-
 class ellipse_2(ellipse_1):
-  """
-  problème de fissure non plane, débouchante non normale
-  """
+  """problème de fissure non plane, débouchante non normale"""
 
   nomProbleme = "ellipse2"
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
-    logging.info("genereShapeFissure %s", self.nomCas)
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
+    """Importe la géométrie de la fissure"""
+    texte = "genereShapeFissure pour '{}'".format(self.nomCas)
+    logging.info(texte)
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/ellipse1_pb.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "ellipse1_pb.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25, mailleur)
 
     centre = None
+
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 159,
-                                          Entity_Quad_Triangle   = 438,
-                                          Entity_Quad_Edge       = 249,
-                                          Entity_Quad_Penta      = 80,
-                                          Entity_Quad_Hexa       = 3635,
-                                          Entity_Node            = 20519,
-                                          Entity_Quad_Tetra      = 1973,
-                                          Entity_Quad_Quadrangle = 1658)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 1748, \
+                                          Entity_Quad_Hexa = 3795, \
+                                          Entity_Node = 22219, \
+                                          Entity_Quad_Edge = 258, \
+                                          Entity_Quad_Triangle = 434, \
+                                          Entity_Quad_Tetra = 2574, \
+                                          Entity_Quad_Pyramid = 199, \
+                                          Entity_Quad_Penta = 120 \
+                                         )

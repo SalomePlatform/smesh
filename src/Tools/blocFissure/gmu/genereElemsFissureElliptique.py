@@ -32,12 +32,13 @@ from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 # -----------------------------------------------------------------------------
 # --- création élements géométriques fissure elliptique
 
-def genereElemsFissureElliptique(shapeFissureParams):
+def genereElemsFissureElliptique(shapeFissureParams, \
+                                 mailleur="MeshGems"):
   """
   TODO: a completer
   """
   logging.info('start')
-  
+
   centreDefaut  = shapeFissureParams['centreDefaut']
   vecteurDefaut = shapeFissureParams['vecteurDefaut']
   demiGrandAxe  = shapeFissureParams['demiGrandAxe']
@@ -49,7 +50,7 @@ def genereElemsFissureElliptique(shapeFissureParams):
 
   allonge = demiGrandAxe/demiPetitAxe
   rayonTore = demiPetitAxe/5.0
-  generatrice, FaceGenFiss, Pipe_1, FaceFissure, Plane_1, Pipe1Part = toreFissure(demiPetitAxe, allonge, rayonTore)
+  generatrice, _, Pipe_1, FaceFissure, Plane_1, Pipe1Part = toreFissure(demiPetitAxe, allonge, rayonTore)
   ellipsoide = ellipsoideDefaut(demiPetitAxe, allonge, rayonTore)
 
   # --- positionnement sur le bloc defaut de generatrice, tore et plan fissure
@@ -70,6 +71,7 @@ def genereElemsFissureElliptique(shapeFissureParams):
 
   shapeDefaut = facefis1
   xyz_defaut = geompy.PointCoordinates(centreDefaut)
-  coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefis1, demiPetitAxe/10.0, demiPetitAxe/5.0)
+  coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefis1, demiPetitAxe/10.0, demiPetitAxe/5.0, \
+                                                   mailleur)
 
   return shapeDefaut, xyz_defaut, tailleDefaut, coordsNoeudsFissure, pipe0, gener1, pipe1, facefis1, plane1, ellipsoide1

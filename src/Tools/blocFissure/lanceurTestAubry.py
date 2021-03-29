@@ -34,8 +34,8 @@ crack = 'hue.brep'
 
 dicoParams = dict(nomCas            = 'testAubry',
                   maillageSain      = '/local00/home/I48174/Bureau/{0}'.format(mesh),
-                  brepFaceFissure   = '/local00/home/I48174/Bureau/{0}'.format(crack),
-                  edgeFissIds       = [8],
+                  CAOFaceFissure    = '/local00/home/I48174/Bureau/{0}'.format(crack),
+                  edgeFiss          = [8],
                   lgInfluence       = 0.01,
                   meshBrep          = (0.0002,0.003),
                   rayonPipe         = 0.005,

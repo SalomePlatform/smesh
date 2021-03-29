@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import logging
+
 import sys
 import salome
 
@@ -28,6 +30,8 @@ notebook = salome_notebook.notebook
 
 import os
 from blocFissure import gmu
+
+logging.info('start')
 
 ###
 ### GEOM component
@@ -115,7 +119,7 @@ Revolution_2 = geompy.MakeRevolution2Ways(generatrice, OY, 65*math.pi/180.0)
 Fissure = geompy.MakeCommonList([Extrusion_1, Revolution_2], True)
 fondFiss = geompy.CreateGroup(Fissure, geompy.ShapeType["EDGE"])
 geompy.UnionIDs(fondFiss, [9, 7, 4])
-geompy.ExportBREP(Fissure, os.path.join(gmu.pathBloc, "materielCasTests/visFiss.brep"))
+geompy.ExportBREP(Fissure, os.path.join(gmu.pathBloc, "materielCasTests", "visFiss.brep"))
 
 geompy.addToStudy( O, 'O' )
 geompy.addToStudy( OX, 'OX' )
@@ -181,10 +185,13 @@ geompy.addToStudyInFather( Fissure, fondFiss, 'fondFiss' )
 ### SMESH component
 ###
 
+logging.info("Maillage de {}".format(coupe_vis.GetName()))
+
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()
+
 coupe_vis_1 = smesh.Mesh(coupe_vis)
 Regular_1D = coupe_vis_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(10)
@@ -193,8 +200,7 @@ Regular_1D_1 = coupe_vis_1.Segment(geom=tige)
 Nb_Segments_2 = Regular_1D_1.NumberOfSegments(30)
 Regular_1D_2 = coupe_vis_1.Segment(geom=section)
 Nb_Segments_3 = Regular_1D_2.NumberOfSegments(10,1,[ 7, 11, 16, 23 ])
-isDone = coupe_vis_1.Compute()
-isDone = coupe_vis_1.SplitQuad( [ 691 ], 1 )
+
 tige_1 = coupe_vis_1.GroupOnGeom(tige,'tige',SMESH.EDGE)
 section_1 = coupe_vis_1.GroupOnGeom(section,'section',SMESH.EDGE)
 tige_haute_1 = coupe_vis_1.GroupOnGeom(tige_haute,'tige_haute',SMESH.EDGE)
@@ -204,14 +210,44 @@ section_tete_1 = coupe_vis_1.GroupOnGeom(section_tete,'section_tete',SMESH.EDGE)
 conge_1 = coupe_vis_1.GroupOnGeom(conge,'conge',SMESH.EDGE)
 appui_1 = coupe_vis_1.GroupOnGeom(appui,'appui',SMESH.EDGE)
 p_imp_1 = coupe_vis_1.GroupOnGeom(p_imp,'p_imp',SMESH.EDGE)
+
+is_done = coupe_vis_1.Compute()
+text = "coupe_vis_1.Compute"
+if is_done:
+  logging.debug(text+" : OK")
+else:
+  text = "Erreur au calcul du maillage.\n" + text
+  logging.info(text)
+  raise Exception(text)
+
+# Découpage en 2 triangles du quadrangle dans l'angle
+cg_x=0.972772
+cg_y=104.835
+cg_z=0.
+l_ids = coupe_vis_1.FindElementsByPoint( cg_x,cg_y,cg_z, SMESH.FACE )
+if ( len(l_ids) != 1 ):
+  text = "Maillage {}.\nImpossible de trouver l'élément proche de ({},{},{}).".format(coupe_vis.GetName(),cg_x,cg_y,cg_z)
+  raise Exception(text)
+isDone = coupe_vis_1.SplitQuad( l_ids, 1 )
+text = "SplitQuad de l'élément n° {} du maillage de {}".format(l_ids[0],coupe_vis.GetName())
+if isDone:
+  logging.debug(text+" : OK")
+else:
+  text = "Erreur.\n" + text
+  logging.info(text)
+  raise Exception(text)
+
 visHex80 = smesh.CopyMesh( coupe_vis_1, 'visHex80', 1, 0)
-[ tige_2, section_2, tige_haute_2, rond_2, tete_2, section_tete_2, conge_2, appui_2, p_imp_2 ] = visHex80.GetGroups()
-[ tige_rotated, section_rotated, tige_haute_rotated, rond_rotated, tete_rotated, section_tete_rotated, conge_rotated, appui_rotated, p_imp_rotated, tige_top, section_top, tige_haute_top, rond_top, tete_top, section_tete_top, conge_top, appui_top, p_imp_top ] = visHex80.RotationSweepObjects( [ visHex80 ], [ visHex80 ], [ visHex80 ], SMESH.AxisStruct( 0, 0, 0, 0, 10, 0 ), 0.0785398, 40, 1e-05, 1 )
-[ tige_2, section_2, tige_haute_2, rond_2, tete_2, section_tete_2, conge_2, appui_2, p_imp_2, tige_rotated, tige_top, section_rotated, section_top, tige_haute_rotated, tige_haute_top, rond_rotated, rond_top, tete_rotated, tete_top, section_tete_rotated, section_tete_top, conge_rotated, conge_top, appui_rotated, appui_top, p_imp_rotated, p_imp_top ] = visHex80.GetGroups()
+
+_ = visHex80.RotationSweepObjects( [ visHex80 ], [ visHex80 ], [ visHex80 ], SMESH.AxisStruct( 0, 0, 0, 0, 10, 0 ), 0.0785398, 40, 1e-05, 1 )
+
+[ tige_2, section_2, tige_haute_2, rond_2, tete_2, section_tete_2, conge_2, appui_2, p_imp_2, \
+  tige_rotated, tige_top, section_rotated, section_top, tige_haute_rotated, tige_haute_top, \
+  rond_rotated, rond_top, tete_rotated, tete_top, section_tete_rotated, section_tete_top, \
+  conge_rotated, conge_top, appui_rotated, appui_top, p_imp_rotated, p_imp_top ] = visHex80.GetGroups()
 Sub_mesh_1 = Regular_1D_1.GetSubMesh()
 Sub_mesh_2 = Regular_1D_2.GetSubMesh()
-visHex80.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/visSain.med"))
- 
+visHex80.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "visSain.med"))
 
 ## Set names of Mesh objects
 smesh.SetName(tige_2, 'tige')

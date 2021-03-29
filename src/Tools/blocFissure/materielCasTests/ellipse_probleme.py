@@ -69,7 +69,7 @@ geompy.addToStudy( Box_1, 'Box_1' )
 geompy.addToStudy( Vertex_4, 'Vertex_4' )
 geompy.addToStudy( Cut_1, 'Cut_1' )
 geompy.addToStudy( ellipse1, 'ellipse1_pb' )
-geompy.ExportBREP(ellipse1, os.path.join(gmu.pathBloc, "materielCasTests/ellipse1_pb.brep"))
+geompy.ExportBREP(ellipse1, os.path.join(gmu.pathBloc, "materielCasTests", "ellipse1_pb.brep"))
 
 
 if salome.sg.hasDesktop():

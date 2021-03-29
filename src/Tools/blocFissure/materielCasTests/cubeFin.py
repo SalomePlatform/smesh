@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import logging
+
 import sys
 import salome
 
@@ -109,9 +111,9 @@ geompy.addToStudy( O_1, 'O' )
 geompy.addToStudy( OX_1, 'OX' )
 geompy.addToStudy( OY_1, 'OY' )
 geompy.addToStudy( OZ_1, 'OZ' )
-geompy.ExportBREP(cubeFin_Transverse, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Transverse.brep"))
-geompy.ExportBREP(cubeFin_Coin, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Coin.brep"))
-geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Milieu.brep"))
+geompy.ExportBREP(cubeFin_Transverse, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Transverse.brep"))
+geompy.ExportBREP(cubeFin_Coin, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Coin.brep"))
+geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Milieu.brep"))
 
 ###
 ### SMESH component
@@ -127,9 +129,17 @@ Nb_Segments_1 = Regular_1D.NumberOfSegments(20)
 Nb_Segments_1.SetDistrType( 0 )
 Quadrangle_2D = cubeFin_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = cubeFin_1.Hexahedron(algo=smeshBuilder.Hexa)
-isDone = cubeFin_1.Compute()
 DEPL_1 = cubeFin_1.GroupOnGeom(DEPL,'DEPL',SMESH.FACE)
 ENCASTR_1 = cubeFin_1.GroupOnGeom(ENCASTR,'ENCASTR',SMESH.FACE)
+
+is_done = cubeFin_1.Compute()
+text = "cubeFin_1.Compute"
+if is_done:
+  logging.info(text+" OK")
+else:
+  text = "Erreur au calcul du maillage.\n" + text
+  logging.info(text)
+  raise Exception(text)
 
 ## Set names of Mesh objects
 smesh.SetName(Regular_1D.GetAlgorithm(), 'Regular_1D')
@@ -140,7 +150,7 @@ smesh.SetName(ENCASTR_1, 'ENCASTR')
 smesh.SetName(cubeFin_1.GetMesh(), 'cubeFin')
 smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
 
-cubeFin_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/cubeFin.med"))
+cubeFin_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin.med"))
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()

@@ -18,34 +18,29 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import os
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
+"""problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle"""
 
-import math
-import GEOM
-import SALOMEDS
-import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
+import os
 import logging
 
+from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.fissureGenerique import fissureGenerique
-
-from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 
-O, OX, OY, OZ = triedreBase()
+import GEOM
+import SALOMEDS
+import SMESH
 
 class cylindre(fissureGenerique):
-  """
-  problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle
-  """
+  """problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle"""
 
   nomProbleme = "cylindre"
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
@@ -55,7 +50,7 @@ class cylindre(fissureGenerique):
     """
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests/CylindreSain.med"))
+    ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "CylindreSain.med"))
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa
@@ -72,28 +67,29 @@ class cylindre(fissureGenerique):
                                    rayonPipe   = 5)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     logging.info("genereShapeFissure %s", self.nomCas)
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre2.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "FissInCylindre2.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [6])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
-
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,15)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,15, mailleur)
 
     centre = None
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep           = '.',
+    self.maillageFissureParams = dict(nomRep           = os.curdir,
                                       nomFicSain       = self.nomCas,
-                                      nomFicFissure    = 'fissure_' + self.nomCas,
+                                      nomFicFissure    = self.nomCas + "_fissure",
                                       nbsegRad         = 5,
                                       nbsegCercle      = 8,
                                       areteFaceFissure = 20)
@@ -104,22 +100,26 @@ class cylindre(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
-    maillageFissure = construitFissureGenerale(maillagesSains,
-                                               shapesFissure, shapeFissureParams,
-                                               maillageFissureParams, elementsDefaut, step)
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
+
+    mailleur = self.mailleur2d3d()
+    maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
+                                               maillageFissureParams, elementsDefaut, \
+                                               step, mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 1270,
-                                          Entity_Quad_Triangle   = 1260,
-                                          Entity_Quad_Edge       = 758,
-                                          Entity_Quad_Penta      = 496,
-                                          Entity_Quad_Hexa       = 18814,
-                                          Entity_Node            = 113313,
-                                          Entity_Quad_Tetra      = 20469,
-                                          Entity_Quad_Quadrangle = 7280)
-
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 6920, \
+                                          Entity_Quad_Hexa = 18174, \
+                                          Entity_Node = 104349, \
+                                          Entity_Quad_Edge = 718, \
+                                          Entity_Quad_Triangle = 952, \
+                                          Entity_Quad_Tetra = 16691, \
+                                          Entity_Quad_Pyramid = 1110, \
+                                          Entity_Quad_Penta = 336 \
+                                         )

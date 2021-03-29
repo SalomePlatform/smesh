@@ -17,6 +17,9 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Fissure dans un coude"""
+
+import os
 
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
@@ -40,12 +43,19 @@ from blocFissure.gmu.insereFissureLongue import insereFissureLongue
 O, OX, OY, OZ = triedreBase()
 
 class fissure_Coude(fissureGenerique):
-  """
-  problème de fissure du Coude : version de base
+  """problème de fissure du Coude : version de base
+
   maillage hexa
   """
 
-  nomProbleme = "tuyau_Coude"
+  nomProbleme = "fissure_Coude"
+  geomParams = dict()
+  meshParams = dict()
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
+  circonferentielle = False
+  longitudinale = False
 
   # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
@@ -256,16 +266,16 @@ class fissure_Coude(fissureGenerique):
     smesh.SetName(algo1d_long_p2, "algo1d_long_p2")
     smesh.SetName(hypo1d_long_p2, "hypo1d_long_p2")
 
-    isDone = maillageSain.Compute()
+    _ = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
+    _ = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
+    _ = maillageSain.GroupOnGeom(EXTUBE,'EXTUBE',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(BORDTU,'BORDTU',SMESH.EDGE)
+    _ = maillageSain.GroupOnGeom(CLGV,'CLGV',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(PEAUINT,'PEAUINT',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
+    _ = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
 
-    mp1 = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
-    mp2 = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
-    ext = maillageSain.GroupOnGeom(EXTUBE,'EXTUBE',SMESH.FACE)
-    btu = maillageSain.GroupOnGeom(BORDTU,'BORDTU',SMESH.EDGE)
-    clg = maillageSain.GroupOnGeom(CLGV,'CLGV',SMESH.FACE)
-    pei = maillageSain.GroupOnGeom(PEAUINT,'PEAUINT',SMESH.FACE)
-    pex = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
-    cou = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
+    _ = maillageSain.Compute()
 
     return [maillageSain, True] # True : maillage hexa
 
@@ -292,14 +302,15 @@ class fissure_Coude(fissureGenerique):
                                    externe     = True)
 
   # ---------------------------------------------------------------------------
-  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
+                                mailleur="MeshGems"):
     logging.info("genereShapeFissure %s", self.nomCas)
     logging.info("shapeFissureParams %s", shapeFissureParams)
 
-    angleCoude = geomParams['angleCoude']
+    #angleCoude = geomParams['angleCoude']
     r_cintr    = geomParams['r_cintr']
     l_tube_p1  = geomParams['l_tube_p1']
-    l_tube_p2  = geomParams['l_tube_p2']
+    #l_tube_p2  = geomParams['l_tube_p2']
     epais      = geomParams['epais']
     de         = geomParams['de']
 
@@ -317,13 +328,8 @@ class fissure_Coude(fissureGenerique):
     if not lgInfluence:
       lgInfluence = profondeur
 
-    if longueur > 2*profondeur:
-      self.fissureLongue=True
-    else:
-      self.fissureLongue=False
+    self.fissureLongue = bool(longueur > 2*profondeur)
 
-    self.circonferentielle = False
-    self.longitudinale = False
     if self.fissureLongue and (abs(orientation) < 45) :
       self.longitudinale = True
     elif self.fissureLongue:
@@ -471,15 +477,16 @@ class fissure_Coude(fissureGenerique):
     else:
       pass
 
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, 5 ,10)
+    mailleur = self.mailleur2d3d()
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, 5 ,10, mailleur)
 
     return [facefiss, centre, lgInfluence, coordsNoeudsFissure, wiretube, facetubel, facetuber, planfiss, pipefiss]
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep        = '.',
+    self.maillageFissureParams = dict(nomRep        = os.curdir,
                                       nomFicSain    = self.nomCas,
-                                      nomFicFissure = 'fissure_' + self.nomCas,
+                                      nomFicFissure = self.nomCas + "_fissure",
                                       nbsegExt      = 5,
                                       nbsegGen      = 25,
                                       nbsegRad      = 5,
@@ -495,21 +502,26 @@ class fissure_Coude(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereMaillageFissure(self, geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
-                            maillageFissureParams, elementsDefaut, step):
-    maillageFissure = insereFissureLongue(geometriesSaines, maillagesSains,
-                                          shapesFissure, shapeFissureParams,
-                                          maillageFissureParams, elementsDefaut, step)
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
+
+    mailleur = self.mailleur2d3d()
+    maillageFissure = insereFissureLongue(geometriesSaines, \
+                                          shapesFissure, shapeFissureParams, \
+                                          maillageFissureParams, elementsDefaut, \
+                                          step, mailleur)
     return maillageFissure
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Node            = 77491,
-                                          Entity_Quad_Edge       = 1006,
-                                          Entity_Quad_Triangle   = 2412,
-                                          Entity_Quad_Quadrangle = 6710,
-                                          Entity_Quad_Tetra      = 20853,
-                                          Entity_Quad_Hexa       = 8656,
-                                          Entity_Quad_Penta      = 1176,
-                                          Entity_Quad_Pyramid    = 1232)
-
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 6710, \
+                                          Entity_Quad_Hexa = 8656, \
+                                          Entity_Node = 76807, \
+                                          Entity_Quad_Edge = 1006, \
+                                          Entity_Quad_Triangle = 2342, \
+                                          Entity_Quad_Tetra = 20392, \
+                                          Entity_Quad_Pyramid = 1232, \
+                                          Entity_Quad_Penta = 1176 \
+                                         )

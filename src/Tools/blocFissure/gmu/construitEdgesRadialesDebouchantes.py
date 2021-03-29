@@ -17,21 +17,20 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Construit les arêtes débouchantes"""
 
 import logging
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
+#from .geomsmesh import geomPublishInFather
 from . import initLog
 import GEOM
 from .sortEdges import sortEdges
 
 def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
                                        facesPipePeau, edgeRadFacePipePeau, nbsegCercle):
-  """
-  construction des listes d'edges radiales sur chaque extrémité débouchante
-  """
+  """construction des listes d'edges radiales sur chaque extrémité débouchante"""
   logging.info('start')
 
   # --- listes de nappes radiales en filling à chaque extrémité débouchante
@@ -95,7 +94,7 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
           vs = geompy.ExtractShapes(obj, geompy.ShapeType["VERTEX"], False)
           if len(vs) > 2:
             eds = geompy.ExtractShapes(obj, geompy.ShapeType["EDGE"], False)
-            [edsorted, minl,maxl] = sortEdges(eds)
+            [edsorted, _, maxl] = sortEdges(eds)
             edge = edsorted[-1]
           else:
             maxl = geompy.BasicProperties(edge)[0]
@@ -118,7 +117,7 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
               logging.debug("  edges issues de la partition: %s", ednouv)
               for ii, ed in enumerate(ednouv):
                 geomPublish(initLog.debug, ed, "ednouv%d"%ii)
-              [edsorted, minl,maxl] = sortEdges(ednouv)
+              [edsorted, _, maxl] = sortEdges(ednouv)
               logging.debug("  longueur edge trouvée: %s", maxl)
               edge = edsorted[-1]
             else:
@@ -134,7 +133,7 @@ def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
               logging.debug("nombre vertex candidats %s", len(vxnouv))
               if len(vxnouv) >= 2:
                 eds = [geompy.MakeEdge(vxnouv[j],vxnouv[(j+1)%len(vxnouv)]) for j in range(len(vxnouv))]
-                [edsorted2, minl,maxl] = sortEdges(eds)
+                [edsorted2, _, maxl] = sortEdges(eds)
                 edge = edsorted2[-1]
                 logging.debug("lg edge: %s", maxl)
               else:

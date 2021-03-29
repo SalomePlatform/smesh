@@ -15,10 +15,12 @@ The main command of « Bloc Fissure » is the casStandard function. It has a sin
 | **maillageSain**     | *[string]*                        |  Absolute address of the input structure 3D mesh      |
 |                      |                                   |  in MED format                                        |
 +----------------------+-----------------------------------+-------------------------------------------------------+
-| **BrepFaceFissure**  | *[string]*                        |  Absolute address of the input crack geometry         |
-|                      |                                   |  in BREP format                                       |
+| **CAOFaceFissure**   | *[string]*                        |  Absolute address of the input crack geometry         |
+|                      |                                   |  in XAO or BREP format                                |
 +----------------------+-----------------------------------+-------------------------------------------------------+
-| **edgeFissIds**      | *[list of integers]*              |  List of edges number which define the crack front    |
+| **edgeFiss**         | *[list of strings]*               |  List of edges group which define the crack front     |
++----------------------+-----------------------------------+-------------------------------------------------------+
+|                      | *[list of integers]*              |  List of edges number which define the crack front    |
 +----------------------+-----------------------------------+-------------------------------------------------------+
 | **meshBrep**         | *[list of 2 floats]*              |  List of two floats defining respectively minimum and |
 |                      |                                   |  maximum size of elements of the crack mesh           |
@@ -47,6 +49,7 @@ Geometrical parameters of the tore are illustrated :
 .. image:: images/parametres.png
    :width: 350
    :align: center
+   :alt: Geometrical parameters of the tore
 
 Different levels of verbose are available. Use one of this 4 optional functions to set verbose type:
 
@@ -68,8 +71,8 @@ Different levels of verbose are available. Use one of this 4 optional functions 
 
   dicoParams = dict(nomCas            = 'cubeFiss',
                     maillageSain      = "/home/A123456/BF/cube.med",
-                    brepFaceFissure   = "/home/A123456/BF/fiss.brep",
-                    edgeFissIds       = [4],
+                    CAOFaceFissure    = "/home/A123456/BF/fiss.xao",
+                    edgeFiss          = ["Fond"],
                     lgInfluence       = 20.,
                     meshBrep          = (5.,10.),
                     rayonPipe         = 5.,

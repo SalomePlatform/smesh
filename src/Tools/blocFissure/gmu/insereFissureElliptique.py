@@ -17,6 +17,9 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Insertion d'une fissure elliptique"""
+
+import os
 
 import logging
 import salome
@@ -40,12 +43,12 @@ from .meshBlocPart import meshBlocPart
 from .enleveDefaut import enleveDefaut
 from .regroupeSainEtDefaut import RegroupeSainEtDefaut
 from .putName import putName
- 
+
 # -----------------------------------------------------------------------------
 # --- procedure complete fissure elliptique
 
-def insereFissureElliptique(geometriesSaines, maillagesSains,
-                            shapesFissure, shapeFissureParams,
+def insereFissureElliptique(geometriesSaines, maillagesSains, \
+                            shapesFissure, shapeFissureParams, \
                             maillageFissureParams, elementsDefaut, step=-1):
   """
   TODO: a completer
@@ -81,8 +84,8 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
   nbsegFis          = maillageFissureParams['nbsegFis']      # 20
   lensegEllipsoide  = maillageFissureParams['lensegEllipso'] # 1.0
 
-  fichierMaillageSain = nomRep + '/' + nomFicSain + '.med'
-  fichierMaillageFissure = nomRep + '/' + nomFicFissure + '.med'
+  fichierMaillageSain = os.path.join(nomRep, '{}.med'.format(nomFicSain))
+  fichierMaillageFissure = os.path.join(nomRep, '{}.med'.format(nomFicFissure))
 
   facesDefaut              = elementsDefaut[0]
   centreDefaut             = elementsDefaut[1]
@@ -130,11 +133,10 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
   if step == 7:
     return None
 
-  [blocPartition, blocp, tore,
-  faceFissure, facesExternes, facesExtBloc, facesExtElli,
-  aretesInternes, ellipsoidep, sharedFaces, sharedEdges, edgesBords] = \
-    partitionBlocDefaut(extrusionDefaut, facesDefaut, gener1, pipe1,
-                        facefis1, ellipsoide1)
+  [ blocPartition, blocp, tore, \
+    faceFissure, facesExternes, facesExtBloc, facesExtElli,
+    aretesInternes, ellipsoidep, sharedFaces, sharedEdges, edgesBords] = \
+    partitionBlocDefaut(extrusionDefaut, facesDefaut, gener1, pipe1, facefis1, ellipsoide1)
   if not isHexa:
     edgesBords = None # maillage sain hexa ==> filling, et maillage edges Bords imposés du maillage sain
 
@@ -191,11 +193,11 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
     return None
 
   [bloc1, blocComplet] = \
-    meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circles, faces,
-                gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli,
-                aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords,
-                nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle,
-                nbsegFis, dmoyen, lensegEllipsoide)
+    meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circles, faces, \
+                 gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli, \
+                 aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords, \
+                 nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle,
+                 nbsegFis, dmoyen, lensegEllipsoide) \
 
   if step == 16:
     return None

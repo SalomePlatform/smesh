@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import logging
+
 import sys
 import salome
 
@@ -79,14 +81,14 @@ FissInCylindre = geompy.MakeFaceWires([Curve_2, Arc_1], 1)
 Divided_Cylinder_1 = geompy.MakeDividedCylinder(145, 800, GEOM.SQUARE)
 CylindreSain = geompy.MakeRotation(Divided_Cylinder_1, OZ, 45*math.pi/180.0)
 [Compound_1, vertical, radial, Compound_4] = geompy.Propagate(CylindreSain)
-geompy.ExportBREP(FissInCylindre, os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre.brep"))
+geompy.ExportBREP(FissInCylindre, os.path.join(gmu.pathBloc, "materielCasTests", "FissInCylindre.brep"))
 Vertex_12 = geompy.MakeVertex(0, -145, 500)
 Circle_2 = geompy.MakeCircle(Vertex_12, None, 145)
 Face_1 = geompy.MakeFaceWires([Circle_2], 1)
 Vertex_13 = geompy.MakeVertex(0, 0, 500)
 Disk_1 = geompy.MakeDiskPntVecR(Vertex_13, OZ_1, 170)
 FissInCylindre2 = geompy.MakeCommon(Face_1, Disk_1)
-geompy.ExportBREP(FissInCylindre2, os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre2.brep"))
+geompy.ExportBREP(FissInCylindre2, os.path.join(gmu.pathBloc, "materielCasTests", "FissInCylindre2.brep"))
 geompy.addToStudy( O, 'O' )
 geompy.addToStudy( OX, 'OX' )
 geompy.addToStudy( OY, 'OY' )
@@ -148,6 +150,7 @@ smeshObj_1 = smesh.CreateHypothesis('NumberOfSegments')
 smeshObj_1.SetNumberOfSegments( 5 )
 smeshObj_1.SetDistrType( 0 )
 CylindreSain_1 = smesh.Mesh(CylindreSain)
+smesh.SetName(CylindreSain_1, 'CylindreSain')
 Regular_1D = CylindreSain_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(15,[],[  ])
 Nb_Segments_1.SetDistrType( 0 )
@@ -159,9 +162,17 @@ Nb_Segments_2.SetDistrType( 0 )
 Regular_1D_2 = CylindreSain_1.Segment(geom=radial)
 Nb_Segments_3 = Regular_1D_2.NumberOfSegments(6,[],[  ])
 Nb_Segments_3.SetDistrType( 0 )
-isDone = CylindreSain_1.Compute()
-smesh.SetName(CylindreSain_1, 'CylindreSain')
-CylindreSain_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests//CylindreSain.med"))
+
+is_done = CylindreSain_1.Compute()
+text = "CylindreSain_1.Compute"
+if is_done:
+  logging.info(text+" OK")
+else:
+  text = "Erreur au calcul du maillage.\n" + text
+  logging.info(text)
+  raise Exception(text)
+
+CylindreSain_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "CylindreSain.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 

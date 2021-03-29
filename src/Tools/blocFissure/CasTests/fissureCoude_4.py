@@ -17,14 +17,21 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Fissure dans un coude - ASCOU09A"""
+
+import os
 
 from blocFissure.gmu.fissureCoude  import fissureCoude
 
 class fissureCoude_4(fissureCoude):
-  """
-  problème de fissure du Coude : ASCOU09A
-  adaptation maillage
-  """
+  """problème de fissure du Coude : ASCOU09A - adaptation maillage"""
+
+  nomProbleme = "fissureCoude_4"
+  geomParams = dict()
+  meshParams = dict()
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
+  referencesMaillageFissure = dict()
 
 # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
@@ -89,21 +96,22 @@ class fissureCoude_4(fissureCoude):
     nbSegCercle = nombre de secteurs
     areteFaceFissure = taille cible de l'arête des triangles en face de fissure.
     """
-    self.maillageFissureParams = dict(nomRep        = '.',
+    self.maillageFissureParams = dict(nomRep        = os.curdir,
                                       nomFicSain    = self.nomCas,
-                                      nomFicFissure = 'fissure_' + self.nomCas,
+                                      nomFicFissure = self.nomCas + "_fissure",
                                       nbsegRad      = 5,
                                       nbsegCercle   = 6,
                                       areteFaceFissure = 5)
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Node            = 133832,
-                                          Entity_Quad_Edge       = 1133,
-                                          Entity_Quad_Triangle   = 1498,
-                                          Entity_Quad_Quadrangle = 11892,
-                                          Entity_Quad_Tetra      = 18401,
-                                          Entity_Quad_Hexa       = 22412,
-                                          Entity_Quad_Penta      = 600,
-                                          Entity_Quad_Pyramid    = 816)
-
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Quadrangle = 11428, \
+                                          Entity_Quad_Hexa = 21716, \
+                                          Entity_Node = 124663, \
+                                          Entity_Quad_Edge = 1073, \
+                                          Entity_Quad_Triangle = 1330, \
+                                          Entity_Quad_Tetra = 14665, \
+                                          Entity_Quad_Pyramid = 642, \
+                                          Entity_Quad_Penta = 426 \
+                                         )

@@ -18,13 +18,15 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""disque percé"""
+
 import os
 from blocFissure import gmu
 
 dicoParams = dict(nomCas            = 'disque',
-                  maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/disque.med'),
-                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/ellipse_disque.brep"),
-                  edgeFissIds       = [3],
+                  maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "disque.med"),
+                  CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "ellipse_disque.brep"),
+                  edgeFiss          = [3],
                   lgInfluence       = 10,
                   meshBrep          = (0.5,2.5),
                   rayonPipe         = 1.0,
@@ -35,12 +37,13 @@ dicoParams = dict(nomCas            = 'disque',
 
   # ---------------------------------------------------------------------------
 
-referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 610,
-                                 Entity_Quad_Triangle   = 1284,
-                                 Entity_Quad_Edge       = 393,
-                                 Entity_Quad_Penta      = 592,
-                                 Entity_Quad_Hexa       = 6952,
-                                 Entity_Node            = 51119,
-                                 Entity_Quad_Tetra      = 11672,
-                                 Entity_Quad_Quadrangle = 3000)
-
+referencesMaillageFissure = dict ( \
+                                  Entity_Quad_Quadrangle = 2748, \
+                                  Entity_Quad_Hexa = 6232, \
+                                  Entity_Node = 43889, \
+                                  Entity_Quad_Edge = 376, \
+                                  Entity_Quad_Triangle = 1366, \
+                                  Entity_Quad_Tetra = 9112, \
+                                  Entity_Quad_Pyramid = 466, \
+                                  Entity_Quad_Penta = 448 \
+                                )

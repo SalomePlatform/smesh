@@ -25,10 +25,17 @@ from salome.smesh import smeshBuilder
 # -----------------------------------------------------------------------------
 # --- maillage face de fissure pour identification zone de defaut
 
-def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize):
-  """
-  -Permet de générer un maillage sur l'objet géométrique 'facefiss' via
-   l'algorithme NETGEN_1D2D :
+def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
+                               mailleur="MeshGems"):
+  """Maillage de l'objet géométrique 'facefiss'
+
+. Avec l'algorithme MG_CADSurf :
+      -SetMaxSize     = dimension max d'un élément (maxSize)
+      -SetSecondOrder = élément quadratique (Y=1, N=0)
+      -SetOptimize    = élément régulier (Y=1, N=0)
+      -SetFineness    = finesse du maillage
+
+. Avec l'algorithme NETGEN_1D2D :
       -SetMaxSize     = dimension max d'un élément (maxSize)
       -SetSecondOrder = élément quadratique (Y=1, N=0)
       -SetOptimize    = élément régulier (Y=1, N=0)
@@ -37,29 +44,52 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize):
        [0,           1,      2,        3,    4,         5     ]
       -SetMinSize     = dimension min d'un élément (minSize)
       -SetQuadAllowed = permission quadrangle dans maillage triangle
-  -On récupère les coordonnées de chaque noeud de la fissure qu'on stocke
+
+-On récupère les coordonnées de chaque noeud de la fissure qu'on stocke
    dans une liste sous la forme : [X0, Y0, Z0, ..., Xn, Yn, Zn]"""
-   
+
   logging.info('start')
 
   meshFissure = smesh.Mesh(facefiss)
-  algo2d = meshFissure.Triangle(algo=smeshBuilder.NETGEN_1D2D)
-  hypo2d = algo2d.Parameters()
-  hypo2d.SetMaxSize( maxSize )
-  hypo2d.SetSecondOrder( 0 )
-  hypo2d.SetOptimize( 1 )
-  hypo2d.SetFineness( 2 )
-  hypo2d.SetMinSize( minSize )
-  hypo2d.SetQuadAllowed( 0 )
-  isDone = meshFissure.Compute()
+  text = "Maillage de '{}' avec {}".format(facefiss.GetName(),mailleur)
+  logging.info(text)
+  if ( mailleur == "MeshGems"):
+    algo2d = meshFissure.Triangle(algo=smeshBuilder.MG_CADSurf)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetPhySize( maxSize )
+    hypo2d.SetMinSize( maxSize/4. )
+    hypo2d.SetMaxSize( maxSize*2. )
+    hypo2d.SetChordalError( maxSize*0.25 )
+    hypo2d.SetVerbosity( 0 )
+  else:
+    algo2d = meshFissure.Triangle(algo=smeshBuilder.NETGEN_1D2D)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetMaxSize( maxSize )
+    hypo2d.SetSecondOrder( 0 )
+    hypo2d.SetOptimize( 1 )
+    hypo2d.SetFineness( 2 )
+    hypo2d.SetMinSize( minSize )
+    hypo2d.SetQuadAllowed( 0 )
   smesh.SetName(algo2d, "algo2d_zoneFiss")
   smesh.SetName(hypo2d, "hypo1d_zoneFiss")
 
-  coordsNoeudsFissure = []
+  is_done = meshFissure.Compute()
+  text = "meshFissure.Compute"
+  if is_done:
+    logging.info(text+" OK")
+  else:
+    text = "Erreur au calcul du maillage.\n" + text
+    logging.info(text)
+    raise Exception(text)
+
+  coordsNoeudsFissure = list()
   nodeIds = meshFissure.GetNodesId()
-  for id in nodeIds:
-    coords = meshFissure.GetNodeXYZ(id)
+  for indice in nodeIds:
+    coords = meshFissure.GetNodeXYZ(indice)
     coordsNoeudsFissure.append(coords[0])
     coordsNoeudsFissure.append(coords[1])
     coordsNoeudsFissure.append(coords[2])
+
+  logging.info('end')
+
   return coordsNoeudsFissure

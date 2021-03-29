@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import logging
+
 import sys
 import salome
 
@@ -61,8 +63,8 @@ Plane_2 = geompy.MakePlane(Vertex_1, Line_1, 2000)
 geomObj_4 = geompy.MakeMarker(0, 0, 0, 1, 0, 0, 0, 1, 0)
 Sketch_2 = geompy.MakeSketcherOnPlane("Sketcher:F 0.000000 0.000000:T 120.000000 0.000000:T 0.000000 100.000000:T -120.000000 20.000000:WW", Plane_2 )
 SectionInclinee = geompy.MakeFaceWires([Sketch_2], 1)
-geompy.ExportBREP(sectionDroite, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFissPb1.brep"))
-geompy.ExportBREP(SectionInclinee, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss2.brep"))
+geompy.ExportBREP(sectionDroite, os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteDroiteFissPb1.brep"))
+geompy.ExportBREP(SectionInclinee, os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteDroiteFiss2.brep"))
 Vertex_2 = geompy.MakeVertex(110, -10, 200)
 Vertex_3 = geompy.MakeVertex(110, 80, 200)
 Vertex_4 = geompy.MakeVertex(-10, 80, 200)
@@ -79,8 +81,8 @@ Line_7 = geompy.MakeLineTwoPnt(Vertex_5, Vertex_6)
 Face_1_vertex_9 = geompy.GetSubShape(Face_1, [9])
 Line_8 = geompy.MakeLineTwoPnt(Vertex_6, Face_1_vertex_9)
 Face_2 = geompy.MakeFaceWires([Line_5, Line_6, Line_7, Line_8], 1)
-geompy.ExportBREP(Face_1, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_1.brep"))
-geompy.ExportBREP(Face_2, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_2.brep"))
+geompy.ExportBREP(Face_1, os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteDroiteFiss_1.brep"))
+geompy.ExportBREP(Face_2, os.path.join(gmu.pathBloc, "materielCasTests", "EprouvetteDroiteFiss_2.brep"))
 geompy.addToStudy( O, 'O' )
 geompy.addToStudy( OX, 'OX' )
 geompy.addToStudy( OY, 'OY' )
@@ -126,6 +128,7 @@ from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 eprouvetteDroite_1 = smesh.Mesh(eprouvetteDroite)
+smesh.SetName(eprouvetteDroite_1, 'eprouvetteDroite')
 Regular_1D = eprouvetteDroite_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(50,[],[  ])
 Nb_Segments_1.SetDistrType( 0 )
@@ -137,9 +140,17 @@ Nb_Segments_2.SetDistrType( 0 )
 Regular_1D_2 = eprouvetteDroite_1.Segment(geom=Compound_x)
 Nb_Segments_3 = Regular_1D_2.NumberOfSegments(10,[],[  ])
 Nb_Segments_3.SetDistrType( 0 )
-isDone = eprouvetteDroite_1.Compute()
-smesh.SetName(eprouvetteDroite_1, 'eprouvetteDroite')
-eprouvetteDroite_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/eprouvetteDroite.med"))
+
+is_done = eprouvetteDroite_1.Compute()
+text = "eprouvetteDroite_1.Compute"
+if is_done:
+  logging.info(text+" OK")
+else:
+  text = "Erreur au calcul du maillage.\n" + text
+  logging.info(text)
+  raise Exception(text)
+
+eprouvetteDroite_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "eprouvetteDroite.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 

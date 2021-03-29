@@ -25,7 +25,7 @@ from .geomsmesh import smesh
 import SMESH
 
 from .putName import putName
-  
+
 def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
   """
   edges de bord, faces défaut à respecter
@@ -48,9 +48,10 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
   nbAdd = skinFaces.AddFrom( internalBoundary.GetMesh() )
 
   # --- maillage des éventuelles arêtes vives entre faces reconstruites
-  
+
   grpAretesVives = None
-  if len(aretesVivesCoupees) > 0:
+  if aretesVivesCoupees:
+
     aretesVivesC = geompy.MakeCompound(aretesVivesCoupees)
     meshAretesVives = smesh.Mesh(aretesVivesC)
     algo1d = meshAretesVives.Segment()
@@ -58,8 +59,16 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
     putName(algo1d.GetSubMesh(), "aretesVives")
     putName(algo1d, "algo1d_aretesVives")
     putName(hypo1d, "hypo1d_aretesVives")
-    isDone = meshAretesVives.Compute()
-    logging.info("aretesVives fini")
+
+    is_done = meshAretesVives.Compute()
+    text = "meshAretesVives.Compute"
+    if is_done:
+      logging.info(text+" OK")
+    else:
+      text = "Erreur au calcul du maillage.\n" + text
+      logging.info(text)
+      raise Exception(text)
+
     grpAretesVives = meshAretesVives.CreateEmptyGroup( SMESH.EDGE, 'grpAretesVives' )
     nbAdd = grpAretesVives.AddFrom( meshAretesVives.GetMesh() )
 

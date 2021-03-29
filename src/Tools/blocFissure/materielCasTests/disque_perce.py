@@ -18,6 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import logging
+
 import sys
 import salome
 
@@ -76,6 +78,7 @@ from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Disque_1 = smesh.Mesh(Disque)
+smesh.SetName(Disque_1, 'Disque')
 Regular_1D = Disque_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(10)
 Nb_Segments_1.SetDistrType( 0 )
@@ -86,9 +89,17 @@ Nb_Segments_2.SetDistrType( 0 )
 Regular_1D_2 = Disque_1.Segment(geom=Compound_4)
 status = Disque_1.AddHypothesis(Nb_Segments_2,Compound_4)
 Quadrangle_2D = Disque_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
-isDone = Disque_1.Compute()
-smesh.SetName(Disque_1, 'Disque')
-Disque_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/disque.med"))
+
+is_done = Disque_1.Compute()
+text = "Disque_1.Compute"
+if is_done:
+  logging.info(text+" OK")
+else:
+  text = "Erreur au calcul du maillage.\n" + text
+  logging.info(text)
+  raise Exception(text)
+
+Disque_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "disque.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 

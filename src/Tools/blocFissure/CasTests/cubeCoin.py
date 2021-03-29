@@ -18,13 +18,15 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+"""problème de fissure plane coupant le cube dans un coin"""
+
 import os
 from blocFissure import gmu
 
-dicoParams = dict(nomCas            = 'cubeCoin',
-                  maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/cubeFin.med'),
-                  brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Coin.brep"),
-                  edgeFissIds       = [6],
+dicoParams = dict(nomCas            = "cubeCoin",
+                  maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin.med"),
+                  CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Coin.brep"),
+                  edgeFiss          = [3],
                   lgInfluence       = 50,
                   meshBrep          = (5,10),
                   rayonPipe         = 10,
@@ -35,12 +37,13 @@ dicoParams = dict(nomCas            = 'cubeCoin',
 
   # ---------------------------------------------------------------------------
 
-referencesMaillageFissure = dict(Entity_Quad_Pyramid    = 0,
-                                 Entity_Quad_Triangle   = 0,
-                                 Entity_Quad_Edge       = 0,
-                                 Entity_Quad_Penta      = 0,
-                                 Entity_Quad_Hexa       = 0,
-                                 Entity_Node            = 0,
-                                 Entity_Quad_Tetra      = 0,
-                                 Entity_Quad_Quadrangle = 0)
-
+referencesMaillageFissure = dict( \
+                                Entity_Quad_Quadrangle = 2740, \
+                                Entity_Quad_Hexa = 7420, \
+                                Entity_Node = 46394, \
+                                Entity_Quad_Edge = 323, \
+                                Entity_Quad_Triangle = 486, \
+                                Entity_Quad_Tetra = 8512, \
+                                Entity_Quad_Pyramid = 460, \
+                                Entity_Quad_Penta = 80 \
+                                )

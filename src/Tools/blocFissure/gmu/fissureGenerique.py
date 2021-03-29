@@ -17,70 +17,96 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""fissureGenerique"""
 
 import logging
 
 from blocFissure import gmu
-from blocFissure.gmu.initEtude import initEtude
-from blocFissure.gmu.getStatsMaillageFissure import getStatsMaillageFissure
+from .initEtude import initEtude
+from .getStatsMaillageFissure import getStatsMaillageFissure
 
-class fissureGenerique():
-  """
-  classe générique problème fissure:
+class fissureGenerique(object):
+  """classe générique problème fissure:
+
   génération géométrie et maillage sain
   définition et positionnement d'une fissure
   génération d'un bloc défaut inséré dans le maillage sain
   """
 
-  nomProbleme = "generique"
+  nomProbleme = "fissureGenerique"
+  geomParams = dict()
+  meshParams = dict()
+  shapeFissureParams = dict()
+  maillageFissureParams = dict()
 
   def __init__(self, numeroCas):
     initEtude()
     self.numeroCas = numeroCas
     self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
     self.fissureLongue = False
+    self.referencesMaillageFissure = None
 
   def setParamGeometrieSaine(self):
-    self.geomParams = {}
+    """setParamGeometrieSaine"""
+    self.geomParams = dict()
 
   def genereGeometrieSaine(self, geomParams):
+    """genereGeometrieSaine"""
     geometriesSaines = [None]
     return geometriesSaines
 
   def setParamMaillageSain(self):
-    self.meshParams = {}
+    """setParamMaillageSain"""
+    self.meshParams = dict()
 
   def genereMaillageSain(self, geometriesSaines, meshParams):
+    """genereMaillageSain"""
     maillagesSains = [None]
     return maillagesSains
 
   def setParamShapeFissure(self):
-    self.shapeFissureParams = {}
+    """setParamShapeFissure"""
+    self.shapeFissureParams = dict()
 
-  def genereShapeFissure(self, geometriesSaines, geomParams, shapeFissureParams):
+  def genereShapeFissure(self, geometriesSaines, geomParams, shapeFissureParams, mailleur="MeshGems"):
+    """genereShapeFissure"""
     shapesFissure = [None]
     return shapesFissure
 
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = {}
+    """setParamMaillageFissure"""
+    self.maillageFissureParams = dict()
 
-  def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, maillageFissureParams):
+  def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams):
+    """genereZoneDefaut"""
     elementsDefaut = [None]
     return elementsDefaut
 
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains, shapesFissure,
-                            maillageFissureParams, elementsDefaut, step):
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
+                                  shapesFissure, shapeFissureParams, \
+                                  maillageFissureParams, elementsDefaut, step, \
+                                  mailleur="MeshGems"):
+    """genereMaillageFissure"""
     maillageFissure = None
     return maillageFissure
 
   def setReferencesMaillageFissure(self):
-    referencesMaillageFissure = {}
+    """setReferencesMaillageFissure"""
+    referencesMaillageFissure = dict()
     return referencesMaillageFissure
+
+  def mailleur2d3d(self):
+    """Le mailleur : NETGEN ou MeshGems"""
+    #mailleur = "MeshGems"
+    mailleur = "NETGEN"
+    return mailleur
 
 # ---------------------------------------------------------------------------
 
   def executeProbleme(self, step=-1):
-    logging.info(" --- executeProbleme %s", self.nomCas)
+    """executeProbleme"""
+    texte = " --- fissureGenerique.executeProbleme pour '{}', step = {}".format(self.nomCas,step)
+    logging.info(texte)
     if step == 0:
       return
 
@@ -95,24 +121,21 @@ class fissureGenerique():
       return
 
     self.setParamShapeFissure()
-    shapesFissure = self.genereShapeFissure(geometriesSaines, self.geomParams, self.shapeFissureParams)
+    mailleur = self.mailleur2d3d()
+    shapesFissure = self.genereShapeFissure(geometriesSaines, self.geomParams, self.shapeFissureParams, mailleur)
     if step == 3:
       return
 
     self.setParamMaillageFissure()
-    elementsDefaut = self.genereZoneDefaut(geometriesSaines, maillagesSains, shapesFissure, self.shapeFissureParams, self.maillageFissureParams)
+    elementsDefaut = self.genereZoneDefaut(geometriesSaines, maillagesSains, \
+                                           shapesFissure, self.shapeFissureParams, self.maillageFissureParams)
     if step == 4:
       return
 
-    maillageFissure = self.genereMaillageFissure(geometriesSaines, maillagesSains,
-                                                 shapesFissure, self.shapeFissureParams,
-                                                 self.maillageFissureParams, elementsDefaut, step)
+    maillageFissure = self.genereMaillageFissure(geometriesSaines, maillagesSains, \
+                                                 shapesFissure, self.shapeFissureParams, self.maillageFissureParams, \
+                                                 elementsDefaut, step, mailleur)
 
     self.setReferencesMaillageFissure()
-    mesures = getStatsMaillageFissure(maillageFissure, self.referencesMaillageFissure, self.maillageFissureParams)
-
-
-
-
-
-
+    ok_maillage = getStatsMaillageFissure(maillageFissure, self.referencesMaillageFissure, self.maillageFissureParams)
+    return ok_maillage
