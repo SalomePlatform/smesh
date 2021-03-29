@@ -122,7 +122,7 @@ class ellipse_1(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur)
+                                               step, mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

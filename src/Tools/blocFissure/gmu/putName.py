@@ -23,9 +23,17 @@ from .geomsmesh import smesh
 # -----------------------------------------------------------------------------
 # --- nommage des objets mesh (algorithme, hypothèse, subMesh)
 
-def putName(objmesh,name, i=-1):
-  if i >= 0:
-    suffix = "_%d"%i
-    name += suffix
+def putName (objmesh, name, i_suff=-1, i_pref=-1):
+
+  # suffixe éventuel :
+  if i_suff >= 0:
+    suffixe = "_{}".format(i_suff)
+    name += suffixe
+
+  # préfixe éventuel :
+  if i_pref >= 0:
+    prefixe = "Cas{:02d}_".format(i_pref)
+    name = prefixe + name
+
   smesh.SetName(objmesh, name)
 
