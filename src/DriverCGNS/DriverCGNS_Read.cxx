@@ -544,11 +544,15 @@ namespace
                                   ids[14],ids[13],ids[19],ids[18],ids[17],ids[16],
                                   ids[20],ids[24],ids[23],ids[22],ids[21],ids[25],ids[26], ID );
   }
-  SMDS_MeshElement* add_NGON(cgsize_t* ids, SMESHDS_Mesh* mesh, int ID)
+  SMDS_MeshElement* add_NGON(cgsize_t* ids, int nbNodes, SMESHDS_Mesh* mesh, int ID)
   {
-    vector<int> idVec( ids[0] );
-    for ( int i = 0; i < ids[0]; ++i )
-      idVec[ i ] = (int) ids[ i + 1];
+#if CGNS_VERSION < 4000
+    nbNodes = ids[0];
+    ++ids;
+#endif
+    vector<int> idVec( nbNodes );
+    for ( int i = 0; i < nbNodes; ++i )
+      idVec[ i ] = (int) ids[ i ];
     return mesh->AddPolygonalFaceWithID( idVec, ID );
   }
 
@@ -585,7 +589,7 @@ namespace
       funVec[ CGNS_ENUMV( HEXA_8   )] = add_HEXA_8  ;
       funVec[ CGNS_ENUMV( HEXA_20  )] = add_HEXA_20 ;
       funVec[ CGNS_ENUMV( HEXA_27  )] = add_HEXA_27 ;
-      funVec[ CGNS_ENUMV( NGON_n   )] = add_NGON    ;
+      //funVec[ CGNS_ENUMV( NGON_n   )] = add_NGON    ;
     }
     return &funVec[0];
   }
@@ -854,16 +858,34 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
           addMessage( cg_get_error() );
           continue;
         }
-        vector< cgsize_t > elemData( eDataSize );
-        if ( cg_elements_read( _fn, cgnsBase, iZone, iSec, &elemData[0], NULL ) != CG_OK )
+        vector< cgsize_t > elemData( eDataSize ), polyOffset;
+#if CGNS_VERSION >= 4000
+        if ( elemType == CGNS_ENUMV( MIXED ) ||
+             elemType == CGNS_ENUMV( NGON_n ) ||
+             elemType == CGNS_ENUMV( NFACE_n ))
         {
-          addMessage( cg_get_error() );
-          continue;
+          polyOffset.resize( end - start + 2 );
+          if ( cg_poly_elements_read( _fn, cgnsBase, iZone, iSec,
+                                      elemData.data(), polyOffset.data(), NULL ) != CG_OK )
+          {
+            addMessage( cg_get_error() );
+            continue;
+          }
+        }
+        else
+#endif
+        {
+          if ( cg_elements_read( _fn, cgnsBase, iZone, iSec, elemData.data(), NULL ) != CG_OK )
+          {
+            addMessage( cg_get_error() );
+            continue;
+          }
         }
         // store elements
 
         MESSAGE("   store elements");
         int pos = 0, cgnsNbNodes = 0, elemID = start + zone._elemIdShift;
+        size_t iElem = 0;
         cg_npe( elemType, &cgnsNbNodes ); // get nb nodes by element type
         curAddElemFun = addElemFuns[ elemType ];
         SMDS_MeshElement* newElem = 0;
@@ -885,17 +907,26 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
           {
             if ( currentType == CGNS_ENUMV( NFACE_n )) // polyhedron
             {
-              //ElementConnectivity = Nfaces1, Face11, Face21, ... FaceN1,
-              //                      Nfaces2, Face12, Face22, ... FaceN2,
-              //                      ...
-              //                      NfacesM, Face1M, Face2M, ... FaceNM
-              const int nbFaces = elemData[ pos++ ];
+              int nbFaces = 0;
+              if ( polyOffset.empty() )
+                //ElementConnectivity = Nfaces1, Face11, Face21, ... FaceN1,
+                //                      Nfaces2, Face12, Face22, ... FaceN2,
+                //                      ...
+                //                      NfacesM, Face1M, Face2M, ... FaceNM
+                nbFaces = elemData[ pos++ ];
+              else // CGNS_VERSION >= 4000
+                // ElementConnectivity = Face11, Face21, ... FaceN1,
+                //                       Face12, Face22, ... FaceN2,
+                //                       ...
+                //                       Face1M, Face2M, ... FaceNM
+                nbFaces = polyOffset[ iElem + 1 ] - polyOffset[ iElem ];
+
               vector<int> quantities( nbFaces );
               vector<const SMDS_MeshNode*> nodes, faceNodes;
               nodes.reserve( nbFaces * 4 );
               for ( int iF = 0; iF < nbFaces; ++iF )
               {
-                const int faceID = std::abs( elemData[ pos++ ]) + zone._elemIdShift; 
+                const int faceID = std::abs( elemData[ pos++ ]) + zone._elemIdShift;
                 if (( face = myMesh->FindElement( faceID )) && face->GetType() == SMDSAbs_Face )
                 {
                   const bool reverse = ( elemData[ pos-1 ] < 0 );
@@ -924,14 +955,23 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
             }
             else if ( currentType == CGNS_ENUMV( NGON_n )) // polygon
             {
-              // ElementConnectivity = Nnodes1, Node11, Node21, ... NodeN1,
-              //                       Nnodes2, Node12, Node22, ... NodeN2,
-              //                       ...
-              //                       NnodesM, Node1M, Node2M, ... NodeNM
-              const int nbNodes = elemData[ pos ];
-              zone.ReplaceNodes( &elemData[pos+1], nbNodes, zone._nodeIdShift );
-              newElem = add_NGON( &elemData[pos  ], myMesh, elemID );
-              pos += nbNodes + 1;
+              int nbNodes;
+              if ( polyOffset.empty() )
+                // ElementConnectivity = Nnodes1, Node11, Node21, ... NodeN1,
+                //                       Nnodes2, Node12, Node22, ... NodeN2,
+                //                       ...
+                //                       NnodesM, Node1M, Node2M, ... NodeNM
+                nbNodes = elemData[ pos ];
+              else // CGNS_VERSION >= 4000
+                // ElementConnectivity = Node11, Node21, ... NodeN1,
+                //                       Node12, Node22, ... NodeN2,
+                //                       ...
+                //                       Node1M, Node2M, ... NodeNM
+                nbNodes = polyOffset[ iElem + 1 ] - polyOffset[ iElem ];
+
+              zone.ReplaceNodes( &elemData[ pos + polyOffset.empty()], nbNodes, zone._nodeIdShift );
+              newElem = add_NGON( &elemData[ pos ], nbNodes, myMesh, elemID );
+              pos += nbNodes + polyOffset.empty();
             }
           }
           else // standard elements
@@ -942,6 +982,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
             nbNotSuppElem += int( newElem && newElem->NbNodes() != cgnsNbNodes );
           }
           elemID++;
+          iElem++;
 
         } // loop on elemData
       } // loop on cgns sections
@@ -960,7 +1001,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     // -------------------------------------------
     // Read Boundary Conditions into SMESH groups
     // -------------------------------------------
-    
+
     MESSAGE("  read Boundary Conditions");
     int nbBC = 0;
     if ( cg_nbocos( _fn, cgnsBase, iZone, &nbBC) == CG_OK )

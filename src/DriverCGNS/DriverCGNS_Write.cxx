@@ -233,6 +233,25 @@ namespace
     return ( e2id == elem2cgID.end() ? elem->GetID() : e2id->second );
   }
 
+  //================================================================================
+  /*!
+   * \brief save nb nodes of a polygon
+   */
+  //================================================================================
+
+  void addPolySize( const cgsize_t            nbNodes,
+                    std::vector< cgsize_t >& elemData,
+                    std::vector< cgsize_t >& polyOffset )
+  {
+#if CGNS_VERSION < 4100
+    elemData.push_back( nbNodes );
+    polyOffset.clear(); // just avoid warning: unused parameter
+#else
+    polyOffset.push_back((cgsize_t) elemData.size() );
+    (void)nbNodes; // avoid warning: unused parameter
+#endif
+  }
+
 } // namespace
 
 //================================================================================
@@ -335,7 +354,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
 
   // write into a section all successive elements of one geom type
   int iSec;
-  vector< cgsize_t > elemData;
+  vector< cgsize_t > elemData, polyOffset;
   SMDS_ElemIteratorPtr elemIt = myMesh->elementsIterator();
   vector< SMDS_ElemIteratorPtr > elemItVec;
   if ( _elementsByType )
@@ -384,7 +403,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     else if ( elemType == SMDSEntity_Polygon ) // POLYGONS
       do
       {
-        elemData.push_back( elem->NbNodes() );
+        addPolySize( elem->NbNodes(), elemData, polyOffset );
         for ( int i = 0, nb = elem->NbNodes(); i < nb; ++i )
           elemData.push_back( cgnsID( elem->GetNode(i), n2cgID ));
         if ( elem->GetID() != cgID )
@@ -397,7 +416,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     else if ( elemType == SMDSEntity_Quad_Polygon ) // QUADRATIC POLYGONS
       do // write as linear NGON_n
       {
-        elemData.push_back( elem->NbNodes() );
+        addPolySize( elem->NbNodes(), elemData, polyOffset );
         interlace = & SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon,
                                                           elem->NbNodes() )[0];
         for ( int i = 0, nb = elem->NbNodes(); i < nb; ++i )
@@ -433,9 +452,23 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     SMESH_Comment sectionName( cg_ElementTypeName( cgType ));
     sectionName << " " << startID << " - " << cgID-1;
 
-    if ( cg_section_write(_fn, iBase, iZone, sectionName.c_str(), cgType, startID,
-                          cgID-1, /*nbndry=*/0, &elemData[0], &iSec) != CG_OK )
-      return addMessage( cg_get_error(), /*fatal = */true );
+
+#if CGNS_VERSION >= 4000
+    if ( !polyOffset.empty() )
+    {
+      polyOffset.push_back((cgsize_t) elemData.size() );
+      if ( cg_poly_section_write(_fn, iBase, iZone, sectionName.c_str(), cgType, startID,
+                                 cgID-1, /*nbndry=*/0,
+                                 elemData.data(), polyOffset.data(), &iSec) != CG_OK )
+        return addMessage( cg_get_error(), /*fatal = */true );
+    }
+    else
+#endif
+    {
+      if ( cg_section_write(_fn, iBase, iZone, sectionName.c_str(), cgType, startID,
+                            cgID-1, /*nbndry=*/0, elemData.data(), &iSec) != CG_OK )
+        return addMessage( cg_get_error(), /*fatal = */true );
+    }
   }
 
   // Write polyhedral volumes
@@ -450,11 +483,13 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     set< TPolyhedFace > faces;
     set< TPolyhedFace >::iterator faceInSet;
     vector<const SMDS_MeshNode *> faceNodesVec;
+    vector< cgsize_t > faceOffset;
     int nbPolygones = 0, faceID;
 
     SMDS_VolumeTool vol;
 
     elemData.clear();
+    polyOffset.clear();
 
     int nbPolyhTreated = 0;
 
@@ -473,7 +508,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
         vol.Set( elem );
         vol.SetExternalNormal();
         const int nbFaces = vol.NbFaces();
-        elemData.push_back( nbFaces );
+        addPolySize( nbFaces, elemData, polyOffset );
         for ( int iF = 0; iF < nbFaces; ++iF )
         {
           const int nbNodes = vol.NbFaceNodes( iF );
@@ -489,7 +524,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
             // the face is not shared by volumes
             faceID = cgID++;
             ++nbPolygones;
-            faceData.push_back( nbNodes );
+            addPolySize( nbNodes, faceData, faceOffset );
             for ( int i = 0; i < nbNodes; ++i )
               faceData.push_back( cgnsID( faceNodes[i], n2cgID ));
           }
@@ -501,7 +536,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
             {
               faceID = cgID++;
               ++nbPolygones;
-              faceData.push_back( nbNodes );
+              addPolySize( nbNodes, faceData, faceOffset );
               for ( int i = 0; i < nbNodes; ++i )
                 faceData.push_back( cgnsID( faceNodes[i], n2cgID ));
             }
@@ -518,18 +553,35 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
       }
     }
 
+#if CGNS_VERSION >= 4000
+    if ( nbPolygones > 0 )
+    {
+      faceOffset.push_back((cgsize_t) faceData.size() );
+      if ( cg_poly_section_write(_fn, iBase, iZone, "Faces of Polyhedrons", CGNS_ENUMV( NGON_n ),
+                                 cgID - nbPolygones, cgID-1, /*nbndry=*/0,
+                                 faceData.data(), faceOffset.data(), &iSec) != CG_OK )
+        return addMessage( cg_get_error(), /*fatal = */true );
+    }
+
+    polyOffset.push_back((cgsize_t) elemData.size() );
+    if ( cg_poly_section_write(_fn, iBase, iZone, "Polyhedrons",
+                               CGNS_ENUMV( NFACE_n ), cgID, cgID+nbPolyhTreated-1,
+                               /*nbndry=*/0, &elemData[0], polyOffset.data(), &iSec) != CG_OK )
+      return addMessage( cg_get_error(), /*fatal = */true );
+#else
     if ( nbPolygones > 0 )
     {
       if ( cg_section_write(_fn, iBase, iZone, "Faces of Polyhedrons",
-                             CGNS_ENUMV( NGON_n ), cgID - nbPolygones, cgID-1,
-                             /*nbndry=*/0, &faceData[0], &iSec) != CG_OK )
+                            CGNS_ENUMV( NGON_n ), cgID - nbPolygones, cgID-1,
+                            /*nbndry=*/0, &faceData[0], &iSec) != CG_OK )
         return addMessage( cg_get_error(), /*fatal = */true );
     }
-    
-    if ( cg_section_write(_fn, iBase, iZone, "Polyhedrons", 
-                             CGNS_ENUMV( NFACE_n ), cgID, cgID+nbPolyhTreated-1,
-                           /*nbndry=*/0, &elemData[0], &iSec) != CG_OK )
+
+    if ( cg_section_write(_fn, iBase, iZone, "Polyhedrons",
+                          CGNS_ENUMV( NFACE_n ), cgID, cgID+nbPolyhTreated-1,
+                          /*nbndry=*/0, &elemData[0], &iSec) != CG_OK )
       return addMessage( cg_get_error(), /*fatal = */true );
+#endif
 
     if ( !myMesh->GetGroups().empty() )
     {
