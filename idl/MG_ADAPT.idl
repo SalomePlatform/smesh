@@ -1,0 +1,148 @@
+// Copyright (C) 2020-2021  CEA/DEN, EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
+#ifndef MG_ADAPT_IDL
+#define MG_ADAPT_IDL
+
+#include "SALOME_Component.idl"
+#include "SALOME_Exception.idl"
+#include "SALOME_GenericObj.idl"
+#include "SALOMEDS.idl"
+#include "SMESH_Mesh.idl"
+
+module SMESH
+{
+  struct MgAdaptHypothesisData
+  {
+    string  myFileInDir, myMeshFileIn, myInMeshName, myMeshFileBackground, myOutMeshName,
+            myMeshFileOut, myFileOutDir, myFileSizeMapDir, myFieldName;
+    boolean fromMedFile;
+    boolean myPublish, myMeshOutMed;
+    boolean myUseLocalMap, myUseBackgroundMap, myUseConstantValue;
+    double  myConstantValue;
+    long    myRank, myTimeStep;
+    boolean myUseNoTimeStep, myUseLastTimeStep, myUseChosenTimeStep;
+    string  myWorkingDir, myLogFile;
+    boolean myPrintLogInFile, myKeepFiles, myRemoveLogOnSuccess;
+    long    myVerboseLevel;
+  };
+
+  interface MG_ADAPT : SALOME::GenericObj
+  {
+    void setData(inout MgAdaptHypothesisData data);
+
+    void setMedFileIn(in string MedFileIn);
+    string getMedFileIn();
+
+    void setMedFileOut(in string MedFileOut);
+    string getMedFileOut();
+
+    void setMeshName(in string s);
+    string getMeshName();
+
+    void setMeshNameOut(in string s);
+    string getMeshNameOut();
+
+    void setMeshOutMed(in boolean b);
+    boolean getMeshOutMed();
+
+    void setPublish(in boolean b);
+    boolean getPublish();
+
+    void setSizeMapFieldName(in string s);
+    string getSizeMapFieldName();
+
+    void setTimeStep(in long s);
+    long getTimeStep();
+
+    void setTimeStepRank(in long s, in long f);
+    long getRank();
+
+    void setTimeStepRankLast();
+    void setNoTimeStep();
+
+    void setLogFile(in string f);
+    string getLogFile();
+
+    void setVerbosityLevel(in long f);
+    long getVerbosityLevel();
+
+    void setRemoveOnSuccess(in boolean f);
+    boolean getRemoveOnSuccess();
+
+    MgAdaptHypothesisData getData();
+
+    void setUseLocalMap(in boolean f);
+    boolean getUseLocalMap();
+
+    void setUseBackgroundMap(in boolean f);
+    boolean getUseBackgroundMap();
+
+    void setUseConstantValue(in boolean f);
+    boolean getUseConstantValue();
+
+    void setConstantSize(in double f);
+    double getConstantSize();
+
+    void setSizeMapFile(in string f);
+    string getSizeMapFile();
+
+    void setFromMedFile(in boolean f);
+    boolean isFromMedFile();
+
+    void setKeepWorkingFiles(in boolean f);
+    boolean getKeepWorkingFiles();
+
+    void setPrintLogInFile(in boolean f);
+    boolean getPrintLogInFile();
+
+    void setWorkingDir(in string f);
+    string getWorkingDir();
+
+    void setSizeMapType(in string f);
+    boolean setAll();
+    string getCommandToRun();
+    void compute() raises(SALOME::SALOME_Exception);
+    string getErrMsg();
+    string getFileName();
+    string getExeName();
+    void copyMgAdaptHypothesisData(in MgAdaptHypothesisData f);
+
+    //void checkDirPath(inout string f);
+
+    boolean hasOptionDefined(in string optionName);
+    void setOptionValue(in string optionName, in string optionValue) raises (SALOME::SALOME_Exception);
+    string getOptionValue(in string optionName, inout boolean isDefault) raises (SALOME::SALOME_Exception);
+    SMESH::string_array getCustomOptionValuesStrVec();
+    SMESH::string_array getOptionValuesStrVec();
+  };
+
+  typedef MG_ADAPT MG_ADAPT_HYPOTHESIS;
+  interface MG_ADAPT_OBJECT : SALOME::GenericObj
+  {
+    void setMeshIn(in SMESH_Mesh theMesh)    raises (SALOME::SALOME_Exception);
+    void setMEDFileIn(in string f)           raises (SALOME::SALOME_Exception);
+    void setMEDFileOut(in string f)          raises (SALOME::SALOME_Exception);
+    void setMEDFileBackground(in string f)   raises (SALOME::SALOME_Exception);
+    void AddHypothesis(in MG_ADAPT mg)       raises (SALOME::SALOME_Exception);
+    long Compute(in boolean Publish)         raises (SALOME::SALOME_Exception);
+  };
+};
+
+#endif // MG_ADAPT_IDL
