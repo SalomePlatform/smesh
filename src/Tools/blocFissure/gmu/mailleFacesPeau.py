@@ -105,7 +105,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
       for i, edgeCirc in enumerate(edgesCircPeau):
         logging.info("i = {}".format(i))
         if edgeCirc is not None:
-          algo1d = meshFacePeau.UseExisting1DElements(geom=edgeCirc)
+          algo1d = meshFacePeau.UseExisting1DElements(geom=edgeCirc) # addToStudy() failed ?
           if boutFromIfil[ifil] is None:
             hypo1d = algo1d.SourceEdges([ edgesCircPipeGroup[i] ],0,0)
           else:
