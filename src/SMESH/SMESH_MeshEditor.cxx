@@ -1808,6 +1808,17 @@ namespace
     TSplitMethod( int nbTet=0, const int* conn=0, bool addNode=false)
       : _nbSplits(nbTet), _nbCorners(4), _connectivity(conn), _baryNode(addNode), _ownConn(false) {}
     ~TSplitMethod() { if ( _ownConn ) delete [] _connectivity; _connectivity = 0; }
+	TSplitMethod(const TSplitMethod &splitMethod)
+		: _nbSplits(splitMethod._nbSplits),
+		_nbCorners(splitMethod._nbCorners),
+		_baryNode(splitMethod._baryNode),
+		_ownConn(splitMethod._ownConn),
+		_faceBaryNode(splitMethod._faceBaryNode)
+	{
+		_connectivity = splitMethod._connectivity;
+		const_cast<TSplitMethod&>(splitMethod)._connectivity = nullptr;
+		const_cast<TSplitMethod&>(splitMethod)._ownConn = false;
+	}
     bool hasFacet( const TTriangleFacet& facet ) const
     {
       if ( _nbCorners == 4 )
@@ -2265,7 +2276,7 @@ void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
     TSplitMethod splitMethod = ( facetToSplit < 0  ?
                                  getTetraSplitMethod( volTool, theMethodFlags ) :
                                  getPrismSplitMethod( volTool, theMethodFlags, facetToSplit ));
-    if ( splitMethod._nbSplits < 1 ) continue;
+	if ( splitMethod._nbSplits < 1 ) continue;
 
     // find submesh to add new tetras to
     if ( !subMesh || !subMesh->Contains( elem ))
