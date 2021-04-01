@@ -17,38 +17,40 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Prolongation d'un wire par deux segments tangents"""
 
 import logging
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
+
 from . import initLog
+
 from .orderEdgesFromWire import orderEdgesFromWire
 
-# -----------------------------------------------------------------------------
-# --- prolongation d'un wire par deux segments tangents
-
-def prolongeWire(aWire, extrem, norms, lg):
-  """
-  """
+def prolongeWire(aWire, extrem, norms, longueur):
+  """Prolongation d'un wire par deux segments tangents"""
   logging.info("start")
-  if geompy.NumberOfEdges(aWire) > 1:
+
+  if ( geompy.NumberOfEdges(aWire) > 1 ):
     edges = geompy.ExtractShapes(aWire, geompy.ShapeType["EDGE"])
     uneSeuleEdge = False
   else:
     edges = [aWire]
     uneSeuleEdge = True
-  edgesBout = []
-  for i, v1 in enumerate(extrem):
-    exts = [geompy.MakeTranslationVectorDistance(v1, norms[i], l) for l in (-lg, lg)]
-    dists = [(geompy.MinDistance(v, aWire), i , v) for i, v in enumerate(exts)]
+
+  edgesBout = list()
+  for i_aux, v_1 in enumerate(extrem):
+    exts = [geompy.MakeTranslationVectorDistance(v_1, norms[i_aux], lg_aux) for lg_aux in (-longueur, longueur)]
+    dists = [(geompy.MinDistance(v, aWire), j_aux , v) for j_aux, v in enumerate(exts)]
     dists.sort()
-    v2 = dists[-1][-1]
-    edge = geompy.MakeEdge(v1, v2)
+    v_2 = dists[-1][-1]
+    edge = geompy.MakeEdge(v_1, v_2)
     edges.append(edge)
     edgesBout.append(edge)
-    name = "extrem%d"%i
+    name = "extrem{}".format(i_aux)
     geomPublish(initLog.debug, edge, name)
+
   try:
     wireProlonge = geompy.MakeWire(edges)
     geomPublish(initLog.debug, wireProlonge, "wireProlonge")
@@ -61,16 +63,19 @@ def prolongeWire(aWire, extrem, norms, lg):
       edgelist, accessList = orderEdgesFromWire(aWire)
     edge1 = edgelist[accessList[0]]
     if geompy.MinDistance(edgesBout[0], edge1) < 1.e-4 :
-      i0 = 0
-      i1 = 1
+      i_0 = 0
+      i_1 = 1
     else:
-      i0 = 1
-      i1 = 0
-    wireProlonge = edgesBout[i0]
-    for i in range(len(edgelist)):
-      wireProlonge = geompy.MakeWire([wireProlonge, edgelist[accessList[i]]])
-      geomPublish(initLog.debug, wireProlonge, "wireProlonge_%d"%i)
-    wireProlonge = geompy.MakeWire([wireProlonge,edgesBout[i1]])
+      i_0 = 1
+      i_1 = 0
+    wireProlonge = edgesBout[i_0]
+
+    for i_aux in range(len(edgelist)):
+      wireProlonge = geompy.MakeWire([wireProlonge, edgelist[accessList[i_aux]]])
+      geomPublish(initLog.debug, wireProlonge, "wireProlonge_{}".format(i_aux))
+
+    wireProlonge = geompy.MakeWire([wireProlonge,edgesBout[i_1]])
     geomPublish(initLog.debug, wireProlonge, "wireProlonge")
     logging.warning("prolongation wire pas a pas OK")
+
   return wireProlonge

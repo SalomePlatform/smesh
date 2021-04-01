@@ -17,24 +17,24 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""edges de bord, faces défaut à respecter"""
 
 import logging
 
+import SMESH
+
 from .geomsmesh import geompy
 from .geomsmesh import smesh
-import SMESH
 
 from .putName import putName
 
 def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
-  """
-  edges de bord, faces défaut à respecter
-  """
+  """edges de bord, faces défaut à respecter"""
   logging.info('start')
 
-  aFilterManager = smesh.CreateFilterManager()
-  nbAdded, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])
-  criteres = []
+  _ = smesh.CreateFilterManager()
+  _, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])
+  criteres = list()
   unCritere = smesh.GetCriterion(SMESH.EDGE,SMESH.FT_FreeBorders,SMESH.FT_Undefined,0)
   criteres.append(unCritere)
   filtre = smesh.GetFilterFromCriteria(criteres)
@@ -45,7 +45,7 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
   #     on désigne les faces de peau en quadrangles par le groupe "skinFaces"
 
   skinFaces = internalBoundary.CreateEmptyGroup( SMESH.FACE, 'skinFaces' )
-  nbAdd = skinFaces.AddFrom( internalBoundary.GetMesh() )
+  _ = skinFaces.AddFrom( internalBoundary.GetMesh() )
 
   # --- maillage des éventuelles arêtes vives entre faces reconstruites
 
@@ -70,6 +70,6 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
       raise Exception(text)
 
     grpAretesVives = meshAretesVives.CreateEmptyGroup( SMESH.EDGE, 'grpAretesVives' )
-    nbAdd = grpAretesVives.AddFrom( meshAretesVives.GetMesh() )
+    _ = grpAretesVives.AddFrom( meshAretesVives.GetMesh() )
 
   return (internalBoundary, bordsLibres, grpAretesVives)

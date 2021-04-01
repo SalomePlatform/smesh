@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Préparation maillage du pipe"""
 
 import logging
 import math
@@ -27,7 +28,7 @@ from .geomsmesh import smesh
 def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
                             centreFondFiss, wireFondFiss, wirePipeFiss,
                             lenSegPipe, rayonPipe, nbsegCercle, nbsegRad):
-  """preparation maillage du pipe :
+  """Préparation maillage du pipe :
 
   - détections des points a respecter : jonction des edges/faces constituant
     la face de fissure externe au pipe
@@ -59,7 +60,7 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
 
   meshFondExt = smesh.Mesh(wireFondFiss)
   algo1d = meshFondExt.Segment()
-  hypo1d = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
+  _ = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
 
   is_done = meshFondExt.Compute()
   text = "calculePointsAxiauxPipe meshFondExt.Compute"
@@ -75,11 +76,11 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
   for nodeId in allNodeIds:
     xyz = meshFondExt.GetNodeXYZ(nodeId)
     #logging.debug("nodeId %s, coords %s", nodeId, str(xyz))
-    pt = geompy.MakeVertex(xyz[0], xyz[1], xyz[2])
-    u, PointOnEdge, EdgeInWireIndex = geompy.MakeProjectionOnWire(pt, wireFondFiss) # u compris entre 0 et 1
+    point = geompy.MakeVertex(xyz[0], xyz[1], xyz[2])
+    parametre, _, EdgeInWireIndex = geompy.MakeProjectionOnWire(point, wireFondFiss) # parametre compris entre 0 et 1
     edgeOrder = edgesIdByOrientation[EdgeInWireIndex]
-    ptGSdic[(edgeOrder, EdgeInWireIndex, u)] = pt
-    #logging.debug("nodeId %s, u %s", nodeId, str(u))
+    ptGSdic[(edgeOrder, EdgeInWireIndex, parametre)] = point
+    #logging.debug("nodeId %s, parametre %s", nodeId, str(parametre))
   usort = sorted(ptGSdic)
   logging.debug("nombre de points obtenus par deflexion %s",len(usort))
 
@@ -88,10 +89,10 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
   normals = list()
   for edu in usort:
     ied = edu[1]
-    u = edu[2]
+    parametre = edu[2]
     vertcx = ptGSdic[edu]
-    norm = geompy.MakeTangentOnCurve(edgesFondFiss[ied], u)
-    plan = geompy.MakePlane(vertcx, norm, 3*rayonPipe)
+    norm = geompy.MakeTangentOnCurve(edgesFondFiss[ied], parametre)
+    plan = geompy.MakePlane(vertcx, norm, 3.*rayonPipe)
     part = geompy.MakePartition([plan], [wirePipeFiss], list(), list(), geompy.ShapeType["VERTEX"], 0, list(), 0)
     liste = geompy.ExtractShapes(part, geompy.ShapeType["VERTEX"], True)
     if len(liste) == 5: # 4 coins du plan plus intersection recherchée
@@ -117,29 +118,31 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
   # --- points géométriques
 
   gptsdisks = list() # vertices géométrie de tous les disques
-  raydisks = [list() for i in range(nbsegCercle)]
-  for i, centres_i in enumerate(centres): # boucle sur les disques
+  raydisks = [list() for _ in range(nbsegCercle)]
+  for indice, centres_i in enumerate(centres): # boucle sur les disques
     gptdsk = list() # vertices géométrie d'un disque
     vertcx = centres_i
-    vertpx = origins[i]
-    normal = normals[i]
+    vertpx = origins[indice]
+    normal = normals[indice]
     vec1 = geompy.MakeVector(vertcx, vertpx)
 
     points = [vertcx] # les points du rayon de référence
+    dist_0 = rayonPipe/float(nbsegRad)
     for j in range(nbsegRad):
-      pt = geompy.MakeTranslationVectorDistance(vertcx, vec1, (j+1)*float(rayonPipe)/nbsegRad)
-      points.append(pt)
+      point = geompy.MakeTranslationVectorDistance(vertcx, vec1, (j+1)*dist_0)
+      points.append(point)
     gptdsk.append(points)
-    pt = geompy.MakeTranslationVectorDistance(vertcx, vec1, 1.5*rayonPipe)
-    rayon = geompy.MakeLineTwoPnt(vertcx, pt)
+    point = geompy.MakeTranslationVectorDistance(vertcx, vec1, 1.5*rayonPipe)
+    rayon = geompy.MakeLineTwoPnt(vertcx, point)
     raydisks[0].append(rayon)
 
+    angle_0 = 2.*math.pi/float(nbsegCercle)
     for k in range(nbsegCercle-1):
-      angle = (k+1)*2*math.pi/nbsegCercle
+      angle = float(k+1)*angle_0
       pts = [vertcx] # les points d'un rayon obtenu par rotation
       for j in range(nbsegRad):
-        pt = geompy.MakeRotation(points[j+1], normal, angle)
-        pts.append(pt)
+        point = geompy.MakeRotation(points[j+1], normal, angle)
+        pts.append(point)
       gptdsk.append(pts)
       ray = geompy.MakeRotation(rayon, normal, angle)
       raydisks[k+1].append(ray)

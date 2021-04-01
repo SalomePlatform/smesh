@@ -17,20 +17,18 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Transformation d'une liste de subshapes en une liste d'Id"""
 
 import logging
+
 from .geomsmesh import geompy
 
-# -----------------------------------------------------------------------------
-# --- transformation d'une liste de subshapes en une liste d'Id
-
 def getSubshapeIds(obj, subshapes):
-  """
-  transformation d'une liste de subshapes en une liste d'Id
-  """
+  """Transformation d'une liste de subshapes en une liste d'Id"""
   logging.debug("start")
-  subshapesId = []
+  subshapesId = list()
   for sub in subshapes:
     subshapesId.append(geompy.GetSubShapeID(obj, sub))
   logging.debug("subshapesId=%s", subshapesId)
+
   return subshapesId

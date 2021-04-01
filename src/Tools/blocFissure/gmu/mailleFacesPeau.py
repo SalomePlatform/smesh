@@ -22,13 +22,14 @@
 
 import logging
 
-from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
-from .geomsmesh import smesh
-from salome.smesh import smeshBuilder
 import SMESH
+from salome.smesh import smeshBuilder
+
+from .geomsmesh import geompy
+from .geomsmesh import geomPublishInFather
+from .geomsmesh import smesh
+
+from . import initLog
 
 from .putName import putName
 
@@ -41,7 +42,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
   logging.info('start')
   logging.info(mailleur+" pour le cas n° %d"%nro_cas)
   nbFacesFilling = len(partitionsPeauFissFond)
-  boutFromIfil = [None for i in range(nbFacesFilling)]
+  boutFromIfil = [None for _ in range(nbFacesFilling)]
   if idFillingFromBout[0] != idFillingFromBout[1]: # repérage des extremites du pipe quand elles débouchent sur des faces différentes
     boutFromIfil[idFillingFromBout[0]] = 0
     boutFromIfil[idFillingFromBout[1]] = 1
@@ -102,15 +103,16 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
         putName(algo1d, "algo1d_bordsVifs", ifil, nro_cas)
         putName(hypo1d, "hypo1d_bordsVifs", ifil, nro_cas)
 
-      for i, edgeCirc in enumerate(edgesCircPeau):
-        logging.info("i = {}".format(i))
+      for i_aux, edgeCirc in enumerate(edgesCircPeau):
+        texte = "i_aux = {}".format(i_aux)
+        logging.info(texte)
         if edgeCirc is not None:
           algo1d = meshFacePeau.UseExisting1DElements(geom=edgeCirc) # addToStudy() failed ?
           if boutFromIfil[ifil] is None:
-            hypo1d = algo1d.SourceEdges([ edgesCircPipeGroup[i] ],0,0)
+            hypo1d = algo1d.SourceEdges([ edgesCircPipeGroup[i_aux] ],0,0)
           else:
             hypo1d = algo1d.SourceEdges([ edgesCircPipeGroup[boutFromIfil[ifil]] ],0,0)
-          name = "cercle%d"%i
+          name = "cercle{}".format(i_aux)
           putName(algo1d.GetSubMesh(), name, ifil, nro_cas)
           putName(algo1d, "algo1d_" + name, ifil, nro_cas)
           putName(hypo1d, "hypo1d_" + name, ifil, nro_cas)

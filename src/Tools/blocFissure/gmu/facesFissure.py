@@ -17,33 +17,34 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Faces fissure dans et hors tore, et edges face hors tore"""
 
 import logging
-from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
+
+import GEOM
+
 from . import initLog
 
-# -----------------------------------------------------------------------------
-# --- faces fissure dans et hors tore, et edges face hors tore
+from .geomsmesh import geompy
+from .geomsmesh import geomPublishInFather
 
 def facesFissure(blocp, faceFissure, extrusionDefaut, genint):
-  """
-  extraction des faces de fissure dans et hors tore, des edges le long du tore et en paroi
+  """Extraction des faces de fissure dans et hors tore, des edges le long du tore et en paroi
+
   @param faceFissure : la face de fissure avec la partie dans le tore elliptique et la partie externe
   @return (facefissintore, facefissoutore, edgeint, edgeext)
   """
   logging.info('start')
 
-  [f0,f1] = geompy.ExtractShapes(faceFissure, geompy.ShapeType["FACE"], True)
-  ed0 = geompy.ExtractShapes(f0, geompy.ShapeType["EDGE"], True)
-  ed1 = geompy.ExtractShapes(f1, geompy.ShapeType["EDGE"], True)
+  [face_0,face_1] = geompy.ExtractShapes(faceFissure, geompy.ShapeType["FACE"], True)
+  ed0 = geompy.ExtractShapes(face_0, geompy.ShapeType["EDGE"], True)
+  ed1 = geompy.ExtractShapes(face_1, geompy.ShapeType["EDGE"], True)
   if len(ed0) > len(ed1):
-    facefissintore = f0
-    facefissoutore = f1
+    facefissintore = face_0
+    facefissoutore = face_1
   else:
-    facefissintore = f1
-    facefissoutore = f0
+    facefissintore = face_1
+    facefissoutore = face_0
 
   geomPublishInFather(initLog.debug, faceFissure, facefissintore,'facefissintore')
   geomPublishInFather(initLog.debug, faceFissure, facefissoutore,'facefissoutore')
@@ -51,18 +52,18 @@ def facesFissure(blocp, faceFissure, extrusionDefaut, genint):
   edgeint = geompy.GetShapesOnShape(extrusionDefaut, facefissoutore, geompy.ShapeType["EDGE"], GEOM.ST_IN)
   edgeext = geompy.GetShapesOnShape(extrusionDefaut, facefissoutore, geompy.ShapeType["EDGE"], GEOM.ST_ON)
 
-  for i in range(len(edgeint)):
-    name = "edgeint_%d"%i
-    geomPublishInFather(initLog.debug, facefissoutore, edgeint[i],name)
-  for i in range(len(edgeext)):
-    name = "edgeext_%d"%i
-    geomPublishInFather(initLog.debug, facefissoutore, edgeext[i],name)
+  for i_aux, edge in enumerate(edgeint):
+    name = "edgeint_{}".format(i_aux)
+    geomPublishInFather(initLog.debug, facefissoutore, edge,name)
+  for i_aux, edge in enumerate(edgeext):
+    name = "edgeext_{}".format(i_aux)
+    geomPublishInFather(initLog.debug, facefissoutore, edge,name)
 
-  reverext = []
+  reverext = list()
   if len(edgeext) > 1:
     vertices = geompy.ExtractShapes(genint, geompy.ShapeType["VERTEX"], False)
-    for i in range(len(edgeext)):
-      vertedge = geompy.ExtractShapes(edgeext[i], geompy.ShapeType["VERTEX"], False)
+    for edge in edgeext:
+      vertedge = geompy.ExtractShapes(edge, geompy.ShapeType["VERTEX"], False)
       if ((geompy.GetSubShapeID(blocp, vertedge[0]) == geompy.GetSubShapeID(blocp, vertices[0])) or
           (geompy.GetSubShapeID(blocp, vertedge[0]) == geompy.GetSubShapeID(blocp, vertices[1]))):
         reverext.append(0)

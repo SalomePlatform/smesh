@@ -17,47 +17,46 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Projection d'un point sur une courbe."""
+
+import logging
 
 from .geomsmesh import geompy
-import logging
-import math
 
-# -----------------------------------------------------------------------------
-# --- projection d'un point sur une courbe.
-
-def projettePointSurCourbe(pt, edge):
+def projettePointSurCourbe(point, edge):
   """
   projection d'un point p sur une courbe c
   on suppose que la distance (c(u), p) passe par un minimum quand u varie entre 0 et 1
-  et qu'elle presente pas de minimum local 
+  et qu'elle presente pas de minimum local
   """
   #logging.debug("start")
 
-  dist = []
-  nbSlices = 50
-  du = 1.0/nbSlices
-  for i in range(nbSlices + 1):
-    p = geompy.MakeVertexOnCurve(edge, du*i)
-    d = geompy.MinDistance(p,pt)
-    dist.append((d,i))
+  dist = list()
+  nb_slices = 50
+  delta = 1.0/float(nb_slices)
+  for i_aux in range(nb_slices + 1):
+    pti = geompy.MakeVertexOnCurve(edge, delta*float(i_aux))
+    dpti = geompy.MinDistance(pti,point)
+    dist.append((dpti,i_aux))
   dist.sort()
+
   #logging.debug("dist %s", dist)
-  umin = du*dist[0][1]
-  umax = du*dist[1][1]
+  umin = delta*dist[0][1]
+  umax = delta*dist[1][1]
   #umin = 0.0
   #umax = 1.0
   tol = 1.e-8
   pmin = geompy.MakeVertexOnCurve(edge, umin)
   pmax = geompy.MakeVertexOnCurve(edge, umax)
-  dmin = geompy.MinDistance(pmin,pt)
-  dmax = geompy.MinDistance(pmax,pt)
+  dmin = geompy.MinDistance(pmin,point)
+  dmax = geompy.MinDistance(pmax,point)
   dext = geompy.MinDistance(pmin,pmax)
-  i=0
-  while dext > tol and i < 100 :
-    i = i+1
+  i_aux = 0
+  while ( ( dext > tol ) and ( i_aux < 100 ) ):
+    i_aux += 1
     utest = (umax + umin) / 2.0
-    ptest = geompy.MakeVertexOnCurve(edge, utest)   
-    dtest = geompy.MinDistance(ptest,pt)
+    ptest = geompy.MakeVertexOnCurve(edge, utest)
+    dtest = geompy.MinDistance(ptest,point)
     if dmin < dmax:
       umax = utest
       pmax = ptest
@@ -68,10 +67,11 @@ def projettePointSurCourbe(pt, edge):
       dmin = dtest
     dext = geompy.MinDistance(pmin,pmax)
     #logging.debug('umin=%s umax=%s dmin=%s dmax=%s dtest=%s dext=%s', umin,umax,dmin,dmax,dtest,dext)
-  if abs(utest) < 1.e-7:
+
+  if ( abs(utest) < 1.e-7 ):
     utest = 0.0
-  if abs(1.0-utest) < 1.e-7:
+  elif ( abs(1.0-utest) < 1.e-7 ):
     utest = 1.0
-  logging.debug('u=%s, nbiter=%s dtest=%s dext=%s',utest,i,dtest,dext)
+  logging.debug('u=%s, nbiter=%s dtest=%s dext=%s',utest,i_aux,dtest,dext)
+
   return utest
-    

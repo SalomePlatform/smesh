@@ -17,19 +17,18 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Identification des faces tore et fissure dans le solide hors tore du bloc partitionné"""
 
 import logging
-from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
+
 from . import initLog
 
-# -----------------------------------------------------------------------------
-# --- identification des faces tore et fissure dans le solide hors tore du bloc partitionné
+from .geomsmesh import geompy
+from .geomsmesh import geomPublishInFather
 
 def facesToreInBloc(blocp, facefissoutore, facetore1, facetore2):
-  """
-  identification des faces tore et fissure dans le bloc partitionné : sous shapes du bloc
+  """Identification des faces tore et fissure dans le bloc partitionné : sous shapes du bloc
+
   @param blocp : bloc partitionné
   @param facefissoutore : la face de fissure externe au tore
   @param facetore1 : face du tore selon la génératrice
@@ -47,4 +46,3 @@ def facesToreInBloc(blocp, facefissoutore, facetore1, facetore2):
   geomPublishInFather(initLog.debug, blocp, blocFaceTore2,'blocFaceTore2')
 
   return blocFaceFiss, blocFaceTore1, blocFaceTore2
-

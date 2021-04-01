@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Identification des éléments géométriques de la face de peau"""
 
 import logging
 
@@ -30,8 +31,7 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
                                       edgesFondFiss, wireFondFiss, aretesVivesC, \
                                       facesDefaut, centreFondFiss, rayonPipe, \
                                       aretesVivesCoupees):
-  """
-  """
+  """Identification des éléments géométriques de la face de peau"""
   logging.info('start')
   fillingFaceExterne = facesDefaut[ifil]
 
@@ -40,17 +40,18 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
   # --- identification edges fond de fissure, edges pipe sur la face de fissure, edges prolongées
   #     edges internes communes pipe et fissure, points communs edges fissure peau et edges circulaires
 
-  (edgesPipeIn, verticesPipePeau, edgesFondIn, facesInside, facesOnside) = identifieElementsFissure(ifil, facesDefaut, partitionPeauFissFond,
-                                                                                                    edgesPipeFiss, edgesFondFiss, aretesVivesC,
-                                                                                                    fillingFaceExterne, centreFondFiss)
+  (edgesPipeIn, verticesPipePeau, edgesFondIn, facesInside, facesOnside) = \
+                           identifieElementsFissure(ifil, facesDefaut, partitionPeauFissFond, \
+                                                    edgesPipeFiss, edgesFondFiss, aretesVivesC, \
+                                                    fillingFaceExterne, centreFondFiss)
 
   # --- elements débouchants (intersection pipe et peau), indexés selon les edges du fond de fissure (edgesFondIn)
 
   (verticesEdgesFondIn, pipexts, cercles,
-   facesFissExt, edgesFissExtPeau, edgesFissExtPipe) = identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
-                                                                                    edgesFondIn, edgesFondFiss, wireFondFiss,
-                                                                                    aretesVivesC, fillingFaceExterne,
-                                                                                    edgesPipeIn, verticesPipePeau, rayonPipe,
+   facesFissExt, edgesFissExtPeau, edgesFissExtPipe) = identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond, \
+                                                                                    edgesFondIn, edgesFondFiss, wireFondFiss, \
+                                                                                    aretesVivesC, fillingFaceExterne, \
+                                                                                    edgesPipeIn, verticesPipePeau, rayonPipe, \
                                                                                     facesInside, facesOnside)
 
   # --- pour les faces de peau sans extremité débouchante de fissure, il faut recenser les edges de fissure sur la face de peau
@@ -60,16 +61,16 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
 
   # --- inventaire des faces de peau : face de peau percée du pipe, extrémités du pipe
 
-  (facePeau, facesPeauSorted, edgesPeauFondIn) = identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss,
-                                                                    verticesEdgesFondIn, pipexts, cercles,
+  (facePeau, facesPeauSorted, edgesPeauFondIn) = identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss, \
+                                                                    verticesEdgesFondIn, pipexts, cercles, \
                                                                     fillingFaceExterne, centreFondFiss)
 
   # --- identification précise des edges et disques des faces de peau selon index extremité fissure
 
-  (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau,
-   edgesCircPeau, verticesCircPeau, groupEdgesBordPeau,
-   bordsVifs, edgesFissurePeau, aretesVivesCoupees) = identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSorted,
-                                                                         edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees)
+  (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, edgesCircPeau, verticesCircPeau, groupEdgesBordPeau, \
+  bordsVifs, edgesFissurePeau, aretesVivesCoupees) = \
+                                              identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSorted, \
+                                                                edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees)
 
   dataPPFF = dict(endsEdgeFond        = endsEdgeFond,        # pour chaque face [points edge fond de fissure aux débouchés du pipe]
                   facesPipePeau       = facesPipePeau,       # pour chaque face [faces du pipe débouchantes]
@@ -87,4 +88,3 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
                  )
 
   return dataPPFF, aretesVivesCoupees
-

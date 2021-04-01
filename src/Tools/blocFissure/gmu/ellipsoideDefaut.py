@@ -17,26 +17,25 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""ellipsoide defaut"""
 
 import logging
 import math
+
 from .geomsmesh import geompy
 from .triedreBase import triedreBase
+
 O, OX, OY, OZ = triedreBase()
 
-# -----------------------------------------------------------------------------
-# --- ellipsoide defaut
-
-def ellipsoideDefaut(minRad,allonge,rayTore):
-  """
-  Le bloc contenant la fissure est un ellipsoide construit centre a l'origine,
+def ellipsoideDefaut(minRad,allonge):
+  """Le bloc contenant la fissure est un ellipsoide construit centre a l'origine,
   contenant le tore elliptique de fissure
+
   @param minRad :petit rayon
   @param allonge :rapport grand rayon / petit rayon
-  @param rayTore :rayon du tore construit autour de la generatrice de l'ellipse
   @return  ellipsoide (geomObject)
   """
-  logging.info("start") 
+  logging.info("start")
   boule = geompy.MakeSphereR(2)
   bouler = geompy.MakeRotation(boule, OY, math.pi/2.0)
   face = geompy.MakeFaceHW(100, 100, 3)

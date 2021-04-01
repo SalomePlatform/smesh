@@ -17,19 +17,21 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Fissure dans un coude"""
 
 import os
 
-from .geomsmesh import geompy, smesh
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
-
+import logging
 import math
 import GEOM
 import SALOMEDS
 import SMESH
-import logging
+
+from . import initLog
+
+from .geomsmesh import geompy, smesh
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
 
 from .fissureGenerique import fissureGenerique
 
@@ -42,12 +44,12 @@ from .sortEdges import sortEdges
 O, OX, OY, OZ = triedreBase()
 
 class fissureCoude(fissureGenerique):
-  """
-  problème de fissure du Coude : version de base
-  maillage hexa
-  """
+  """Problème de fissure du Coude : version de base - maillage hexa"""
 
   nomProbleme = "fissureCoude"
+  longitudinale = None
+  circonferentielle = None
+  elliptique = None
 
   # ---------------------------------------------------------------------------
   def setParamGeometrieSaine(self):
@@ -347,10 +349,8 @@ class fissureCoude(fissureGenerique):
     logging.info("genereShapeFissure %s", self.nomCas)
     logging.info("shapeFissureParams %s", shapeFissureParams)
 
-    angleCoude = geomParams['angleCoude']
     r_cintr    = geomParams['r_cintr']
     l_tube_p1  = geomParams['l_tube_p1']
-    l_tube_p2  = geomParams['l_tube_p2']
     epais      = geomParams['epais']
     de         = geomParams['de']
 
@@ -364,8 +364,6 @@ class fissureCoude(fissureGenerique):
     self.elliptique  = False
     if 'elliptique' in shapeFissureParams:
       self.elliptique = shapeFissureParams['elliptique']
-
-
 
     azimut = -azimut # axe inverse / ASCOUF
     axe = geompy.MakeTranslation(OY, -r_cintr, 0, -l_tube_p1)
@@ -383,10 +381,8 @@ class fissureCoude(fissureGenerique):
     self.circonferentielle = False
     self.longitudinale = False
     if self.fissureLongue and not self.elliptique:
-      if abs(orientation) < 45 :
-        self.longitudinale = True
-      else:
-        self.circonferentielle = True
+      self.longitudinale = bool(abs(orientation) < 45)
+      self.circonferentielle = not bool(abs(orientation) < 45)
 
     nbp1 = 10
     if self.circonferentielle:
@@ -400,8 +396,8 @@ class fissureCoude(fissureGenerique):
         raybor = de/2. - epais
         rayint = raybor + profondeur
         rayext = raybor - profondeur/5.0
-      lgfond = longueur -2*profondeur
-      angle = lgfond/(2*raybor)
+      lgfond = longueur -2.*profondeur
+      angle = lgfond/(2.*raybor)
       pb = geompy.MakeVertex(raybor, 0, 0)
       pi = geompy.MakeVertex(rayint, 0, 0)
       pbl = geompy.MakeRotation(pb, OZ, angle)
@@ -592,7 +588,7 @@ class fissureCoude(fissureGenerique):
       geomPublish(initLog.debug,  centre, 'centrefissPlace' )
 
       edges = geompy.ExtractShapes(facefiss, geompy.ShapeType["EDGE"], True)
-      edgesTriees, minl, maxl = sortEdges(edges)
+      edgesTriees, _, _ = sortEdges(edges)
       edges = edgesTriees[:-1] # la plus grande correspond à arce, on l'elimine
       wiretube = geompy.MakeWire(edges)
       #wiretube = edgesTriees[-1]
@@ -643,7 +639,7 @@ class fissureCoude(fissureGenerique):
       facefiss = geompy.MakeFaceWires([arce, arci], 0)
       geomPublish(initLog.debug,  facefiss, 'facefissPlace' )
       edges = geompy.ExtractShapes(facefiss, geompy.ShapeType["EDGE"], True)
-      edgesTriees, minl, maxl = sortEdges(edges)
+      edgesTriees, _, _ = sortEdges(edges)
       edgetube = edgesTriees[-1] # la plus grande correspond à arci
       wiretube = edgetube
 

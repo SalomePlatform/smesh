@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Initialisations des impressions"""
 
 import logging
 import os
@@ -34,6 +35,7 @@ ch = None
 fh = None
 
 def setLogger(logfile, level, formatter):
+  """setLogger"""
   global ch, fh
   rootLogger = logging.getLogger('')
   if fh is not None:
@@ -53,9 +55,9 @@ def setLogger(logfile, level, formatter):
     rootLogger.addHandler(ch)
     ch.setFormatter(formatter)
   rootLogger.setLevel(level)
-  
-  
+
 def setDebug(logfile=None):
+  """setDebug"""
   global loglevel
   loglevel = debug
   level = logging.DEBUG
@@ -64,6 +66,7 @@ def setDebug(logfile=None):
   logging.info('start Debug %s', loglevel)
 
 def setVerbose(logfile=None):
+  """setVerbose"""
   global loglevel
   loglevel = info
   level = logging.INFO
@@ -72,28 +75,32 @@ def setVerbose(logfile=None):
   logging.info('start Verbose %s', loglevel)
 
 def setRelease(logfile=None):
+  """setRelease"""
   global loglevel
   loglevel = warning
   level = logging.WARNING
   formatter = logging.Formatter('%(funcName)s[%(lineno)d] %(message)s')
   setLogger(logfile, level, formatter)
   logging.warning('start Release %s', loglevel)
-  
+
 def setUnitTests(logfile=None):
+  """setUnitTests"""
   global loglevel
   loglevel = critical
   level = logging.CRITICAL
   formatter = logging.Formatter('%(funcName)s[%(lineno)d] %(message)s')
   setLogger(logfile, level, formatter)
   logging.critical('start UnitTests %s', loglevel)
-  
+
 def setPerfTests(logfile=None):
+  """setPerfTests"""
   global loglevel
   loglevel = critical
   level = logging.CRITICAL
   formatter = logging.Formatter('%(funcName)s[%(lineno)d] %(message)s')
   setLogger(logfile, level, formatter)
   logging.info('start PerfTests %s', loglevel)
-  
+
 def getLogLevel():
+  """getLogLevel"""
   return loglevel

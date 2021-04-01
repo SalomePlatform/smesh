@@ -17,31 +17,36 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Identification des faces et edges de fissure externe pour maillage"""
 
 import logging
+
+from . import initLog
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
-from . import initLog
 
 def identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesPipeFiss):
-  """identification des faces et edges de fissure externe pour maillage"""
+  """Identification des faces et edges de fissure externe pour maillage"""
   logging.info('start')
 
-  logging.debug("---------------------------- fsFissuExt : {} ".format(fsFissuExt))
+  texte = "---------------------------- fsFissuExt : {} ".format(fsFissuExt)
+  logging.debug(texte)
   facesFissExt = list()
   edgesFissExtPeau = list()
   edgesFissExtPipe = list()
-  for ifil in range(len(fsFissuExt)): # TODO: éliminer les doublons (comparer tous les vertices triés, avec mesure de distance ?)
-    facesFissExt += fsFissuExt[ifil]
+  for ifil, face in enumerate(fsFissuExt): # éliminer les doublons (comparer tous les vertices triés, avec mesure de distance ?)
+    facesFissExt += face
     edgesFissExtPeau += edFisExtPe[ifil]
     edgesFissExtPipe += edFisExtPi[ifil]
-  logging.debug("---------------------------- identification faces de fissure externes au pipe : {}".format(len(facesFissExt)))
+  texte = "---------------------------- identification faces de fissure externes au pipe : {}".format(len(facesFissExt))
+  logging.debug(texte)
   # regroupement des faces de fissure externes au pipe.
 
   if not facesFissExt:
-    logging.info("---------------------------- fsFissuExt : {} ".format(fsFissuExt))
+    texte = "---------------------------- fsFissuExt : {} ".format(fsFissuExt)
+    logging.info(texte)
     raise Exception("stop identifieFacesEdgesFissureExterne ; aucune face de fissure externe au pipe n'a été trouvée.")
 
   elif len(facesFissExt) > 1:
@@ -49,17 +54,20 @@ def identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesP
     edgesPipeFissureExterneC = geompy.GetInPlace(faceFissureExterne, geompy.MakeCompound(edgesPipeFiss))    # edgesFissExtPipe peut ne pas couvrir toute la longueur
     # edgesPeauFissureExterneC = geompy.GetInPlace(faceFissureExterne, geompy.MakeCompound(edgesFissExtPeau))
     # il peut manquer des edges de faceFissureExterne en contact avec la peau dans edgesFissExtPeau
-    (isDone, closedFreeBoundaries, openFreeBoundaries) = geompy.GetFreeBoundary(faceFissureExterne)
+    (_, closedFreeBoundaries, _) = geompy.GetFreeBoundary(faceFissureExterne)
     edgesBordFFE = list()
     for bound in closedFreeBoundaries:
       edgesBordFFE += geompy.ExtractShapes(bound, geompy.ShapeType["EDGE"], False)
     edgesBordFFEid = [ (ed,geompy.GetSubShapeID(faceFissureExterne, ed)) for ed in edgesBordFFE]
-    logging.debug("edgesBordFFEid {}".format(edgesBordFFEid))
+    texte = "edgesBordFFEid {}".format(edgesBordFFEid)
+    logging.debug(texte)
     edgesPPE = geompy.ExtractShapes(edgesPipeFissureExterneC, geompy.ShapeType["EDGE"], False)
     edgesPPEid = [ geompy.GetSubShapeID(faceFissureExterne, ed) for ed in edgesPPE]
-    logging.debug("edgesPPEid {}".format(edgesPPEid))
+    texte = "edgesPPEid {}".format(edgesPPEid)
+    logging.debug(texte)
     edgesPFE = [ edid[0] for edid in edgesBordFFEid if edid[1] not in edgesPPEid] # on garde toutes les edges de bord non en contact avec le pipe
-    logging.debug("edgesPFE {}".format(edgesPFE))
+    texte = "edgesPFE {}".format(edgesPFE)
+    logging.debug(texte)
     edgesPeauFissureExterneC = geompy.MakeCompound(edgesPFE)
 
   else:

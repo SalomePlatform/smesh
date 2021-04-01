@@ -17,26 +17,24 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Création élements géométriques fissure elliptique"""
 
 import logging
+from . import initLog
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
-from . import initLog
 
 from .toreFissure import toreFissure
 from .ellipsoideDefaut import ellipsoideDefaut
 from .rotTrans import rotTrans
 from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 
-# -----------------------------------------------------------------------------
-# --- création élements géométriques fissure elliptique
-
 def genereElemsFissureElliptique(shapeFissureParams, \
                                  mailleur="MeshGems"):
-  """
-  TODO: a completer
-  """
+  """Création élements géométriques fissure elliptique"""
+
   logging.info('start')
 
   centreDefaut  = shapeFissureParams['centreDefaut']
@@ -51,7 +49,7 @@ def genereElemsFissureElliptique(shapeFissureParams, \
   allonge = demiGrandAxe/demiPetitAxe
   rayonTore = demiPetitAxe/5.0
   generatrice, _, Pipe_1, FaceFissure, Plane_1, Pipe1Part = toreFissure(demiPetitAxe, allonge, rayonTore)
-  ellipsoide = ellipsoideDefaut(demiPetitAxe, allonge, rayonTore)
+  ellipsoide = ellipsoideDefaut(demiPetitAxe, allonge)
 
   # --- positionnement sur le bloc defaut de generatrice, tore et plan fissure
 

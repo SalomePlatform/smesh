@@ -17,12 +17,10 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Création d'une nouvelle étude"""
 
 import logging
-myStudy = None
 
 def initEtude():
-  """
-  creation nouvelle etude salome
-  """
+  """Création nouvelle etude salome"""
   from . import geomsmesh

@@ -17,19 +17,18 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Message d'erreur"""
 
 class fissError(Exception):
-  """
-  usage:
+  """ Usage:
   try:
     instructions()
   except:
-    raise fissError(traceback.extract_stack(),"mon message")  
+    raise fissError(traceback.extract_stack(),"mon message")
   """
   def __init__(self, pile, msg):
-    self.pile = pile    
+    self.pile = pile
     self.msg = msg
 
   def __str__(self):
-    return 'msg=%s\npile=%s\n'%(self.msg, repr(self.pile))
-  
+    return 'msg={}\npile={}\n'.format(self.msg, repr(self.pile))

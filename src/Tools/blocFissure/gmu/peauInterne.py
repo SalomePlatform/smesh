@@ -17,18 +17,18 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Peau interne du defaut dans le maillage sain"""
 
 import logging
-from .geomsmesh import smesh
-import SMESH
 import traceback
-from .fissError import fissError
 
+import SMESH
+
+from .geomsmesh import smesh
+
+from .fissError import fissError
 from .listOfExtraFunctions import lookForCorner
 from .fusionMaillageAttributionDefaut import fusionMaillageDefaut
-
-# -----------------------------------------------------------------------------
-# --- peau interne du defaut dans le maillage sain
 
 def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   """Retrouve les groupes de défaut dans le maillage sain modifié par CreateHoleSkin (CreeZoneDefautMaillage)
@@ -37,7 +37,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   Remarque : intérêt du passage par fichierMaillage plutôt que par maillageSain ?
   """
   logging.info("start")
-  ([maillageSain], status) = smesh.CreateMeshesFromMED(fichierMaillage)
+  ([maillageSain], _) = smesh.CreateMeshesFromMED(fichierMaillage)
 
   groups = maillageSain.GetGroups()
   #print ("groupes :")
@@ -78,7 +78,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   for entity_type in info:
     #print (". {} : {})".format(entity_type, info[entity_type]))
     nbelem += info[entity_type]
-    if ("Entity_Hexa" == str(entity_type)):
+    if ( str(entity_type) == "Entity_Hexa" ):
       nbhexa += info[entity_type]
       nbhexa += info[entity_type]
   #print ("==> nbelem = {}, nbhexa = {}".format(nbelem,nbhexa))
@@ -92,16 +92,16 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
     texte += "<li>Il n'y a pas que des hexaèdres réglés linéaires dans la zone à remailler (notamment mailles quadratiques, tetraèdres non traités)</li></ul>"
     raise fissError(traceback.extract_stack(),texte)
 
-  nbAdded, maillageSain, DefautBoundary = maillageSain.MakeBoundaryElements( SMESH.BND_2DFROM3D, 'DefBound', '', 0, [ zoneDefaut ])
+  _, maillageSain, DefautBoundary = maillageSain.MakeBoundaryElements( SMESH.BND_2DFROM3D, 'DefBound', '', 0, [ zoneDefaut ])
   internal = maillageSain.GetMesh().CutListOfGroups( [ DefautBoundary ], [ zoneDefaut_skin ], 'internal' )
   internalBoundary = smesh.CopyMesh( internal, 'internalBoundary', 0, 0)
 
   maillageDefautCible = smesh.CopyMesh(zoneDefaut_skin, 'maillageCible', 0, 0)
   listOfCorner = lookForCorner(maillageDefautCible)
-  logging.debug("listOfCorner = {}".format(listOfCorner))
+  texte = "listOfCorner = {}".format(listOfCorner)
+  logging.debug(texte)
   if listOfCorner:
-      logging.info("présence de coins à la surface externe de la zone à reconstruire")
-      zoneDefaut_skin, internalBoundary = fusionMaillageDefaut(maillageSain, maillageDefautCible, internalBoundary, zoneDefaut_skin, shapeDefaut, listOfCorner)
+    logging.info("présence de coins à la surface externe de la zone à reconstruire")
+    zoneDefaut_skin, internalBoundary = fusionMaillageDefaut(maillageSain, maillageDefautCible, internalBoundary, zoneDefaut_skin, shapeDefaut, listOfCorner)
 
   return maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges
-

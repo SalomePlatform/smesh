@@ -17,13 +17,13 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Maillage face de fissure pour identification zone de défaut"""
 
 import logging
-from .geomsmesh import smesh
+
 from salome.smesh import smeshBuilder
 
-# -----------------------------------------------------------------------------
-# --- maillage face de fissure pour identification zone de defaut
+from .geomsmesh import smesh
 
 def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
                                mailleur="MeshGems"):
@@ -46,7 +46,8 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
       -SetQuadAllowed = permission quadrangle dans maillage triangle
 
 -On récupère les coordonnées de chaque noeud de la fissure qu'on stocke
-   dans une liste sous la forme : [X0, Y0, Z0, ..., Xn, Yn, Zn]"""
+   dans une liste sous la forme : [X0, Y0, Z0, ..., Xn, Yn, Zn]
+  """
 
   logging.info('start')
 

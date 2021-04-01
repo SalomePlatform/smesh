@@ -17,18 +17,17 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Tore : aces toriques et volumes du tore"""
 
 import logging
-from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
+
 from . import initLog
+
+from .geomsmesh import geompy
+from .geomsmesh import geomPublishInFather
+
 from .extractionOrientee import extractionOrientee
 from .getSubshapeIds import getSubshapeIds
-
-# -----------------------------------------------------------------------------
-# --- TORE
-# --- faces toriques  et volumes du tore
 
 def facesVolumesToriques(tore, plan, facesDefaut):
   """
@@ -43,28 +42,25 @@ def facesVolumesToriques(tore, plan, facesDefaut):
   normal = geompy.GetNormal(plan, centre)
   reference = geompy.MakeTranslationVector(centre, normal)
 
-  [facesInPlan, facesOutPlan, facesOnPlan] = extractionOrientee(plan, tore, reference, "FACE", 1.e-2, "faceTorePlan_")
-  [facesInSide, facesOutSide, facesOnSide] = extractionOrientee(facesDefaut, tore, reference, "FACE", 1.e-2, "faceTorePeau_")
+  [facesInPlan, facesOutPlan, _] = extractionOrientee(plan, tore, reference, "FACE", 1.e-2, "faceTorePlan_")
   facesIdInPlan = getSubshapeIds(tore, facesInPlan)
   facesIdOutPlan = getSubshapeIds(tore, facesOutPlan)
+
+  [_, _, facesOnSide] = extractionOrientee(facesDefaut, tore, reference, "FACE", 1.e-2, "faceTorePeau_")
   facesIdOnSide = getSubshapeIds(tore, facesOnSide)
-  facesIdInSide = getSubshapeIds(tore, facesInSide)
-  facesIdOutSide = getSubshapeIds(tore, facesOutSide)
-  #facesIdInOutSide = facesIdInSide + facesIdOutSide
+
   facetore1 = None
-  faceTore2 = None
-  for i, faceId in enumerate(facesIdInPlan):
+  for i_aux, faceId in enumerate(facesIdInPlan):
     if faceId not in facesIdOnSide:
-      facetore1 = facesInPlan[i]
+      facetore1 = facesInPlan[i_aux]
       break
-  for i, faceId in enumerate(facesIdOutPlan):
-    if faceId not in facesIdOnSide:
-      facetore2 = facesOutPlan[i]
-      break
-
-  #[facetore1,facetore2] = geompy.GetShapesOnShape(pipe0, tore, geompy.ShapeType["FACE"], GEOM.ST_ON)
-
   geomPublishInFather(initLog.debug, tore, facetore1, 'facetore1' )
+
+  facetore2 = None
+  for i_aux, faceId in enumerate(facesIdOutPlan):
+    if faceId not in facesIdOnSide:
+      facetore2 = facesOutPlan[i_aux]
+      break
   geomPublishInFather(initLog.debug, tore, facetore2, 'facetore2' )
 
   [volumeTore1, volumeTore2] = geompy.ExtractShapes(tore, geompy.ShapeType["SOLID"], True)

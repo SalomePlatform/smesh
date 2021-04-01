@@ -20,14 +20,17 @@
 """procédure complète de construction d'une fissure générale"""
 
 import logging
+
+from . import initLog
+
 import salome
+from salome.smesh import smeshBuilder
+import GEOM
+import SMESH
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublishInFather
-from . import initLog
-import GEOM
 from .geomsmesh import smesh
-from salome.smesh import smeshBuilder
-import SMESH
 
 from .orderEdgesFromWire import orderEdgesFromWire
 from .restreintFaceFissure import restreintFaceFissure

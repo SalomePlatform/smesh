@@ -17,16 +17,19 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Pipe de fond de fissure, prolongé, partition face fissure par pipe"""
 
-import math
 import logging
+import math
+import traceback
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
+
 from . import initLog
 from .findWireEndVertices import findWireEndVertices
 from .prolongeWire import prolongeWire
-import traceback
 from .fissError import fissError
 
 def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
@@ -46,7 +49,7 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
     #fondFissCoupe = geompy.GetInPlaceByHistory(shapeDefaut, fondFiss) #= inutile
     geomPublish(initLog.debug, shapeDefaut, 'shapeDefaut_coupe')
     #geomPublishInFather(initLog.debug,shapeDefaut, fondFissCoupe, 'fondFiss_coupe')
-  
+
   extrem, norms = findWireEndVertices(fondFiss, True)
   logging.debug("extrem: %s, norm: %s",extrem, norms)
   cercle = geompy.MakeCircle(extrem[0], norms[0], rayonPipe)
@@ -66,10 +69,10 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
   geomPublish(initLog.debug, fissPipe, 'fissPipe')
   partPipe = geompy.GetInPlaceByHistory(partFissPipe, pipeFiss)
   geomPublish(initLog.debug, partPipe, 'partPipe')
-  
+
   edgesPipeFiss = geompy.GetSharedShapesMulti([fissPipe, partPipe], geompy.ShapeType["EDGE"])
-  for i, edge in enumerate(edgesPipeFiss):
-    name = "edgePipe%d"%i
+  for i_aux, edge in enumerate(edgesPipeFiss):
+    name = "edgePipe{}".format(i_aux)
     geomPublishInFather(initLog.debug,fissPipe, edge, name)
   try:
     wirePipeFiss = geompy.MakeWire(edgesPipeFiss)
@@ -77,13 +80,13 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
     wirePipeFiss = geompy.MakeCompound(edgesPipeFiss)
     logging.debug("wirePipeFiss construit sous forme de compound")
   geomPublish(initLog.debug, wirePipeFiss, "wirePipeFiss")
-  
+
   wireFondFiss = geompy.GetInPlace(partFissPipe,fondFiss)
   edgesFondFiss = geompy.GetSharedShapesMulti([fissPipe, wireFondFiss], geompy.ShapeType["EDGE"])
-  for i, edge in enumerate(edgesFondFiss):
-    name = "edgeFondFiss%d"%i
+  for i_aux, edge in enumerate(edgesFondFiss):
+    name = "edgeFondFiss{}".format(i_aux)
     geomPublishInFather(initLog.debug,fissPipe, edge, name)
   wireFondFiss = geompy.MakeWire(edgesFondFiss)
-  geomPublish(initLog.debug, wireFondFiss,"wireFondFiss")  
+  geomPublish(initLog.debug, wireFondFiss,"wireFondFiss")
 
   return (fissPipe, edgesPipeFiss, edgesFondFiss, wirePipeFiss, wireFondFiss)

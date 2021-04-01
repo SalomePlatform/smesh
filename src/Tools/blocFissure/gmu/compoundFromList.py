@@ -17,36 +17,36 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""compoundFromList"""
 
 import logging
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
 from . import initLog
 
 def compoundFromList(elements, nom=None):
   """compoundFromList"""
 
   logging.debug('start')
-  
-  shapeList = list()
-  for a in elements:
-    if not isinstance(a, list):
-      shapeList.append(a)
+
+  l_shapes = list()
+  for elem in elements:
+    if not isinstance(elem, list):
+      l_shapes.append(elem)
     else:
-      if a[0] is not None:
-        shapeList.append(a[0])
-      
+      if elem[0] is not None:
+        l_shapes.append(elem[0])
+
   if nom is not None:
-    for i,a in enumerate(shapeList):
-      nomi = nom +"%d"%i
+    for indice, elem in enumerate(l_shapes):
+      nomi = nom +"%d"%indice
       logging.debug('nom: %s',nomi)
-      geomPublish(initLog.debug, a, nomi)
+      geomPublish(initLog.debug, elem, nomi)
 
   shapeCompound = None
-  if len(shapeList) > 0:
-    shapeCompound =geompy.MakeCompound(shapeList)
+  if l_shapes:
+    shapeCompound = geompy.MakeCompound(l_shapes)
     nomc = "compound_%s"%nom
     geomPublish(initLog.debug, shapeCompound, nomc)
+
   return shapeCompound
-    

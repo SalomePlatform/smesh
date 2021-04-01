@@ -17,13 +17,15 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""TODO: a compléter"""
 
 import os
 
 import logging
-from .geomsmesh import smesh
 import SMESH
 import SALOMEDS
+
+from .geomsmesh import smesh
 
 from .creeZoneDefautMaillage import creeZoneDefautMaillage
 from .peauInterne import peauInterne
@@ -32,10 +34,7 @@ from .creeZoneDefautFilling import creeZoneDefautFilling
 from .creeZoneDefautGeom import creeZoneDefautGeom
 from .getCentreFondFiss import getCentreFondFiss
 
-# -----------------------------------------------------------------------------
-# ---
-
-def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
+def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, \
                                 shapeFissureParams, maillageFissureParams):
   """
   #TODO: a compléter
@@ -65,11 +64,10 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   nomFicSain          = maillageFissureParams['nomFicSain']
 
   fichierMaillageSain = os.path.join (nomRep , '{}.med'.format(nomFicSain))
-  
+
   # --- centre de fond de fissure et tangente
-  
+
   edgeFondExt, centreFondFiss, tgtCentre = getCentreFondFiss(shapesFissure)
-  
 
   # --- zone de défaut
   nomZones = "zoneDefaut"
@@ -89,9 +87,9 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   isPlane = False
   if isHexa and not isPlane:
     meshQuad =  smesh.CopyMesh( zoneDefaut_skin, 'meshQuad', 0, 0)
-    
-    fillings, noeuds_bords, bordsPartages, fillconts, idFilToCont = quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss)
-    
+
+    fillings, _, bordsPartages, fillconts, idFilToCont = quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss)
+
     for filling in fillings:
       [faceDefaut, centreDefaut, normalDefaut, extrusionDefaut] = \
         creeZoneDefautFilling(filling, shapeDefaut, lgExtrusion)
@@ -101,14 +99,15 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
       extrusionsDefaut.append(extrusionDefaut)
   else:
     [facesDefaut, centreDefaut, normalDefaut, extrusionDefaut] = \
-      creeZoneDefautGeom( geometrieSaine, shapeDefaut, origShapes, verticesShapes, dmoyen, lgExtrusion)
+      creeZoneDefautGeom( geometrieSaine, shapeDefaut, origShapes, verticesShapes, lgExtrusion)
     bordsPartages = list()
-    for face in facesDefaut:
+    for _ in facesDefaut:
       bordsPartages.append([None,None]) # TODO : traitement des arêtes vives ?
     fillconts = facesDefaut
     idFilToCont = list(range(len(facesDefaut)))
 
-  return [facesDefaut, centresDefaut, normalsDefaut, extrusionsDefaut, dmoyen, bordsPartages, fillconts, idFilToCont,
-          maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges,
+  return [facesDefaut, centresDefaut, normalsDefaut, extrusionsDefaut, \
+          dmoyen, bordsPartages, fillconts, idFilToCont, \
+          maillageSain, internalBoundary, \
+          zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges, \
           edgeFondExt, centreFondFiss, tgtCentre]
-

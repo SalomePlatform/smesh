@@ -17,16 +17,17 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Zone de defaut extraite du maillage"""
 
 import logging
-from .geomsmesh import geompy
 import math
-from .distance2 import distance2
 import traceback
+
+from .geomsmesh import geompy
+from .distance2 import distance2
 from .fissError import fissError
 
 # -----------------------------------------------------------------------------
-# --- zone de defaut extraite du maillage
 
 def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
                            nomZones, coordsNoeudsFissure):
@@ -45,12 +46,13 @@ def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
   @return (origShapes, verticesShapes, dmoyen) liste id subShapes, listes noeuds de bord, longueur arête moyenne bord
   """
   logging.info("start")
-  logging.debug("distance d'influence (tailleDefaut) = %f" % tailleDefaut)
+  texte = "distance d'influence (tailleDefaut) = {}".format(tailleDefaut)
+  logging.debug(texte)
   #print ("  shapeDefaut : {}".format(shapeDefaut))
   #print ("  nomZones : {}".format(nomZones))
 
   maillageSain = maillagesSains[0]
-  isHexa = maillagesSains[1]
+  #isHexa = maillagesSains[1]
   lists = maillageSain.CreateHoleSkin(tailleDefaut, shapeDefaut, nomZones, coordsNoeudsFissure)
 
   #print("lists = {}".format(lists))
@@ -59,8 +61,8 @@ def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
   origShapes = list()
   verticesShapes = list()
 
-  cumul = 0. # somme des distances carrées entre point ordonnés (taille des arêtes)
-  nb = 0     # nombre d'arêtes évaluées
+  cumul = 0. # somme des distances carrées entre points ordonnés (taille des arêtes)
+  nbar = 0     # nombre d'arêtes évaluées
 
   for aList in lists:
     aShape = aList[0]
@@ -77,17 +79,18 @@ def creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut,
       xyz0 = xyz
       #logging.debug("    node %s %s", node, xyz)
       vertices.append(geompy.MakeVertex(xyz[0], xyz[1], xyz[2]))
-    nb += len(aList) - 2
+    nbar += len(aList) - 2
     verticesShapes.append(vertices)
-  #print ("nb = {}".format(nb))
+  #print ("nbar = {}".format(nbar))
   #print ("cumul = {}".format(cumul))
 
-  if (nb == 0):
+  if (nbar == 0):
     texte = "La zone à remailler n'est pas détectée correctement.<br>"
     texte += "Cause possible :<ul>"
     texte += "<li>La distance d'influence est trop petite. "
     texte += "L'ordre de grandeur minimal correspond à la taille des mailles du maillage sain dans la zone à remailler.</li></ul>"
     raise fissError(traceback.extract_stack(),texte)
 
-  dmoyen = math.sqrt(cumul/float(nb)) # ~ taille de l'arête moyenne du maillage global
+  dmoyen = math.sqrt(cumul/float(nbar)) # ~ taille de l'arête moyenne du maillage global
+
   return origShapes, verticesShapes, dmoyen

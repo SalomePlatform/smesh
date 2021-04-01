@@ -20,16 +20,17 @@
 """Cas standard"""
 
 import os
-from .geomsmesh import geompy, smesh
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
+import logging
 
-import math
 import GEOM
 import SALOMEDS
 import SMESH
-import logging
+
+from .geomsmesh import geompy, smesh
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+
+from . import initLog
 
 from .fissureGenerique import fissureGenerique
 
@@ -88,7 +89,7 @@ class casStandard(fissureGenerique):
   def genereMaillageSain(self, geometriesSaines, meshParams):
     logging.info("genereMaillageSain %s", self.nomCas)
 
-    ([objetSain], status) = smesh.CreateMeshesFromMED(self.dicoParams['maillageSain'])
+    ([objetSain], _) = smesh.CreateMeshesFromMED(self.dicoParams['maillageSain'])
     smesh.SetName(objetSain.GetMesh(), 'objetSain')
 
     return [objetSain, True] # True : maillage hexa

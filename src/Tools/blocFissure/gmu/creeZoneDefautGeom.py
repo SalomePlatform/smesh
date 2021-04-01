@@ -20,23 +20,21 @@
 """Zone de défaut, constructions géométrique avec CAO d'origine"""
 
 import logging
+from . import initLog
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
 from .prolongeVertices import prolongeVertices
 
-def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoyen, lgExtrusion=50):
-  """
-  Construction CAO de la zone à remailler, quand on utilise la CAO d'origine,
-  apres appel creeZoneDefautMaillage
+def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, lgExtrusion=50):
+  """Construction CAO de la zone à remailler, quand on utilise la CAO d'origine,apres appel creeZoneDefautMaillage
+
   @param objetSain : la géometrie de l'objet initial
   @param shapeDefaut : objet géometrique représentant la fissure
   (selon les cas, un point central, ou une shape plus complexe,
   dont on ne garde que les vertices)
   @param origShapes : liste id subShapes
   @param verticesShapes : listes noeuds de bord
-  @param dmoyen : longueur arete moyenne bord
   @lgExtrusion : distance d'extrusion de la face du defaut
   (ne vaut que pour des fissures courtes)
   @return (facesDefaut, centreDefaut, normalDefaut, extrusionDefaut)
@@ -182,9 +180,8 @@ def creeZoneDefautGeom(objetSain, shapeDefaut, origShapes, verticesShapes, dmoye
     minDist = min(distances)
     for indice, dist in enumerate(distances):
       if dist == minDist:
-        indice0 = indice
+        theShellDefaut = shells[indice]
         break
-    theShellDefaut = shells[indice0]
     #
   else: # --- une seule face de defaut
     subFaces = [facesDefaut]
