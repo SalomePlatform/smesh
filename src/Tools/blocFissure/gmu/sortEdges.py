@@ -17,10 +17,10 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
 """tri par longueur d'edges"""
 
 import logging
+
 from .geomsmesh import geompy
 
 def sortEdges(edgesToSort):
@@ -29,6 +29,6 @@ def sortEdges(edgesToSort):
 
   l_length = [(geompy.BasicProperties(edge)[0], i, edge) for i, edge in enumerate(edgesToSort)]
   l_length.sort()
-  edgesSorted = [edge for length, i, edge in l_length]
+  edgesSorted = [edge for _, i, edge in l_length]
 
   return edgesSorted, l_length[0][0], l_length[-1][0]

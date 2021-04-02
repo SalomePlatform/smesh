@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2020  EDF R&D
+# Copyright (C) 2014-2021  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,129 +17,158 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""Insertion de fissure longue - maillage pipe fond fissure"""
+"""procédure complète de construction d'une fissure longue"""
 
 import logging
+
 import salome
+
 from .geomsmesh import geompy
-from .geomsmesh import smesh
-from salome.smesh import smeshBuilder
-import SMESH
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
 
+from . import initLog
+
+from .extractionOrientee import extractionOrientee
+from .sortFaces import sortFaces
 from .sortEdges import sortEdges
-from .putName import putName
+from .eliminateDoubles import eliminateDoubles
+from .substractSubShapes import substractSubShapes
 
-import math
+# -----------------------------------------------------------------------------
 
-def insereFissureLongue_a (pipeFondFiss, disques, rayons, demiCercles, demiCerclesPeau, generatrices, \
-                           VerticesEndPipeFiss, verticesEdgePeauFiss, \
-                           groupFaceFissInPipe, groupEdgeFondFiss, groupsDemiCerclesPipe, groupGenerFiss, \
-                           profondeur, rayonPipe, distance2):
-  """maillage pipe fond fissure"""
+def insereFissureLongue_a(facePorteFissure, WirePorteFondFissure, \
+                          fillingFaceExterne, \
+                          pipefiss, rayonPipe, \
+                          mailleur="MeshGems"):
+  """procedure complete fissure longue"""
   logging.info('start')
+  logging.info("Usage du mailleur %s", mailleur)
 
-  meshFondFiss = smesh.Mesh(pipeFondFiss)
-  algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.QUADRANGLE)
-  algo3d = meshFondFiss.Prism()
-  putName(algo3d.GetSubMesh(), "pipe")
-  putName(algo3d, "algo3d_pipe")
-  putName(algo2d, "algo2d_pipe")
 
-  for i, face in enumerate(disques):
-    algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.RADIAL_QUAD,geom=face)
-    putName(algo2d.GetSubMesh(), "disque", i)
-    putName(algo2d, "algo2d_disque", i)
+  # -----------------------------------------------------------------------------
+  # --- peau et face de fissure
 
-  for i, edge in enumerate(rayons):
-    algo1d = meshFondFiss.Segment(geom=edge)
-    hypo1d = algo1d.NumberOfSegments(4)
-    putName(algo1d.GetSubMesh(), "rayon", i)
-    putName(algo1d, "algo1d_rayon", i)
-    putName(hypo1d, "hypo1d_rayon", i)
+  # --- partition peau defaut - face de fissure prolongee - wire de fond de fissure prolongée
+  partitionPeauFissFond = geompy.MakePartition([facePorteFissure, WirePorteFondFissure, fillingFaceExterne], list(), list(), list(), geompy.ShapeType["FACE"], 0, list(), 0)
+  geomPublish(initLog.debug,  partitionPeauFissFond, 'partitionPeauFissFond' )
 
-  for i, edge in enumerate(demiCercles):
-    algo1d = meshFondFiss.Segment(geom=edge)
-    hypo1d = algo1d.NumberOfSegments(6)
-    putName(algo1d.GetSubMesh(), "demiCercle", i)
-    putName(algo1d, "algo1d_demiCercle", i)
-    putName(hypo1d, "hypo1d_demiCercle", i)
+  edges = geompy.ExtractShapes(WirePorteFondFissure, geompy.ShapeType["EDGE"], False)
 
-  generSorted, minlg, maxlg = sortEdges(generatrices)
-  nbSegGenLong = int(math.sqrt(3.0)*maxlg/(profondeur - rayonPipe)) # on veut 2 triangles equilateraux dans la largeur de la face
-  nbSegGenBout = 6
-  logging.info("min %s, max %s, nombre de segments %s, nombre de generatrices %s", minlg, maxlg, nbSegGenLong, len(generSorted))
-  for i, edge in enumerate(generSorted):
-    algo1d = meshFondFiss.Segment(geom=edge)
-    if i < 6:
-      hypo1d = algo1d.NumberOfSegments(nbSegGenBout)
-    else:
-      hypo1d = algo1d.NumberOfSegments(nbSegGenLong)
-    putName(algo1d.GetSubMesh(), "generatrice", i)
-    putName(algo1d, "algo1d_generatrice", i)
-    putName(hypo1d, "hypo1d_generatrice", i)
+  lgmax = 0
+  imax = 0
+  for i_aux, edge in enumerate(edges):
+    props = geompy.BasicProperties(edge)
+    longueur = props[0]
+    if ( longueur > lgmax ):
+      lgmax = longueur
+      imax = i_aux
+  edgemax = edges[imax]
+  geomPublish(initLog.debug, edgemax, 'edgemax')
+  centreFondFiss = geompy.MakeVertexOnCurve(edgemax, 0.5)
+  geomPublish(initLog.debug, centreFondFiss, 'centreFondFiss')
+  tangentFondFiss = geompy.MakeTangentOnCurve(edgemax, 0.5)
+  geomPublish(initLog.debug, tangentFondFiss, 'tangentFondFiss')
 
-  disks = list()
-  for i, face in enumerate(disques[:4]):
-    name = "disk%d"%i
-    disks.append(meshFondFiss.GroupOnGeom(face, name, SMESH.FACE))
-  _ = meshFondFiss.GetMesh().UnionListOfGroups( disks, 'PEAUEXT' )
+  bord1FondFiss = geompy.MakeVertexOnCurve(edgemax, 0.0)
+  geomPublish(initLog.debug, bord1FondFiss, 'bord1FondFiss')
+  tangentBord1FondFiss = geompy.MakeTangentOnCurve(edgemax, 0.0)
+  geomPublish(initLog.debug, tangentBord1FondFiss, 'tangentBord1FondFiss')
 
-  _ = meshFondFiss.GroupOnGeom(VerticesEndPipeFiss[0], "PFOR", SMESH.NODE)
-  _ = meshFondFiss.GroupOnGeom(VerticesEndPipeFiss[1], "PFEX", SMESH.NODE)
+  bord2FondFiss = geompy.MakeVertexOnCurve(edgemax, 1.0)
+  geomPublish(initLog.debug, bord2FondFiss, 'bord2FondFiss')
+  tangentBord2FondFiss = geompy.MakeTangentOnCurve(edgemax, 1.0)
+  geomPublish(initLog.debug, tangentBord2FondFiss, 'tangentBord2FondFiss')
 
-  _ = meshFondFiss.GroupOnGeom(groupFaceFissInPipe, "fisInPi", SMESH.FACE)
-  _ = meshFondFiss.GroupOnGeom(groupEdgeFondFiss, "FONDFISS", SMESH.EDGE)
-  _ = meshFondFiss.GroupOnGeom(groupEdgeFondFiss, "nfondfis", SMESH.NODE)
+  planBord1 = geompy.MakePlane(bord1FondFiss, tangentBord1FondFiss, 3*rayonPipe)
+  planBord2 = geompy.MakePlane(bord2FondFiss, tangentBord2FondFiss, 3*rayonPipe)
+  geomPublish(initLog.debug, planBord1, 'planBord1')
+  geomPublish(initLog.debug, planBord2, 'planBord2')
 
-  groups_demiCercles = list()
-  groupnodes_demiCercles = list()
-  for i, group in enumerate(groupsDemiCerclesPipe):
+  [edgesInside, _, _] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "EDGE", 1.e-3)
+  [facesInside, _, facesOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissFond, centreFondFiss, "FACE", 1.e-3)
+
+  # --- partition peau -face fissure - pipe fond de fissure prolongé
+  partitionPeauFissByPipe = geompy.MakePartition([facesInside[0], facesOnside[0]], [pipefiss], list(), list(), geompy.ShapeType["FACE"], 0, list(), 0)
+  geomPublish(initLog.debug,  partitionPeauFissByPipe, 'partitionPeauFissByPipe' )
+
+  # --- identification face de peau
+  [facesPeauFissInside, _, facesPeauFissOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissByPipe, centreFondFiss, "FACE", 0.1, "peauFiss_bord_")
+  facesPeauSorted, _, _ = sortFaces(facesPeauFissOnside) # 4 demi disques, une grande face
+  facePeau = facesPeauSorted[-1] # la plus grande face
+  geomPublishInFather(initLog.debug,partitionPeauFissByPipe, facePeau, "facePeau")
+
+  # --- identification edges de bord face peau
+  edgesFilling = geompy.ExtractShapes(fillingFaceExterne, geompy.ShapeType["EDGE"], False)
+  edgesBords = list()
+  for i, edge in enumerate(edgesFilling):
+    edgepeau = geompy.GetInPlace(facePeau, edge)
+    edgesBords.append(edgepeau)
+  groupEdgesBordPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
+  geompy.UnionList(groupEdgesBordPeau, edgesBords)
+  geomPublishInFather(initLog.debug,facePeau, groupEdgesBordPeau , "EdgesBords")
+
+  # --- identification face fissure externe au pipe et edge commune peau fissure
+  for face in facesPeauFissInside:
+    try:
+      sharedEdges = geompy.GetSharedShapesMulti([facePeau, face], geompy.ShapeType["EDGE"])
+      if sharedEdges is not None:
+        faceFiss = face
+        edgePeauFiss = sharedEdges[0]
+        geomPublishInFather(initLog.debug,partitionPeauFissByPipe, faceFiss, "faceFiss")
+        geomPublishInFather(initLog.debug,faceFiss, edgePeauFiss, "edgePeauFiss")
+        geomPublishInFather(initLog.debug,facePeau, edgePeauFiss, "edgePeauFiss")
+        break
+    except:
+      pass
+  verticesEdgePeauFiss = geompy.ExtractShapes(edgePeauFiss, geompy.ShapeType["VERTEX"], False)
+
+  # --- identification edges demi cercle dans face de peau
+  edgesFacePeau = geompy.ExtractShapes(facePeau, geompy.ShapeType["EDGE"], False)
+  edgesFacePeauSorted, _, _ = sortEdges(edgesFacePeau)
+  demiCerclesPeau = edgesFacePeauSorted[0:4]
+  verticesDemiCerclesPeau = list()
+  for i, edge in enumerate(demiCerclesPeau):
+    name = "demiCerclePeau_%d"%i
+    geomPublishInFather(initLog.debug,facePeau, edge, name)
+    verticesDemiCerclesPeau += geompy.ExtractShapes(edge, geompy.ShapeType["VERTEX"], False)
+  verticesDemiCerclesPeau = eliminateDoubles(facePeau, verticesDemiCerclesPeau)
+  for i, vertex in enumerate(verticesDemiCerclesPeau):
+    name = "verticesDemiCerclesPeau_%d"%i
+    geomPublishInFather(initLog.debug,facePeau, vertex, name)
+  verticesOutCercles = substractSubShapes(facePeau, verticesDemiCerclesPeau, verticesEdgePeauFiss)
+  for i, vertex in enumerate(verticesOutCercles):
+    name = "verticesOutCercles_%d"%i
+    geomPublishInFather(initLog.debug,facePeau, vertex, name)
+
+  # --- demi cercles  regroupés
+  groupsDemiCerclesPeau = list()
+  for i, vertex in enumerate(verticesEdgePeauFiss):
+    demis = list()
+    for edge in demiCerclesPeau:
+      if geompy.MinDistance(vertex, edge) < 1.e-5:
+        demis.append(edge)
+    group = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
+    geompy.UnionList(group, demis)
     name = "Cercle%d"%i
-    groups_demiCercles.append(meshFondFiss.GroupOnGeom(group, name, SMESH.EDGE))
-    name = "nCercle%d"%i
-    groupnodes_demiCercles.append(meshFondFiss.GroupOnGeom(group, name, SMESH.NODE))
-  group_generFiss = meshFondFiss.GroupOnGeom(groupGenerFiss, "GenFiss", SMESH.EDGE)
-  groupnode_generFiss = meshFondFiss.GroupOnGeom(groupGenerFiss, "GenFiss", SMESH.NODE)
+    geomPublishInFather(initLog.debug,facePeau, group , name)
+    groupsDemiCerclesPeau.append(group)
 
-  is_done = meshFondFiss.Compute()
-  text = "meshFondFiss.Compute"
-  if is_done:
-    logging.info(text+" OK")
-  else:
-    text = "Erreur au calcul du maillage.\n" + text
-    logging.info(text)
-    raise Exception(text)
+  # --- identification edges commune pipe face fissure externe au pipe
+  edgePeauFissId = geompy.GetSubShapeID(partitionPeauFissByPipe, edgePeauFiss)
+  edgesFaceFiss = geompy.ExtractShapes(faceFiss, geompy.ShapeType["EDGE"], False)
+  edgesFaceFissPipe = list()
+  for edge in edgesFaceFiss:
+    if geompy.GetSubShapeID(partitionPeauFissByPipe, edge) != edgePeauFissId:
+      edgesFaceFissPipe.append(edge)
+      name = "edgeFaceFissPipe_%d"%len(edgesFaceFissPipe)
+      geomPublishInFather(initLog.debug,faceFiss, edge, name)
+  groupEdgesFaceFissPipe = geompy.CreateGroup(faceFiss, geompy.ShapeType["EDGE"])
+  geompy.UnionList(groupEdgesFaceFissPipe, edgesFaceFissPipe)
+  geomPublishInFather(initLog.debug,faceFiss, groupEdgesFaceFissPipe, "edgesFaceFissPipe")
 
-  grpNode0 = meshFondFiss.IntersectGroups(groupnode_generFiss, groupnodes_demiCercles[0], "Node0")
-  grpNode1 = meshFondFiss.IntersectGroups(groupnode_generFiss, groupnodes_demiCercles[1], "Node1")
-  idNode0 = grpNode0.GetID(1)
-  idNode1 = grpNode1.GetID(1)
-  coordsMesh = list()
-  coordsMesh.append(meshFondFiss.GetNodeXYZ(idNode0))
-  coordsMesh.append(meshFondFiss.GetNodeXYZ(idNode1))
-
-  for vertex in verticesEdgePeauFiss:
-    coord = geompy.PointCoordinates(vertex)
-    if distance2(coord, coordsMesh[0]) < 0.1:
-      meshFondFiss.MoveNode(idNode0, coord[0], coord[1], coord[2])
-    if distance2(coord, coordsMesh[1]) < 0.1:
-      meshFondFiss.MoveNode(idNode1, coord[0], coord[1], coord[2])
-
-  for groupNodes in groupnodes_demiCercles:
-    for idNode in groupNodes.GetListOfID():
-      coordMesh = meshFondFiss.GetNodeXYZ(idNode)
-      vertex = geompy.MakeVertex(coordMesh[0], coordMesh[1], coordMesh[2])
-      minDist = 100000
-      minCoord = None
-      imin = -1
-      for i, edge in enumerate(demiCerclesPeau):
-        discoord = geompy.MinDistanceComponents(vertex, edge)
-        if discoord[0] <minDist:
-          minDist = discoord[0]
-          minCoord = discoord[1:]
-          imin = i
-      if imin >= 0 and minDist > 1.E-6:
-        logging.debug("node id moved : %s distance=%s", idNode, minDist)
-        meshFondFiss.MoveNode(idNode, coordMesh[0] + minCoord[0], coordMesh[1] + minCoord[1], coordMesh[2] + minCoord[2])
-
-  return meshFondFiss, groups_demiCercles, group_generFiss, nbSegGenLong, nbSegGenBout
+  return edgesInside, centreFondFiss, tangentFondFiss, \
+          planBord1, planBord2, \
+          facePeau, faceFiss, verticesOutCercles, verticesEdgePeauFiss, \
+          edgePeauFiss, demiCerclesPeau, \
+          groupEdgesBordPeau, groupsDemiCerclesPeau, groupEdgesFaceFissPipe

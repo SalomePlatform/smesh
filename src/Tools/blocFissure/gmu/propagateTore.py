@@ -17,44 +17,45 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Recherche et classement des edges du tore par propagate"""
+
 
 import logging
+
 from .geomsmesh import geompy
-from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
+
 from . import initLog
 
-# -----------------------------------------------------------------------------
-# --- recherche et classement des edges du tore par propagate
-
 def propagateTore(tore):
-  """
-  Classement des edges du tore par une operation 'propagate'
+  """Classement des edges du tore par une operation 'propagate'
+
   @param tore partionné et coupé
   @return (diams, circles, geners) edges dans le plan de fissure, edges demi circulaires,
   edges selon la generatrice (liste de compounds)
   """
   logging.info("start")
 
-  lencomp = []
+  lencomp = list()
   compounds = geompy.Propagate(tore)
-  for i in range(len(compounds)):
-    #geomPublishInFather(initLog.debug, tore, compounds[i], 'edges' )
-    props = geompy.BasicProperties(compounds[i])
+  for objet in compounds:
+    #geomPublishInFather(initLog.debug, tore, objet, 'edges' )
+    props = geompy.BasicProperties(objet)
     lencomp.append(props[0])
-    pass
+# Remarque : on passe par min et max plutôt que faire lencomp.sort() pour garder l'ordre dans le tri suivant
   minlen = min(lencomp)
   maxlen = max(lencomp)
-  diams = []
-  geners = []
-  circles = []
-  for i in range(len(lencomp)):
-    if (lencomp[i]- minlen)/minlen < 0.01 :
-      diams.append(compounds[i])
-    elif (maxlen - lencomp[i])/lencomp[i] < 0.2 :
-      geners.append(compounds[i])
+
+  diams = list()
+  geners = list()
+  circles = list()
+  for i_aux, longueur in enumerate(lencomp):
+    if ( (longueur- minlen)/minlen < 0.01 ):
+      diams.append(compounds[i_aux])
+    elif ( (maxlen - longueur)/longueur < 0.2 ):
+      geners.append(compounds[i_aux])
     else:
-      circles.append(compounds[i])
+      circles.append(compounds[i_aux])
 
   geomPublishInFather(initLog.debug, tore, diams[0], 'diams0' )
   geomPublishInFather(initLog.debug, tore, diams[1], 'diams1' )

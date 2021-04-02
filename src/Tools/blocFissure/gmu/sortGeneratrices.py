@@ -17,15 +17,14 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""tri par longueur des 3 generatrices"""
 
 import logging
-from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
 
-# -----------------------------------------------------------------------------
-# --- tri par longueur des 3 generatrices
+from .geomsmesh import geompy
+from .geomsmesh import geomPublishInFather
+
+from . import initLog
 
 def sortGeneratrices(tore, geners):
   """
@@ -38,24 +37,23 @@ def sortGeneratrices(tore, geners):
 
   genx = geompy.ExtractShapes(geners[0], geompy.ShapeType["EDGE"], True)
 
-  lenx = []
-  for i in range(len(genx)):
-    props = geompy.BasicProperties(genx[i])
+  lenx = list()
+  for gene in genx:
+    props = geompy.BasicProperties(gene)
     lenx.append(props[0])
-    pass
+
   minlen = min(lenx)
   maxlen = max(lenx)
   genext=None
   gencnt=None
   genint=None
-  for i in range(len(genx)):
-    if lenx[i] == minlen:
-      genint = genx[i]
-    elif lenx[i] == maxlen:
-      genext = genx[i]
+  for i_aux, gene in enumerate(genx):
+    if lenx[i_aux] == minlen:
+      genint = gene
+    elif lenx[i_aux] == maxlen:
+      genext = gene
     else:
-      gencnt= genx[i]
-    pass
+      gencnt= gene
 
   geomPublishInFather(initLog.debug, tore, genext, 'genext' )
   geomPublishInFather(initLog.debug, tore, genint, 'genint' )

@@ -17,21 +17,24 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Remarque : cette focntion n'est jamais appelée ????"""
 
 import logging
-from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
-import GEOM
 import math
 import numpy as np
 
+import GEOM
+
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+
+from . import initLog
+
 def mydot(a):
+  """produit scalaire"""
   return np.dot(a,a)
 
-# -----------------------------------------------------------------------------
-# --- groupe de quadrangles de face transformé en face géométrique par filling
 
 def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
   """
@@ -51,14 +54,14 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
     isVecteurDefaut = True
     vecteurDefaut = shapeFissureParams['vecteurDefaut']
 
-  fillings = []       # les faces reconstituées, découpées selon les arêtes vives
-  noeuds_bords = []   #
-  bords_Partages = [] # contient a la fin les courbes correspondant aux arêtes vives
-  fillconts = []      # les faces reconstituées, sans découpage selon les arêtes vives
-  idFilToCont = []    # index face découpée vers face sans découpe
+  fillings = list()       # les faces reconstituées, découpées selon les arêtes vives
+  noeuds_bords = list()   #
+  bords_Partages = list() # contient a la fin les courbes correspondant aux arêtes vives
+  fillconts = list()      # les faces reconstituées, sans découpage selon les arêtes vives
+  idFilToCont = list()    # index face découpée vers face sans découpe
   iface = 0           # index face découpée
   icont = 0           # index face continue
-  
+
   allNodeIds = meshQuad.GetNodesId()
   while len(allNodeIds):
     nodeIds = allNodeIds
@@ -67,13 +70,13 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
       if len(elems) == 1:
         # un coin: un noeud, un element quadrangle
         elem = elems[0]
-        break;
+        break
     idStart = idNode # le noeud de coin
     elemStart = elem # l'élément quadrangle au coin
     xyz = meshQuad.GetNodeXYZ(idStart)
     logging.debug("idStart %s, coords %s", idStart, str(xyz))
-  
-    nodelines =[] # on va constituer une liste de lignes de points
+
+    nodelines = list() # on va constituer une liste de lignes de points
     nextLine = True
     ligneFinale = False
     while nextLine:
@@ -87,8 +90,8 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
         agauche = True
       ligneIncomplete = True # on commence une ligne de points
       debutLigne = True
-      nodeline = []
-      elemline = []
+      nodeline = list()
+      elemline = list()
       while ligneIncomplete: # compléter la ligne de points
         nodeline.append(idNode)
         allNodeIds.remove(idNode)
@@ -148,10 +151,10 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
       logging.debug("nodeline %s", nodeline)
       logging.debug("elemline %s", elemline)
       nodelines.append(nodeline)
-       
+
     # on a constitué une liste de lignes de points connexes
-    logging.debug("dimensions [%s, %s]", len(nodelines),  len(nodeline))   
-    
+    logging.debug("dimensions [%s, %s]", len(nodelines),  len(nodeline))
+
     # stockage des coordonnées dans un tableau numpy
     mat = np.zeros((len(nodelines), len(nodeline), 3))
     for i, ligne in enumerate(nodelines):
@@ -159,7 +162,7 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
         mat[i,j] = meshQuad.GetNodeXYZ(nodeId)
     logging.debug("matrice de coordonnées: \n%s",mat)
     logging.debug("dimensions %s", mat.shape)
-    
+
     # recherche d'angles supérieurs a un seuil sur une ligne : angle entre deux vecteurs successifs
     cosmin = math.cos(math.pi/4.)          # TODO: angle reference en paramètre
     vecx = mat[:, 1:,  :] - mat[:, :-1, :] # vecteurs selon direction "x"
@@ -186,11 +189,11 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
     rupY = [x for x in range(len(nodelines)-2) if np.prod(ruptureY[x, :])]
     logging.debug("lignes de rupture: %s",rupY)
     if (len(rupX)*len(rupY)) > 0:
-      logging.critical("""Cas non traité: présence d'angles vifs dans 2 directions, 
+      logging.critical("""Cas non traité: présence d'angles vifs dans 2 directions,
       lors de la reconstitution des faces géométriques dans la zone remaillée""")
-    
-    mats = []
-    bordsPartages = []
+
+    mats = list()
+    bordsPartages = list()
     if (len(rupX)> 0):
       rupX.append(mat.shape[1]-1)
       for i, index in enumerate(rupX):
@@ -220,8 +223,8 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
     else:
       mats.append(mat)
       bordsPartages.append([0,0])         # les indices différents de 0 correspondent à des bords partagés
-    
-    curvconts = []
+
+    curvconts = list()
     for nmat, amat in enumerate(mats):
       logging.debug("dimensions matrice %s: %s", nmat, amat.shape)
       nbLignes = amat.shape[1] # pas de rupture, ou rupture selon des colonnes: on transpose
@@ -229,13 +232,13 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
       if len(rupY) > 0 :       # rupture selon des lignes: pas de transposition
         nbLignes = amat.shape[0]
         nbCols = amat.shape[1]
-      curves = []
-      noeudsBords = []
+      curves = list()
+      noeudsBords = list()
       for i in range(4):
         noeudsBords.append([])
       k = 0
       for i in range(nbLignes):
-        nodeList = []
+        nodeList = list()
         for j in range(nbCols):
           #logging.debug("point[%s,%s] = (%s, %s, %s)",i,j,amat[i,j,0], amat[i,j,1], amat[i,j,2])
           if len(rupY) > 0 : # pas de transposition
@@ -263,7 +266,7 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
         curve = geompy.MakeInterpol(nodeList, False, False)
         #name = "curve_%d"%i
         #geomPublish(initLog.debug,  curve, name )
-        if len(curvconts) == 0 or len(curves) > 0: # éliminer les doublons de la surface sans découpe 
+        if len(curvconts) == 0 or len(curves) > 0: # éliminer les doublons de la surface sans découpe
           curvconts.append(nodeList)
         curves.append(curve)
       if bordsPartages[nmat][0] :
@@ -282,7 +285,7 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
       if centreFondFiss is not None:
         logging.debug("orientation filling a l'aide du centre de fond de fissure")
         vecteurDefaut = geompy.MakeVector(centreFondFiss, vertex)
-        
+
       if not isVecteurDefaut:
         pointIn_x = 0.0
         pointIn_y = 0.0
@@ -301,7 +304,7 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
           cdg = geompy.MakeVertex(pointIn_x, pointIn_y, pointIn_z)
           logging.debug("orientation filling par point intérieur %s", (pointIn_x, pointIn_y, pointIn_z))
           vecteurDefaut = geompy.MakeVector(cdg, vertex)
-        
+
       if 'convexe' in shapeFissureParams:
         isConvexe = shapeFissureParams['convexe']
         logging.debug("orientation filling par indication de convexité %s", isConvexe)
@@ -310,7 +313,7 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
           vecteurDefaut = geompy.MakeVector(cdg, vertex)
         else:
           vecteurDefaut = geompy.MakeVector(vertex, cdg)
-     
+
       if vecteurDefaut is not None:
         geomPublish(initLog.debug, normal, "normFillOrig%d"%iface)
         geomPublish(initLog.debug, vecteurDefaut, "fromInterieur%d"%iface)
@@ -323,14 +326,14 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
       noeuds_bords.append(noeudsBords)
       idFilToCont.append(icont)
       bords_Partages += bordsPartages
-      pass # --- loop on mats
+      # --- loop on mats
     # --- reconstruction des faces continues à partir des listes de noeuds
     #     les courbes doivent suivre la courbure pour éviter les oscillations
     if icont == iface - 1: # pas de découpe, on garde la même face
       fillcont = fillings[-1]
     else:
       nbLignes = len(curvconts[0])
-      curves = []
+      curves = list()
       for i in range(nbLignes):
         nodes = [curvconts[j][i] for j in range(len(curvconts))]
         curve = geompy.MakeInterpol(nodes, False, False)
@@ -338,7 +341,7 @@ def quadranglesToShape(meshQuad, shapeFissureParams, centreFondFiss):
       fillcont = geompy.MakeFilling(geompy.MakeCompound(curves), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
     geomPublish(initLog.debug,  fillcont, "filcont%d"%icont )
     fillconts.append(fillcont)
-    icont = icont+1   
-    pass   # --- loop while there are remaining nodes
-  
+    icont = icont+1
+    # --- loop while there are remaining nodes
+
   return fillings, noeuds_bords, bords_Partages, fillconts, idFilToCont

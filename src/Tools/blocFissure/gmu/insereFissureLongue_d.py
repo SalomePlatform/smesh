@@ -17,58 +17,83 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""Insertion de fissure longue - maillage meshBoiteDefaut"""
+"""Insertion de fissure longue - maillage face de peau"""
 
 import logging
+
 import salome
-from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
 
+from .geomsmesh import geompy
+from .geomsmesh import smesh
+
 from .putName import putName
 
-def insereFissureLongue_d (internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
+def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibres, \
+                           groupsDemiCerclesPeau, groups_demiCercles, verticesOutCercles, \
+                           nbSegGenLong, nbSegGenBout, profondeur, \
                            mailleur="MeshGems"):
-  """maillage meshBoiteDefaut"""
+  """maillage face de peau"""
   logging.info('start')
-  logging.info("insereFissureLongue_d (%s)", mailleur)
 
-  meshBoiteDefaut = smesh.Concatenate( [internalBoundary.GetMesh(), \
-                                        meshFondFiss.GetMesh(), \
-                                        meshFacePeau.GetMesh(), \
-                                        meshFaceFiss.GetMesh()], \
-                                        1, 1, 1e-05,False)
-  # pour aider l'algo hexa-tetra a ne pas mettre de pyramides a l'exterieur des volumes replies sur eux-memes
-  # on designe les faces de peau en quadrangles par le groupe "skinFaces"
-  group_faceFissOutPipe = None
-  group_faceFissInPipe = None
-  groups = meshBoiteDefaut.GetGroups()
-  for grp in groups:
-    if grp.GetType() == SMESH.FACE:
-      #if "internalBoundary" in grp.GetName():
-      #  grp.SetName("skinFaces")
-      if grp.GetName() == "fisOutPi":
-        group_faceFissOutPipe = grp
-      elif grp.GetName() == "fisInPi":
-        group_faceFissInPipe = grp
-
-  # le maillage NETGEN ne passe pas toujours ==> on force l'usage de MG_Tetra
-  mailleur = "MeshGems"
+  meshFacePeau = smesh.Mesh(facePeau)
   logging.info("Maillage avec %s", mailleur)
   if ( mailleur == "MeshGems"):
-    algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.MG_Tetra)
+    algo2d = meshFacePeau.Triangle(algo=smeshBuilder.MG_CADSurf)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetPhySize( 1000 )
+    hypo2d.SetMinSize( 100 )
+    hypo2d.SetMaxSize( 3000. )
+    hypo2d.SetChordalError( 250. )
+    hypo2d.SetVerbosity( 0 )
   else:
-    algo3d = meshBoiteDefaut.Tetrahedron(algo=smeshBuilder.NETGEN)
-    hypo3d = algo3d.MaxElementVolume(1000.0)
-    hypo3d.SetVerboseLevel( 0 )
-    hypo3d.SetStandardOutputLog( 0 )
-    hypo3d.SetRemoveLogOnSuccess( 1 )
-  putName(algo3d.GetSubMesh(), "boiteDefaut")
-  putName(algo3d, "algo3d_boiteDefaut")
-  putName(meshBoiteDefaut, "boiteDefaut")
+    algo2d = meshFacePeau.Triangle(algo=smeshBuilder.NETGEN_2D)
+    hypo2d = algo2d.Parameters()
+    hypo2d.SetMaxSize( 1000 )
+    hypo2d.SetOptimize( 1 )
+    hypo2d.SetFineness( 2 )
+    hypo2d.SetMinSize( 2 )
+    hypo2d.SetQuadAllowed( 0 )
+  putName(algo2d.GetSubMesh(), "facePeau")
+  putName(algo2d, "algo2d_facePeau")
+  putName(hypo2d, "hypo2d_facePeau")
+  #
+  lenEdgePeauFiss = geompy.BasicProperties(edgePeauFiss)[0]
+  frac = profondeur/lenEdgePeauFiss
+  nbSeg = nbSegGenLong +2*nbSegGenBout
+  ratio = (nbSegGenBout/float(profondeur)) / (nbSegGenLong/lenEdgePeauFiss)
+  logging.info("lenEdgePeauFiss %s, profondeur %s, nbSegGenLong %s, nbSegGenBout %s, frac %s, ratio %s", lenEdgePeauFiss, profondeur, nbSegGenLong, nbSegGenBout, frac, ratio)
 
-  is_done = meshBoiteDefaut.Compute()
-  text = "meshBoiteDefaut.Compute"
+  algo1d = meshFacePeau.Segment(geom=edgePeauFiss)
+  hypo1d = algo1d.NumberOfSegments(nbSeg,list(),[  ])
+  hypo1d.SetDistrType( 2 )
+  hypo1d.SetConversionMode( 1 )
+  hypo1d.SetTableFunction( [ 0, ratio, frac, 1, (1.-frac), 1, 1, ratio ] )
+  putName(algo1d.GetSubMesh(), "edgePeauFiss")
+  putName(algo1d, "algo1d_edgePeauFiss")
+  putName(hypo1d, "hypo1d_edgePeauFiss")
+  #
+  algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
+  hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
+  putName(algo1d.GetSubMesh(), "bordsLibres")
+  putName(algo1d, "algo1d_bordsLibres")
+  putName(hypo1d, "hypo1d_bordsLibres")
+  #
+  for i in range(2):
+    algo1d = meshFacePeau.UseExisting1DElements(geom=groupsDemiCerclesPeau[i])
+    hypo1d = algo1d.SourceEdges([ groups_demiCercles[i] ],0,0)
+    putName(algo1d.GetSubMesh(), "DemiCercles", i)
+    putName(algo1d, "algo1d_groupDemiCercles", i)
+    putName(hypo1d, "hypo1d_groupDemiCercles", i)
+
+  _ = meshFacePeau.GroupOnGeom(verticesOutCercles[0], "THOR", SMESH.NODE)
+  _ = meshFacePeau.GroupOnGeom(verticesOutCercles[1], "THEX", SMESH.NODE)
+
+  groupEdgesPeauFiss = meshFacePeau.GroupOnGeom(edgePeauFiss, "PeauFis", SMESH.EDGE)
+
+  is_done = meshFacePeau.Compute()
+  text = "meshFacePeau.Compute"
   if is_done:
     logging.info(text+" OK")
   else:
@@ -76,4 +101,7 @@ def insereFissureLongue_d (internalBoundary, meshFondFiss, meshFacePeau, meshFac
     logging.info(text)
     raise Exception(text)
 
-  return meshBoiteDefaut, group_faceFissInPipe, group_faceFissOutPipe
+  peauext_face = meshFacePeau.CreateEmptyGroup( SMESH.FACE, 'PEAUEXT' )
+  _ = peauext_face.AddFrom( meshFacePeau.GetMesh() )
+
+  return meshFacePeau, groupEdgesPeauFiss

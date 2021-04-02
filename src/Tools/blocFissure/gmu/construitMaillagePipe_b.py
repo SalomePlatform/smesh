@@ -17,17 +17,30 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""tri par surface de faces"""
+"""Les groupes des edges des cercles débouchants"""
 
 import logging
-from .geomsmesh import geompy
 
-def sortFaces(facesToSort):
-  """tri des faces par surface"""
-  logging.info('start')
+def construitMaillagePipe_b(idisk, \
+                            idisklim, nbsegCercle, \
+                            meshPipe, mptdsk, \
+                            edgeCircPipe0Group, edgeCircPipe1Group):
+  """Les groupes des edges des cercles débouchants"""
+  #logging.info('start')
 
-  l_surfaces = [(geompy.BasicProperties(face)[1], i, face) for i, face in enumerate(facesToSort)]
-  l_surfaces.sort()
-  facesSorted = [face for _, i, face in l_surfaces]
+  pts = list()
+  for n_cercle in range(nbsegCercle):
+    pts.append(mptdsk[n_cercle][-1])
+  edges = list()
+  nb_pts = len(pts)
+  for n_cercle in range(nb_pts):
+    n_cercle_1 = (n_cercle+1)%nb_pts
+    id_edge = meshPipe.AddEdge([pts[n_cercle], pts[n_cercle_1]])
+    edges.append(id_edge)
 
-  return facesSorted, l_surfaces[0][0], l_surfaces[-1][0]
+  if idisk == idisklim[0]:
+    edgeCircPipe0Group.Add(edges)
+  else:
+    edgeCircPipe1Group.Add(edges)
+
+  return

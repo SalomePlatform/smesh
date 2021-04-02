@@ -30,10 +30,17 @@ SET(plugin_SCRIPTS
   commonSubShapes.py
   compoundFromList.py
   construitEdgesRadialesDebouchantes.py
+  construitEdgesRadialesDebouchantes_a.py
+  construitEdgesRadialesDebouchantes_b.py
+  construitEdgesRadialesDebouchantes_c.py
   construitFissureGenerale.py
   construitFissureGenerale_a.py
   construitFissureGenerale_b.py
   construitFissureGenerale_c.py
+  construitMaillagePipe_a.py
+  construitMaillagePipe_b.py
+  construitMaillagePipe_c.py
+  construitMaillagePipe_d.py
   construitMaillagePipe.py
   construitPartitionsPeauFissure.py
   creePointsPipePeau.py
@@ -48,12 +55,14 @@ SET(plugin_SCRIPTS
   enleveDefaut.py
   extractionOrienteeMulti.py
   extractionOrientee.py
+  extractionOrientee_a.py
   facesCirculaires.py
   facesFissure.py
   facesToreInBloc.py
   facesVolumesToriques.py
   findWireEndVertices.py
   findWireIntermediateVertices.py
+  findWireVertices.py
   fissError.py
   fissureCoude.py
   fissureGenerique.py
@@ -64,7 +73,14 @@ SET(plugin_SCRIPTS
   getCentreFondFiss.py
   getStatsMaillageFissure.py
   getSubshapeIds.py
+  identifieEdgesPeau_a.py
+  identifieEdgesPeau_b.py
+  identifieEdgesPeau_c.py
   identifieEdgesPeau.py
+  identifieElementsDebouchants_a.py
+  identifieElementsDebouchants_b.py
+  identifieElementsDebouchants_c.py
+  identifieElementsDebouchants_d.py
   identifieElementsDebouchants.py
   identifieElementsFissure.py
   identifieElementsGeometriquesPeau.py
@@ -74,11 +90,14 @@ SET(plugin_SCRIPTS
   initLog.py
   insereFissureElliptique.py
   insereFissureGenerale.py
-  insereFissureLongue.py
   insereFissureLongue_a.py
   insereFissureLongue_b.py
   insereFissureLongue_c.py
   insereFissureLongue_d.py
+  insereFissureLongue_e.py
+  insereFissureLongue_f.py
+  insereFissureLongue_g.py
+  insereFissureLongue.py
   listOfExtraFunctions.py
   mailleAretesEtJonction.py
   mailleFacesFissure.py

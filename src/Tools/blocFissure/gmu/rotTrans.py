@@ -17,18 +17,19 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Opérateur de rotation translation d'un objet centré à l'origine"""
 
 import logging
+import math
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
-import math
-from .triedreBase import triedreBase
-O, OX, OY, OZ = triedreBase()
 
-# -----------------------------------------------------------------------------
-# --- operateur de rotation translation d'un objet centré à l'origine
+from . import initLog
+
+from .triedreBase import triedreBase
+
+O, OX, OY, OZ = triedreBase()
 
 def rotTrans(objet, orientation, point, normal, trace = False):
   """
@@ -41,33 +42,34 @@ def rotTrans(objet, orientation, point, normal, trace = False):
   @return trans : objet transformé (geomObject)
   """
   logging.info("start")
+
   planXY = geompy.MakePlaneLCS(None, 2000, 1)
   projXY = geompy.MakeProjection(normal, planXY)
-  [v1,v2] = geompy.ExtractShapes(projXY, geompy.ShapeType["VERTEX"], False)
-  xyz1 = geompy.PointCoordinates(v1)
-  xyz2 = geompy.PointCoordinates(v2)
+
+  [v_1,v_2] = geompy.ExtractShapes(projXY, geompy.ShapeType["VERTEX"], False)
+  xyz1 = geompy.PointCoordinates(v_1)
+  xyz2 = geompy.PointCoordinates(v_2)
   x = xyz2[0] - xyz1[0]
   y = xyz2[1] - xyz1[1]
   sinalpha = y / math.sqrt(x*x + y*y)
   cosalpha = x / math.sqrt(x*x + y*y)
   alpha = math.asin(sinalpha)
-  if cosalpha < 0:
+  if ( cosalpha < 0. ):
     alpha = math.pi -alpha
 
   beta = geompy.GetAngleRadians(OZ, normal)
-  [v1,v2] = geompy.ExtractShapes(normal, geompy.ShapeType["VERTEX"], False)
-  xyz1 = geompy.PointCoordinates(v1)
-  xyz2 = geompy.PointCoordinates(v2)
-  z = xyz2[2] - xyz1[2]
-  if z < 0:
+  [v_1,v_2] = geompy.ExtractShapes(normal, geompy.ShapeType["VERTEX"], False)
+  xyz1 = geompy.PointCoordinates(v_1)
+  xyz2 = geompy.PointCoordinates(v_2)
+  if ( (xyz2[2] - xyz1[2]) < 0 ):
     beta = math.pi -beta
 
   rot0 = geompy.MakeRotation(objet, OX, orientation*math.pi/180.0)
   rot1 = geompy.MakeRotation(rot0, OZ, alpha)
   axe2 = geompy.MakeRotation(OY, OZ, alpha)
   rot2 = geompy.MakeRotation(rot1, axe2, beta -math.pi/2.)
-  logging.debug("alpha",alpha)
-  logging.debug("beta",beta)
+  logging.debug("alpha %f",alpha)
+  logging.debug("beta %f",beta)
   if trace:
     geomPublish(initLog.debug,  rot1, 'rot1' )
     geomPublish(initLog.debug,  axe2, 'axe2' )
@@ -75,4 +77,5 @@ def rotTrans(objet, orientation, point, normal, trace = False):
 
   xyz = geompy.PointCoordinates(point)
   trans = geompy.MakeTranslation(rot2, xyz[0], xyz[1], xyz[2])
+
   return trans

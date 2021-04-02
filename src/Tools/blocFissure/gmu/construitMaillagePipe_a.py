@@ -17,17 +17,34 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""tri par surface de faces"""
+"""Les points"""
 
 import logging
+
 from .geomsmesh import geompy
 
-def sortFaces(facesToSort):
-  """tri des faces par surface"""
-  logging.info('start')
+def construitMaillagePipe_a(idisk, \
+                            gptsdisks, idisklim, nbsegCercle, \
+                            meshPipe, mptsdisks):
+  """Les points"""
+  #logging.info('start')
 
-  l_surfaces = [(geompy.BasicProperties(face)[1], i, face) for i, face in enumerate(facesToSort)]
-  l_surfaces.sort()
-  facesSorted = [face for _, i, face in l_surfaces]
+  gptdsk = gptsdisks[idisk]
 
-  return facesSorted, l_surfaces[0][0], l_surfaces[-1][0]
+  mptdsk = list() # vertices maillage d'un disque
+  for n_seg in range(nbsegCercle):
+
+    points = gptdsk[n_seg]
+    mptids = list()
+    for n_point, point in enumerate(points):
+      if n_point == 0 and n_seg > 0:
+        n_noeud = mptdsk[0][0]
+      else:
+        coords = geompy.PointCoordinates(point)
+        n_noeud = meshPipe.AddNode(coords[0], coords[1], coords[2])
+      mptids.append(n_noeud)
+    mptdsk.append(mptids)
+
+  mptsdisks.append(mptdsk)
+
+  return mptdsk
