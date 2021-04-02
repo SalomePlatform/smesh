@@ -22,9 +22,6 @@
 import logging
 from .geomsmesh import geompy
 
-# -----------------------------------------------------------------------------
-# ---
-
 def eliminateDoubles(obj, subshapes):
   """éliminer les doublons d'une liste de subshapes"""
 
@@ -37,7 +34,7 @@ def eliminateDoubles(obj, subshapes):
       idsubs[subid] = [sub]
 
   shortList = list()
-  for l_sub in idsubs.items():
+  for _, l_sub in idsubs.items():
     shortList.append(l_sub[0])
   logging.debug("shortList=%s", shortList)
 
