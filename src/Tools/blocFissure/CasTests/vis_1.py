@@ -85,7 +85,7 @@ class vis_1(fissureGenerique):
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
     mailleur = self.mailleur2d3d()
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.1 ,0.2, mailleur)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.1 ,0.2, mailleur, self.numeroCas)
 
     centre = None
 

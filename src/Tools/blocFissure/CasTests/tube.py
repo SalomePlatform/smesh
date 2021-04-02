@@ -84,7 +84,7 @@ class tube(fissureGenerique):
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
     mailleur = self.mailleur2d3d()
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.025, 0.1, mailleur)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.025, 0.1, mailleur, self.numeroCas)
 
     centre = None
 

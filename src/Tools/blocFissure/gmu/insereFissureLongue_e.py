@@ -35,10 +35,12 @@ def insereFissureLongue_e (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_gen
                            mailleur="MeshGems", nro_cas=-1):
   """maillage face de fissure"""
   logging.info('start')
+  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
 
   meshFaceFiss = smesh.Mesh(faceFiss)
-  mesh_size = (profondeur - rayonPipe)/math.sqrt(3.0) # pour avoir deux couches de triangles equilateraux partout sur la fissure
-  logging.info("Maillage avec %s", mailleur)
+  putName(meshFaceFiss, "faceFiss", i_pref=nro_cas)
+
+  mesh_size = (profondeur - rayonPipe)/math.sqrt(3.0) # pour avoir deux couches de triangles équilatéraux partout sur la fissure
   if ( mailleur == "MeshGems"):
     algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.MG_CADSurf)
     hypo2d = algo2d.Parameters()

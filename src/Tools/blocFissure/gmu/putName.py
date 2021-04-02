@@ -17,9 +17,9 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
 """Nommage des objets mesh (algorithme, hypothèse, subMesh)"""
 
+#import logging
 from .geomsmesh import smesh
 
 def putName (objmesh, name, i_suff=-1, i_pref=-1):
@@ -31,6 +31,7 @@ def putName (objmesh, name, i_suff=-1, i_pref=-1):
   @i_pref un éventuel préfixe
   """
 
+  #logging.info("putName pour %s - i_suff=%d, i_pref=%d", name, i_suff, i_pref)
   # suffixe éventuel :
   if i_suff >= 0:
     suffixe = "_{}".format(i_suff)
@@ -40,5 +41,6 @@ def putName (objmesh, name, i_suff=-1, i_pref=-1):
   if i_pref >= 0:
     prefixe = "Cas{:02d}_".format(i_pref)
     name = prefixe + name
+  #logging.info("Au final : %s", name)
 
   smesh.SetName(objmesh, name)

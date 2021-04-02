@@ -43,7 +43,7 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
                               zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges, \
                               facesPortFissure, \
                               maillageFissureParams, \
-                              mailleur="MeshGems"):
+                              mailleur="MeshGems", nro_cas=-1):
   """construction de la fissure générale - maillage"""
   logging.info('start')
   logging.info("Usage du mailleur %s", mailleur)
@@ -77,9 +77,9 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
     hypo3d.SetVerboseLevel( 0 )
     hypo3d.SetStandardOutputLog( 0 )
     hypo3d.SetRemoveLogOnSuccess( 1 )
-  putName(algo3d.GetSubMesh(), "boiteDefaut")
-  putName(algo3d, "algo3d_boiteDefaut")
-  putName(meshBoiteDefaut, "boiteDefaut")
+  putName(algo3d.GetSubMesh(), "boiteDefaut", i_pref=nro_cas)
+  putName(algo3d, "algo3d_boiteDefaut", i_pref=nro_cas)
+  putName(meshBoiteDefaut, "boiteDefaut", i_pref=nro_cas)
 
   is_done = meshBoiteDefaut.Compute()
   text = "meshBoiteDefaut.Compute"
@@ -94,7 +94,7 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
                                                              'FACE1' )
   maillageSain = enleveDefaut(maillageSain, zoneDefaut, zoneDefaut_skin,
                               zoneDefaut_internalFaces, zoneDefaut_internalEdges)
-  putName(maillageSain, nomFicSain+"_coupe")
+  putName(maillageSain, nomFicSain+"_coupe", i_pref=nro_cas)
   _, normfiss = shapeSurFissure(facesPortFissure)
   maillageComplet = RegroupeSainEtDefaut(maillageSain, meshBoiteDefaut, \
                                          None, None, 'COMPLET', normfiss)

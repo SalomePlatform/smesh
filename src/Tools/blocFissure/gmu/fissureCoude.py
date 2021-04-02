@@ -40,6 +40,7 @@ from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from .creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from .construitFissureGenerale import construitFissureGenerale
 from .sortEdges import sortEdges
+from .putName import putName
 
 O, OX, OY, OZ = triedreBase()
 
@@ -262,38 +263,38 @@ class fissureCoude(fissureGenerique):
 
     algo3d = maillageSain.Hexahedron()
     algo2d = maillageSain.Quadrangle()
-    smesh.SetName(algo3d, "algo3d_maillageSain")
-    smesh.SetName(algo2d, "algo2d_maillageSain")
+    putName(algo3d, "algo3d_maillageSain", i_pref=self.numeroCas)
+    putName(algo2d, "algo2d_maillageSain", i_pref=self.numeroCas)
 
     algo1d_long_p1 = maillageSain.Segment(geom=long_p1)
     hypo1d_long_p1 = algo1d_long_p1.NumberOfSegments(n_long_p1)
-    smesh.SetName(algo1d_long_p1, "algo1d_long_p1")
-    smesh.SetName(hypo1d_long_p1, "hypo1d_long_p1")
+    putName(algo1d_long_p1, "algo1d_long_p1", i_pref=self.numeroCas)
+    putName(hypo1d_long_p1, "hypo1d_long_p1", i_pref=self.numeroCas)
 
     algo1d_ep = maillageSain.Segment(geom=ep)
     hypo1d_ep = algo1d_ep.NumberOfSegments(n_ep)
-    smesh.SetName(algo1d_ep, "algo1d_ep")
-    smesh.SetName(hypo1d_ep, "hypo1d_ep")
+    putName(algo1d_ep, "algo1d_ep", i_pref=self.numeroCas)
+    putName(hypo1d_ep, "hypo1d_ep", i_pref=self.numeroCas)
 
     algo1d_long_coude = maillageSain.Segment(geom=long_coude)
     hypo1d_long_coude = algo1d_long_coude.NumberOfSegments(n_long_coude)
-    smesh.SetName(algo1d_long_coude, "algo1d_long_coude")
-    smesh.SetName(hypo1d_long_coude, "hypo1d_long_coude")
+    putName(algo1d_long_coude, "algo1d_long_coude", i_pref=self.numeroCas)
+    putName(hypo1d_long_coude, "hypo1d_long_coude", i_pref=self.numeroCas)
 
     algo1d_circ_g = maillageSain.Segment(geom=circ_g)
     hypo1d_circ_g = algo1d_circ_g.NumberOfSegments(n_circ_g)
-    smesh.SetName(algo1d_circ_g, "algo1d_circ_g")
-    smesh.SetName(hypo1d_circ_g, "hypo1d_circ_g")
+    putName(algo1d_circ_g, "algo1d_circ_g", i_pref=self.numeroCas)
+    putName(hypo1d_circ_g, "hypo1d_circ_g", i_pref=self.numeroCas)
 
     algo1d_circ_d = maillageSain.Segment(geom=circ_d)
     hypo1d_circ_d = algo1d_circ_d.NumberOfSegments(n_circ_d)
-    smesh.SetName(algo1d_circ_d, "algo1d_circ_d")
-    smesh.SetName(hypo1d_circ_d, "hypo1d_circ_d")
+    putName(algo1d_circ_d, "algo1d_circ_d", i_pref=self.numeroCas)
+    putName(hypo1d_circ_d, "hypo1d_circ_d", i_pref=self.numeroCas)
 
     algo1d_long_p2 = maillageSain.Segment(geom=long_p2)
     hypo1d_long_p2 = algo1d_long_p2.NumberOfSegments(n_long_p2)
-    smesh.SetName(algo1d_long_p2, "algo1d_long_p2")
-    smesh.SetName(hypo1d_long_p2, "hypo1d_long_p2")
+    putName(algo1d_long_p2, "algo1d_long_p2", i_pref=self.numeroCas)
+    putName(hypo1d_long_p2, "hypo1d_long_p2", i_pref=self.numeroCas)
 
     is_done = maillageSain.Compute()
     text = "maillageSain.Compute"
@@ -648,7 +649,7 @@ class fissureCoude(fissureGenerique):
       geomPublish(initLog.debug,  centre, 'centrefissPlace' )
 
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, profondeur/2. ,profondeur, \
-                                                     mailleur)
+                                                     mailleur, self.numeroCas)
 
     return [facefiss, centre, lgInfluence, coordsNoeudsFissure, wiretube, edgetube]
 

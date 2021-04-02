@@ -214,7 +214,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                 zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges, \
                                                 facesPortFissure, \
                                                 maillageFissureParams, \
-                                                mailleur )
+                                                mailleur, nro_cas )
 
   if salome.sg.hasDesktop():
     salome.sg.updateObjBrowser()

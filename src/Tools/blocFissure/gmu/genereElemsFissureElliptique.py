@@ -32,7 +32,7 @@ from .rotTrans import rotTrans
 from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 
 def genereElemsFissureElliptique(shapeFissureParams, \
-                                 mailleur="MeshGems"):
+                                 mailleur="MeshGems", nro_cas=-1):
   """Création élements géométriques fissure elliptique"""
 
   logging.info('start')
@@ -70,6 +70,6 @@ def genereElemsFissureElliptique(shapeFissureParams, \
   shapeDefaut = facefis1
   xyz_defaut = geompy.PointCoordinates(centreDefaut)
   coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefis1, demiPetitAxe/10.0, demiPetitAxe/5.0, \
-                                                   mailleur)
+                                                   mailleur, nro_cas)
 
   return shapeDefaut, xyz_defaut, tailleDefaut, coordsNoeudsFissure, pipe0, gener1, pipe1, facefis1, plane1, ellipsoide1

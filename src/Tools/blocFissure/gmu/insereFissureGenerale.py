@@ -54,13 +54,15 @@ from .whichSide import whichSide
 from .whichSideVertex import whichSideVertex
 from .projettePointSurCourbe import projettePointSurCourbe
 from .prolongeWire import prolongeWire
+from .putName import putName
 
 def insereFissureGenerale(maillagesSains,
                           shapesFissure, shapeFissureParams,
                           maillageFissureParams, elementsDefaut, \
-                          step=-1, mailleur="MeshGems"):
+                          step=-1, mailleur="MeshGems", nro_cas=-1):
   """ TODO: a completer"""
   logging.info('start')
+  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
 
   shapeDefaut       = shapesFissure[0] # faces de fissure, débordant
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
@@ -1179,7 +1181,7 @@ def insereFissureGenerale(maillagesSains,
   criteres.append(unCritere)
   filtre = smesh.GetFilterFromCriteria(criteres)
   bordsLibres = internalBoundary.MakeGroupByFilter( 'bords', filtre )
-  smesh.SetName(bordsLibres, 'bordsLibres')
+  putName(bordsLibres, 'bordsLibres', i_pref=nro_cas)
 
   # --- pour aider l'algo hexa-tetra à ne pas mettre de pyramides à l'exterieur des volumes repliés sur eux-mêmes
   #     on désigne les faces de peau en quadrangles par le groupe "skinFaces"
@@ -1195,9 +1197,9 @@ def insereFissureGenerale(maillagesSains,
     meshAretesVives = smesh.Mesh(aretesVivesC)
     algo1d = meshAretesVives.Segment()
     hypo1d = algo1d.LocalLength(dmoyen,list(),1e-07)
-    putName(algo1d.GetSubMesh(), "aretesVives")
-    putName(algo1d, "algo1d_aretesVives")
-    putName(hypo1d, "hypo1d_aretesVives")
+    putName(algo1d.GetSubMesh(), "aretesVives", i_pref=nro_cas)
+    putName(algo1d, "algo1d_aretesVives", i_pref=nro_cas)
+    putName(hypo1d, "hypo1d_aretesVives", i_pref=nro_cas)
 
     is_done = meshAretesVives.Compute()
     text = "meshAretesVives.Compute"
@@ -1234,15 +1236,15 @@ def insereFissureGenerale(maillagesSains,
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
     hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d.GetSubMesh(), "faceFiss")
-  putName(algo2d, "algo2d_faceFiss")
-  putName(hypo2d, "hypo2d_faceFiss")
+  putName(algo2d.GetSubMesh(), "faceFiss", i_pref=nro_cas)
+  putName(algo2d, "algo2d_faceFiss", i_pref=nro_cas)
+  putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
 
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
   hypo1d = algo1d.SourceEdges([ edgeFaceFissGroup ],0,0)
-  putName(algo1d.GetSubMesh(), "edgeFissPeau")
-  putName(algo1d, "algo1d_edgeFissPeau")
-  putName(hypo1d, "hypo1d_edgeFissPeau")
+  putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
+  putName(algo1d, "algo1d_edgeFissPeau", i_pref=nro_cas)
+  putName(hypo1d, "hypo1d_edgeFissPeau", i_pref=nro_cas)
 
   _ = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
   grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
@@ -1270,7 +1272,8 @@ def insereFissureGenerale(maillagesSains,
     meshFacePeau = None
     if partitionsPeauFissFond[ifil] is None: # face de peau maillage sain intacte
 
-      # --- edges de bord de la face de filling
+      # --- edges de bord de la face de filling1328
+
       filling = facesDefaut[ifil]
       edgesFilling = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], False)
       groupEdgesBordPeau = geompy.CreateGroup(filling, geompy.ShapeType["EDGE"])
@@ -1281,9 +1284,9 @@ def insereFissureGenerale(maillagesSains,
 
       algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
       hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
-      putName(algo1d.GetSubMesh(), "bordsLibres", ifil)
-      putName(algo1d, "algo1d_bordsLibres", ifil)
-      putName(hypo1d, "hypo1d_bordsLibres", ifil)
+      putName(algo1d.GetSubMesh(), "bordsLibres", ifil, nro_cas)
+      putName(algo1d, "algo1d_bordsLibres", ifil, nro_cas)
+      putName(hypo1d, "hypo1d_bordsLibres", ifil, nro_cas)
 
     else:
 
@@ -1298,22 +1301,22 @@ def insereFissureGenerale(maillagesSains,
 
       algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
       hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
-      putName(algo1d.GetSubMesh(), "bordsLibres", ifil)
-      putName(algo1d, "algo1d_bordsLibres", ifil)
-      putName(hypo1d, "hypo1d_bordsLibres", ifil)
+      putName(algo1d.GetSubMesh(), "bordsLibres", ifil, nro_cas)
+      putName(algo1d, "algo1d_bordsLibres", ifil, nro_cas)
+      putName(hypo1d, "hypo1d_bordsLibres", ifil, nro_cas)
 
       algo1d = meshFacePeau.UseExisting1DElements(geom=geompy.MakeCompound(edgesFissurePeau))
       hypo1d = algo1d.SourceEdges([ grpEdgesPeauFissureExterne ],0,0)
-      putName(algo1d.GetSubMesh(), "edgePeauFiss", ifil)
-      putName(algo1d, "algo1d_edgePeauFiss", ifil)
-      putName(hypo1d, "hypo1d_edgePeauFiss", ifil)
+      putName(algo1d.GetSubMesh(), "edgePeauFiss", ifil, nro_cas)
+      putName(algo1d, "algo1d_edgePeauFiss", ifil, nro_cas)
+      putName(hypo1d, "hypo1d_edgePeauFiss", ifil, nro_cas)
 
       if bordsVifs is not None:
         algo1d = meshFacePeau.UseExisting1DElements(geom=bordsVifs)
         hypo1d = algo1d.SourceEdges([ grpAretesVives ],0,0)
-        putName(algo1d.GetSubMesh(), "bordsVifs", ifil)
-        putName(algo1d, "algo1d_bordsVifs", ifil)
-        putName(hypo1d, "hypo1d_bordsVifs", ifil)
+        putName(algo1d.GetSubMesh(), "bordsVifs", ifil, nro_cas)
+        putName(algo1d, "algo1d_bordsVifs", ifil, nro_cas)
+        putName(hypo1d, "hypo1d_bordsVifs", ifil, nro_cas)
 
       for i, edgeCirc in enumerate(edgesCircPeau):
         if edgeCirc is not None:
@@ -1323,9 +1326,9 @@ def insereFissureGenerale(maillagesSains,
           else:
             hypo1d = algo1d.SourceEdges([ edgesCircPipeGroup[boutFromIfil[ifil]] ],0,0)
           name = "cercle%d"%i
-          putName(algo1d.GetSubMesh(), name, ifil)
-          putName(algo1d, "algo1d_" + name, ifil)
-          putName(hypo1d, "hypo1d_" + name, ifil)
+          putName(algo1d.GetSubMesh(), name, ifil, nro_cas)
+          putName(algo1d, "algo1d_" + name, ifil, nro_cas)
+          putName(hypo1d, "hypo1d_" + name, ifil, nro_cas)
 
     logging.info("Maillage avec %s", mailleur)
     if ( mailleur == "MeshGems"):
@@ -1344,9 +1347,9 @@ def insereFissureGenerale(maillagesSains,
       hypo2d.SetFineness( 2 )
       hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
       hypo2d.SetQuadAllowed( 0 )
-    putName(algo2d.GetSubMesh(), "facePeau", ifil)
-    putName(algo2d, "algo2d_facePeau", ifil)
-    putName(hypo2d, "hypo2d_facePeau", ifil)
+    putName(algo2d.GetSubMesh(), "facePeau", ifil, nro_cas)
+    putName(algo2d, "algo2d_facePeau", ifil, nro_cas)
+    putName(hypo2d, "hypo2d_facePeau", ifil, nro_cas)
 
     is_done = meshFacePeau.Compute()
     text = "meshFacePeau {} Compute".format(ifil)
@@ -1395,9 +1398,9 @@ def insereFissureGenerale(maillagesSains,
     hypo3d.SetVerboseLevel( 0 )
     hypo3d.SetStandardOutputLog( 0 )
     hypo3d.SetRemoveLogOnSuccess( 1 )
-  putName(algo3d.GetSubMesh(), "boiteDefaut")
-  putName(algo3d, "algo3d_boiteDefaut")
-  putName(meshBoiteDefaut, "boiteDefaut")
+  putName(algo3d.GetSubMesh(), "boiteDefaut", i_pref=nro_cas)
+  putName(algo3d, "algo3d_boiteDefaut", i_pref=nro_cas)
+  putName(meshBoiteDefaut, "boiteDefaut", i_pref=nro_cas)
 
   is_done = meshBoiteDefaut.Compute()
   text = "meshBoiteDefaut.Compute"
@@ -1411,7 +1414,7 @@ def insereFissureGenerale(maillagesSains,
   _ = meshBoiteDefaut.GetMesh().UnionListOfGroups( [ group_faceFissOutPipe, group_faceFissInPipe ], 'FACE1' )
   maillageSain = enleveDefaut(maillageSain, zoneDefaut, zoneDefaut_skin,
                               zoneDefaut_internalFaces, zoneDefaut_internalEdges)
-  putName(maillageSain, nomFicSain+"_coupe")
+  putName(maillageSain, nomFicSain+"_coupe", i_pref=nro_cas)
   _, normfiss = shapeSurFissure(facesPortFissure)
   maillageComplet = RegroupeSainEtDefaut(maillageSain, meshBoiteDefaut,
                                          None, None, 'COMPLET', normfiss)

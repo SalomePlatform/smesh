@@ -52,7 +52,7 @@ class faceGauche(fissureGenerique):
     logging.info("genereMaillageSain %s", self.nomCas)
 
     ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "faceGaucheSain.med"))
-    smesh.SetName(objetSain.GetMesh(), 'objetSain')
+    smesh.SetName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme))
 
     return [objetSain, True] # True : maillage hexa
 
@@ -83,7 +83,7 @@ class faceGauche(fissureGenerique):
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
     mailleur = self.mailleur2d3d()
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,50, mailleur)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,50, mailleur, self.numeroCas)
 
     centre = None
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]

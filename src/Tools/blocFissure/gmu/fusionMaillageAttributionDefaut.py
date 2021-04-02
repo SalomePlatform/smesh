@@ -33,8 +33,11 @@ from .geomsmesh import smesh
 
 from .listOfExtraFunctions import createNewMeshesFromCorner
 from .listOfExtraFunctions import createLinesFromMesh
+from .putName import putName
 
-def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible, zoneDefaut_skin, shapeDefaut, listOfCorners):
+def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible, \
+                         zoneDefaut_skin, shapeDefaut, listOfCorners, \
+                         nro_cas=-1):
   """Groupe de quadrangles de face transformé en face géométrique par filling"""
 
   logging.info("start")
@@ -96,6 +99,6 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
 
   newZoneDefaut_skin = maillageSain.GetMesh().CutListOfGroups([zoneDefaut_skin], facesEnTrop, 'newZoneDefaut_skin')
 
-  smesh.SetName(newMaillageInterne, 'newInternalBoundary')
+  putName(newMaillageInterne, 'newInternalBoundary', i_pref=nro_cas)
 
   return newZoneDefaut_skin, newMaillageInterne

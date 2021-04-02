@@ -25,8 +25,10 @@ from salome.smesh import smeshBuilder
 
 from .geomsmesh import smesh
 
+from .putName import putName
+
 def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
-                               mailleur="MeshGems"):
+                               mailleur="MeshGems", nro_cas=-1):
   """Maillage de l'objet géométrique 'facefiss'
 
 . Avec l'algorithme MG_CADSurf :
@@ -50,9 +52,12 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
   """
 
   logging.info('start')
+  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
 
   meshFissure = smesh.Mesh(facefiss)
-  text = "Maillage de '{}' avec {}".format(facefiss.GetName(),mailleur)
+  putName(meshFissure, "facefiss", i_pref=nro_cas)
+
+  text = "Maillage de '{}'".format(facefiss.GetName())
   logging.info(text)
   if ( mailleur == "MeshGems"):
     algo2d = meshFissure.Triangle(algo=smeshBuilder.MG_CADSurf)
@@ -71,8 +76,8 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( minSize )
     hypo2d.SetQuadAllowed( 0 )
-  smesh.SetName(algo2d, "algo2d_zoneFiss")
-  smesh.SetName(hypo2d, "hypo1d_zoneFiss")
+  putName(algo2d, "algo2d_zoneFiss", i_pref=nro_cas)
+  putName(hypo2d, "hypo1d_zoneFiss", i_pref=nro_cas)
 
   is_done = meshFissure.Compute()
   text = "meshFissure.Compute"

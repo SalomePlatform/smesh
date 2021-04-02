@@ -31,7 +31,7 @@ from .putName import putName
 def mailleFacesFissure(faceFissureExterne, \
                        edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
                        meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad, \
-                       mailleur="MeshGems"):
+                       mailleur="MeshGems", nro_cas=-1):
   """maillage faces de fissure"""
   logging.info('start')
 
@@ -54,17 +54,17 @@ def mailleFacesFissure(faceFissureExterne, \
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
     hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d.GetSubMesh(), "faceFiss")
-  putName(algo2d, "algo2d_faceFiss")
-  putName(hypo2d, "hypo2d_faceFiss")
+  putName(algo2d.GetSubMesh(), "faceFiss", i_pref=nro_cas)
+  putName(algo2d, "algo2d_faceFiss", i_pref=nro_cas)
+  putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
 
   texte = "Récupération des arêtes de '{}'".format(edgesPipeFissureExterneC.GetName())
   logging.info(texte)
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
   hypo1d = algo1d.SourceEdges([ meshPipeGroups['edgeFaceFissGroup'] ],0,0)
-  putName(algo1d.GetSubMesh(), "edgeFissPeau")
-  putName(algo1d, "algo1d_edgeFissPeau")
-  putName(hypo1d, "hypo1d_edgeFissPeau")
+  putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
+  putName(algo1d, "algo1d_edgeFissPeau", i_pref=nro_cas)
+  putName(hypo1d, "hypo1d_edgeFissPeau", i_pref=nro_cas)
 
   grpFaceFissureExterne = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
   grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)

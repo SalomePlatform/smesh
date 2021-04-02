@@ -37,16 +37,19 @@ from .sortEdges import sortEdges
 from .produitMixte import produitMixte
 from .findWireEndVertices import findWireEndVertices
 from .getSubshapeIds import getSubshapeIds
+from .putName import putName
 
 # -----------------------------------------------------------------------------
 
-def insereFissureLongue_b(edgesInside, centreFondFiss, tangentFondFiss, \
-                          planfiss, planBord1, planBord2, \
-                          facePeau, verticesOutCercles, verticesEdgePeauFiss, \
-                          fillingFaceExterne, rayonPipe, \
-                          internalBoundary):
+def insereFissureLongue_b (edgesInside, centreFondFiss, tangentFondFiss, \
+                           planfiss, planBord1, planBord2, \
+                           facePeau, verticesOutCercles, verticesEdgePeauFiss, \
+                           fillingFaceExterne, rayonPipe, \
+                           internalBoundary, \
+                           nro_cas=-1):
   """procedure complete fissure longue"""
   logging.info('start')
+  logging.info("Maillage pour le cas n°%d", nro_cas)
 
   # -----------------------------------------------------------------------------
   # --- pipe de fond de fissure
@@ -219,7 +222,7 @@ def insereFissureLongue_b(edgesInside, centreFondFiss, tangentFondFiss, \
   criteres.append(un_critere)
   filtre = smesh.GetFilterFromCriteria(criteres)
   bordsLibres = internalBoundary.MakeGroupByFilter( 'bords', filtre )
-  smesh.SetName(bordsLibres, 'bordsLibres')
+  putName(bordsLibres, 'bordsLibres', i_pref=nro_cas)
 
   # --- pour aider l'algo hexa-tetra a ne pas mettre de pyramides a l'exterieur des volumes replies sur eux-memes
   #     on designe les faces de peau en quadrangles par le groupe "skinFaces"
