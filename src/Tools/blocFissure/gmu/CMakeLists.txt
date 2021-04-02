@@ -127,7 +127,6 @@ SET(plugin_SCRIPTS
   sortGeneratrices.py
   sortSolids.py
   substractSubShapes.py
-  testgmu.py
   toreFissure.py
   triedreBase.py
   trouveEdgesFissPeau.py
