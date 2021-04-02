@@ -59,8 +59,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
                              step=-1, mailleur="MeshGems", nro_cas=-1):
   """procédure complète fissure générale"""
   logging.info('start')
-  logging.info("Usage du mailleur %s", mailleur)
-  logging.info("pour le cas %d", nro_cas)
+  logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)
 
   shapeDefaut       = shapesFissure[0] # faces de fissure, débordant
 
@@ -150,9 +149,10 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
   #     - points sur les edges de fond de fissure et edges pipe/face fissure,
   #     - vecteurs tangents au fond de fissure (normal au disque maillé)
 
-  (centres, gptsdisks, raydisks) = calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut, \
-                                                           centreFondFiss, wireFondFiss, wirePipeFiss, \
-                                                           lenSegPipe, rayonPipe, nbsegCercle, nbsegRad)
+  (centres, gptsdisks, raydisks) = calculePointsAxiauxPipe (edgesFondFiss, edgesIdByOrientation, facesDefaut, \
+                                                            centreFondFiss, wireFondFiss, wirePipeFiss, \
+                                                            lenSegPipe, rayonPipe, nbsegCercle, nbsegRad, \
+                                                            nro_cas)
 
   # --- recherche des points en trop (externes au volume à remailler)
   #     - on associe chaque extrémité du pipe à une face filling
@@ -179,11 +179,14 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
 
    # --- maillage effectif du pipe
 
-  (meshPipe, meshPipeGroups, edgesCircPipeGroup) = construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad)
+  (meshPipe, meshPipeGroups, edgesCircPipeGroup) =  \
+      construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad)
 
   # --- edges de bord, faces défaut à respecter
 
-  (internalBoundary, bordsLibres, grpAretesVives) = mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives)
+  (internalBoundary, bordsLibres, grpAretesVives) =  \
+      mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives, \
+                             nro_cas)
 
   # --- maillage faces de fissure
 
@@ -191,7 +194,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
       mailleFacesFissure(faceFissureExterne, \
                          edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
                          meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad, \
-                         mailleur)
+                         mailleur, nro_cas)
 
   # --- maillage faces de peau
 

@@ -46,7 +46,7 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
                               mailleur="MeshGems", nro_cas=-1):
   """construction de la fissure générale - maillage"""
   logging.info('start')
-  logging.info("Usage du mailleur %s", mailleur)
+  logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)
 
   nomRep            = maillageFissureParams['nomRep']
   nomFicSain        = maillageFissureParams['nomFicSain']

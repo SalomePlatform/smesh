@@ -41,6 +41,7 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
   """Groupe de quadrangles de face transformé en face géométrique par filling"""
 
   logging.info("start")
+  logging.info("Pour le cas n°%d", nro_cas)
 
   facesNonCoupees = list()
   facesCoupees = list()

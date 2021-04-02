@@ -34,6 +34,7 @@ def mailleFacesFissure(faceFissureExterne, \
                        mailleur="MeshGems", nro_cas=-1):
   """maillage faces de fissure"""
   logging.info('start')
+  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
 
   meshFaceFiss = smesh.Mesh(faceFissureExterne)
   logging.info("Maillage avec %s", mailleur)

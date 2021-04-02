@@ -25,9 +25,12 @@ import math
 from .geomsmesh import geompy
 from .geomsmesh import smesh
 
+from .putName import putName
+
 def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
                             centreFondFiss, wireFondFiss, wirePipeFiss,
-                            lenSegPipe, rayonPipe, nbsegCercle, nbsegRad):
+                            lenSegPipe, rayonPipe, nbsegCercle, nbsegRad, \
+                            nro_cas=-1):
   """Préparation maillage du pipe :
 
   - détections des points a respecter : jonction des edges/faces constituant
@@ -37,6 +40,7 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
   """
 
   logging.info('start')
+  logging.info("Pour le cas n°%d", nro_cas)
 
   # --- option de maillage selon le rayon de courbure du fond de fissure
   lenEdgeFondExt = 0
@@ -60,7 +64,10 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
 
   meshFondExt = smesh.Mesh(wireFondFiss)
   algo1d = meshFondExt.Segment()
-  _ = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
+  hypo1d = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
+  putName(algo1d.GetSubMesh(), "wireFondFiss", i_pref=nro_cas)
+  putName(algo1d, "algo1d_wireFondFiss", i_pref=nro_cas)
+  putName(hypo1d, "hypo1d_wireFondFiss", i_pref=nro_cas)
 
   is_done = meshFondExt.Compute()
   text = "calculePointsAxiauxPipe meshFondExt.Compute"
