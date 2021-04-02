@@ -217,6 +217,7 @@ def insereFissureLongue_b (edgesInside, centreFondFiss, tangentFondFiss, \
 
   _ = smesh.CreateFilterManager()
   _, internalBoundary, _ = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])
+  putName(internalBoundary, 'internalBoundary', i_pref=nro_cas)
   criteres = list()
   un_critere = smesh.GetCriterion(SMESH.EDGE,SMESH.FT_FreeBorders,SMESH.FT_Undefined,0)
   criteres.append(un_critere)

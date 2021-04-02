@@ -95,116 +95,122 @@ def insereFissureElliptique(geometriesSaines, maillagesSains, \
   zoneDefaut_internalFaces = elementsDefaut[12]
   zoneDefaut_internalEdges = elementsDefaut[13]
 
-  ## --- ellipse incomplete : generatrice
-  #if step == 5:
-    #return None
+  maillageComplet = None
 
-  #allonge = demiGrandAxe/demiPetitAxe
-  #rayonTore = demiPetitAxe/5.0
-  #generatrice, FaceGenFiss, Pipe_1, FaceFissure, Plane_1, Pipe1Part = self.toreFissure(demiPetitAxe, allonge, rayonTore)
-  #ellipsoide = self.ellipsoideDefaut(demiPetitAxe, allonge)
+  while True:
 
-  ## --- positionnement sur le bloc defaut de generatrice, tore et plan fissure
-  #if step == 6:
-    #return None
+    ## --- ellipse incomplete : generatrice
+    #if step == 5:
+      #break
 
-  #pipe0 = self.rotTrans(Pipe_1, orientation, centreDefaut, normalDefaut)
-  #gener1 = self.rotTrans(generatrice, orientation, centreDefaut, normalDefaut)
-  #pipe1 = self.rotTrans(Pipe1Part, orientation, centreDefaut, normalDefaut)
-  #facefis1 = self.rotTrans(FaceFissure, orientation, centreDefaut, normalDefaut)
-  #plane1 = self.rotTrans(Plane_1, orientation, centreDefaut, normalDefaut)
-  #ellipsoide1 = self.rotTrans(ellipsoide, orientation, centreDefaut, normalDefaut)
+    #allonge = demiGrandAxe/demiPetitAxe
+    #rayonTore = demiPetitAxe/5.0
+    #generatrice, FaceGenFiss, Pipe_1, FaceFissure, Plane_1, Pipe1Part = self.toreFissure(demiPetitAxe, allonge, rayonTore)
+    #ellipsoide = self.ellipsoideDefaut(demiPetitAxe, allonge)
 
-  #geomPublish(initLog.debug,  pipe0, 'pipe0' )
-  #geomPublish(initLog.debug,  gener1, 'gener1' )
-  #geomPublish(initLog.debug,  pipe1, 'pipe1' )
-  #geomPublish(initLog.debug,  facefis1, 'facefis1' )
-  #geomPublish(initLog.debug,  plane1, 'plane1' )
-  #geomPublish(initLog.debug,  ellipsoide1, 'ellipsoide1' )
+    ## --- positionnement sur le bloc defaut de generatrice, tore et plan fissure
+    #if step == 6:
+      #break
 
-  # --- partition du bloc défaut par génératrice, tore et plan fissure
-  if step == 7:
-    return None
+    #pipe0 = self.rotTrans(Pipe_1, orientation, centreDefaut, normalDefaut)
+    #gener1 = self.rotTrans(generatrice, orientation, centreDefaut, normalDefaut)
+    #pipe1 = self.rotTrans(Pipe1Part, orientation, centreDefaut, normalDefaut)
+    #facefis1 = self.rotTrans(FaceFissure, orientation, centreDefaut, normalDefaut)
+    #plane1 = self.rotTrans(Plane_1, orientation, centreDefaut, normalDefaut)
+    #ellipsoide1 = self.rotTrans(ellipsoide, orientation, centreDefaut, normalDefaut)
 
-  [ blocPartition, _, tore, \
-    faceFissure, facesExternes, facesExtBloc, facesExtElli,
-    aretesInternes, ellipsoidep, sharedFaces, sharedEdges, edgesBords] = \
-    partitionBlocDefaut(extrusionDefaut, facesDefaut, gener1, pipe1, facefis1, ellipsoide1)
-  if not isHexa:
-    edgesBords = None # maillage sain hexa ==> filling, et maillage edges Bords imposés du maillage sain
+    #geomPublish(initLog.debug,  pipe0, 'pipe0' )
+    #geomPublish(initLog.debug,  gener1, 'gener1' )
+    #geomPublish(initLog.debug,  pipe1, 'pipe1' )
+    #geomPublish(initLog.debug,  facefis1, 'facefis1' )
+    #geomPublish(initLog.debug,  plane1, 'plane1' )
+    #geomPublish(initLog.debug,  ellipsoide1, 'ellipsoide1' )
 
-  # --- TORE
-  # --- faces toriques du tore
-  if step == 8:
-    return None
+    # --- partition du bloc défaut par génératrice, tore et plan fissure
+    if step == 7:
+      break
 
-  [facetore1, facetore2, _, _] = facesVolumesToriques(tore, plane1, facesDefaut)
+    [ blocPartition, _, tore, \
+      faceFissure, facesExternes, facesExtBloc, facesExtElli,
+      aretesInternes, ellipsoidep, sharedFaces, sharedEdges, edgesBords] = \
+      partitionBlocDefaut(extrusionDefaut, facesDefaut, gener1, pipe1, facefis1, ellipsoide1)
+    if not isHexa:
+      edgesBords = None # maillage sain hexa ==> filling, et maillage edges Bords imposés du maillage sain
 
-  # --- faces 1/2 circulaires et edges dans le plan de fissure
-  if step == 9:
-    return None
+    # --- TORE
+    # --- faces toriques du tore
+    if step == 8:
+      break
 
-  [faces, centres, edges, reverses] = facesCirculaires(extrusionDefaut, tore)
+    [facetore1, facetore2, _, _] = facesVolumesToriques(tore, plane1, facesDefaut)
 
-  # --- recherche et classement des edges du tore par propagate
-  if step == 10:
-    return None
+    # --- faces 1/2 circulaires et edges dans le plan de fissure
+    if step == 9:
+      break
 
-  [diams, circles, geners] = propagateTore(tore)
+    [faces, centres, edges, reverses] = facesCirculaires(extrusionDefaut, tore)
 
-  # --- tri par longueur des 3 génératrices
-  if step == 11:
-    return None
+    # --- recherche et classement des edges du tore par propagate
+    if step == 10:
+      break
 
-  [_, genint, gencnt] = sortGeneratrices(tore, geners)
+    [diams, circles, geners] = propagateTore(tore)
 
-  # --- faces fissure dans et hors tore, et edges face hors tore
-  if step == 12:
-    return None
+    # --- tri par longueur des 3 génératrices
+    if step == 11:
+      break
 
-  [_, facefissoutore, _, edgeext, reverext] = \
-    facesFissure(ellipsoidep, faceFissure, extrusionDefaut, genint)
+    [_, genint, gencnt] = sortGeneratrices(tore, geners)
 
-  # --- identification des faces tore et fissure dans le solide hors tore
-  if step == 13:
-    return None
+    # --- faces fissure dans et hors tore, et edges face hors tore
+    if step == 12:
+      break
 
-  [_, _, _] = \
-    facesToreInBloc(ellipsoidep, facefissoutore, facetore1, facetore2)
+    [_, facefissoutore, _, edgeext, reverext] = \
+      facesFissure(ellipsoidep, faceFissure, extrusionDefaut, genint)
 
-  # --- identification des shapes modifiées par la duplication des noeuds de la face fissure (d'un coté de la face)
+    # --- identification des faces tore et fissure dans le solide hors tore
+    if step == 13:
+      break
 
-  #shapesAModifier = self.shapesSurFissure(blocPartition, plane1 faceFissure, gencnt)
-  if step == 14:
-    return None
+    [_, _, _] = \
+      facesToreInBloc(ellipsoidep, facefissoutore, facetore1, facetore2)
 
-  extrusionFaceFissure, _ = shapeSurFissure(plane1)
+    # --- identification des shapes modifiées par la duplication des noeuds de la face fissure (d'un coté de la face)
 
-  # --- maillage du bloc partitionne
+    #shapesAModifier = self.shapesSurFissure(blocPartition, plane1 faceFissure, gencnt)
+    if step == 14:
+      break
 
-  if step == 15:
-    return None
+    extrusionFaceFissure, _ = shapeSurFissure(plane1)
 
-  [_, blocComplet] = \
-    meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circles, faces, \
-                 gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli, \
-                 aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords, \
-                 nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle,
-                 nbsegFis, dmoyen, lensegEllipsoide) \
+    # --- maillage du bloc partitionne
 
-  if step == 16:
-    return None
-  maillageSain = enleveDefaut(maillageSain, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges)
+    if step == 15:
+      break
 
-  if step == 17:
-    return None
-  maillageComplet = RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceFissure, 'VOLUMES')
+    [_, blocComplet] = \
+      meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circles, faces, \
+                  gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli, \
+                  aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords, \
+                  nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle, \
+                  nbsegFis, dmoyen, lensegEllipsoide)
+    if step == 16:
+      break
 
-  if step == 18:
-    return None
-  maillageComplet.ExportMED(fichierMaillageFissure)
-  putName(maillageComplet, nomFicFissure)
-  logging.info("fichier maillage fissure : %s", fichierMaillageFissure)
+    maillageSain = enleveDefaut(maillageSain, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges)
+    if step == 17:
+      break
+
+    maillageComplet = RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceFissure, 'VOLUMES')
+    if step == 18:
+      break
+
+    maillageComplet.ExportMED(fichierMaillageFissure)
+    putName(maillageComplet, nomFicFissure)
+    logging.info("fichier maillage fissure : %s", fichierMaillageFissure)
+
+    break
 
   if salome.sg.hasDesktop():
     salome.sg.updateObjBrowser()

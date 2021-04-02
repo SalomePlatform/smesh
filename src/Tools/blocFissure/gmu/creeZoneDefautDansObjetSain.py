@@ -35,7 +35,8 @@ from .creeZoneDefautGeom import creeZoneDefautGeom
 from .getCentreFondFiss import getCentreFondFiss
 
 def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, \
-                                shapeFissureParams, maillageFissureParams):
+                                shapeFissureParams, maillageFissureParams, \
+                                nro_cas=-1):
   """
   #TODO: a compléter
   """
@@ -78,7 +79,8 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   maillageSain.ExportMED(fichierMaillageSain)
   logging.debug("fichier maillage sain %s", fichierMaillageSain)
   [maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges] = \
-    peauInterne(fichierMaillageSain, shapeDefaut, nomZones)
+    peauInterne(fichierMaillageSain, shapeDefaut, nomZones, \
+                nro_cas)
 
   facesDefaut = list()
   centresDefaut = list()
