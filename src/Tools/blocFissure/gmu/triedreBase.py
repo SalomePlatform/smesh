@@ -17,14 +17,14 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Origine et vecteurs de base"""
 
 import logging
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
 
-# --- origine et vecteurs de base
+from . import initLog
 
 O = None
 OX = None
@@ -37,14 +37,14 @@ def triedreBase():
   objets partages par plusieurs methodes
   """
   global O, OX, OY, OZ
-  
-  if O == None:
+
+  if ( O is None ):
     logging.info("start")
     O = geompy.MakeVertex(0, 0, 0)
     OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
     OY = geompy.MakeVectorDXDYDZ(0, 1, 0)
     OZ = geompy.MakeVectorDXDYDZ(0, 0, 1)
-  
+
     if not geompy.myStudy.FindObjectByName( 'OX', geompy.ComponentDataType() ):
       geomPublish(initLog.debug,  O, 'O' )
       geomPublish(initLog.debug,  OX, 'OX' )

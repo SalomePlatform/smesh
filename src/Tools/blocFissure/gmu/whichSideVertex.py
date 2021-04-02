@@ -17,12 +17,11 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)"""
 
 import logging
-from .geomsmesh import geompy
 
-# -----------------------------------------------------------------------------
-# --- calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)
+from .geomsmesh import geompy
 
 def whichSideVertex(face, vertex, tol = 1.e-3):
   """
@@ -34,6 +33,7 @@ def whichSideVertex(face, vertex, tol = 1.e-3):
   side = 0
   distance = geompy.MinDistance(vertex, face)
   #logging.debug("    distance %s", distance)
+
   if distance > tol:
     projection = geompy.MakeProjection(vertex, face)
     normal = geompy.GetNormal(face, projection)
@@ -41,8 +41,8 @@ def whichSideVertex(face, vertex, tol = 1.e-3):
     angle = geompy.GetAngle(normal, vect)
     #logging.debug("  angle %s", angle)
     side = 1
-    if abs(angle) > 10:
+    if ( abs(angle) > 10 ):
       side = -1
   logging.debug("side %s distance %s", side, distance)
-  return side
 
+  return side

@@ -17,12 +17,10 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)"""
 
 import logging
 from .geomsmesh import geompy
-
-# -----------------------------------------------------------------------------
-# --- calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)
 
 def whichSide(face, obj, tol = 1.e-3):
   """
@@ -40,6 +38,7 @@ def whichSide(face, obj, tol = 1.e-3):
   nbFaces = geompy.NbShapes(obj, geompy.ShapeType["FACE"]) # --- attention ! pour une seule face presente, renvoie 2
   logging.debug("   nbFaces %s", nbFaces)
   vertices = geompy.ExtractShapes(obj, geompy.ShapeType["VERTEX"], False)
+
   if nbEdges > 0 and nbFaces == 0: # --- edges
     if nbEdges <= 2:
       point = geompy.MakeVertexOnCurve(obj, 0.5)
@@ -49,17 +48,20 @@ def whichSide(face, obj, tol = 1.e-3):
       for anEdge in edges:
         point = geompy.MakeVertexOnCurve(anEdge, 0.5)
         vertices.append(point)
+
   elif nbFaces >0: # --- faces
     if nbFaces <=2:
       point = geompy.MakeVertexOnSurface(obj, 0.5, 0.5)
       vertices.append(point)
-    if nbFaces > 2:
+    else:
       faces = geompy.ExtractShapes(obj, geompy.ShapeType["FACE"], False)
       for aFace in faces:
         point = geompy.MakeVertexOnSurface(aFace, 0.5, 0.5)
         vertices.append(point)
+
   else: # --- vertices
     vertices = [obj]
+
   for vertex in vertices:
     distance = geompy.MinDistance(vertex, face)
     logging.debug("    distance %s", distance)
@@ -74,5 +76,5 @@ def whichSide(face, obj, tol = 1.e-3):
         side = -1
       break
   logging.debug("  side %s", side)
-  return side
 
+  return side

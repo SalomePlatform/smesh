@@ -17,25 +17,25 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Substract a list of subShapes from another"""
 
 import logging
+
 from .geomsmesh import geompy
 
-# -----------------------------------------------------------------------------
-# --- substract a list of subShapes from another
-
 def substractSubShapes(obj, subs, toRemove):
-  """
-  liste de subshapes par difference
-  """
+  """liste de subshapes par difference"""
   logging.info("start")
-  idToremove = {}
-  subList = []
-  for s in toRemove:
-    idToremove[geompy.GetSubShapeID(obj, s)] = s
-  for s in subs:
-    idsub = geompy.GetSubShapeID(obj, s)
-    if idsub not in list(idToremove.keys()):
-      subList.append(s)
+  idToremove = dict()
+  for shape in toRemove:
+    idToremove[geompy.GetSubShapeID(obj, shape)] = shape
+
+  subList = list()
+  for shape in subs:
+    idsub = geompy.GetSubShapeID(obj, shape)
+    if ( idsub not in idToremove ):
+      subList.append(shape)
+
   logging.debug("subList=%s", subList)
+
   return subList
