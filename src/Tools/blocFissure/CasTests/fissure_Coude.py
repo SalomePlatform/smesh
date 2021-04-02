@@ -39,6 +39,7 @@ from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.insereFissureLongue import insereFissureLongue
+from blocFissure.gmu.putName import putName
 
 O, OX, OY, OZ = triedreBase()
 
@@ -233,38 +234,38 @@ class fissure_Coude(fissureGenerique):
 
     algo3d = maillageSain.Hexahedron()
     algo2d = maillageSain.Quadrangle()
-    smesh.SetName(algo3d, "algo3d_maillageSain")
-    smesh.SetName(algo2d, "algo2d_maillageSain")
+    putName(algo3d, "algo3d_maillageSain", i_pref=self.numeroCas)
+    putName(algo2d, "algo2d_maillageSain", i_pref=self.numeroCas)
 
     algo1d_long_p1 = maillageSain.Segment(geom=long_p1)
     hypo1d_long_p1 = algo1d_long_p1.NumberOfSegments(n_long_p1)
-    smesh.SetName(algo1d_long_p1, "algo1d_long_p1")
-    smesh.SetName(hypo1d_long_p1, "hypo1d_long_p1")
+    putName(algo1d_long_p1, "algo1d_long_p1", i_pref=self.numeroCas)
+    putName(hypo1d_long_p1, "hypo1d_long_p1", i_pref=self.numeroCas)
 
     algo1d_ep = maillageSain.Segment(geom=ep)
     hypo1d_ep = algo1d_ep.NumberOfSegments(n_ep)
-    smesh.SetName(algo1d_ep, "algo1d_ep")
-    smesh.SetName(hypo1d_ep, "hypo1d_ep")
+    putName(algo1d_ep, "algo1d_ep", i_pref=self.numeroCas)
+    putName(hypo1d_ep, "hypo1d_ep", i_pref=self.numeroCas)
 
     algo1d_long_coude = maillageSain.Segment(geom=long_coude)
     hypo1d_long_coude = algo1d_long_coude.NumberOfSegments(n_long_coude)
-    smesh.SetName(algo1d_long_coude, "algo1d_long_coude")
-    smesh.SetName(hypo1d_long_coude, "hypo1d_long_coude")
+    putName(algo1d_long_coude, "algo1d_long_coude", i_pref=self.numeroCas)
+    putName(hypo1d_long_coude, "hypo1d_long_coude", i_pref=self.numeroCas)
 
     algo1d_circ_g = maillageSain.Segment(geom=circ_g)
     hypo1d_circ_g = algo1d_circ_g.NumberOfSegments(n_circ_g)
-    smesh.SetName(algo1d_circ_g, "algo1d_circ_g")
-    smesh.SetName(hypo1d_circ_g, "hypo1d_circ_g")
+    putName(algo1d_circ_g, "algo1d_circ_g", i_pref=self.numeroCas)
+    putName(hypo1d_circ_g, "hypo1d_circ_g", i_pref=self.numeroCas)
 
     algo1d_circ_d = maillageSain.Segment(geom=circ_d)
     hypo1d_circ_d = algo1d_circ_d.NumberOfSegments(n_circ_d)
-    smesh.SetName(algo1d_circ_d, "algo1d_circ_d")
-    smesh.SetName(hypo1d_circ_d, "hypo1d_circ_d")
+    putName(algo1d_circ_d, "algo1d_circ_d", i_pref=self.numeroCas)
+    putName(hypo1d_circ_d, "hypo1d_circ_d", i_pref=self.numeroCas)
 
     algo1d_long_p2 = maillageSain.Segment(geom=long_p2)
     hypo1d_long_p2 = algo1d_long_p2.NumberOfSegments(n_long_p2)
-    smesh.SetName(algo1d_long_p2, "algo1d_long_p2")
-    smesh.SetName(hypo1d_long_p2, "hypo1d_long_p2")
+    putName(algo1d_long_p2, "algo1d_long_p2", i_pref=self.numeroCas)
+    putName(hypo1d_long_p2, "hypo1d_long_p2", i_pref=self.numeroCas)
 
     _ = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
     _ = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
@@ -478,7 +479,7 @@ class fissure_Coude(fissureGenerique):
       pass
 
     mailleur = self.mailleur2d3d()
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, 5 ,10, mailleur)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(facefiss, 5 ,10, mailleur, self.numeroCas)
 
     return [facefiss, centre, lgInfluence, coordsNoeudsFissure, wiretube, facetubel, facetuber, planfiss, pipefiss]
 
@@ -497,7 +498,8 @@ class fissure_Coude(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams):
-    elementsDefaut = creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams)
+    elementsDefaut = creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams, \
+                                                 self.numeroCas)
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
@@ -510,7 +512,7 @@ class fissure_Coude(fissureGenerique):
     maillageFissure = insereFissureLongue(geometriesSaines, \
                                           shapesFissure, shapeFissureParams, \
                                           maillageFissureParams, elementsDefaut, \
-                                          step, mailleur)
+                                          step, mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

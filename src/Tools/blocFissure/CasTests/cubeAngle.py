@@ -80,7 +80,7 @@ class cubeAngle(fissureGenerique):
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
     mailleur = self.mailleur2d3d()
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,10, mailleur)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,10, mailleur, self.numeroCas)
 
     centre = None
 
@@ -99,7 +99,8 @@ class cubeAngle(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams):
-    elementsDefaut = creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams)
+    elementsDefaut = creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams, \
+                                                 self.numeroCas)
     return elementsDefaut
 
   # ---------------------------------------------------------------------------

@@ -30,16 +30,16 @@ from .geomsmesh import smesh
 from .putName import putName
 
 def insereFissureLongue_f (internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
-                           mailleur="MeshGems"):
+                           mailleur="MeshGems", nro_cas=-1):
   """maillage meshBoiteDefaut"""
   logging.info('start')
-  logging.info("insereFissureLongue_f (%s)", mailleur)
+  logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)
 
   meshBoiteDefaut = smesh.Concatenate( [internalBoundary.GetMesh(), \
                                         meshFondFiss.GetMesh(), \
                                         meshFacePeau.GetMesh(), \
                                         meshFaceFiss.GetMesh()], \
-                                        1, 1, 1e-05,False)
+                                        1, 1, 1e-05,False )
   # pour aider l'algo hexa-tetra a ne pas mettre de pyramides a l'exterieur des volumes replies sur eux-memes
   # on designe les faces de peau en quadrangles par le groupe "skinFaces"
   group_faceFissOutPipe = None
@@ -65,9 +65,9 @@ def insereFissureLongue_f (internalBoundary, meshFondFiss, meshFacePeau, meshFac
     hypo3d.SetVerboseLevel( 0 )
     hypo3d.SetStandardOutputLog( 0 )
     hypo3d.SetRemoveLogOnSuccess( 1 )
-  putName(algo3d.GetSubMesh(), "boiteDefaut")
-  putName(algo3d, "algo3d_boiteDefaut")
-  putName(meshBoiteDefaut, "boiteDefaut")
+  putName(algo3d.GetSubMesh(), "boiteDefaut", i_pref=nro_cas)
+  putName(algo3d, "algo3d_boiteDefaut", i_pref=nro_cas)
+  putName(meshBoiteDefaut, "boiteDefaut", i_pref=nro_cas)
 
   is_done = meshBoiteDefaut.Compute()
   text = "meshBoiteDefaut.Compute"

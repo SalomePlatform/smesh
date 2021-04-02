@@ -40,7 +40,8 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
                     mailleur="MeshGems", nro_cas=-1):
   """maillage faces de peau"""
   logging.info('start')
-  logging.info(mailleur+" pour le cas n° %d"%nro_cas)
+  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
+
   nbFacesFilling = len(partitionsPeauFissFond)
   boutFromIfil = [None for _ in range(nbFacesFilling)]
   if idFillingFromBout[0] != idFillingFromBout[1]: # repérage des extremites du pipe quand elles débouchent sur des faces différentes

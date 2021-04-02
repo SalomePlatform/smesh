@@ -28,9 +28,11 @@ from .geomsmesh import smesh
 
 from .putName import putName
 
-def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
+def mailleAretesEtJonction (internalBoundary, aretesVivesCoupees, lgAretesVives, \
+                            nro_cas=-1):
   """edges de bord, faces défaut à respecter"""
   logging.info('start')
+  logging.info("Pour le cas n°%d", nro_cas)
 
   _ = smesh.CreateFilterManager()
   _, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])
@@ -39,7 +41,7 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
   criteres.append(unCritere)
   filtre = smesh.GetFilterFromCriteria(criteres)
   bordsLibres = internalBoundary.MakeGroupByFilter( 'bords', filtre )
-  smesh.SetName(bordsLibres, 'bordsLibres')
+  putName(bordsLibres, 'bordsLibres', i_pref=nro_cas)
 
   # --- pour aider l'algo hexa-tetra à ne pas mettre de pyramides à l'exterieur des volumes repliés sur eux-mêmes
   #     on désigne les faces de peau en quadrangles par le groupe "skinFaces"
@@ -56,9 +58,9 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
     meshAretesVives = smesh.Mesh(aretesVivesC)
     algo1d = meshAretesVives.Segment()
     hypo1d = algo1d.LocalLength(lgAretesVives,[],1e-07)
-    putName(algo1d.GetSubMesh(), "aretesVives")
-    putName(algo1d, "algo1d_aretesVives")
-    putName(hypo1d, "hypo1d_aretesVives")
+    putName(algo1d.GetSubMesh(), "aretesVives", i_pref=nro_cas)
+    putName(algo1d, "algo1d_aretesVives", i_pref=nro_cas)
+    putName(hypo1d, "hypo1d_aretesVives", i_pref=nro_cas)
 
     is_done = meshAretesVives.Compute()
     text = "meshAretesVives.Compute"

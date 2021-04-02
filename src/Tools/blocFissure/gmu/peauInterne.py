@@ -29,8 +29,10 @@ from .geomsmesh import smesh
 from .fissError import fissError
 from .listOfExtraFunctions import lookForCorner
 from .fusionMaillageAttributionDefaut import fusionMaillageDefaut
+from .putName import putName
 
-def peauInterne(fichierMaillage, shapeDefaut, nomZones):
+def peauInterne(fichierMaillage, shapeDefaut, nomZones, \
+                nro_cas=-1):
   """Retrouve les groupes de défaut dans le maillage sain modifié par CreateHoleSkin (CreeZoneDefautMaillage)
 
   On récupère le volume et la peau de la zone de défaut, les éventuelles faces et arêtes internes de cette zone.
@@ -97,6 +99,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   internalBoundary = smesh.CopyMesh( internal, 'internalBoundary', 0, 0)
 
   maillageDefautCible = smesh.CopyMesh(zoneDefaut_skin, 'maillageCible', 0, 0)
+  putName(maillageDefautCible, "maillageCible", i_pref=nro_cas)
   listOfCorner = lookForCorner(maillageDefautCible)
   texte = "listOfCorner = {}".format(listOfCorner)
   logging.debug(texte)

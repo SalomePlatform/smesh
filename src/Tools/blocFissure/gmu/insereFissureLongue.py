@@ -42,10 +42,10 @@ from .insereFissureLongue_g import insereFissureLongue_g
 def insereFissureLongue(geometriesSaines, \
                         shapesFissure, shapeFissureParams, \
                         maillageFissureParams, elementsDefaut, \
-                        step=-1, mailleur="MeshGems"):
+                        step=-1, mailleur="MeshGems", nro_cas=-1):
   """procedure complete fissure longue"""
   logging.info('start')
-  logging.info("Usage du mailleur %s", mailleur)
+  logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)
 
   #geometrieSaine    = geometriesSaines[0]
   shapeDefaut       = shapesFissure[0] # face de fissure, debordant
@@ -114,7 +114,8 @@ def insereFissureLongue(geometriesSaines, \
                                     planfiss, planBord1, planBord2, \
                                     facePeau, verticesOutCercles, verticesEdgePeauFiss, \
                                     fillingFaceExterne, rayonPipe, \
-                            internalBoundary)
+                                    internalBoundary, \
+                                    nro_cas)
 
   # --- maillage pipe fond fissure
 
@@ -122,7 +123,8 @@ def insereFissureLongue(geometriesSaines, \
             insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCerclesPeau, generatrices, \
             VerticesEndPipeFiss, verticesEdgePeauFiss, \
             groupFaceFissInPipe, groupEdgeFondFiss, groupsDemiCerclesPipe, groupGenerFiss, \
-            profondeur, rayonPipe)
+            profondeur, rayonPipe, \
+            nro_cas)
 
   # --- maillage face de peau
 
@@ -130,20 +132,20 @@ def insereFissureLongue(geometriesSaines, \
             insereFissureLongue_d ( facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibres, \
                                     groupsDemiCerclesPeau, groups_demiCercles, verticesOutCercles, \
                                     nbSegGenLong, nbSegGenBout, profondeur, \
-                                    mailleur )
+                                    mailleur, nro_cas )
 
   # --- maillage face de fissure
 
   meshFaceFiss = \
             insereFissureLongue_e ( faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
                                     profondeur, rayonPipe, \
-                                    mailleur )
+                                    mailleur, nro_cas )
 
   # --- maillage meshBoiteDefaut
 
   meshBoiteDefaut, group_faceFissInPipe, group_faceFissOutPipe = \
             insereFissureLongue_f ( internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
-                                    mailleur )
+                                    mailleur, nro_cas )
 
 
   # --- maillage complet
@@ -151,7 +153,8 @@ def insereFissureLongue(geometriesSaines, \
             insereFissureLongue_g (nomFicFissure, fichierMaillageFissure, nomFicSain, maillageSain, \
                           meshBoiteDefaut, facePorteFissure, \
                           group_faceFissInPipe, group_faceFissOutPipe, \
-                          zoneDefaut, zoneDefaut_skin, zoneDefaut_internalEdges, zoneDefaut_internalFaces)
+                          zoneDefaut, zoneDefaut_skin, zoneDefaut_internalEdges, zoneDefaut_internalFaces, \
+                          nro_cas)
 
 
   if salome.sg.hasDesktop():

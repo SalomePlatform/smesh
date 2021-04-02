@@ -33,12 +33,14 @@ from .putName import putName
 def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibres, \
                            groupsDemiCerclesPeau, groups_demiCercles, verticesOutCercles, \
                            nbSegGenLong, nbSegGenBout, profondeur, \
-                           mailleur="MeshGems"):
+                           mailleur="MeshGems", nro_cas=-1):
   """maillage face de peau"""
   logging.info('start')
+  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
 
   meshFacePeau = smesh.Mesh(facePeau)
-  logging.info("Maillage avec %s", mailleur)
+  putName(meshFacePeau, "facePeau", i_pref=nro_cas)
+
   if ( mailleur == "MeshGems"):
     algo2d = meshFacePeau.Triangle(algo=smeshBuilder.MG_CADSurf)
     hypo2d = algo2d.Parameters()
@@ -55,9 +57,9 @@ def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibr
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( 2 )
     hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d.GetSubMesh(), "facePeau")
-  putName(algo2d, "algo2d_facePeau")
-  putName(hypo2d, "hypo2d_facePeau")
+  putName(algo2d.GetSubMesh(), "facePeau", i_pref=nro_cas)
+  putName(algo2d, "algo2d_facePeau", i_pref=nro_cas)
+  putName(hypo2d, "hypo2d_facePeau", i_pref=nro_cas)
   #
   lenEdgePeauFiss = geompy.BasicProperties(edgePeauFiss)[0]
   frac = profondeur/lenEdgePeauFiss
@@ -70,22 +72,22 @@ def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibr
   hypo1d.SetDistrType( 2 )
   hypo1d.SetConversionMode( 1 )
   hypo1d.SetTableFunction( [ 0, ratio, frac, 1, (1.-frac), 1, 1, ratio ] )
-  putName(algo1d.GetSubMesh(), "edgePeauFiss")
-  putName(algo1d, "algo1d_edgePeauFiss")
-  putName(hypo1d, "hypo1d_edgePeauFiss")
+  putName(algo1d.GetSubMesh(), "edgePeauFiss", i_pref=nro_cas)
+  putName(algo1d, "algo1d_edgePeauFiss", i_pref=nro_cas)
+  putName(hypo1d, "hypo1d_edgePeauFiss", i_pref=nro_cas)
   #
   algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
   hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
-  putName(algo1d.GetSubMesh(), "bordsLibres")
-  putName(algo1d, "algo1d_bordsLibres")
-  putName(hypo1d, "hypo1d_bordsLibres")
+  putName(algo1d.GetSubMesh(), "bordsLibres", i_pref=nro_cas)
+  putName(algo1d, "algo1d_bordsLibres", i_pref=nro_cas)
+  putName(hypo1d, "hypo1d_bordsLibres", i_pref=nro_cas)
   #
-  for i in range(2):
-    algo1d = meshFacePeau.UseExisting1DElements(geom=groupsDemiCerclesPeau[i])
-    hypo1d = algo1d.SourceEdges([ groups_demiCercles[i] ],0,0)
-    putName(algo1d.GetSubMesh(), "DemiCercles", i)
-    putName(algo1d, "algo1d_groupDemiCercles", i)
-    putName(hypo1d, "hypo1d_groupDemiCercles", i)
+  for i_aux in range(2):
+    algo1d = meshFacePeau.UseExisting1DElements(geom=groupsDemiCerclesPeau[i_aux])
+    hypo1d = algo1d.SourceEdges([ groups_demiCercles[i_aux] ],0,0)
+    putName(algo1d.GetSubMesh(), "DemiCercles", i_aux, nro_cas)
+    putName(algo1d, "algo1d_groupDemiCercles", i_aux, nro_cas)
+    putName(hypo1d, "hypo1d_groupDemiCercles", i_aux, nro_cas)
 
   _ = meshFacePeau.GroupOnGeom(verticesOutCercles[0], "THOR", SMESH.NODE)
   _ = meshFacePeau.GroupOnGeom(verticesOutCercles[1], "THEX", SMESH.NODE)

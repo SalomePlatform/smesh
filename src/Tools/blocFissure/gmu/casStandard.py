@@ -39,6 +39,7 @@ from .triedreBase import triedreBase
 from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from .creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from .construitFissureGenerale import construitFissureGenerale
+from .putName import putName
 
 O, OX, OY, OZ = triedreBase()
 
@@ -47,7 +48,7 @@ class casStandard(fissureGenerique):
 
   - un maillage sain (hexaèdres),
   - une face géométrique de fissure, qui doit légèrement dépasser hors du volume maillé
-  - les numéros d'arêtes (edges géométriques) correspondant au fond de fissure
+  - les noms des groupes d'arêtes ou leurs numéros d'arêtes (edges au sens de GEOM) correspondant au fond de fissure
   - les paramètres de maillage de la fissure
   """
   referencesMaillageFissure = None
@@ -90,7 +91,7 @@ class casStandard(fissureGenerique):
     logging.info("genereMaillageSain %s", self.nomCas)
 
     ([objetSain], _) = smesh.CreateMeshesFromMED(self.dicoParams['maillageSain'])
-    smesh.SetName(objetSain.GetMesh(), 'objetSain')
+    putName(objetSain.GetMesh(), 'objetSain', i_pref=self.numeroCas)
 
     return [objetSain, True] # True : maillage hexa
 
@@ -149,7 +150,7 @@ class casStandard(fissureGenerique):
 
 
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, self.dicoParams['meshBrep'][0] ,self.dicoParams['meshBrep'][1], \
-                                                     mailleur)
+                                                     mailleur, self.numeroCas)
 
     centre = None
     return [shellFiss, centre, lgInfluence, coordsNoeudsFissure, fondFiss]
@@ -166,7 +167,8 @@ class casStandard(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams):
-    elementsDefaut = creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams)
+    elementsDefaut = creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams, \
+                          self.numeroCas)
     return elementsDefaut
 
   # ---------------------------------------------------------------------------

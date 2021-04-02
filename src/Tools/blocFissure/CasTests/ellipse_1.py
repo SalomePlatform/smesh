@@ -88,7 +88,7 @@ class ellipse_1(fissureGenerique):
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
     mailleur = self.mailleur2d3d()
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25, mailleur)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25, mailleur, self.numeroCas)
 
     centre = None
 
@@ -107,7 +107,8 @@ class ellipse_1(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams):
-    elementsDefaut = creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams)
+    elementsDefaut = creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams, \
+                                                 self.numeroCas)
     return elementsDefaut
 
   # ---------------------------------------------------------------------------

@@ -32,13 +32,15 @@ from .putName import putName
 
 def insereFissureLongue_e (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
                            profondeur, rayonPipe, \
-                           mailleur="MeshGems"):
+                           mailleur="MeshGems", nro_cas=-1):
   """maillage face de fissure"""
   logging.info('start')
+  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
 
   meshFaceFiss = smesh.Mesh(faceFiss)
-  mesh_size = (profondeur - rayonPipe)/math.sqrt(3.0) # pour avoir deux couches de triangles equilateraux partout sur la fissure
-  logging.info("Maillage avec %s", mailleur)
+  putName(meshFaceFiss, "faceFiss", i_pref=nro_cas)
+
+  mesh_size = (profondeur - rayonPipe)/math.sqrt(3.0) # pour avoir deux couches de triangles équilatéraux partout sur la fissure
   if ( mailleur == "MeshGems"):
     algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.MG_CADSurf)
     hypo2d = algo2d.Parameters()
@@ -55,21 +57,21 @@ def insereFissureLongue_e (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_gen
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( 2 )
     hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d.GetSubMesh(), "faceFiss")
-  putName(algo2d, "algo2d_faceFiss")
-  putName(hypo2d, "hypo2d_faceFiss")
+  putName(algo2d.GetSubMesh(), "faceFiss", i_pref=nro_cas)
+  putName(algo2d, "algo2d_faceFiss", i_pref=nro_cas)
+  putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
   #
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgePeauFiss)
   hypo1d = algo1d.SourceEdges([ groupEdgesPeauFiss ],0,0)
-  putName(algo1d.GetSubMesh(), "edgeFissPeau")
-  putName(algo1d, "algo1d_edgeFissPeau")
-  putName(hypo1d, "hypo1d_edgeFissPeau")
+  putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
+  putName(algo1d, "algo1d_edgeFissPeau", i_pref=nro_cas)
+  putName(hypo1d, "hypo1d_edgeFissPeau", i_pref=nro_cas)
   #
   algo1d = meshFaceFiss.UseExisting1DElements(geom=groupEdgesFaceFissPipe)
   hypo1d = algo1d.SourceEdges([ group_generFiss ],0,0)
-  putName(algo1d.GetSubMesh(), "edgeFissPeau")
-  putName(algo1d, "algo1d_edgeFissPeau")
-  putName(hypo1d, "hypo1d_edgeFissPeau")
+  putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
+  putName(algo1d, "algo1d_edgeFissPeau", i_pref=nro_cas)
+  putName(hypo1d, "hypo1d_edgeFissPeau", i_pref=nro_cas)
 
   _ = meshFaceFiss.GroupOnGeom(faceFiss, "fisOutPi", SMESH.FACE)
 

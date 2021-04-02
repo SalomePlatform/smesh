@@ -54,7 +54,7 @@ class ellipse_2(ellipse_1):
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
     mailleur = self.mailleur2d3d()
-    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25, mailleur)
+    coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 5 ,25, mailleur, self.numeroCas)
 
     centre = None
 

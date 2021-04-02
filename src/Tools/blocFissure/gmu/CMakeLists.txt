@@ -89,7 +89,6 @@ SET(plugin_SCRIPTS
   initEtude.py
   initLog.py
   insereFissureElliptique.py
-  insereFissureGenerale.py
   insereFissureLongue_a.py
   insereFissureLongue_b.py
   insereFissureLongue_c.py
