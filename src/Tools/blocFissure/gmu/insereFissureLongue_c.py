@@ -36,53 +36,54 @@ from .distance2 import distance2
 def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCerclesPeau, generatrices, \
                            VerticesEndPipeFiss, verticesEdgePeauFiss, \
                            groupFaceFissInPipe, groupEdgeFondFiss, groupsDemiCerclesPipe, groupGenerFiss, \
-                           profondeur, rayonPipe):
+                           profondeur, rayonPipe, \
+                           nro_cas=-1):
   """maillage pipe fond fissure"""
   logging.info('start')
 
   meshFondFiss = smesh.Mesh(pipeFondFiss)
   algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.QUADRANGLE)
   algo3d = meshFondFiss.Prism()
-  putName(algo3d.GetSubMesh(), "pipe")
-  putName(algo3d, "algo3d_pipe")
-  putName(algo2d, "algo2d_pipe")
+  putName(algo3d.GetSubMesh(), "pipe", i_pref=nro_cas)
+  putName(algo3d, "algo3d_pipe", i_pref=nro_cas)
+  putName(algo2d, "algo2d_pipe", i_pref=nro_cas)
 
-  for i, face in enumerate(disques):
+  for i_aux, face in enumerate(disques):
     algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.RADIAL_QUAD,geom=face)
-    putName(algo2d.GetSubMesh(), "disque", i)
-    putName(algo2d, "algo2d_disque", i)
+    putName(algo2d.GetSubMesh(), "disque", i_aux, nro_cas)
+    putName(algo2d, "algo2d_disque", i_aux, nro_cas)
 
-  for i, edge in enumerate(rayons):
+  for i_aux, edge in enumerate(rayons):
     algo1d = meshFondFiss.Segment(geom=edge)
     hypo1d = algo1d.NumberOfSegments(4)
-    putName(algo1d.GetSubMesh(), "rayon", i)
-    putName(algo1d, "algo1d_rayon", i)
-    putName(hypo1d, "hypo1d_rayon", i)
+    putName(algo1d.GetSubMesh(), "rayon", i_aux, nro_cas)
+    putName(algo1d, "algo1d_rayon", i_aux, nro_cas)
+    putName(hypo1d, "hypo1d_rayon", i_aux, nro_cas)
 
-  for i, edge in enumerate(demiCercles):
+  for i_aux, edge in enumerate(demiCercles):
     algo1d = meshFondFiss.Segment(geom=edge)
     hypo1d = algo1d.NumberOfSegments(6)
-    putName(algo1d.GetSubMesh(), "demiCercle", i)
-    putName(algo1d, "algo1d_demiCercle", i)
-    putName(hypo1d, "hypo1d_demiCercle", i)
+    putName(algo1d.GetSubMesh(), "demiCercle", i_aux, nro_cas)
+    putName(algo1d, "algo1d_demiCercle", i_aux, nro_cas)
+    putName(hypo1d, "hypo1d_demiCercle", i_aux, nro_cas)
 
   generSorted, minlg, maxlg = sortEdges(generatrices)
   nbSegGenLong = int(math.sqrt(3.0)*maxlg/(profondeur - rayonPipe)) # on veut 2 triangles equilateraux dans la largeur de la face
   nbSegGenBout = 6
   logging.info("min %s, max %s, nombre de segments %s, nombre de generatrices %s", minlg, maxlg, nbSegGenLong, len(generSorted))
-  for i, edge in enumerate(generSorted):
+  for i_aux, edge in enumerate(generSorted):
     algo1d = meshFondFiss.Segment(geom=edge)
-    if i < 6:
+    if i_aux < 6:
       hypo1d = algo1d.NumberOfSegments(nbSegGenBout)
     else:
       hypo1d = algo1d.NumberOfSegments(nbSegGenLong)
-    putName(algo1d.GetSubMesh(), "generatrice", i)
-    putName(algo1d, "algo1d_generatrice", i)
-    putName(hypo1d, "hypo1d_generatrice", i)
+    putName(algo1d.GetSubMesh(), "generatrice", i_aux, nro_cas)
+    putName(algo1d, "algo1d_generatrice", i_aux, nro_cas)
+    putName(hypo1d, "hypo1d_generatrice", i_aux, nro_cas)
 
   disks = list()
-  for i, face in enumerate(disques[:4]):
-    name = "disk%d"%i
+  for i_aux, face in enumerate(disques[:4]):
+    name = "disk{}".format(i_aux)
     disks.append(meshFondFiss.GroupOnGeom(face, name, SMESH.FACE))
   _ = meshFondFiss.GetMesh().UnionListOfGroups( disks, 'PEAUEXT' )
 
@@ -95,10 +96,10 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
 
   groups_demiCercles = list()
   groupnodes_demiCercles = list()
-  for i, group in enumerate(groupsDemiCerclesPipe):
-    name = "Cercle%d"%i
+  for i_aux, group in enumerate(groupsDemiCerclesPipe):
+    name = "Cercle{}".format(i_aux)
     groups_demiCercles.append(meshFondFiss.GroupOnGeom(group, name, SMESH.EDGE))
-    name = "nCercle%d"%i
+    name = "nCercle{}".format(i_aux)
     groupnodes_demiCercles.append(meshFondFiss.GroupOnGeom(group, name, SMESH.NODE))
   group_generFiss = meshFondFiss.GroupOnGeom(groupGenerFiss, "GenFiss", SMESH.EDGE)
   groupnode_generFiss = meshFondFiss.GroupOnGeom(groupGenerFiss, "GenFiss", SMESH.NODE)
@@ -134,12 +135,12 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
       minDist = 100000
       minCoord = None
       imin = -1
-      for i, edge in enumerate(demiCerclesPeau):
+      for i_aux, edge in enumerate(demiCerclesPeau):
         discoord = geompy.MinDistanceComponents(vertex, edge)
         if discoord[0] <minDist:
           minDist = discoord[0]
           minCoord = discoord[1:]
-          imin = i
+          imin = i_aux
       if imin >= 0 and minDist > 1.E-6:
         logging.debug("node id moved : %s distance=%s", idNode, minDist)
         meshFondFiss.MoveNode(idNode, coordMesh[0] + minCoord[0], coordMesh[1] + minCoord[1], coordMesh[2] + minCoord[2])

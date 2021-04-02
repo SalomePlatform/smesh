@@ -37,7 +37,8 @@ from .triedreBase import triedreBase
 def insereFissureLongue_g(nomFicFissure, fichierMaillageFissure, nomFicSain, maillageSain, \
                           meshBoiteDefaut, facePorteFissure, \
                           group_faceFissInPipe, group_faceFissOutPipe, \
-                          zoneDefaut, zoneDefaut_skin, zoneDefaut_internalEdges, zoneDefaut_internalFaces):
+                          zoneDefaut, zoneDefaut_skin, zoneDefaut_internalEdges, zoneDefaut_internalFaces, \
+                          nro_cas=-1):
   """Les groupes de la fissure longue"""
   logging.info('start')
 
@@ -52,7 +53,7 @@ def insereFissureLongue_g(nomFicFissure, fichierMaillageFissure, nomFicSain, mai
 
   _ = meshBoiteDefaut.GetMesh().UnionListOfGroups( [ group_faceFissOutPipe, group_faceFissInPipe ], 'FACE1' )
   maillageSain = enleveDefaut(maillageSain, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges)
-  putName(maillageSain, nomFicSain+"_coupe")
+  putName(maillageSain, nomFicSain+"_coupe", i_pref=nro_cas)
   extrusionFaceFissure, normfiss = shapeSurFissure(facePorteFissure)
   maillageComplet = RegroupeSainEtDefaut(maillageSain, meshBoiteDefaut, extrusionFaceFissure, facePorteFissure, 'COUDE')
 

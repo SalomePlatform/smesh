@@ -510,7 +510,7 @@ class fissure_Coude(fissureGenerique):
     maillageFissure = insereFissureLongue(geometriesSaines, \
                                           shapesFissure, shapeFissureParams, \
                                           maillageFissureParams, elementsDefaut, \
-                                          step, mailleur)
+                                          step, mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

@@ -128,29 +128,29 @@ def insereFissureLongue_a(facePorteFissure, WirePorteFondFissure, \
   edgesFacePeauSorted, _, _ = sortEdges(edgesFacePeau)
   demiCerclesPeau = edgesFacePeauSorted[0:4]
   verticesDemiCerclesPeau = list()
-  for i, edge in enumerate(demiCerclesPeau):
-    name = "demiCerclePeau_%d"%i
+  for i_aux, edge in enumerate(demiCerclesPeau):
+    name = "demiCerclePeau_{}".format(i_aux)
     geomPublishInFather(initLog.debug,facePeau, edge, name)
     verticesDemiCerclesPeau += geompy.ExtractShapes(edge, geompy.ShapeType["VERTEX"], False)
   verticesDemiCerclesPeau = eliminateDoubles(facePeau, verticesDemiCerclesPeau)
-  for i, vertex in enumerate(verticesDemiCerclesPeau):
-    name = "verticesDemiCerclesPeau_%d"%i
+  for i_aux, vertex in enumerate(verticesDemiCerclesPeau):
+    name = "verticesDemiCerclesPeau_{}".format(i_aux)
     geomPublishInFather(initLog.debug,facePeau, vertex, name)
   verticesOutCercles = substractSubShapes(facePeau, verticesDemiCerclesPeau, verticesEdgePeauFiss)
-  for i, vertex in enumerate(verticesOutCercles):
-    name = "verticesOutCercles_%d"%i
+  for i_aux, vertex in enumerate(verticesOutCercles):
+    name = "verticesOutCercles_{}".format(i_aux)
     geomPublishInFather(initLog.debug,facePeau, vertex, name)
 
   # --- demi cercles  regroupés
   groupsDemiCerclesPeau = list()
-  for i, vertex in enumerate(verticesEdgePeauFiss):
+  for i_aux, vertex in enumerate(verticesEdgePeauFiss):
     demis = list()
     for edge in demiCerclesPeau:
-      if geompy.MinDistance(vertex, edge) < 1.e-5:
+      if ( geompy.MinDistance(vertex, edge) < 1.e-5 ):
         demis.append(edge)
     group = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
     geompy.UnionList(group, demis)
-    name = "Cercle%d"%i
+    name = "Cercle{}".format(i_aux)
     geomPublishInFather(initLog.debug,facePeau, group , name)
     groupsDemiCerclesPeau.append(group)
 
