@@ -17,15 +17,17 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Partition du bloc defaut par generatrice, tore et plan fissure"""
 
 import logging
+
+import GEOM
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
-from . import initLog
 
-# -----------------------------------------------------------------------------
-# --- partition du bloc defaut par generatrice, tore et plan fissure
+from . import initLog
 
 def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
                         facefis, ellipsoide):
@@ -56,9 +58,9 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
   #geomPublishInFather(initLog.debug, volDefautPart, gencnt, 'generatrice' )
 
   solids = geompy.ExtractShapes(blocp, geompy.ShapeType["SOLID"], True)
-  vols = []
-  for i in range(len(solids)):
-    props = geompy.BasicProperties(solids[i])
+  vols = list()
+  for solid in solids:
+    props = geompy.BasicProperties(solid)
     vols.append(props[2])
   maxvol = max(vols)
   imaxvol = vols.index(maxvol)
@@ -72,110 +74,111 @@ def partitionBlocDefaut(volDefaut, facesDefaut, gener, pipe,
   geomPublishInFather(initLog.debug, volDefautPart, ellipsoidep, 'ellipsoide' )
 
   sharedFaces = geompy.GetSharedShapesMulti([blocp, ellipsoidep], geompy.ShapeType["FACE"])
-  for i in range(len(sharedFaces)):
-    name = "faceCommuneEllipsoideBloc_%d"%i
-    geomPublishInFather(initLog.debug,blocp, sharedFaces[i], name)
+  for i_aux, face in enumerate(sharedFaces):
+    name = "faceCommuneEllipsoideBloc_{}".format(i_aux)
+    geomPublishInFather(initLog.debug,blocp, face, name)
 
   #sharedEdges = geompy.GetSharedShapesMulti([blocp, ellipsoidep], geompy.ShapeType["EDGE"])
   allSharedEdges = geompy.GetSharedShapesMulti([blocp, ellipsoidep], geompy.ShapeType["EDGE"])
-  sharedEdges = []
-  for i in range(len(allSharedEdges)):
-    if geompy.NbShapes(allSharedEdges[i], geompy.ShapeType["VERTEX"]) > 1: # edge non degeneree
-      sharedEdges.append(allSharedEdges[i])
-  for i in range(len(sharedEdges)):
-    name = "edgeCommuneEllipsoideBloc_%d"%i
-    geomPublishInFather(initLog.debug,blocp, sharedEdges[i], name)
+  sharedEdges = list()
+  for face in allSharedEdges:
+    if geompy.NbShapes(face, geompy.ShapeType["VERTEX"]) > 1: # edge non degeneree
+      sharedEdges.append(face)
+  for i_aux, edge in enumerate(sharedEdges):
+    name = "edgeCommuneEllipsoideBloc_{}".format(i_aux)
+    geomPublishInFather(initLog.debug,blocp, edge, name)
 
-  facesExternes = []
-  facesExtBloc = []
-  facesExtElli = []
+  facesExternes = list()
+  facesExtBloc = list()
+  facesExtElli = list()
   faces = geompy.ExtractShapes(facesDefaut, geompy.ShapeType["FACE"], True)
-  if len(faces) == 0:
+  if not faces:
     faces = [facesDefaut]
-  for i in range(len(faces)):
-    faceExt = geompy.GetInPlace(ellipsoidep, faces[i])
+  for i_aux, face in enumerate(faces):
+    faceExt = geompy.GetInPlace(ellipsoidep, face)
     if faceExt is not None:
-      name = "faceExterne_e%d"%i
+      name = "faceExterne_e{}".format(i_aux)
       geomPublishInFather(initLog.debug,ellipsoidep, faceExt, name)
       facesExternes.append(faceExt)
       facesExtElli.append(faceExt)
 
-    faceExt = geompy.GetInPlace(blocp, faces[i])
+    faceExt = geompy.GetInPlace(blocp, face)
     if faceExt is not None:
-      name = "faceExterne_b%d"%i
+      name = "faceExterne_b{}".format(i_aux)
       geomPublishInFather(initLog.debug,blocp, faceExt, name)
       facesExternes.append(faceExt)
       facesExtBloc.append(faceExt)
     else:
       logging.info("  recherche faces externes par GetShapesOnShape")
-      vertex = geompy.MakeVertexOnSurface(faces[i], 0.5, 0.5)
-      normal = geompy.GetNormal(faces[i], vertex)
-      extrusionFace = geompy.MakePrismVecH(faces[i], normal, 1)
-      #extrusionFace = geompy.MakePrismVecH2Ways(faces[i], normal, 0.1)
+      vertex = geompy.MakeVertexOnSurface(face, 0.5, 0.5)
+      normal = geompy.GetNormal(face, vertex)
+      extrusionFace = geompy.MakePrismVecH(face, normal, 1)
+      #extrusionFace = geompy.MakePrismVecH2Ways(face, normal, 0.1)
       #extrusionFace = geompy.MakeScaleTransform(extrusionFace, vertex, 1.01)
-      name = "extrusionFace_b%d"%i
+      name = "extrusionFace_b{}".format(i_aux)
       geomPublishInFather(initLog.debug,blocp, extrusionFace, name)
       #facesExt = geompy.GetShapesOnShape(extrusionFace, blocp, geompy.ShapeType["FACE"], GEOM.ST_ONIN)
       facesExt = geompy.GetShapesOnShape(extrusionFace, blocp, geompy.ShapeType["FACE"], GEOM.ST_ON)
-      for j in range(len(facesExt)):
-        name = "faceExterne_b%d_%d"%(i,j)
-        geomPublishInFather(initLog.debug,blocp, facesExt[j], name)
-        facesExternes.append(facesExt[j])
-        facesExtBloc.append(facesExt[j])
+      for j_aux, face_ext in enumerate(facesExt):
+        name = "faceExterne_b{}_{}".format(i_aux,j_aux)
+        geomPublishInFather(initLog.debug,blocp, face_ext, name)
+        facesExternes.append(face_ext)
+        facesExtBloc.append(face_ext)
 
   if len(facesExtBloc) < len(faces): # toutes les faces externes du bloc n'ont pas été trouvées. TODO eliminer les detections  multiples
     logging.info("  recherche faces externes par aretes partagees avec faces externes ellipsoide")
     facesBloc = geompy.ExtractShapes(blocp, geompy.ShapeType["FACE"], True)
-    for i in range(len(facesBloc)):
+    for i_aux, face in enumerate(facesBloc):
       notOnEllipsoide = True
-      for j in range(len(sharedFaces)): # eliminer les faces communes avec l'ellipsoide
-        if facesBloc[i].IsSame(sharedFaces[j]):
+      for j_aux, sharedface in enumerate(sharedFaces): # eliminer les faces communes avec l'ellipsoide
+        if face.IsSame(sharedface):
           notOnEllipsoide = False
           break
       if notOnEllipsoide:
-        for j in range(len(facesExtElli)): # les faces recherchees ont une ou plusieurs edge communes avec la ou les faces externes de l'ellipsoide
-          allSharedEdges = []
+        for j_aux, face_ext_elli in enumerate(facesExtElli): # les faces recherchees ont une ou plusieurs edge communes avec la ou les faces externes de l'ellipsoide
+          allSharedEdges = list()
           try:
-            allSharedEdges += geompy.GetSharedShapesMulti([facesBloc[i], facesExtElli[j]], geompy.ShapeType["EDGE"])
+            allSharedEdges += geompy.GetSharedShapesMulti([face, face_ext_elli], geompy.ShapeType["EDGE"])
           except:
             pass
-          if len(allSharedEdges) > 0:
-            name = "faceExterne_b%d_%d"%(i,j)
-            geomPublishInFather(initLog.debug,blocp, facesBloc[i], name)
-            facesExternes.append(facesBloc[i])
-            facesExtBloc.append(facesBloc[i])
+          if allSharedEdges:
+            name = "faceExterne_b{}_{}".format(i_aux,j_aux)
+            geomPublishInFather(initLog.debug,blocp, face, name)
+            facesExternes.append(face)
+            facesExtBloc.append(face)
 
-  aretesInternes = []
-  for i in range(len(facesExternes)):
-    for j in range(i+1,len(facesExternes)):
-      shared = []
+  aretesInternes = list()
+  for i_aux, face_ext_i in enumerate(facesExternes):
+    for j_aux, face_ext_j in enumerate(facesExternes[i_aux+1:]):
+      shared = list()
       try:
-        shared += geompy.GetSharedShapesMulti([facesExternes[i], facesExternes[j]], geompy.ShapeType["EDGE"])
+        shared += geompy.GetSharedShapesMulti([face_ext_i, face_ext_j], geompy.ShapeType["EDGE"])
       except:
-        logging.info("no shared edges in %s,%s",i,j)
+        texte = "no shared edges in {},{}".format(i_aux,j_aux)
+        logging.info(texte)
       else:
         aretesInternes += shared
-  for i in range(len(aretesInternes)):
-    name = "aretesInternes_%d"%i
-    geomPublishInFather(initLog.debug,blocp, aretesInternes[i], name)
+  for i_aux, edge in enumerate(aretesInternes):
+    name = "aretesInternes_{}".format(i_aux)
+    geomPublishInFather(initLog.debug,blocp, edge, name)
 
-  edgesBords = []
+  l_edgesBords = list()
   for faceExtB in facesExtBloc:
     edges = geompy.ExtractShapes(faceExtB, geompy.ShapeType["EDGE"], True)
-    for i in range(len(edges)):
+    for i_aux, edge in enumerate(edges):
       isInterne = False
-      for j in range(len(aretesInternes)):
-        if edges[i].IsSame(aretesInternes[j]):
+      for arete in aretesInternes:
+        if edge.IsSame(arete):
           isInterne = True
           break
       if not isInterne:
-        edgesBords.append(edges[i])
-        name = "edgeBord%d"%i
-        geomPublishInFather(initLog.debug,blocp,edges[i] , name)
-  group = None
-  if len(edgesBords) > 0:
-    group = geompy.CreateGroup(blocp, geompy.ShapeType["EDGE"])
-    geompy.UnionList(group, edgesBords)
-  edgesBords = group
+        l_edgesBords.append(edge)
+        name = "edgeBord{}".format(i_aux)
+        geomPublishInFather(initLog.debug,blocp,edge , name)
+  if l_edgesBords:
+    edgesBords = geompy.CreateGroup(blocp, geompy.ShapeType["EDGE"])
+    geompy.UnionList(edgesBords, l_edgesBords)
+  else:
+    edgesBords = None
 
   return volDefautPart, blocp, tore, faceFissure, facesExternes, facesExtBloc, facesExtElli, aretesInternes, ellipsoidep, sharedFaces, sharedEdges, edgesBords

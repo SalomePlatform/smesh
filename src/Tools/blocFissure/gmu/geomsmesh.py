@@ -17,10 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
-import logging
-#logging.info('start')
-from . import initLog
+"""Publications dans salome"""
 
 import salome
 salome.salome_init()
@@ -31,13 +28,14 @@ geompy = geomBuilder.New()
 from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
 
-# logging.debug("initialisation de geompy et smesh OK")
+from . import initLog
 
 def geomPublish(level,aShape, aName):
+  """Publication d'un objet"""
   if initLog.getLogLevel() <= level:
     geompy.addToStudy(aShape, aName)
-    
+
 def geomPublishInFather(level, aFather, aShape, aName):
+  """Publication d'un objet sous son ascendant"""
   if initLog.getLogLevel() <= level:
     geompy.addToStudyInFather(aFather, aShape, aName)
-    

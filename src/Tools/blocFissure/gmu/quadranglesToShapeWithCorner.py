@@ -17,18 +17,17 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""
-Created on Tue Jun 24 09:14:13 2014
-
-@author: I48174
-"""
+"""Remarque : cette focntion n'est jamais appelée ????"""
 
 import logging
+
+import GEOM
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
+
 from . import initLog
-import GEOM
 
 from .listOfExtraFunctions import createNewMeshesFromCorner
 from .listOfExtraFunctions import createLinesFromMesh
@@ -37,8 +36,7 @@ from .listOfExtraFunctions import createLinesFromMesh
 # --- groupe de quadrangles de face transformé en face géométrique par filling
 
 def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, listOfCorners):
-  """ """
-  # TODO: rédiger la docstring
+  """TODO: rédiger la docstring"""
 
   logging.info("start")
 

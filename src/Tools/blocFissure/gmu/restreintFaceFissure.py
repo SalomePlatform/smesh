@@ -17,14 +17,18 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Restriction de la face de fissure au domaine solide"""
 
 import logging
+
+import traceback
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
+
 from . import initLog
+
 from .sortFaces import sortFaces
-import traceback
 from .fissError import fissError
 
 def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
@@ -33,13 +37,16 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
   partition face fissure étendue par fillings
   """
   logging.info('start')
+
   partShapeDefaut = geompy.MakePartition([shapeDefaut], facesDefaut, [], [], geompy.ShapeType["FACE"], 0, [], 0)
   geomPublish(initLog.debug, partShapeDefaut, 'partShapeDefaut')
   facesPartShapeDefaut = geompy.ExtractShapes(partShapeDefaut, geompy.ShapeType["FACE"], False)
+
   if pointInterne is not None:
     distfaces = [(geompy.MinDistance(face,pointInterne), i, face) for i, face in enumerate(facesPartShapeDefaut)]
     distfaces.sort()
-    logging.debug("selection de la face la plus proche du point interne, distance={}".format(distfaces[0][0]))
+    texte = "selection de la face la plus proche du point interne, distance={}".format(distfaces[0][0])
+    logging.debug(texte)
     facesPortFissure = distfaces[0][2]
   else:
     try:
@@ -52,8 +59,10 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
       texte += "<li>le prémaillage de la face de fissure est trop grossier, les mailles à enlever dans le maillage sain "
       texte += "n'ont pas toutes été détectées.</li></ul>"
       raise fissError(traceback.extract_stack(),texte)
-    logging.debug("surfaces faces fissure étendue, min {}, max {}".format(minSurf, maxSurf))
+    texte = "surfaces faces fissure étendue, min {}, max {}".format(minSurf, maxSurf)
+    logging.debug(texte)
     facesPortFissure = facesPartShapeDefautSorted[-1]
 
   geomPublish(initLog.debug, facesPortFissure, "facesPortFissure")
+
   return facesPortFissure

@@ -17,13 +17,14 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""maillage faces de fissure"""
 
 import logging
 
-from .geomsmesh import geompy
-from .geomsmesh import smesh
-from salome.smesh import smeshBuilder
 import SMESH
+from salome.smesh import smeshBuilder
+
+from .geomsmesh import smesh
 
 from .putName import putName
 

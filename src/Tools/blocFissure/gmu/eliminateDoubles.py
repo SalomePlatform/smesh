@@ -17,26 +17,28 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""éliminer les doublons d'une liste de subshapes"""
 
 import logging
 from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
-# --- éliminer les doublons d'une liste de subshapes
+# ---
 
 def eliminateDoubles(obj, subshapes):
-  """
-  éliminer les doublons d'une liste de subshapes
-  """
-  idsubs = {}
+  """éliminer les doublons d'une liste de subshapes"""
+
+  idsubs = dict()
   for sub in subshapes:
     subid = geompy.GetSubShapeID(obj, sub)
-    if subid in list(idsubs.keys()):
+    if subid in idsubs:
       idsubs[subid].append(sub)
     else:
       idsubs[subid] = [sub]
-  shortList = []
-  for k, v in idsubs.items():
-    shortList.append(v[0])
+
+  shortList = list()
+  for l_sub in idsubs.items():
+    shortList.append(l_sub[0])
   logging.debug("shortList=%s", shortList)
+
   return shortList

@@ -17,12 +17,11 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)"""
 
 import logging
-from .geomsmesh import geompy
 
-# -----------------------------------------------------------------------------
-# --- calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)
+from .geomsmesh import geompy
 
 def whichSideMulti(facerefs, ifil, obj, centre, tol = 1.e-3):
   """
@@ -39,6 +38,7 @@ def whichSideMulti(facerefs, ifil, obj, centre, tol = 1.e-3):
   nbEdges = geompy.NbShapes(obj, geompy.ShapeType["EDGE"]) # --- attention ! pour une seule edge presente, renvoie 2
   logging.debug("   nbEdges %s", nbEdges)
   vertices = geompy.ExtractShapes(obj, geompy.ShapeType["VERTEX"], False)
+
   if nbEdges > 0 : # --- edges
     if nbEdges <= 2:
       point = geompy.MakeVertexOnCurve(obj, 0.5)
@@ -50,6 +50,7 @@ def whichSideMulti(facerefs, ifil, obj, centre, tol = 1.e-3):
         vertices.append(point)
   else: # --- vertices
     vertices = [obj]
+
   nbOnRef = 0
   nbOnOther = 0
   for vertex in vertices:
@@ -70,20 +71,21 @@ def whichSideMulti(facerefs, ifil, obj, centre, tol = 1.e-3):
           break
         else:
           nbMiss += 1
-          pass           # peut-être inside, tester les autres faces
+          # peut-être inside, tester les autres faces
       else:
         if i == ifil:
           nbOnRef +=1    # le point est sur la face de référence, on continue avec les autres points
           break
         else:
           nbOnOther += 1 # le point est sur une autre face, mais il peut aussi être sur la face de référence...
-          pass           # on peut tester les autres faces
+         # on peut tester les autres faces
     if nbMiss == len(facerefs):
       side = 1 # inside
     if side != 0:
       break
-  if side == 0 and nbOnRef < len(vertices):
-    side = 1   # inside  
-  logging.debug("  side %s", side)
-  return side
 
+  if side == 0 and nbOnRef < len(vertices):
+    side = 1   # inside
+  logging.debug("  side %s", side)
+
+  return side

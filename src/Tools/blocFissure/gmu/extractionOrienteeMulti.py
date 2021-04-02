@@ -17,17 +17,14 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Renvoie l'extraction des shapes d'un objet selon leur position par rapport à la fac"""
 
 import logging
+
 from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
 
 from .whichSideMulti import whichSideMulti
-
-# -----------------------------------------------------------------------------
-# --- renvoie l'extraction des shapes d'un objet selon leur position par rapport à la face.
+from .extractionOrientee_a import extractionOrientee_a
 
 def extractionOrienteeMulti(faces, ifil, obj, centre, shapeType, tol, prefix=""):
   """
@@ -37,34 +34,20 @@ def extractionOrienteeMulti(faces, ifil, obj, centre, shapeType, tol, prefix="")
   """
   logging.info('start')
   trace = True
-  shapesInside = []
-  shapesOutside = []
-  shapesOnside = []
+  shapesInside = list()
+  shapesOutside = list()
+  shapesOnside = list()
   shapes = geompy.ExtractShapes(obj, geompy.ShapeType[shapeType], False)
-  i=0
-  j=0
-  k=0
+
+  i_aux = 0
+  j_aux = 0
+  k_aux = 0
   prefix = prefix + shapeType
   for shape in shapes:
     side = whichSideMulti(faces, ifil, shape, centre, tol)
-    if side == 1:
-      shapesInside.append(shape)
-      if trace:
-        name = prefix + "_Inside%d"%i
-        geomPublishInFather(initLog.debug, obj, shape, name)
-      i+=1
-    elif side == -1:
-      shapesOutside.append(shape)
-      if trace:
-        name = prefix + "_Outside%d"%j
-        geomPublishInFather(initLog.debug, obj, shape, name)
-      j+=1
-    elif side == 0:
-      shapesOnside.append(shape)
-      if trace:
-        name = prefix + "_Onside%d"%k
-        geomPublishInFather(initLog.debug, obj, shape, name)
-      k+=1
-    logging.debug("--- shape was %s", name)
-  return [shapesInside, shapesOutside, shapesOnside]
+    i_aux, j_aux, k_aux = extractionOrientee_a(obj, shape, side, 1, \
+                                               shapesInside, shapesOutside, shapesOnside, \
+                                               i_aux, j_aux, k_aux, \
+                                               trace, prefix)
 
+  return [shapesInside, shapesOutside, shapesOnside]

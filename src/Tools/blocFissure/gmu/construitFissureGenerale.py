@@ -20,14 +20,17 @@
 """procédure complète de construction d'une fissure générale"""
 
 import logging
+
+from . import initLog
+
 import salome
+from salome.smesh import smeshBuilder
+import GEOM
+import SMESH
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublishInFather
-from . import initLog
-import GEOM
 from .geomsmesh import smesh
-from salome.smesh import smeshBuilder
-import SMESH
 
 from .orderEdgesFromWire import orderEdgesFromWire
 from .restreintFaceFissure import restreintFaceFissure
@@ -53,10 +56,11 @@ from .construitFissureGenerale_c import construitFissureGenerale_c
 
 def construitFissureGenerale(shapesFissure, shapeFissureParams, \
                              maillageFissureParams, elementsDefaut, \
-                             step=-1, mailleur="MeshGems"):
+                             step=-1, mailleur="MeshGems", nro_cas=-1):
   """procédure complète fissure générale"""
   logging.info('start')
   logging.info("Usage du mailleur %s", mailleur)
+  logging.info("pour le cas %d", nro_cas)
 
   shapeDefaut       = shapesFissure[0] # faces de fissure, débordant
 
@@ -195,7 +199,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                     facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, \
                                     bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives, \
                                     edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad, \
-                                    mailleur)
+                                    mailleur, nro_cas)
 
   # --- regroupement des maillages du défaut
 

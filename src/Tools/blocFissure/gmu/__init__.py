@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""init de la classe"""
 
 import os
 from . import initLog

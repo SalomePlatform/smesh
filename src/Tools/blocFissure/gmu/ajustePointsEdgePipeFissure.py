@@ -17,6 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Ajustement precis des points sur edgesPipeFissureExterneC"""
 
 import logging
 
@@ -25,13 +26,11 @@ from .findWireIntermediateVertices import findWireIntermediateVertices
 from .projettePointSurCourbe import projettePointSurCourbe
 
 def ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne, gptsdisks, idisklim):
-  """
-  ajustement precis des points sur edgesPipeFissureExterneC
-  """
+  """Ajustement precis des points sur edgesPipeFissureExterneC"""
   logging.info('start')
-  
+
   edgesPFE = geompy.ExtractShapes(edgesPipeFissureExterneC, geompy.ShapeType["EDGE"], False)
-  verticesPFE = findWireIntermediateVertices(wirePipeFissureExterne)  # vertices intermédiaires (des points en trop dans ptsInWireFissExtPipe)
+  verticesPFE, _ = findWireIntermediateVertices(wirePipeFissureExterne)  # vertices intermédiaires (des points en trop dans ptsInWireFissExtPipe)
   idiskmin = idisklim[0] + 1 # on ne prend pas le disque sur la peau, déjà ajusté
   idiskmax = idisklim[1]     # on ne prend pas le disque sur la peau, déjà ajusté
   idiskint = []
@@ -39,8 +38,8 @@ def ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne
     distPtVt = []
     for idisk in range(idiskmin, idiskmax):
       gptdsk = gptsdisks[idisk]
-      pt = gptdsk[0][-1]       # le point sur l'edge de la fissure externe au pipe
-      distPtVt.append((geompy.MinDistance(pt, vtx), idisk))
+      point = gptdsk[0][-1]       # le point sur l'edge de la fissure externe au pipe
+      distPtVt.append((geompy.MinDistance(point, vtx), idisk))
     distPtVt.sort()
     idiskint.append(distPtVt[0][1])
     gptsdisks[idiskint[-1]][0][-1] = vtx
@@ -50,12 +49,12 @@ def ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne
       break
     logging.debug("ajustement point sur edgePipeFissureExterne: %s", idisk)
     gptdsk = gptsdisks[idisk]
-    pt = gptdsk[0][-1]       # le point sur l'edge de la fissure externe au pipe
-    distPtEd = [(geompy.MinDistance(pt, edgePFE), k, edgePFE) for k, edgePFE in enumerate(edgesPFE)]
+    point = gptdsk[0][-1]       # le point sur l'edge de la fissure externe au pipe
+    distPtEd = [(geompy.MinDistance(point, edgePFE), k, edgePFE) for k, edgePFE in enumerate(edgesPFE)]
     distPtEd.sort()
     edgePFE = distPtEd[0][2]
-    u = projettePointSurCourbe(pt, edgePFE)
-    ptproj = geompy.MakeVertexOnCurve(edgePFE, u)
+    point_bis = projettePointSurCourbe(point, edgePFE)
+    ptproj = geompy.MakeVertexOnCurve(edgePFE, point_bis)
     gptsdisks[idisk][0][-1] = ptproj
 
   return gptsdisks

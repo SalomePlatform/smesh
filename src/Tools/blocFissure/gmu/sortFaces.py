@@ -17,7 +17,6 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
 """tri par surface de faces"""
 
 import logging
@@ -29,6 +28,6 @@ def sortFaces(facesToSort):
 
   l_surfaces = [(geompy.BasicProperties(face)[1], i, face) for i, face in enumerate(facesToSort)]
   l_surfaces.sort()
-  facesSorted = [face for surf, i, face in l_surfaces]
+  facesSorted = [face for _, i, face in l_surfaces]
 
   return facesSorted, l_surfaces[0][0], l_surfaces[-1][0]

@@ -17,20 +17,17 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
 """Maillage sain sans la zone de defaut"""
 
 import logging
 
-from .geomsmesh import geompy
-from .geomsmesh import smesh
 import SMESH
 
-def RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceGeomFissure, nomVolume, normal = None):
-  """Maillage sain sans la zone de defaut
+from .geomsmesh import geompy
+from .geomsmesh import smesh
 
-  TODO: a completer
-  """
+def RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceGeomFissure, nomVolume, normal = None):
+  """Maillage sain sans la zone de defaut"""
   logging.info('Concatenation')
 
   maillageComplet = smesh.Concatenate([maillageSain.GetMesh(), blocComplet.GetMesh()], 1, 1, 1e-05,False)
@@ -50,7 +47,8 @@ def RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceGe
   # --- TODO: fiabiliser l'orientation dans le cas general
   if normal is None:
     normal  = smesh.MakeDirStruct( 0, 0, 1 )
-  logging.debug('après normal = {}'.format(normal))
+  texte = 'après normal = {}'.format(normal)
+  logging.debug(texte)
   maillageComplet.Reorient2D( fisInPi,  normal, [0,0,0])
   logging.debug('après Reorient2D In')
   maillageComplet.Reorient2D( fisOutPi, normal, [0,0,0])
@@ -58,7 +56,7 @@ def RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceGe
   shapes = list()
   if extrusionFaceFissure is not None:
     subIds = geompy.SubShapeAllIDs(extrusionFaceFissure, geompy.ShapeType["SOLID"])
-    if len(subIds) > 1:
+    if ( len(subIds) > 1 ):
       shapes = geompy.ExtractShapes(extrusionFaceFissure, geompy.ShapeType["SOLID"], False)
     else:
       shapes = [extrusionFaceFissure]
@@ -72,7 +70,7 @@ def RegroupeSainEtDefaut(maillageSain, blocComplet, extrusionFaceFissure, faceGe
   grpEdges = list()
   grpFaces = list()
   grpVolumes = list()
-  if len(shapes) == 0:
+  if not shapes:
     shapes = [None] # calcul uniquement avec les normales des faces mailles de la fissure
   for i, aShape in enumerate(shapes):
     texte = "Detection elements affectes par le dedoublement de la face n° {}".format(i)

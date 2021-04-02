@@ -22,14 +22,9 @@
 import os
 
 import logging
+
 import salome
-from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
-from . import initLog
-from .geomsmesh import smesh
 import SMESH
-import math
 
 from .partitionBlocDefaut import partitionBlocDefaut
 from .facesVolumesToriques import facesVolumesToriques
@@ -50,17 +45,15 @@ from .putName import putName
 def insereFissureElliptique(geometriesSaines, maillagesSains, \
                             shapesFissure, shapeFissureParams, \
                             maillageFissureParams, elementsDefaut, step=-1):
-  """
-  TODO: a completer
-  """
+  """procedure complete fissure elliptique"""
   logging.info('start')
 
-  geometrieSaine    = geometriesSaines[0]
+  #geometrieSaine    = geometriesSaines[0]
   maillageSain      = maillagesSains[0]
   isHexa            = maillagesSains[1]
-  shapeDefaut       = shapesFissure[0]
-  tailleDefaut      = shapesFissure[2]
-  pipe0             = shapesFissure[4]
+  #shapeDefaut       = shapesFissure[0]
+  #tailleDefaut      = shapesFissure[2]
+  #pipe0             = shapesFissure[4]
   gener1            = shapesFissure[5]
   pipe1             = shapesFissure[6]
   facefis1          = shapesFissure[7]
@@ -68,12 +61,12 @@ def insereFissureElliptique(geometriesSaines, maillagesSains, \
   ellipsoide1       = shapesFissure[9]
 
 
-  demiGrandAxe      = shapeFissureParams['demiGrandAxe']
-  demiPetitAxe      = shapeFissureParams['demiPetitAxe']
-  orientation       = shapeFissureParams['orientation']
+  #demiGrandAxe      = shapeFissureParams['demiGrandAxe']
+  #demiPetitAxe      = shapeFissureParams['demiPetitAxe']
+  #orientation       = shapeFissureParams['orientation']
 
   nomRep            = maillageFissureParams['nomRep']
-  nomFicSain        = maillageFissureParams['nomFicSain']
+  #nomFicSain        = maillageFissureParams['nomFicSain']
   nomFicFissure     = maillageFissureParams['nomFicFissure']
 
   nbsegExt          = maillageFissureParams['nbsegExt']      # 5
@@ -84,18 +77,18 @@ def insereFissureElliptique(geometriesSaines, maillagesSains, \
   nbsegFis          = maillageFissureParams['nbsegFis']      # 20
   lensegEllipsoide  = maillageFissureParams['lensegEllipso'] # 1.0
 
-  fichierMaillageSain = os.path.join(nomRep, '{}.med'.format(nomFicSain))
+  #fichierMaillageSain = os.path.join(nomRep, '{}.med'.format(nomFicSain))
   fichierMaillageFissure = os.path.join(nomRep, '{}.med'.format(nomFicFissure))
 
   facesDefaut              = elementsDefaut[0]
-  centreDefaut             = elementsDefaut[1]
-  normalDefaut             = elementsDefaut[2]
+  #centreDefaut             = elementsDefaut[1]
+  #normalDefaut             = elementsDefaut[2]
   extrusionDefaut          = elementsDefaut[3]
   dmoyen                   = elementsDefaut[4]
-  bordsPartages            = elementsDefaut[5]
-  fillconts                = elementsDefaut[6]
-  idFilToCont              = elementsDefaut[7]
-  maillageSain             = elementsDefaut[8]
+  #bordsPartages            = elementsDefaut[5]
+  #fillconts                = elementsDefaut[6]
+  #idFilToCont              = elementsDefaut[7]
+  #maillageSain             = elementsDefaut[8]
   internalBoundary         = elementsDefaut[9]
   zoneDefaut               = elementsDefaut[10]
   zoneDefaut_skin          = elementsDefaut[11]
@@ -109,7 +102,7 @@ def insereFissureElliptique(geometriesSaines, maillagesSains, \
   #allonge = demiGrandAxe/demiPetitAxe
   #rayonTore = demiPetitAxe/5.0
   #generatrice, FaceGenFiss, Pipe_1, FaceFissure, Plane_1, Pipe1Part = self.toreFissure(demiPetitAxe, allonge, rayonTore)
-  #ellipsoide = self.ellipsoideDefaut(demiPetitAxe, allonge, rayonTore)
+  #ellipsoide = self.ellipsoideDefaut(demiPetitAxe, allonge)
 
   ## --- positionnement sur le bloc defaut de generatrice, tore et plan fissure
   #if step == 6:
@@ -133,7 +126,7 @@ def insereFissureElliptique(geometriesSaines, maillagesSains, \
   if step == 7:
     return None
 
-  [ blocPartition, blocp, tore, \
+  [ blocPartition, _, tore, \
     faceFissure, facesExternes, facesExtBloc, facesExtElli,
     aretesInternes, ellipsoidep, sharedFaces, sharedEdges, edgesBords] = \
     partitionBlocDefaut(extrusionDefaut, facesDefaut, gener1, pipe1, facefis1, ellipsoide1)
@@ -145,7 +138,7 @@ def insereFissureElliptique(geometriesSaines, maillagesSains, \
   if step == 8:
     return None
 
-  [facetore1, facetore2, volumeTore1, volumeTore2] = facesVolumesToriques(tore, plane1, facesDefaut)
+  [facetore1, facetore2, _, _] = facesVolumesToriques(tore, plane1, facesDefaut)
 
   # --- faces 1/2 circulaires et edges dans le plan de fissure
   if step == 9:
@@ -163,20 +156,20 @@ def insereFissureElliptique(geometriesSaines, maillagesSains, \
   if step == 11:
     return None
 
-  [genext, genint, gencnt] = sortGeneratrices(tore, geners)
+  [_, genint, gencnt] = sortGeneratrices(tore, geners)
 
   # --- faces fissure dans et hors tore, et edges face hors tore
   if step == 12:
     return None
 
-  [facefissintore, facefissoutore, edgeint, edgeext, reverext] = \
+  [_, facefissoutore, _, edgeext, reverext] = \
     facesFissure(ellipsoidep, faceFissure, extrusionDefaut, genint)
 
   # --- identification des faces tore et fissure dans le solide hors tore
   if step == 13:
     return None
 
-  [blocFaceFiss, blocFaceTore1, blocFaceTore2] = \
+  [_, _, _] = \
     facesToreInBloc(ellipsoidep, facefissoutore, facetore1, facetore2)
 
   # --- identification des shapes modifiées par la duplication des noeuds de la face fissure (d'un coté de la face)
@@ -185,14 +178,14 @@ def insereFissureElliptique(geometriesSaines, maillagesSains, \
   if step == 14:
     return None
 
-  extrusionFaceFissure, normfiss = shapeSurFissure(plane1)
+  extrusionFaceFissure, _ = shapeSurFissure(plane1)
 
   # --- maillage du bloc partitionne
 
   if step == 15:
     return None
 
-  [bloc1, blocComplet] = \
+  [_, blocComplet] = \
     meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circles, faces, \
                  gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli, \
                  aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords, \

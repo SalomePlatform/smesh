@@ -17,20 +17,20 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Crée zone géométrique défaut a partir d'un filling"""
 
 import logging
+
+from . import initLog
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
-from . import initLog
-
-# -----------------------------------------------------------------------------
-# --- crée zone géométrique défaut a partir d'un filling
 
 def creeZoneDefautFilling(filling, shapeDefaut, lgExtrusion=50):
-  """
-  Construction CAO de la zone à remailler, quand on utilise un filling,
+  """Construction CAO de la zone à remailler, quand on utilise un filling,
   après appel creeZoneDefautMaillage et quadranglesToShapeNoCorner
+
   @param filling : la CAO de la peau du défaut reconstituée
   @param shapeDefaut : objet géométrique représentant la fissure
   (selon les cas, un point central, ou une shape plus complexe,

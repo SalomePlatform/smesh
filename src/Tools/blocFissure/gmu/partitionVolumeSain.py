@@ -17,15 +17,15 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Partition volume sain et bloc, face du bloc recevant la fissure"""
 
 import logging
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
-from . import initLog
 
-# -----------------------------------------------------------------------------
-# --- partition volume sain et bloc, face du bloc recevant la fissure
+from . import initLog
 
 def partitionVolumeSain(volumeSain,boiteDefaut):
   """

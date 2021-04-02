@@ -17,23 +17,23 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
 """procédure complète fissure générale"""
 
 import os
+import math
 
 import logging
+from . import initLog
+
 import salome
+from salome.smesh import smeshBuilder
+import GEOM
+import SMESH
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
-from . import initLog
-import GEOM
 from .geomsmesh import smesh
-from salome.smesh import smeshBuilder
-import SMESH
-import math
-import bisect
 
 from .extractionOrientee import extractionOrientee
 from .extractionOrienteeMulti import extractionOrienteeMulti
@@ -54,7 +54,6 @@ from .whichSide import whichSide
 from .whichSideVertex import whichSideVertex
 from .projettePointSurCourbe import projettePointSurCourbe
 from .prolongeWire import prolongeWire
-#from getCentreFondFiss import getCentreFondFiss
 
 def insereFissureGenerale(maillagesSains,
                           shapesFissure, shapeFissureParams,
@@ -106,15 +105,15 @@ def insereFissureGenerale(maillagesSains,
   #extrusionsDefaut         = elementsDefaut[3]
   dmoyen                   = elementsDefaut[4]
   bordsPartages = elementsDefaut[5]
-  fillconts                = elementsDefaut[6]
-  idFilToCont              = elementsDefaut[7]
+  #fillconts                = elementsDefaut[6]
+  #idFilToCont              = elementsDefaut[7]
   maillageSain             = elementsDefaut[8]
   internalBoundary         = elementsDefaut[9]
   zoneDefaut               = elementsDefaut[10]
   zoneDefaut_skin          = elementsDefaut[11]
   zoneDefaut_internalFaces = elementsDefaut[12]
   zoneDefaut_internalEdges = elementsDefaut[13]
-  edgeFondExt              = elementsDefaut[14]
+  #edgeFondExt              = elementsDefaut[14]
   centreFondFiss           = elementsDefaut[15]
   tgtCentre                = elementsDefaut[16]
 
@@ -136,7 +135,7 @@ def insereFissureGenerale(maillagesSains,
 
   geomPublish(initLog.debug, facesPortFissure, "facesPortFissure")
 
-  O, OX, OY, OZ = triedreBase()
+  O, _, _, _ = triedreBase()
 
   # -----------------------------------------------------------------------------
   # --- pipe de fond de fissure, prolongé, partition face fissure par pipe
@@ -313,16 +312,16 @@ def insereFissureGenerale(maillagesSains,
         geomPublishInFather(initLog.debug,partitionPeauFissFond, edge, name)
         dist = [ geompy.MinDistance(pt, edge) for pt in verticesPipePeau]
         ptPeau = verticesPipePeau[dist.index(min(dist))] # le point de verticesPipePeau a distance minimale de l'edge
-        [u, PointOnEdge, EdgeInWireIndex]  = geompy.MakeProjectionOnWire(ptPeau, wireFondFiss)
-        logging.debug("u:%s, EdgeInWireIndex: %s, len(edgesFondFiss): %s", u, EdgeInWireIndex, len(edgesFondFiss))
+        [parametre, PointOnEdge, EdgeInWireIndex]  = geompy.MakeProjectionOnWire(ptPeau, wireFondFiss)
+        logging.debug("parametre:%s, EdgeInWireIndex: %s, len(edgesFondFiss): %s", parametre, EdgeInWireIndex, len(edgesFondFiss))
         localEdgeInFondFiss = edgesFondFiss[EdgeInWireIndex]
         centre = PointOnEdge
-        centre2 = geompy.MakeVertexOnCurve(localEdgeInFondFiss, u)
+        centre2 = geompy.MakeVertexOnCurve(localEdgeInFondFiss, parametre)
         geomPublishInFather(initLog.debug,partitionPeauFissFond, centre2, "centre2_%d"%iedf)
         verticesEdgesFondIn.append(centre)
         name = "verticeEdgesFondIn%d"%iedf
         geomPublishInFather(initLog.debug,partitionPeauFissFond, centre, name)
-        norm = geompy.MakeTangentOnCurve(localEdgeInFondFiss, u)
+        norm = geompy.MakeTangentOnCurve(localEdgeInFondFiss, parametre)
         geomPublishInFather(initLog.debug,partitionPeauFissFond, centre, "norm%d"%iedf)
         cercle = geompy.MakeCircle(centre, norm, rayonPipe)
         geomPublishInFather(initLog.debug,partitionPeauFissFond, cercle, "cerclorig%d"%iedf)
@@ -493,8 +492,8 @@ def insereFissureGenerale(maillagesSains,
 
       name="partitionPeauByPipe%d"%ifil
       geomPublish(initLog.debug, partitionPeauByPipe, name)
-      [edgesPeauFondIn, edgesPeauFondOut, edgesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "EDGE", 1.e-3)
-      [facesPeauFondIn, facesPeauFondOut, facesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "FACE", 1.e-3)
+      [edgesPeauFondIn, _, _] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "EDGE", 1.e-3)
+      [_, _, facesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "FACE", 1.e-3)
 
       if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
         facesPeauSorted, _, _ = sortFaces(facesPeauFondOn)
@@ -659,7 +658,7 @@ def insereFissureGenerale(maillagesSains,
     edgesPipeFissureExterneC = geompy.GetInPlace(faceFissureExterne, geompy.MakeCompound(edgesPipeFiss))    # edgesFissExtPipe peut ne pas couvrir toute la longueur
     # edgesPeauFissureExterneC = geompy.GetInPlace(faceFissureExterne, geompy.MakeCompound(edgesFissExtPeau))
     # il peut manquer des edges de faceFissureExterne en contact avec la peau dans edgesFissExtPeau
-    (isDone, closedFreeBoundaries, openFreeBoundaries) = geompy.GetFreeBoundary(faceFissureExterne)
+    (_, closedFreeBoundaries, _) = geompy.GetFreeBoundary(faceFissureExterne)
     edgesBordFFE = list()
     for bound in closedFreeBoundaries:
       edgesBordFFE += geompy.ExtractShapes(bound, geompy.ShapeType["EDGE"], False)
@@ -724,10 +723,10 @@ def insereFissureGenerale(maillagesSains,
     xyz = meshFondExt.GetNodeXYZ(nodeId)
     #logging.debug("nodeId %s, coords %s", nodeId, str(xyz))
     pt = geompy.MakeVertex(xyz[0], xyz[1], xyz[2])
-    u, PointOnEdge, EdgeInWireIndex = geompy.MakeProjectionOnWire(pt, wireFondFiss) # u compris entre 0 et 1
+    parametre, PointOnEdge, EdgeInWireIndex = geompy.MakeProjectionOnWire(pt, wireFondFiss) # parametre compris entre 0 et 1
     edgeOrder = edgesIdByOrientation[EdgeInWireIndex]
-    ptGSdic[(edgeOrder, EdgeInWireIndex, u)] = pt
-    #logging.debug("nodeId %s, u %s", nodeId, str(u))
+    ptGSdic[(edgeOrder, EdgeInWireIndex, parametre)] = pt
+    #logging.debug("nodeId %s, parametre %s", nodeId, str(parametre))
   usort = sorted(ptGSdic)
   logging.debug("nombre de points obtenus par deflexion %s",len(usort))
 
@@ -735,10 +734,8 @@ def insereFissureGenerale(maillagesSains,
   origins = list()
   normals = list()
   for edu in usort:
-    ied = edu[1]
-    u = edu[2]
     vertcx = ptGSdic[edu]
-    norm = geompy.MakeTangentOnCurve(edgesFondFiss[ied], u)
+    norm = geompy.MakeTangentOnCurve(edgesFondFiss[edu[1]], edu[2])
     plan = geompy.MakePlane(vertcx, norm, 3*rayonPipe)
     part = geompy.MakePartition([plan], [wirePipeFiss], list(), list(), geompy.ShapeType["VERTEX"], 0, list(), 0)
     liste = geompy.ExtractShapes(part, geompy.ShapeType["VERTEX"], True)
@@ -912,7 +909,7 @@ def insereFissureGenerale(maillagesSains,
           vs = geompy.ExtractShapes(obj, geompy.ShapeType["VERTEX"], False)
           if len(vs) > 2:
             eds = geompy.ExtractShapes(obj, geompy.ShapeType["EDGE"], False)
-            [edsorted, minl,maxl] = sortEdges(eds)
+            [edsorted, _,maxl] = sortEdges(eds)
             edge = edsorted[-1]
           else:
             maxl = geompy.BasicProperties(edge)[0]
@@ -932,7 +929,7 @@ def insereFissureGenerale(maillagesSains,
             logging.debug("  edges issues de la partition: %s", ednouv)
             for ii, ed in enumerate(ednouv):
               geomPublish(initLog.debug, ed, "ednouv%d"%ii)
-            [edsorted, minl,maxl] = sortEdges(ednouv)
+            [edsorted, _,maxl] = sortEdges(ednouv)
             logging.debug("  longueur edge trouvée: %s", maxl)
             edge = edsorted[-1]
           edges.append(edge)
@@ -998,7 +995,7 @@ def insereFissureGenerale(maillagesSains,
   # --- ajustement precis des points sur edgesPipeFissureExterneC
 
   edgesPFE = geompy.ExtractShapes(edgesPipeFissureExterneC, geompy.ShapeType["EDGE"], False)
-  verticesPFE = findWireIntermediateVertices(wirePipeFissureExterne)  # vertices intermédiaires (des points en trop dans ptsInWireFissExtPipe)
+  verticesPFE, _ = findWireIntermediateVertices(wirePipeFissureExterne)  # vertices intermédiaires (des points en trop dans ptsInWireFissExtPipe)
   idiskmin = idisklim[0] + 1 # on ne prend pas le disque sur la peau, déjà ajusté
   idiskmax = idisklim[1]     # on ne prend pas le disque sur la peau, déjà ajusté
   idiskint = list()
@@ -1166,9 +1163,9 @@ def insereFissureGenerale(maillagesSains,
       mVols.append(idVols)
 
   pipeFissGroup = meshPipe.CreateEmptyGroup( SMESH.VOLUME, 'PIPEFISS' )
-  nbAdd = pipeFissGroup.AddFrom( meshPipe.GetMesh() )
+  _ = pipeFissGroup.AddFrom( meshPipe.GetMesh() )
 
-  nb, _, new_group = meshPipe.MakeBoundaryElements(SMESH.BND_2DFROM3D, "pipeBoundaries")
+  _, _, _ = meshPipe.MakeBoundaryElements(SMESH.BND_2DFROM3D, "pipeBoundaries")
   edgesCircPipeGroup = [edgeCircPipe0Group, edgeCircPipe1Group]
 
   # --- fin du maillage du pipe
@@ -1176,7 +1173,7 @@ def insereFissureGenerale(maillagesSains,
   # --- edges de bord, faces défaut à respecter
 
   _ = smesh.CreateFilterManager()
-  nbAdded, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])
+  _, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])
   criteres = list()
   unCritere = smesh.GetCriterion(SMESH.EDGE,SMESH.FT_FreeBorders,SMESH.FT_Undefined,0)
   criteres.append(unCritere)
@@ -1188,7 +1185,7 @@ def insereFissureGenerale(maillagesSains,
   #     on désigne les faces de peau en quadrangles par le groupe "skinFaces"
 
   skinFaces = internalBoundary.CreateEmptyGroup( SMESH.FACE, 'skinFaces' )
-  nbAdd = skinFaces.AddFrom( internalBoundary.GetMesh() )
+  _ = skinFaces.AddFrom( internalBoundary.GetMesh() )
 
   # --- maillage des éventuelles arêtes vives entre faces reconstruites
 
@@ -1211,7 +1208,7 @@ def insereFissureGenerale(maillagesSains,
       logging.info(text)
       raise Exception(text)
     grpAretesVives = meshAretesVives.CreateEmptyGroup( SMESH.EDGE, 'grpAretesVives' )
-    nbAdd = grpAretesVives.AddFrom( meshAretesVives.GetMesh() )
+    _ = grpAretesVives.AddFrom( meshAretesVives.GetMesh() )
 
   # -----------------------------------------------------------------------
   # --- maillage faces de fissure
@@ -1247,9 +1244,9 @@ def insereFissureGenerale(maillagesSains,
   putName(algo1d, "algo1d_edgeFissPeau")
   putName(hypo1d, "hypo1d_edgeFissPeau")
 
-  grpFaceFissureExterne = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
+  _ = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
   grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
-  grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
+  _ = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
 
   is_done = meshFaceFiss.Compute()
   text = "meshFaceFiss.Compute"
@@ -1361,7 +1358,7 @@ def insereFissureGenerale(maillagesSains,
       raise Exception(text)
 
     GroupFaces = meshFacePeau.CreateEmptyGroup( SMESH.FACE, "facePeau%d"%ifil )
-    nbAdd = GroupFaces.AddFrom( meshFacePeau.GetMesh() )
+    _ = GroupFaces.AddFrom( meshFacePeau.GetMesh() )
     meshesFacesPeau.append(meshFacePeau)
 
   # --- regroupement des maillages du défaut
@@ -1415,7 +1412,7 @@ def insereFissureGenerale(maillagesSains,
   maillageSain = enleveDefaut(maillageSain, zoneDefaut, zoneDefaut_skin,
                               zoneDefaut_internalFaces, zoneDefaut_internalEdges)
   putName(maillageSain, nomFicSain+"_coupe")
-  extrusionFaceFissure, normfiss = shapeSurFissure(facesPortFissure)
+  _, normfiss = shapeSurFissure(facesPortFissure)
   maillageComplet = RegroupeSainEtDefaut(maillageSain, meshBoiteDefaut,
                                          None, None, 'COMPLET', normfiss)
 
@@ -1428,13 +1425,13 @@ def insereFissureGenerale(maillagesSains,
 
   logging.info("réorientation face de fissure FACE1")
   grps = [ grp for grp in groups if grp.GetName() == 'FACE1']
-  nb = maillageComplet.Reorient2D( grps[0], normfiss, grps[0].GetID(1))
+  _ = maillageComplet.Reorient2D( grps[0], normfiss, grps[0].GetID(1))
 
   logging.info("réorientation face de fissure FACE2")
   plansim = geompy.MakePlane(O, normfiss, 10000)
   fissnorm = geompy.MakeMirrorByPlane(normfiss, plansim)
   grps = [ grp for grp in groups if grp.GetName() == 'FACE2']
-  nb = maillageComplet.Reorient2D( grps[0], fissnorm, grps[0].GetID(1))
+  _ = maillageComplet.Reorient2D( grps[0], fissnorm, grps[0].GetID(1))
   _ = maillageComplet.GetMesh().CreateDimGroup( grps, SMESH.NODE, 'FACE2' )
 
   logging.info("export maillage fini")

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2014-2021  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -16,25 +17,30 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Les groupes des edges des cercles débouchants"""
 
-from blocFissure import gmu
-from .initEtude import initEtude
-initEtude()
-from .triedreBase import triedreBase
-O, OX, OY, OZ = triedreBase()
+import logging
 
-from .distance2 import distance2
-a=[10, 20, 30]
-b=[5, 7, 3]
-c=distance2(a,b)
+def construitMaillagePipe_b(idisk, \
+                            idisklim, nbsegCercle, \
+                            meshPipe, mptdsk, \
+                            edgeCircPipe0Group, edgeCircPipe1Group):
+  """Les groupes des edges des cercles débouchants"""
+  #logging.info('start')
 
-import unittest
-from blocFissure.gmu import initLog
-initLog.setUnitTests()
+  pts = list()
+  for n_cercle in range(nbsegCercle):
+    pts.append(mptdsk[n_cercle][-1])
+  edges = list()
+  nb_pts = len(pts)
+  for n_cercle in range(nb_pts):
+    n_cercle_1 = (n_cercle+1)%nb_pts
+    id_edge = meshPipe.AddEdge([pts[n_cercle], pts[n_cercle_1]])
+    edges.append(id_edge)
 
-from blocFissure.gmu import distance2
+  if idisk == idisklim[0]:
+    edgeCircPipe0Group.Add(edges)
+  else:
+    edgeCircPipe1Group.Add(edges)
 
-suite = unittest.TestLoader().loadTestsFromTestCase(distance2.Test_distance2)
-unittest.TextTestRunner(verbosity=2).run(suite)
-
-
+  return
