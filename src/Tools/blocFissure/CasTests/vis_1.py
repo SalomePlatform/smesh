@@ -22,6 +22,7 @@
 import os
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
+from blocFissure.gmu.putName import putName
 
 import GEOM
 import SALOMEDS
@@ -51,7 +52,7 @@ class vis_1(fissureGenerique):
     logging.info(texte)
 
     ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "visSain.med"))
-    smesh.SetName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme))
+    putName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme), i_pref=self.numeroCas)
 
     return [objetSain, True] # True : maillage hexa
 

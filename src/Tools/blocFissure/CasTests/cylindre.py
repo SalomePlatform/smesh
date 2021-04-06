@@ -29,6 +29,7 @@ from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
+from blocFissure.gmu.putName import putName
 
 import GEOM
 import SALOMEDS
@@ -51,7 +52,7 @@ class cylindre(fissureGenerique):
     logging.info("genereMaillageSain %s", self.nomCas)
 
     ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "CylindreSain.med"))
-    smesh.SetName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme))
+    putName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme), i_pref=self.numeroCas)
 
     return [objetSain, True] # True : maillage hexa
 
