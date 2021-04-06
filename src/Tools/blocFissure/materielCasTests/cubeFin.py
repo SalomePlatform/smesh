@@ -17,7 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""Géométries nécessaires aux cas-tests :
+"""Géométries et maillages de base nécessaires aux cas-tests :
 . cubeFin_Transverse
 . cubeFin_Coin
 . cubeFin_Milieu

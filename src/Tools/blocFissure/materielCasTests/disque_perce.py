@@ -17,7 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""Géométrie nécessaire au cas-test :
+"""Géométrie et maillage de base nécessaire au cas-test :
 . disque_perce
 """
 

@@ -17,21 +17,26 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Géométrie et maillage de base nécessaire au cas-test :
+. tube
+"""
 
-"""Cas-test de blocFissure sur un tube"""
-__revision__ = "V02.06"
+__revision__ = "V02.07"
 
-import logging
 import os
 
-from blocFissure import gmu
+import logging
 
 import salome
 from SketchAPI import *
 from salome.shaper import model
 import SHAPERSTUDY
-import SMESH
 from salome.smesh import smeshBuilder
+from salome.StdMeshers import StdMeshersBuilder
+import SMESH
+
+from blocFissure import gmu
+from blocFissure.gmu.putName import putName
 
 #=============== Options ====================
 # 1. NOM_OBJET = nom de l'objet
@@ -234,7 +239,7 @@ l_groups = l_aux[1:]
 
 smesh = smeshBuilder.New()
 Maillage_tube = smesh.Mesh(objet)
-smesh.SetName(Maillage_tube, NOM_OBJET)
+putName(Maillage_tube.GetMesh(), NOM_OBJET)
 
 for groupe in l_groups:
   groupe_nom = groupe.GetName()
@@ -260,6 +265,15 @@ Regular_1D_2 = Maillage_tube.Segment(geom=group_h)
 Number_of_Segments_2 = Regular_1D_2.NumberOfSegments(NB_S_H)
 Propagation_of_1D_Hyp_1 = Regular_1D_2.Propagation()
 
+## set object names
+#smesh.SetName(Regular_1D.GetAlgorithm(), 'Regular_1D')
+#smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
+#smesh.SetName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
+putName(Nb_Segments_1, 'Nb. Segments_1', i_pref='tube')
+putName(Number_of_Segments_1, 'Number_of_Segments_1', i_pref='tube')
+putName(Number_of_Segments_2, 'Number_of_Segments_2', i_pref='tube')
+putName(Propagation_of_1D_Hyp, 'Propagation', i_pref='tube')
+
 is_done = Maillage_tube.Compute()
 text = "Maillage_tube.Compute"
 if is_done:
@@ -273,12 +287,6 @@ ficmed = os.path.join(gmu.pathBloc, "materielCasTests","{}.med".format(NOM_OBJET
 text = ".. Archivage du maillage dans le fichier '{}'".format(ficmed)
 logging.info(text)
 Maillage_tube.ExportMED(ficmed)
-
-## set object names
-smesh.SetName(Regular_1D.GetAlgorithm(), 'Regular_1D')
-smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
-smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
-smesh.SetName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()
