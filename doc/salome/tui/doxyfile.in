@@ -119,6 +119,7 @@ HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = @CMAKE_CURRENT_BINARY_DIR@/static/header.html
 HTML_FOOTER            = @CMAKE_CURRENT_SOURCE_DIR@/static/footer.html
 HTML_EXTRA_STYLESHEET  = @CMAKE_CURRENT_SOURCE_DIR@/static/salome_extra.css
+HTML_EXTRA_FILES       = @CMAKE_CURRENT_SOURCE_DIR@/images/head.png
 HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
 CHM_FILE               = 
