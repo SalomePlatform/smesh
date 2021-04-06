@@ -42,7 +42,7 @@ from .insereFissureLongue_g import insereFissureLongue_g
 def insereFissureLongue(geometriesSaines, \
                         shapesFissure, shapeFissureParams, \
                         maillageFissureParams, elementsDefaut, \
-                        step=-1, mailleur="MeshGems", nro_cas=-1):
+                        step=-1, mailleur="MeshGems", nro_cas=None):
   """procedure complete fissure longue"""
   logging.info('start')
   logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)

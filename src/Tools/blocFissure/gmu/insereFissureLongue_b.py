@@ -46,7 +46,7 @@ def insereFissureLongue_b (edgesInside, centreFondFiss, tangentFondFiss, \
                            facePeau, verticesOutCercles, verticesEdgePeauFiss, \
                            fillingFaceExterne, rayonPipe, \
                            internalBoundary, \
-                           nro_cas=-1):
+                           nro_cas=None):
   """procedure complete fissure longue"""
   logging.info('start')
   logging.info("Maillage pour le cas n°%d", nro_cas)

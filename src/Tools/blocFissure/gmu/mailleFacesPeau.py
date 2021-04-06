@@ -37,7 +37,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
                     facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, \
                     bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives, \
                     edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad, \
-                    mailleur="MeshGems", nro_cas=-1):
+                    mailleur="MeshGems", nro_cas=None):
   """maillage faces de peau"""
   logging.info('start')
   logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)

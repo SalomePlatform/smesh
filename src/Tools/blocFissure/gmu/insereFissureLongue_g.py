@@ -38,7 +38,7 @@ def insereFissureLongue_g(nomFicFissure, fichierMaillageFissure, nomFicSain, mai
                           meshBoiteDefaut, facePorteFissure, \
                           group_faceFissInPipe, group_faceFissOutPipe, \
                           zoneDefaut, zoneDefaut_skin, zoneDefaut_internalEdges, zoneDefaut_internalFaces, \
-                          nro_cas=-1):
+                          nro_cas=None):
   """Les groupes de la fissure longue"""
   logging.info('start')
   logging.info("Pour le cas n°%d", mailleur, nro_cas)

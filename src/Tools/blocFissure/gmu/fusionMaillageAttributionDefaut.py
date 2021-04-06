@@ -37,7 +37,7 @@ from .putName import putName
 
 def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible, \
                          zoneDefaut_skin, shapeDefaut, listOfCorners, \
-                         nro_cas=-1):
+                         nro_cas=None):
   """Groupe de quadrangles de face transformé en face géométrique par filling"""
 
   logging.info("start")

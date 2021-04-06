@@ -30,12 +30,43 @@ smesh = smeshBuilder.New()
 
 from . import initLog
 
-def geomPublish(level,aShape, aName):
-  """Publication d'un objet"""
+def geomPublish(level,aShape, aName, i_pref=None):
+  """Publication d'un objet sous GEOM
+
+  @level niveau d'impression voulu
+  @aShape objet à nommer
+  @aName le nom brut
+  @i_pref un éventuel préfixe
+  """
+  #print ("initLog.getLogLevel() = {}".format(initLog.getLogLevel()))
+  #print ("level                 = {}".format(level))
   if initLog.getLogLevel() <= level:
+    # préfixe éventuel :
+    if ( i_pref is not None):
+      if isinstance(i_pref,int):
+        prefixe = "Cas{:02d}_".format(i_pref)
+      else:
+        prefixe = "{}_".format(i_pref)
+      aName = prefixe + aName
+
     geompy.addToStudy(aShape, aName)
 
-def geomPublishInFather(level, aFather, aShape, aName):
-  """Publication d'un objet sous son ascendant"""
+def geomPublishInFather(level, aFather, aShape, aName, i_pref=None):
+  """Publication d'un objet sous son ascendant sous GEOM
+
+  @level niveau d'impression voulu
+  @aFather objet ascendant
+  @aShape objet à nommer
+  @aName le nom brut
+  @i_pref un éventuel préfixe
+  """
   if initLog.getLogLevel() <= level:
+    # préfixe éventuel :
+    if ( i_pref is not None):
+      if isinstance(i_pref,int):
+        prefixe = "Cas{:02d}_".format(i_pref)
+      else:
+        prefixe = "{}_".format(i_pref)
+      aName = prefixe + aName
+
     geompy.addToStudyInFather(aFather, aShape, aName)

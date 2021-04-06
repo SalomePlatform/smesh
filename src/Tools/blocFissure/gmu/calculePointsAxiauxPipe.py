@@ -30,7 +30,7 @@ from .putName import putName
 def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
                             centreFondFiss, wireFondFiss, wirePipeFiss,
                             lenSegPipe, rayonPipe, nbsegCercle, nbsegRad, \
-                            nro_cas=-1):
+                            nro_cas=None):
   """Préparation maillage du pipe :
 
   - détections des points a respecter : jonction des edges/faces constituant

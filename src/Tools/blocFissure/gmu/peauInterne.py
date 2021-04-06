@@ -32,7 +32,7 @@ from .fusionMaillageAttributionDefaut import fusionMaillageDefaut
 from .putName import putName
 
 def peauInterne(fichierMaillage, shapeDefaut, nomZones, \
-                nro_cas=-1):
+                nro_cas=None):
   """Retrouve les groupes de défaut dans le maillage sain modifié par CreateHoleSkin (CreeZoneDefautMaillage)
 
   On récupère le volume et la peau de la zone de défaut, les éventuelles faces et arêtes internes de cette zone.

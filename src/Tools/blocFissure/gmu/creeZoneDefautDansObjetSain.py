@@ -36,7 +36,7 @@ from .getCentreFondFiss import getCentreFondFiss
 
 def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, \
                                 shapeFissureParams, maillageFissureParams, \
-                                nro_cas=-1):
+                                nro_cas=None):
   """
   #TODO: a compléter
   """

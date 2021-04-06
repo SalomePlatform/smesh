@@ -32,7 +32,7 @@ from .putName import putName
 
 def insereFissureLongue_e (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_generFiss, groupEdgesFaceFissPipe, \
                            profondeur, rayonPipe, \
-                           mailleur="MeshGems", nro_cas=-1):
+                           mailleur="MeshGems", nro_cas=None):
   """maillage face de fissure"""
   logging.info('start')
   logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)

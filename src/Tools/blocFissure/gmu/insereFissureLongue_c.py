@@ -37,7 +37,7 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
                            VerticesEndPipeFiss, verticesEdgePeauFiss, \
                            groupFaceFissInPipe, groupEdgeFondFiss, groupsDemiCerclesPipe, groupGenerFiss, \
                            profondeur, rayonPipe, \
-                           nro_cas=-1):
+                           nro_cas=None):
   """maillage pipe fond fissure"""
   logging.info('start')
   logging.info("Maillage pour le cas n°%d", nro_cas)
