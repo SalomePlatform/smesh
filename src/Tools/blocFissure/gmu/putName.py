@@ -31,7 +31,9 @@ def putName (objmesh, name, i_suff=-1, i_pref=None):
   @i_pref un éventuel préfixe
   """
 
-  #logging.info("putName pour %s - i_suff=%d, i_pref=%d", name, i_suff, i_pref)
+  #texte = "Name = {}, i_suff = {}, i_pref = {}".format(name,i_suff,i_pref)
+  #print(texte)
+  #logging.info(texte)
   # suffixe éventuel :
   if ( i_suff >= 0 ):
     suffixe = "_{}".format(i_suff)
