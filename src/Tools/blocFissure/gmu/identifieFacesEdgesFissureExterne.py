@@ -27,7 +27,8 @@ from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
 
-def identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesPipeFiss):
+def identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesPipeFiss, \
+                                      nro_cas=None):
   """Identification des faces et edges de fissure externe pour maillage"""
   logging.info('start')
 
@@ -75,9 +76,10 @@ def identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesP
     edgesPeauFissureExterneC = geompy.MakeCompound(edgesFissExtPeau)
     edgesPipeFissureExterneC = geompy.MakeCompound(edgesFissExtPipe)
 
+  geomPublish(initLog.always, faceFissureExterne, "faceFissureExterne", nro_cas)
+  geomPublishInFather(initLog.always, faceFissureExterne, edgesPeauFissureExterneC, "edgesPeauFissureExterne", nro_cas)
+  geomPublishInFather(initLog.always, faceFissureExterne, edgesPipeFissureExterneC, "edgesPipeFissureExterne", nro_cas)
+
   wirePipeFissureExterne = geompy.MakeWire(geompy.ExtractShapes(edgesPipeFissureExterneC, geompy.ShapeType["EDGE"], False))
-  geomPublish(initLog.debug, faceFissureExterne, "faceFissureExterne")
-  geomPublishInFather(initLog.debug, faceFissureExterne, edgesPeauFissureExterneC, "edgesPeauFissureExterne")
-  geomPublishInFather(initLog.debug, faceFissureExterne, edgesPipeFissureExterneC, "edgesPipeFissureExterne")
 
   return (faceFissureExterne, edgesPipeFissureExterneC, wirePipeFissureExterne, edgesPeauFissureExterneC)

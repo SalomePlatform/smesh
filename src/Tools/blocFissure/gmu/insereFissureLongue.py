@@ -103,7 +103,7 @@ def insereFissureLongue(geometriesSaines, \
              insereFissureLongue_a (facePorteFissure, WirePorteFondFissure, \
                                     fillingFaceExterne, \
                                     pipefiss, rayonPipe, \
-                                    mailleur )
+                                    mailleur, nro_cas )
   # -----------------------------------------------------------------------------
   # --- pipe de fond de fissure
   pipeFondFiss, disques, rayons, \
