@@ -29,7 +29,8 @@ from .identifieElementsGeometriquesPeau import identifieElementsGeometriquesPeau
 
 def construitFissureGenerale_b( partitionsPeauFissFond, \
                                 edgesPipeFiss, edgesFondFiss, wireFondFiss, aretesVivesC, \
-                                facesDefaut, centreFondFiss, rayonPipe, aretesVivesCoupees ):
+                                facesDefaut, centreFondFiss, rayonPipe, aretesVivesCoupees, \
+                                nro_cas=None ):
   """construction de la fissure générale - inventaire des faces de peau coupées par la fissure
 
 pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
@@ -41,19 +42,19 @@ pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
   texte = "nbFacesFilling : {} ".format(nbFacesFilling)
   logging.info(texte)
 
-  ptEdgeFond = [ list()  for i in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux débouchés du pipe]
-  fsPipePeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
-  edRadFPiPo = [ list()  for i in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe débouchantes ]
-  fsFissuExt = [ list()  for i in range(nbFacesFilling)] # pour chaque face [faces de fissure externes au pipe]
-  edFisExtPe = [ list()  for i in range(nbFacesFilling)] # pour chaque face [edge en peau des faces de fissure externes (pas subshape facePeau)]
-  edFisExtPi = [ list()  for i in range(nbFacesFilling)] # pour chaque face [edge commun au pipe des faces de fissure externes]
-  facesPeaux = [None for i in range(nbFacesFilling)] # pour chaque face : la face de peau finale a mailler (percée des faces débouchantes)
-  edCircPeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
-  ptCircPeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
-  gpedgeBord = [None for i in range(nbFacesFilling)] # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
-  gpedgeVifs = [None for i in range(nbFacesFilling)] # pour chaque face de peau : groupes subshape des edges aux arêtes vives entre fillings
-  edFissPeau = [ list()  for i in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
-  ptFisExtPi = [ list()  for i in range(nbFacesFilling)] # pour chaque face de peau : [point commun edFissPeau edCircPeau]
+  ptEdgeFond = [ list() for _ in range(nbFacesFilling)] # pour chaque face [points edge fond de fissure aux débouchés du pipe]
+  fsPipePeau = [ list() for _ in range(nbFacesFilling)] # pour chaque face [faces du pipe débouchantes]
+  edRadFPiPo = [ list() for _ in range(nbFacesFilling)] # pour chaque face [edge radiale des faces du pipe débouchantes ]
+  fsFissuExt = [ list() for _ in range(nbFacesFilling)] # pour chaque face [faces de fissure externes au pipe]
+  edFisExtPe = [ list() for _ in range(nbFacesFilling)] # pour chaque face [edge en peau des faces de fissure externes (pas subshape facePeau)]
+  edFisExtPi = [ list() for _ in range(nbFacesFilling)] # pour chaque face [edge commun au pipe des faces de fissure externes]
+  facesPeaux = [None for _ in range(nbFacesFilling)] # pour chaque face : la face de peau finale a mailler (percée des faces débouchantes)
+  edCircPeau = [ list() for _ in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
+  ptCircPeau = [ list() for _ in range(nbFacesFilling)] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
+  gpedgeBord = [None for _ in range(nbFacesFilling)] # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
+  gpedgeVifs = [None for _ in range(nbFacesFilling)] # pour chaque face de peau : groupes subshape des edges aux arêtes vives entre fillings
+  edFissPeau = [ list() for _ in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
+  ptFisExtPi = [ list() for _ in range(nbFacesFilling)] # pour chaque face de peau : [point commun edFissPeau edCircPeau]
 
   for ifil, partitionPeauFissFond in enumerate(partitionsPeauFissFond):
     if partitionPeauFissFond is not None:
@@ -80,9 +81,9 @@ pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
     facesPipePeau += fsPipePeau[ifil]
     edgeRadFacePipePeau += edRadFPiPo[ifil]
 
-  for i, avc in enumerate(aretesVivesCoupees):
-    name = "areteViveCoupee%d"%i
-    geomPublish(initLog.debug, avc, name)
+  for i_aux, avc in enumerate(aretesVivesCoupees):
+    name = "areteViveCoupee{}".format(i_aux)
+    geomPublish(initLog.debug, avc, name, nro_cas)
 
   return ptEdgeFond, fsFissuExt, edFisExtPe, edFisExtPi, facesPeaux, edCircPeau, \
          ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, ptFisExtPi, \
