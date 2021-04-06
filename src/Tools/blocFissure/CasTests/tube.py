@@ -25,6 +25,8 @@ import logging
 
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
+from blocFissure.gmu.geomsmesh import geomPublish
+from blocFissure.gmu.geomsmesh import geomPublishInFather
 from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
@@ -81,8 +83,8 @@ class tube(fissureGenerique):
         l_aux.append(group)
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionList(fondFiss, l_aux )
-    geompy.addToStudy( shellFiss, 'shellFiss' )
-    geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
+    geomPublish(initLog.always, shellFiss, "shellFiss", self.numeroCas)
+    geomPublishInFather(initLog.always, shellFiss, fondFiss, "fondFiss", self.numeroCas)
 
     mailleur = self.mailleur2d3d()
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.025, 0.1, mailleur, self.numeroCas)
