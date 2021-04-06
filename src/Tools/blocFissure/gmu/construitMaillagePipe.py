@@ -24,16 +24,20 @@ import logging
 import SMESH
 
 from .geomsmesh import smesh
+from .putName import putName
 
 from .construitMaillagePipe_a import construitMaillagePipe_a
 from .construitMaillagePipe_b import construitMaillagePipe_b
 from .construitMaillagePipe_c import construitMaillagePipe_c
 from .construitMaillagePipe_d import construitMaillagePipe_d
 
-def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad):
+def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
+                                nro_cas=None):
   """maillage effectif du pipe"""
   logging.info('start')
   meshPipe = smesh.Mesh(None, "meshPipe")
+  putName(meshPipe, "meshPipe", i_pref=nro_cas)
+
   fondFissGroup = meshPipe.CreateEmptyGroup(SMESH.EDGE, "FONDFISS")
   nodesFondFissGroup = meshPipe.CreateEmptyGroup(SMESH.NODE, "nfondfis")
   faceFissGroup = meshPipe.CreateEmptyGroup(SMESH.FACE, "fisInPi")

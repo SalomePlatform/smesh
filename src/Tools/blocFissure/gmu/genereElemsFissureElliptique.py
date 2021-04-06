@@ -24,7 +24,6 @@ from . import initLog
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
-from .geomsmesh import geomPublishInFather
 
 from .toreFissure import toreFissure
 from .ellipsoideDefaut import ellipsoideDefaut

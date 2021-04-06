@@ -63,6 +63,7 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
   logging.info(texte)
 
   meshFondExt = smesh.Mesh(wireFondFiss)
+  putName(meshFondExt, "wireFondFiss", i_pref=nro_cas)
   algo1d = meshFondExt.Segment()
   hypo1d = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
   putName(algo1d.GetSubMesh(), "wireFondFiss", i_pref=nro_cas)
@@ -95,14 +96,12 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
   origins = list()
   normals = list()
   for edu in usort:
-    ied = edu[1]
-    parametre = edu[2]
     vertcx = ptGSdic[edu]
-    norm = geompy.MakeTangentOnCurve(edgesFondFiss[ied], parametre)
+    norm = geompy.MakeTangentOnCurve(edgesFondFiss[edu[1]], edu[2])
     plan = geompy.MakePlane(vertcx, norm, 3.*rayonPipe)
     part = geompy.MakePartition([plan], [wirePipeFiss], list(), list(), geompy.ShapeType["VERTEX"], 0, list(), 0)
     liste = geompy.ExtractShapes(part, geompy.ShapeType["VERTEX"], True)
-    if len(liste) == 5: # 4 coins du plan plus intersection recherchée
+    if ( len(liste) == 5 ): # 4 coins du plan plus intersection recherchée
       for point in liste:
         if geompy.MinDistance(point, vertcx) < 1.1*rayonPipe: # les quatre coins sont plus loin
           vertpx = point
@@ -135,8 +134,8 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
 
     points = [vertcx] # les points du rayon de référence
     dist_0 = rayonPipe/float(nbsegRad)
-    for j in range(nbsegRad):
-      point = geompy.MakeTranslationVectorDistance(vertcx, vec1, (j+1)*dist_0)
+    for j_aux in range(nbsegRad):
+      point = geompy.MakeTranslationVectorDistance(vertcx, vec1, float(j_aux+1)*dist_0)
       points.append(point)
     gptdsk.append(points)
     point = geompy.MakeTranslationVectorDistance(vertcx, vec1, 1.5*rayonPipe)
@@ -144,15 +143,15 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
     raydisks[0].append(rayon)
 
     angle_0 = 2.*math.pi/float(nbsegCercle)
-    for k in range(nbsegCercle-1):
-      angle = float(k+1)*angle_0
+    for k_aux in range(nbsegCercle-1):
+      angle = float(k_aux+1)*angle_0
       pts = [vertcx] # les points d'un rayon obtenu par rotation
-      for j in range(nbsegRad):
-        point = geompy.MakeRotation(points[j+1], normal, angle)
+      for j_aux in range(nbsegRad):
+        point = geompy.MakeRotation(points[j_aux+1], normal, angle)
         pts.append(point)
       gptdsk.append(pts)
       ray = geompy.MakeRotation(rayon, normal, angle)
-      raydisks[k+1].append(ray)
+      raydisks[k_aux+1].append(ray)
 
     gptsdisks.append(gptdsk)
 

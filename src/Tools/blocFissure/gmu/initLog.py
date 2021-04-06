@@ -27,6 +27,7 @@ info = 20
 warning = 30
 error = 40
 critical = 50
+always = 100
 
 loglevel = warning
 logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s',

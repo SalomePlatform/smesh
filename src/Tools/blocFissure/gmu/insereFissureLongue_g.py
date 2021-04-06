@@ -41,7 +41,7 @@ def insereFissureLongue_g(nomFicFissure, fichierMaillageFissure, nomFicSain, mai
                           nro_cas=None):
   """Les groupes de la fissure longue"""
   logging.info('start')
-  logging.info("Pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Pour le cas n°%d", nro_cas)
 
   O, _, _, _ = triedreBase()
 
