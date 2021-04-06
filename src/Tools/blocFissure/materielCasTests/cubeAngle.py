@@ -18,33 +18,40 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-"""Cas-test de blocFissure pour un cube"""
+"""Géométries nécessaires aux cas-tests :
+. cubeAngle
+. cubeAngle2
+"""
 
-import logging
 import os
 
-from blocFissure import gmu
+import logging
 
 import salome
-import GEOM
-from salome.geom import geomBuilder
-import SMESH
 from salome.smesh import smeshBuilder
+import GEOM
+import SMESH
+import SALOMEDS
+
+from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy
+from blocFissure.gmu.geomsmesh import geomPublish
+
+from blocFissure.gmu.triedreBase import triedreBase
+from blocFissure.gmu.putName import putName
+from blocFissure.gmu import initLog
 
 #=============== Options ====================
 # 1. NOM_OBJET = nom de l'objet
 NOM_OBJET = "CubeAngle"
 #============================================
 
-salome.salome_init()
-
 ###
 ### GEOM component
 ###
 
-geompy = geomBuilder.New()
+O, OX, OY, OZ = triedreBase()
 
-OZ = geompy.MakeVectorDXDYDZ(0, 0, 1)
 Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 Vertex_1 = geompy.MakeVertex(0, 0, 100)
 Disk_1 = geompy.MakeDiskPntVecR(Vertex_1, OZ, 60)
@@ -53,14 +60,13 @@ Vertex_3 = geompy.MakeVertex(65, 65, 110)
 Box_2 = geompy.MakeBoxTwoPnt(Vertex_3, Vertex_2)
 Common_1 = geompy.MakeCommon(Disk_1, Box_2)
 
-geompy.addToStudy( OZ, 'OZ' )
-geompy.addToStudy( Box_1, 'Box_1' )
-geompy.addToStudy( Vertex_1, 'Vertex_1' )
-geompy.addToStudy( Disk_1, 'Disk_1' )
-geompy.addToStudy( Vertex_2, 'Vertex_2' )
-geompy.addToStudy( Vertex_3, 'Vertex_3' )
-geompy.addToStudy( Box_2, 'Box_2' )
-geompy.addToStudy( Common_1, NOM_OBJET )
+geompy.addToStudy( Box_1, NOM_OBJET )
+geomPublish(initLog.debug, Vertex_1, 'Vertex_1' )
+geomPublish(initLog.debug, Disk_1, 'Disk_1' )
+geomPublish(initLog.debug, Vertex_2, 'Vertex_2' )
+geomPublish(initLog.debug, Vertex_3, 'Vertex_3' )
+geomPublish(initLog.debug, Box_2, 'Box_2' )
+geompy.addToStudy( Common_1, NOM_OBJET+'_Fissure' )
 
 ficcao = os.path.join(gmu.pathBloc, "materielCasTests", "{}Fiss.brep".format(NOM_OBJET))
 text = ".. Exportation de la géométrie de la fissure dans le fichier '{}'".format(ficcao)
@@ -71,15 +77,21 @@ geompy.ExportBREP(Common_1, ficcao)
 ### SMESH component
 ###
 
-
 smesh = smeshBuilder.New()
 Mesh_1 = smesh.Mesh(Box_1)
-smesh.SetName(Mesh_1, NOM_OBJET)
+putName(Mesh_1, NOM_OBJET)
+
 Regular_1D = Mesh_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(15)
 Nb_Segments_1.SetDistrType( 0 )
 Quadrangle_2D = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = Mesh_1.Hexahedron(algo=smeshBuilder.Hexa)
+
+## set object names
+#putName(Regular_1D.GetAlgorithm(), 'Regular_1D')
+#putName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
+#putName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
+putName(Nb_Segments_1, 'Nb. Segments_1', i_pref='cubeAngle')
 
 is_done = Mesh_1.Compute()
 text = "Mesh_1.Compute"
@@ -94,12 +106,6 @@ ficmed = os.path.join(gmu.pathBloc, "materielCasTests","{}.med".format(NOM_OBJET
 text = ".. Archivage du maillage dans le fichier '{}'".format(ficmed)
 logging.info(text)
 Mesh_1.ExportMED(ficmed)
-
-## set object names
-smesh.SetName(Regular_1D.GetAlgorithm(), 'Regular_1D')
-smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
-smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
-smesh.SetName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()

@@ -17,35 +17,38 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+"""Géométries nécessaires aux cas-tests :
+. cubeFin_Transverse
+. cubeFin_Coin
+. cubeFin_Milieu
+"""
+
+import os
+import math
 
 import logging
 
-import sys
 import salome
+from salome.smesh import smeshBuilder
+import GEOM
+import SMESH
+import SALOMEDS
 
-salome.salome_init()
-
-import salome_notebook
-
-import os
 from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy
+from blocFissure.gmu.geomsmesh import geomPublish
+from blocFissure.gmu.geomsmesh import geomPublishInFather
+
+from blocFissure.gmu.triedreBase import triedreBase
+from blocFissure.gmu.putName import putName
+from blocFissure.gmu import initLog
 
 ###
 ### GEOM component
 ###
 
-import GEOM
-from salome.geom import geomBuilder
-import math
-import SALOMEDS
+O, OX, OY, OZ = triedreBase()
 
-
-geompy = geomBuilder.New()
-
-O = geompy.MakeVertex(0, 0, 0)
-OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
-OY = geompy.MakeVectorDXDYDZ(0, 1, 0)
-OZ = geompy.MakeVectorDXDYDZ(0, 0, 1)
 cubeFin = geompy.MakeBoxDXDYDZ(200, 200, 200)
 [DEPL,ENCASTR] = geompy.SubShapes(cubeFin, [27, 23])
 origCoin = geompy.MakeVertex(0, 160, 200)
@@ -72,45 +75,38 @@ Arc_1 = geompy.MakeArc(Line_1_vertex_3, Vertex_5, Line_3_vertex_2)
 Face_1 = geompy.MakeFaceWires([Line_1, Line_3, Line_4, Arc_1], 1)
 cubeFin_Coin = geompy.MakeCommonList([Rotation_1, Face_1], True)
 cubeFin_Milieu = geompy.MakeCommonList([Scale_1, cubeFin_Transverse], True)
-O_1 = geompy.MakeVertex(0, 0, 0)
-OX_1 = geompy.MakeVectorDXDYDZ(1, 0, 0)
-OY_1 = geompy.MakeVectorDXDYDZ(0, 1, 0)
-OZ_1 = geompy.MakeVectorDXDYDZ(0, 0, 1)
-geompy.addToStudy( O, 'O' )
-geompy.addToStudy( OX, 'OX' )
-geompy.addToStudy( OY, 'OY' )
-geompy.addToStudy( OZ, 'OZ' )
+
 geompy.addToStudy( cubeFin, 'cubeFin' )
 geompy.addToStudyInFather( cubeFin, DEPL, 'DEPL' )
 geompy.addToStudyInFather( cubeFin, ENCASTR, 'ENCASTR' )
-geompy.addToStudy( origCoin, 'origCoin' )
-geompy.addToStudy( Disk_1, 'Disk_1' )
-geompy.addToStudy( Translation_1, 'Translation_1' )
-geompy.addToStudy( Vector_1, 'Vector_1' )
-geompy.addToStudy( Rotation_1, 'Rotation_1' )
-geompy.addToStudy( origMilieu, 'origMilieu' )
-geompy.addToStudy( Translation_2, 'Translation_2' )
-geompy.addToStudy( Scale_1, 'Scale_1' )
-geompy.addToStudy( Vertex_1, 'Vertex_1' )
-geompy.addToStudy( Vertex_2, 'Vertex_2' )
-geompy.addToStudy( Vertex_3, 'Vertex_3' )
-geompy.addToStudy( Vertex_4, 'Vertex_4' )
-geompy.addToStudy( Line_1, 'Line_1' )
-geompy.addToStudy( Line_2, 'Line_2' )
-geompy.addToStudy( Line_3, 'Line_3' )
-geompy.addToStudy( Line_4, 'Line_4' )
-geompy.addToStudy( cubeFin_Transverse, 'cubeFin_Transverse' )
-geompy.addToStudyInFather( Line_1, Line_1_vertex_3, 'Line_1:vertex_3' )
-geompy.addToStudy( Vertex_5, 'Vertex_5' )
-geompy.addToStudyInFather( Line_3, Line_3_vertex_2, 'Line_3:vertex_2' )
-geompy.addToStudy( Arc_1, 'Arc_1' )
-geompy.addToStudy( Face_1, 'Face_1' )
-geompy.addToStudy( cubeFin_Coin, 'cubeFin_Coin' )
-geompy.addToStudy( cubeFin_Milieu, 'cubeFin_Milieu' )
-geompy.addToStudy( O_1, 'O' )
-geompy.addToStudy( OX_1, 'OX' )
-geompy.addToStudy( OY_1, 'OY' )
-geompy.addToStudy( OZ_1, 'OZ' )
+
+geomPublish(initLog.debug, origCoin, 'origCoin' )
+geomPublish(initLog.debug, Disk_1, 'Disk_1' )
+geomPublish(initLog.debug, Translation_1, 'Translation_1' )
+geomPublish(initLog.debug, Vector_1, 'Vector_1' )
+geomPublish(initLog.debug, Rotation_1, 'Rotation_1' )
+geomPublish(initLog.debug, origMilieu, 'origMilieu' )
+geomPublish(initLog.debug, Translation_2, 'Translation_2' )
+geomPublish(initLog.debug, Scale_1, 'Scale_1' )
+geomPublish(initLog.debug, Vertex_1, 'Vertex_1' )
+geomPublish(initLog.debug, Vertex_2, 'Vertex_2' )
+geomPublish(initLog.debug, Vertex_3, 'Vertex_3' )
+geomPublish(initLog.debug, Vertex_4, 'Vertex_4' )
+geomPublish(initLog.debug, Line_1, 'Line_1' )
+geomPublish(initLog.debug, Line_2, 'Line_2' )
+geomPublish(initLog.debug, Line_3, 'Line_3' )
+geomPublish(initLog.debug, Line_4, 'Line_4' )
+
+geomPublishInFather(initLog.debug, Line_1, Line_1_vertex_3, 'Line_1:vertex_3' )
+geomPublish(initLog.debug, Vertex_5, 'Vertex_5' )
+geomPublishInFather(initLog.debug, Line_3, Line_3_vertex_2, 'Line_3:vertex_2' )
+geomPublish(initLog.debug, Arc_1, 'Arc_1' )
+geomPublish(initLog.debug, Face_1, 'Face_1' )
+
+geompy.addToStudy( cubeFin_Transverse, 'cubeFin_Transverse_fissure' )
+geompy.addToStudy( cubeFin_Coin, 'cubeFin_Coin_fissure' )
+geompy.addToStudy( cubeFin_Milieu, 'cubeFin_Milieu_fissure' )
+
 geompy.ExportBREP(cubeFin_Transverse, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Transverse.brep"))
 geompy.ExportBREP(cubeFin_Coin, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Coin.brep"))
 geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Milieu.brep"))
@@ -119,18 +115,23 @@ geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests",
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
-from salome.smesh import smeshBuilder
-
 smesh = smeshBuilder.New()
 cubeFin_1 = smesh.Mesh(cubeFin)
+putName(cubeFin_1.GetMesh(), 'cubeFin')
+
 Regular_1D = cubeFin_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(20)
 Nb_Segments_1.SetDistrType( 0 )
 Quadrangle_2D = cubeFin_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = cubeFin_1.Hexahedron(algo=smeshBuilder.Hexa)
-DEPL_1 = cubeFin_1.GroupOnGeom(DEPL,'DEPL',SMESH.FACE)
-ENCASTR_1 = cubeFin_1.GroupOnGeom(ENCASTR,'ENCASTR',SMESH.FACE)
+_ = cubeFin_1.GroupOnGeom(DEPL,'DEPL',SMESH.FACE)
+_ = cubeFin_1.GroupOnGeom(ENCASTR,'ENCASTR',SMESH.FACE)
+
+## Set names of Mesh objects
+#putName(Regular_1D.GetAlgorithm(), 'Regular_1D')
+#putName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
+#putName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
+putName(Nb_Segments_1, 'Nb. Segments_1', i_pref='cubeFin')
 
 is_done = cubeFin_1.Compute()
 text = "cubeFin_1.Compute"
@@ -140,15 +141,6 @@ else:
   text = "Erreur au calcul du maillage.\n" + text
   logging.info(text)
   raise Exception(text)
-
-## Set names of Mesh objects
-smesh.SetName(Regular_1D.GetAlgorithm(), 'Regular_1D')
-smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
-smesh.SetName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
-smesh.SetName(DEPL_1, 'DEPL')
-smesh.SetName(ENCASTR_1, 'ENCASTR')
-smesh.SetName(cubeFin_1.GetMesh(), 'cubeFin')
-smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
 
 cubeFin_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin.med"))
 
