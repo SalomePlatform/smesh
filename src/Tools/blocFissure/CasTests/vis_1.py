@@ -19,17 +19,21 @@
 #
 """problème de fissure non plane, débouchante non normale"""
 
+import logging
 import os
+
 from blocFissure import gmu
+from blocFissure.gmu import initLog
 from blocFissure.gmu.geomsmesh import geompy, smesh
+from blocFissure.gmu.geomsmesh import geomPublish
+from blocFissure.gmu.geomsmesh import geomPublishInFather
+from blocFissure.gmu.putName import putName
 
 import GEOM
 import SALOMEDS
 import SMESH
-import logging
 
 from blocFissure.gmu.fissureGenerique import fissureGenerique
-
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
@@ -51,7 +55,7 @@ class vis_1(fissureGenerique):
     logging.info(texte)
 
     ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "visSain.med"))
-    smesh.SetName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme))
+    putName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme), i_pref=self.numeroCas)
 
     return [objetSain, True] # True : maillage hexa
 
@@ -81,8 +85,8 @@ class vis_1(fissureGenerique):
     shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "visFiss.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [6, 8, 3])
-    geompy.addToStudy( shellFiss, 'shellFiss' )
-    geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
+    geomPublish(initLog.always, shellFiss, "shellFiss", self.numeroCas)
+    geomPublishInFather(initLog.always, shellFiss, fondFiss, "fondFiss", self.numeroCas)
 
     mailleur = self.mailleur2d3d()
     coordsNoeudsFissure = genereMeshCalculZoneDefaut(shellFiss, 0.1 ,0.2, mailleur, self.numeroCas)

@@ -28,7 +28,7 @@ from .geomsmesh import smesh
 from .putName import putName
 
 def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
-                               mailleur="MeshGems", nro_cas=-1):
+                               mailleur="MeshGems", nro_cas=None):
   """Maillage de l'objet géométrique 'facefiss'
 
 . Avec l'algorithme MG_CADSurf :

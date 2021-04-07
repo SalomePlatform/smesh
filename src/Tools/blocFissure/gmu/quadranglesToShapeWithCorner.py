@@ -78,11 +78,11 @@ def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, listOfCorners):
       tmpFace.append(line)
     setOfLines.append(tmpFace)
 
-  for i, face in enumerate(setOfLines):
+  for i_aux, face in enumerate(setOfLines):
     # A partir des lignes de chaque face,
     # on recrée un objet GEOM temporaire par filling.
     filling = geompy.MakeFilling(geompy.MakeCompound(face), 2, 5, 0.0001, 0.0001, 0, GEOM.FOM_Default, True)
-    geomPublish(initLog.debug, filling, 'filling_{}'.format(i + 1))
+    geomPublish(initLog.debug, filling, 'filling_{}'.format(i_aux+1))
     tmpFillings.append(filling)
 
   for face in setOfNodes:
@@ -96,27 +96,27 @@ def quadranglesToShapeWithCorner(meshQuad, shapeDefaut, listOfCorners):
     line = geompy.MakeInterpol(tmpPoints, False, False)
     tmpBords.append(line)
 
-  for i, filling in enumerate(tmpFillings):
+  for i_aux, filling in enumerate(tmpFillings):
     tmpPartition = geompy.MakePartition([filling], [shapeDefaut], list(), list(), geompy.ShapeType["FACE"], 0, list(), 0, True)
     tmpExplodeRef = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], True)
     tmpExplodeNum = geompy.ExtractShapes(tmpPartition, geompy.ShapeType["EDGE"], True)
     if len(tmpExplodeRef) == len(tmpExplodeNum):
-      geomPublish(initLog.debug, filling, "faceNonCoupee_{}".format(i + 1))
+      geomPublish(initLog.debug, filling, "faceNonCoupee_{}".format(i_aux+1))
       facesNonCoupees.append(filling)
     else:
-      geomPublish(initLog.debug, filling, "faceCoupee_{}".format(i + 1))
+      geomPublish(initLog.debug, filling, "faceCoupee_{}".format(i_aux+1))
       facesCoupees.append(filling)
   fillings = facesCoupees, facesNonCoupees
 
-  for i, filling in enumerate(tmpBords):
+  for i_aux, filling in enumerate(tmpBords):
     tmpPartition = geompy.MakePartition([shapeDefaut], [filling], list(), list(), geompy.ShapeType["SHELL"], 0, list(), 0, True)
     tmpExplodeRef = geompy.ExtractShapes(shapeDefaut, geompy.ShapeType["EDGE"], True) + geompy.ExtractShapes(shapeDefaut, geompy.ShapeType["VERTEX"], True)
     tmpExplodeNum = geompy.ExtractShapes(tmpPartition, geompy.ShapeType["EDGE"], True) + geompy.ExtractShapes(tmpPartition, geompy.ShapeType["VERTEX"], True)
     if len(tmpExplodeRef) == len(tmpExplodeNum):
-      geomPublish(initLog.debug, filling, "areteNonCoupee_{}".format(i + 1))
+      geomPublish(initLog.debug, filling, "areteNonCoupee_{}".format(i_aux+1))
       aretesNonCoupees.append(filling)
     else:
-      geomPublish(initLog.debug, filling, "areteCoupee_{}".format(i + 1))
+      geomPublish(initLog.debug, filling, "areteCoupee_{}".format(i_aux+1))
       aretesCoupees.append(filling)
   bords_Partages = aretesCoupees, aretesNonCoupees
 

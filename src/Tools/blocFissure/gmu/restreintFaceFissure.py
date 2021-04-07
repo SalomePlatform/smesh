@@ -31,7 +31,8 @@ from . import initLog
 from .sortFaces import sortFaces
 from .fissError import fissError
 
-def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
+def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne, \
+                         nro_cas=None):
   """restriction de la face de fissure au domaine solide
 
   partition face fissure étendue par fillings
@@ -39,13 +40,13 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
   logging.info('start')
 
   partShapeDefaut = geompy.MakePartition([shapeDefaut], facesDefaut, [], [], geompy.ShapeType["FACE"], 0, [], 0)
-  geomPublish(initLog.debug, partShapeDefaut, 'partShapeDefaut')
+  geomPublish(initLog.debug, partShapeDefaut, 'partShapeDefaut', i_pref=nro_cas)
   facesPartShapeDefaut = geompy.ExtractShapes(partShapeDefaut, geompy.ShapeType["FACE"], False)
 
   if pointInterne is not None:
     distfaces = [(geompy.MinDistance(face,pointInterne), i, face) for i, face in enumerate(facesPartShapeDefaut)]
     distfaces.sort()
-    texte = "selection de la face la plus proche du point interne, distance={}".format(distfaces[0][0])
+    texte = "Sélection de la face la plus proche du point interne, distance={}".format(distfaces[0][0])
     logging.debug(texte)
     facesPortFissure = distfaces[0][2]
   else:
@@ -63,6 +64,6 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
     logging.debug(texte)
     facesPortFissure = facesPartShapeDefautSorted[-1]
 
-  geomPublish(initLog.debug, facesPortFissure, "facesPortFissure")
+  geomPublish(initLog.debug, facesPortFissure, "facesPortFissure", i_pref=nro_cas)
 
   return facesPortFissure

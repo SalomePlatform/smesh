@@ -30,7 +30,7 @@ from .geomsmesh import smesh
 from .putName import putName
 
 def insereFissureLongue_f (internalBoundary, meshFondFiss, meshFacePeau, meshFaceFiss, \
-                           mailleur="MeshGems", nro_cas=-1):
+                           mailleur="MeshGems", nro_cas=None):
   """maillage meshBoiteDefaut"""
   logging.info('start')
   logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)

@@ -30,7 +30,8 @@ from .identifieEdgesPeau import identifieEdgesPeau
 def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss, \
                                       edgesFondFiss, wireFondFiss, aretesVivesC, \
                                       facesDefaut, centreFondFiss, rayonPipe, \
-                                      aretesVivesCoupees):
+                                      aretesVivesCoupees, \
+                                      nro_cas=None):
   """Identification des éléments géométriques de la face de peau"""
   logging.info('start')
   fillingFaceExterne = facesDefaut[ifil]
@@ -63,7 +64,8 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
 
   (facePeau, facesPeauSorted, edgesPeauFondIn) = identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss, \
                                                                     verticesEdgesFondIn, pipexts, cercles, \
-                                                                    fillingFaceExterne, centreFondFiss)
+                                                                    fillingFaceExterne, centreFondFiss, \
+                                                                    nro_cas)
 
   # --- identification précise des edges et disques des faces de peau selon index extremité fissure
 

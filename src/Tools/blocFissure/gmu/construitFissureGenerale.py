@@ -47,6 +47,7 @@ from .construitMaillagePipe import construitMaillagePipe
 from .mailleAretesEtJonction import mailleAretesEtJonction
 from .mailleFacesFissure import mailleFacesFissure
 from .mailleFacesPeau import mailleFacesPeau
+from .putName import putName
 
 from .construitFissureGenerale_a import construitFissureGenerale_a
 from .construitFissureGenerale_b import construitFissureGenerale_b
@@ -56,7 +57,7 @@ from .construitFissureGenerale_c import construitFissureGenerale_c
 
 def construitFissureGenerale(shapesFissure, shapeFissureParams, \
                              maillageFissureParams, elementsDefaut, \
-                             step=-1, mailleur="MeshGems", nro_cas=-1):
+                             step=-1, mailleur="MeshGems", nro_cas=None):
   """procédure complète fissure générale"""
   logging.info('start')
   logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)
@@ -103,17 +104,19 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
   # --- restriction de la face de fissure au domaine solide :
   #     partition face fissure étendue par fillings, on garde la face interne
 
-  facesPortFissure = restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne)
+  facesPortFissure = restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne, \
+                                          nro_cas)
 
   # --- pipe de fond de fissure, prolongé, partition face fissure par pipe
   #     identification des edges communes pipe et face fissure
 
   (fissPipe, edgesPipeFiss, edgesFondFiss, wirePipeFiss, wireFondFiss) = \
-                          partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe)
+                          partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe, \
+                                                    nro_cas)
   edgesFondFiss, edgesIdByOrientation = orderEdgesFromWire(wireFondFiss)
 
-  for i,edge in enumerate(edgesFondFiss):
-    geomPublishInFather(initLog.debug, wireFondFiss, edge, "edgeFondFiss%d"%i)
+  for i_aux, edge in enumerate(edgesFondFiss):
+    geomPublishInFather(initLog.debug, wireFondFiss, edge, "edgeFondFiss{}".format(i_aux), nro_cas)
 
   # --- peau et face de fissure
   #
@@ -137,12 +140,14 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
     edgeRadFacePipePeau, facesPipePeau = \
     construitFissureGenerale_b( partitionsPeauFissFond, \
                                 edgesPipeFiss, edgesFondFiss, wireFondFiss, aretesVivesC, \
-                                facesDefaut, centreFondFiss, rayonPipe, aretesVivesCoupees )
+                                facesDefaut, centreFondFiss, rayonPipe, aretesVivesCoupees, \
+                                nro_cas )
 
   # --- identification des faces et edges de fissure externe pour maillage
 
   (faceFissureExterne, edgesPipeFissureExterneC, wirePipeFissureExterne, edgesPeauFissureExterneC) = \
-      identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesPipeFiss)
+      identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesPipeFiss, \
+                                        nro_cas)
 
   # --- preparation maillage du pipe :
   #     - détections des points a respecter : jonction des edges/faces constituant la face de fissure externe au pipe
@@ -180,7 +185,8 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
    # --- maillage effectif du pipe
 
   (meshPipe, meshPipeGroups, edgesCircPipeGroup) =  \
-      construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad)
+      construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
+                             nro_cas)
 
   # --- edges de bord, faces défaut à respecter
 
@@ -211,6 +217,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
     listMeshes.append(mfpeau.GetMesh())
 
   meshBoiteDefaut = smesh.Concatenate(listMeshes, 1, 1, 1e-05,False)
+  putName(meshBoiteDefaut, "boiteDefaut", i_pref=nro_cas)
 
 # Maillage complet
   maillageComplet = construitFissureGenerale_c( maillageSain, meshBoiteDefaut, \

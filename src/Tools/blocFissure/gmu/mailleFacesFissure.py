@@ -31,7 +31,7 @@ from .putName import putName
 def mailleFacesFissure(faceFissureExterne, \
                        edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
                        meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad, \
-                       mailleur="MeshGems", nro_cas=-1):
+                       mailleur="MeshGems", nro_cas=None):
   """maillage faces de fissure"""
   logging.info('start')
   logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)

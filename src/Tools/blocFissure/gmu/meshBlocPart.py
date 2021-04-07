@@ -36,7 +36,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
                 gencnt, facefissoutore, edgeext, facesExternes, facesExtBloc, facesExtElli, \
                 aretesInternes, internalBoundary, ellipsoidep, sharedFaces, sharedEdges, edgesBords, \
                 nbsegExt, nbsegGen, nbsegRad, scaleRad, reverses, reverext, nbsegCercle, nbsegFis, dmoyen, lensegEllipsoide, \
-                mailleur="MeshGems", nro_cas=-1):
+                mailleur="MeshGems", nro_cas=None):
   """Maillage du bloc partitionné"""
   logging.info('start')
   logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)

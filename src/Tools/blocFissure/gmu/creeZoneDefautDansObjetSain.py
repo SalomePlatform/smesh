@@ -33,10 +33,11 @@ from .quadranglesToShapeNoCorner import quadranglesToShapeNoCorner
 from .creeZoneDefautFilling import creeZoneDefautFilling
 from .creeZoneDefautGeom import creeZoneDefautGeom
 from .getCentreFondFiss import getCentreFondFiss
+from .putName import putName
 
 def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure, \
                                 shapeFissureParams, maillageFissureParams, \
-                                nro_cas=-1):
+                                nro_cas=None):
   """
   #TODO: a compléter
   """
@@ -89,6 +90,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   isPlane = False
   if isHexa and not isPlane:
     meshQuad =  smesh.CopyMesh( zoneDefaut_skin, 'meshQuad', 0, 0)
+    putName(meshQuad, "meshQuad", i_pref=nro_cas)
 
     fillings, _, bordsPartages, fillconts, idFilToCont = quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss)
 

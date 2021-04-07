@@ -32,7 +32,7 @@ from .fusionMaillageAttributionDefaut import fusionMaillageDefaut
 from .putName import putName
 
 def peauInterne(fichierMaillage, shapeDefaut, nomZones, \
-                nro_cas=-1):
+                nro_cas=None):
   """Retrouve les groupes de défaut dans le maillage sain modifié par CreateHoleSkin (CreeZoneDefautMaillage)
 
   On récupère le volume et la peau de la zone de défaut, les éventuelles faces et arêtes internes de cette zone.
@@ -97,6 +97,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones, \
   _, maillageSain, DefautBoundary = maillageSain.MakeBoundaryElements( SMESH.BND_2DFROM3D, 'DefBound', '', 0, [ zoneDefaut ])
   internal = maillageSain.GetMesh().CutListOfGroups( [ DefautBoundary ], [ zoneDefaut_skin ], 'internal' )
   internalBoundary = smesh.CopyMesh( internal, 'internalBoundary', 0, 0)
+  putName(internalBoundary, "internalBoundary", i_pref=nro_cas)
 
   maillageDefautCible = smesh.CopyMesh(zoneDefaut_skin, 'maillageCible', 0, 0)
   putName(maillageDefautCible, "maillageCible", i_pref=nro_cas)

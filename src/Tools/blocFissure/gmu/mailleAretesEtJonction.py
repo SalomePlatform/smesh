@@ -25,11 +25,13 @@ import SMESH
 
 from .geomsmesh import geompy
 from .geomsmesh import smesh
+from .geomsmesh import geomPublish
 
+from . import initLog
 from .putName import putName
 
 def mailleAretesEtJonction (internalBoundary, aretesVivesCoupees, lgAretesVives, \
-                            nro_cas=-1):
+                            nro_cas=None):
   """edges de bord, faces défaut à respecter"""
   logging.info('start')
   logging.info("Pour le cas n°%d", nro_cas)
@@ -43,7 +45,7 @@ def mailleAretesEtJonction (internalBoundary, aretesVivesCoupees, lgAretesVives,
   bordsLibres = internalBoundary.MakeGroupByFilter( 'bords', filtre )
   putName(bordsLibres, 'bordsLibres', i_pref=nro_cas)
 
-  # --- pour aider l'algo hexa-tetra à ne pas mettre de pyramides à l'exterieur des volumes repliés sur eux-mêmes
+  # --- pour aider l'algo hexa-tetra à ne pas mettre de pyramides à l'extérieur des volumes repliés sur eux-mêmes
   #     on désigne les faces de peau en quadrangles par le groupe "skinFaces"
 
   skinFaces = internalBoundary.CreateEmptyGroup( SMESH.FACE, 'skinFaces' )
@@ -55,6 +57,7 @@ def mailleAretesEtJonction (internalBoundary, aretesVivesCoupees, lgAretesVives,
   if aretesVivesCoupees:
 
     aretesVivesC = geompy.MakeCompound(aretesVivesCoupees)
+    geomPublish(initLog.always, aretesVivesC, "aretesVives", nro_cas)
     meshAretesVives = smesh.Mesh(aretesVivesC)
     algo1d = meshAretesVives.Segment()
     hypo1d = algo1d.LocalLength(lgAretesVives,[],1e-07)

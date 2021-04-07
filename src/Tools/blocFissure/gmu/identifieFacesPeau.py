@@ -29,9 +29,10 @@ from .geomsmesh import geomPublish
 from .sortFaces import sortFaces
 from .extractionOrientee import extractionOrientee
 
-def identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss,
-                       verticesEdgesFondIn, pipexts, cercles,
-                       fillingFaceExterne, centreFondFiss):
+def identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss, \
+                       verticesEdgesFondIn, pipexts, cercles, \
+                       fillingFaceExterne, centreFondFiss, \
+                       nro_cas=None):
   """Inventaire des faces de peau : face de peau percée du pipe, extrémités du pipe
 
   La partition avec le pipe peut créer un vertex (et un edge) de trop sur le cercle projeté,
@@ -77,7 +78,7 @@ def identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss,
           outilPart[j_aux] = geompy.MakeProjection(cercles[j_aux],facesOnside[0])
       partitionPeauByPipe = geompy.MakePartition(facesAndFond, outilPart, [], [], geompy.ShapeType["FACE"], 0, [], 1)
 
-  name="partitionPeauByPipe{}".format(ifil)
+  name="partitionPeauByPipe_{}".format(ifil)
   geomPublish(initLog.debug, partitionPeauByPipe, name)
   [edgesPeauFondIn, _, _] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "EDGE", 1.e-3)
   [_, _, facesPeauFondOn] = extractionOrientee(fillingFaceExterne, partitionPeauByPipe, centreFondFiss, "FACE", 1.e-3)
@@ -89,7 +90,7 @@ def identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss,
     facePeau =geompy.MakePartition(facesPeauFondOn, [], [], [], geompy.ShapeType["FACE"], 0, [], 1)
     facesPeauSorted = [facePeau]
 
-  name="facePeau{}".format(ifil)
-  geomPublish(initLog.debug, facePeau, name)
+  name="facePeau_{}".format(ifil)
+  geomPublish(initLog.always, facePeau, name, nro_cas)
 
   return (facePeau, facesPeauSorted, edgesPeauFondIn)

@@ -33,7 +33,7 @@ from .putName import putName
 def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibres, \
                            groupsDemiCerclesPeau, groups_demiCercles, verticesOutCercles, \
                            nbSegGenLong, nbSegGenBout, profondeur, \
-                           mailleur="MeshGems", nro_cas=-1):
+                           mailleur="MeshGems", nro_cas=None):
   """maillage face de peau"""
   logging.info('start')
   logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)

@@ -19,27 +19,25 @@
 #
 """Fissure dans un coude"""
 
+import logging
 import os
-
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
-
 import math
+
+from blocFissure.gmu import initLog
+from blocFissure.gmu.geomsmesh import geompy, smesh
+from blocFissure.gmu.geomsmesh import geomPublish
+from blocFissure.gmu.geomsmesh import geomPublishInFather
+from blocFissure.gmu.putName import putName
+
 import GEOM
 import SALOMEDS
 import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
-import logging
 
 from blocFissure.gmu.fissureGenerique import fissureGenerique
-
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.insereFissureLongue import insereFissureLongue
-from blocFissure.gmu.putName import putName
 
 O, OX, OY, OZ = triedreBase()
 
@@ -98,60 +96,61 @@ class fissure_Coude(fissureGenerique):
     Rotation_2 = geompy.MakeRotation(OZ, OY, angleCoude*math.pi/180.0)
     Extrusion_2 = geompy.MakePrismVecH(Rotation_1, Rotation_2, -l_tube_p2)
     Plane_1 = geompy.MakePlaneLCS(None, 100000, 3)
-    geompy.addToStudy( Plane_1, "Plane_1" )
-    geompy.addToStudy( Extrusion_1, "Extrusion_1" )
-    geompy.addToStudy( Revolution_1, "Revolution_1" )
-    geompy.addToStudy( Extrusion_2, "Extrusion_2" )
+    geomPublish(initLog.debug, Plane_1, "Plane_1" )
+    geomPublish(initLog.debug, Extrusion_1, "Extrusion_1" )
+    geomPublish(initLog.debug, Revolution_1, "Revolution_1" )
+    geomPublish(initLog.debug, Extrusion_2, "Extrusion_2" )
 
     P1 = O
-    geompy.addToStudy( P1, "P1" )
+    geomPublish(initLog.always, P1, "P1", self.numeroCas )
     op2 = geompy.MakeVertex(0, 0, -l_tube_p1)
     P2 = geompy.MakeRotation(op2, axe, angleCoude*math.pi/180.0)
     P2 = geompy.MakeTranslationVectorDistance(P2, Rotation_2, -l_tube_p2)
-    geompy.addToStudy( P2, "P2" )
+    geomPublish(initLog.always, P2, "P2", self.numeroCas )
+
 
     # --- tube coude sain
 
     geometrieSaine = geompy.MakePartition([Extrusion_1, Revolution_1, Extrusion_2, P1, P2], [Plane_1], [], [], geompy.ShapeType["SOLID"], 0, [], 1)
-    geompy.addToStudy( geometrieSaine, self.nomCas )
+    geomPublish(initLog.always, geometrieSaine, self.nomCas, self.numeroCas )
     [P1, P2] = geompy.RestoreGivenSubShapes(geometrieSaine, [P1, P2], GEOM.FSM_GetInPlaceByHistory, False, True)
 
     [ep, circ_g, circ_d, long_p2, long_coude, long_p1] = geompy.Propagate(geometrieSaine)
-    geompy.addToStudyInFather( geometrieSaine, long_p1, 'long_p1' )
-    geompy.addToStudyInFather( geometrieSaine, ep, 'ep' )
-    geompy.addToStudyInFather( geometrieSaine, long_coude, 'long_coude' )
-    geompy.addToStudyInFather( geometrieSaine, circ_g, 'circ_g' )
-    geompy.addToStudyInFather( geometrieSaine, circ_d, 'circ_d' )
-    geompy.addToStudyInFather( geometrieSaine, long_p2, 'long_p2' )
+    geomPublishInFather(initLog.always, geometrieSaine, long_p1, 'long_p1' )
+    geomPublishInFather(initLog.always, geometrieSaine, ep, 'ep' )
+    geomPublishInFather(initLog.always, geometrieSaine, long_coude, 'long_coude' )
+    geomPublishInFather(initLog.always, geometrieSaine, circ_g, 'circ_g' )
+    geomPublishInFather(initLog.always, geometrieSaine, circ_d, 'circ_d' )
+    geomPublishInFather(initLog.always, geometrieSaine, long_p2, 'long_p2' )
 
     # --- face extremite tube (EXTUBE)
 
     facesIds = geompy.GetShapesOnPlaneIDs(geometrieSaine, geompy.ShapeType["FACE"], OZ, GEOM.ST_ON)
     EXTUBE = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(EXTUBE, facesIds)
-    geompy.addToStudyInFather( geometrieSaine, EXTUBE, 'EXTUBE' )
+    geomPublishInFather(initLog.always, geometrieSaine, EXTUBE, 'EXTUBE' )
 
     # --- edge bord extremite tube (BORDTU)
 
     edge1Ids = geompy.GetShapesOnPlaneIDs(geometrieSaine, geompy.ShapeType["EDGE"], OZ, GEOM.ST_ON)
     edge2Ids = geompy.GetShapesOnCylinderIDs(geometrieSaine, geompy.ShapeType["EDGE"], OZ, de/2., GEOM.ST_ON)
-    edgesIds = []
+    edgesIds = list()
     for edge in edge1Ids:
       if edge in edge2Ids:
         edgesIds.append(edge)
     BORDTU = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(BORDTU, edgesIds)
-    geompy.addToStudyInFather( geometrieSaine, BORDTU, 'BORDTU' )
+    geomPublishInFather(initLog.always, geometrieSaine, BORDTU, 'BORDTU' )
 
     # --- face origine tube (CLGV)
 
     pp2 = geompy.MakeTranslationVectorDistance(P2, Rotation_2, 10)
     vec2 = geompy.MakeVector(P2, pp2)
-    #geompy.addToStudy(vec2, 'vec2')
+    #geomPublish(initLog.debug,vec2, 'vec2')
     facesIds = geompy.GetShapesOnPlaneIDs(geometrieSaine, geompy.ShapeType["FACE"], vec2, GEOM.ST_ON)
     CLGV = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(CLGV, facesIds)
-    geompy.addToStudyInFather( geometrieSaine, CLGV, 'CLGV' )
+    geomPublishInFather(initLog.always, geometrieSaine, CLGV, 'CLGV' )
 
     # --- peau tube interieur (PEAUINT)
 
@@ -161,11 +160,11 @@ class fissure_Coude(fissureGenerique):
     extru2 = geompy.MakePrismVecH(rot1, Rotation_2, -l_tube_p2)
     interne = geompy.MakeFuse(extru1, revol1)
     interne = geompy.MakeFuse(extru2, interne)
-    geompy.addToStudy(interne, 'interne')
+    geomPublish(initLog.debug,interne, 'interne')
     facesIds = geompy.GetShapesOnShapeIDs(interne, geometrieSaine, geompy.ShapeType["FACE"], GEOM.ST_ONIN)
     PEAUINT = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(PEAUINT, facesIds)
-    geompy.addToStudyInFather( geometrieSaine, PEAUINT, 'PEAUINT' )
+    geomPublishInFather(initLog.always, geometrieSaine, PEAUINT, 'PEAUINT' )
 
     # --- peau tube exterieur (PEAUEXT)
 
@@ -177,18 +176,18 @@ class fissure_Coude(fissureGenerique):
     extru2 = geompy.MakePrismVecH(rot1, Rotation_2, -l_tube_p2)
     externe = geompy.MakeFuse(extru1, revol1)
     externe = geompy.MakeFuse(extru2, externe)
-    geompy.addToStudy(externe, 'externe')
+    geomPublish(initLog.debug,externe, 'externe')
     facesIds = geompy.GetShapesOnShapeIDs(externe, geometrieSaine, geompy.ShapeType["FACE"], GEOM.ST_ON)
     PEAUEXT = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(PEAUEXT, facesIds)
-    geompy.addToStudyInFather( geometrieSaine, PEAUEXT, 'PEAUEXT' )
+    geomPublishInFather(initLog.always, geometrieSaine, PEAUEXT, 'PEAUEXT' )
 
     # --- solide sain
 
     volIds = geompy.SubShapeAllIDs(geometrieSaine, geompy.ShapeType["SOLID"])
     COUDE = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["SOLID"])
     geompy.UnionIDs(COUDE, volIds)
-    geompy.addToStudyInFather( geometrieSaine, COUDE, 'COUDSAIN' )
+    geomPublishInFather(initLog.always, geometrieSaine, COUDE, 'COUDSAIN' )
 
     geometriesSaines = [geometrieSaine, long_p1, ep, long_coude, circ_g, circ_d, long_p2, P1, P2, EXTUBE, BORDTU, CLGV, PEAUINT, PEAUEXT, COUDE]
 
@@ -331,10 +330,12 @@ class fissure_Coude(fissureGenerique):
 
     self.fissureLongue = bool(longueur > 2*profondeur)
 
-    if self.fissureLongue and (abs(orientation) < 45) :
+    if self.fissureLongue and (abs(orientation) < 45.) :
       self.longitudinale = True
     elif self.fissureLongue:
       self.circonferentielle = True
+    #logging.info("longitudinale %s", self.longitudinale)
+    #logging.info("circonferentielle %s", self.circonferentielle)
 
     if self.circonferentielle:
       if externe:
@@ -371,15 +372,15 @@ class fissure_Coude(fissureGenerique):
       facetuber = geompy.MakeRotation(facetube0, OZ, -angle)
       face0 = geompy.MakeFaceWires([arcl,arci, arce, arcr], 1)
       plan0 = geompy.MakePlane(O, OZ, 10000)
-      geompy.addToStudy( face0, 'facefissOrig' )
+      geomPublish(initLog.debug, face0, 'facefissOrig' )
       face1 = geompy.MakeRotation(face0, OZ, azimut*math.pi/180.)
       face2 = geompy.MakeTranslation(face1, 0, 0, -l_tube_p1)
       facefiss = geompy.MakeRotation(face2, axe, alpha*math.pi/180.)
-      geompy.addToStudy( facefiss, 'facefissPlace' )
+      geomPublish(initLog.always, facefiss, "facefissPlace", self.numeroCas )
       centre = geompy.MakeRotation(pb, OZ, azimut*math.pi/180.)
       centre = geompy.MakeTranslation(centre, 0, 0, -l_tube_p1)
       centre = geompy.MakeRotation(centre, axe, alpha*math.pi/180.)
-      geompy.addToStudy( centre, 'centrefissPlace' )
+      geomPublish(initLog.always, centre, "centrefissPlace", self.numeroCas )
       arcr = geompy.MakeRotation(arcr, OZ, azimut*math.pi/180.)
       arcr = geompy.MakeTranslation(arcr, 0, 0, -l_tube_p1)
       arcr = geompy.MakeRotation(arcr, axe, alpha*math.pi/180.)
@@ -392,24 +393,24 @@ class fissure_Coude(fissureGenerique):
       wiretube = geompy.MakeRotation(wire0, OZ, azimut*math.pi/180.)
       wiretube = geompy.MakeTranslation(wiretube, 0, 0, -l_tube_p1)
       wiretube = geompy.MakeRotation(wiretube, axe, alpha*math.pi/180.)
-      geompy.addToStudy(wiretube, 'wiretubePlace' )
+      geomPublish(initLog.always,wiretube, "wiretubePlace", self.numeroCas )
       facetubel = geompy.MakeRotation(facetubel, OZ, azimut*math.pi/180.)
       facetubel = geompy.MakeTranslation(facetubel, 0, 0, -l_tube_p1)
       facetubel = geompy.MakeRotation(facetubel, axe, alpha*math.pi/180.)
-      geompy.addToStudy(facetubel, 'facetubeGauche' )
+      geomPublish(initLog.debug,facetubel, 'facetubeGauche' )
       facetuber = geompy.MakeRotation(facetuber, OZ, azimut*math.pi/180.)
       facetuber = geompy.MakeTranslation(facetuber, 0, 0, -l_tube_p1)
       facetuber = geompy.MakeRotation(facetuber, axe, alpha*math.pi/180.)
-      geompy.addToStudy(facetuber, 'facetubeDroit' )
+      geomPublish(initLog.debug,facetuber, 'facetubeDroit' )
       planfiss = geompy.MakeRotation(plan0, OZ, azimut*math.pi/180.)
       planfiss = geompy.MakeTranslation(planfiss, 0, 0, -l_tube_p1)
       planfiss = geompy.MakeRotation(planfiss, axe, alpha*math.pi/180.)
-      geompy.addToStudy(planfiss, 'planfissPlace' )
+      geomPublish(initLog.always,planfiss, "planfissPlace", self.numeroCas )
       pipefissl = geompy.MakePipe(facetubel, arcl)
       pipefissi = geompy.MakePipe(facetubel, arci)
       pipefissr = geompy.MakePipe(facetuber, arcr)
       pipefiss = geompy.MakePartition([pipefissl, pipefissi, pipefissr], [planfiss, wiretube], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
-      geompy.addToStudy(pipefiss, 'pipefissPlace' )
+      geomPublish(initLog.always,pipefiss, "pipefissPlace", self.numeroCas )
 
 
     elif self.longitudinale:
@@ -438,43 +439,43 @@ class fissure_Coude(fissureGenerique):
       arcr = geompy.MakeArc(pir, prr, per)
       arci = geompy.MakeArc(pil, pi, pir)
       arce = geompy.MakeArc(pel, pe, per)
-      geompy.addToStudy( arcl, 'arcl' )
-      geompy.addToStudy( arcr, 'arcr' )
-      geompy.addToStudy( arci, 'arci' )
-      geompy.addToStudy( arce, 'arce' )
+      geomPublish(initLog.debug, arcl, 'arcl' )
+      geomPublish(initLog.debug, arcr, 'arcr' )
+      geomPublish(initLog.debug, arci, 'arci' )
+      geomPublish(initLog.debug, arce, 'arce' )
       wire0 = geompy.MakeWire([arcr, arci, arcl])
       cercle0 = geompy.MakeCircle(O, OZ, profondeur/4.0)
       #cercle0 = geompy.MakeRotation(cercle0, OZ, math.pi/2.0)
       cercle0 = geompy.MakeTranslationTwoPoints(cercle0, O, pi)
-      geompy.addToStudy( cercle0, 'cercle0' )
+      geomPublish(initLog.debug, cercle0, 'cercle0' )
       facetube0 = geompy.MakeFaceWires([cercle0], 1)
       facetubel = geompy.MakeRotation(facetube0, OY, -angle)
       facetuber = geompy.MakeRotation(facetube0, OY, angle)
-      geompy.addToStudy(facetubel , 'facetubel' )
-      geompy.addToStudy( facetuber, 'facetuber' )
+      geomPublish(initLog.debug,facetubel , 'facetubel' )
+      geomPublish(initLog.debug, facetuber, 'facetuber' )
       face0 = geompy.MakeFaceWires([arcl,arci, arce, arcr], 1)
       plan0 = geompy.MakePlane(O, OY, 10000)
-      geompy.addToStudy( face0, 'facefissOrig' )
+      geomPublish(initLog.debug, face0, 'facefissOrig' )
       facefiss = geompy.MakeRotation(face0, OY, alpha*math.pi/180.)
-      geompy.addToStudy( facefiss, 'facefissPlace' )
+      geomPublish(initLog.always, facefiss, "facefissPlace", self.numeroCas )
       centre = geompy.MakeRotation(pb, OY, alpha*math.pi/180.)
-      geompy.addToStudy( centre, 'centrefissPlace' )
+      geomPublish(initLog.always, centre, "centrefissPlace", self.numeroCas )
       arcr = geompy.MakeRotation(arcr, OY, alpha*math.pi/180.)
       arci = geompy.MakeRotation(arci, OY, alpha*math.pi/180.)
       arcl = geompy.MakeRotation(arcl, OY, alpha*math.pi/180.)
       wiretube = geompy.MakeRotation(wire0, OY, alpha*math.pi/180.)
-      geompy.addToStudy(wiretube, 'wiretubePlace' )
+      geomPublish(initLog.always,wiretube, "wiretubePlace", self.numeroCas )
       facetubel = geompy.MakeRotation(facetubel, OY, alpha*math.pi/180.)
-      geompy.addToStudy(facetubel, 'facetubeGauche' )
+      geomPublish(initLog.debug,facetubel, 'facetubeGauche' )
       facetuber = geompy.MakeRotation(facetuber, OY, alpha*math.pi/180.)
-      geompy.addToStudy(facetubel, 'facetubeDroit' )
+      geomPublish(initLog.debug,facetubel, 'facetubeDroit' )
       planfiss = geompy.MakeRotation(plan0, OY, alpha*math.pi/180.)
-      geompy.addToStudy(planfiss, 'planfissPlace' )
+      geomPublish(initLog.always,planfiss, "planfissPlace", self.numeroCas )
       pipefissl = geompy.MakePipe(facetubel, arcl)
       pipefissi = geompy.MakePipe(facetubel, arci)
       pipefissr = geompy.MakePipe(facetuber, arcr)
       pipefiss = geompy.MakePartition([pipefissl, pipefissi, pipefissr], [planfiss, wiretube], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
-      geompy.addToStudy(pipefiss, 'pipefissPlace' )
+      geomPublish(initLog.always,pipefiss, "pipefissPlace", self.numeroCas )
     else:
       pass
 
@@ -503,7 +504,7 @@ class fissure_Coude(fissureGenerique):
     return elementsDefaut
 
   # ---------------------------------------------------------------------------
-  def genereMaillageFissure(self, geometriesSaines, maillagesSains,
+  def genereMaillageFissure(self, geometriesSaines, maillagesSains, \
                                   shapesFissure, shapeFissureParams, \
                                   maillageFissureParams, elementsDefaut, step, \
                                   mailleur="MeshGems"):

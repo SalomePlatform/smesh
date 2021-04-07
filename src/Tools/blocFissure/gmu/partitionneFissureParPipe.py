@@ -32,7 +32,8 @@ from .findWireEndVertices import findWireEndVertices
 from .prolongeWire import prolongeWire
 from .fissError import fissError
 
-def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
+def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe, \
+                              nro_cas=None):
   """
   pipe de fond de fissure, prolongé, partition face fissure par pipe
   identification des edges communes pipe et face fissure
@@ -47,14 +48,14 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
     plan = geompy.MakePlane(centreFondFiss, tgtCentre, 10000)
     shapeDefaut = geompy.MakePartition([shapeDefaut], [plan], [], [], geompy.ShapeType["FACE"], 0, [], 0)
     #fondFissCoupe = geompy.GetInPlaceByHistory(shapeDefaut, fondFiss) #= inutile
-    geomPublish(initLog.debug, shapeDefaut, 'shapeDefaut_coupe')
-    #geomPublishInFather(initLog.debug,shapeDefaut, fondFissCoupe, 'fondFiss_coupe')
+    geomPublish(initLog.debug, shapeDefaut, 'shapeDefaut_coupe', nro_cas)
+    #geomPublishInFather(initLog.debug,shapeDefaut, fondFissCoupe, 'fondFiss_coupe', nro_cas)
 
   extrem, norms = findWireEndVertices(fondFiss, True)
   logging.debug("extrem: %s, norm: %s",extrem, norms)
   cercle = geompy.MakeCircle(extrem[0], norms[0], rayonPipe)
   cercle = geompy.MakeRotation(cercle, norms[0], math.pi/3.0 ) # éviter d'avoir l'arête de couture du pipe presque confondue avec la face fissure
-  geomPublish(initLog.debug, cercle, 'cercle')
+  geomPublish(initLog.debug, cercle, 'cercle', nro_cas)
   fondFissProlonge = prolongeWire(fondFiss, extrem, norms, 2*rayonPipe)
   try:
     pipeFiss = geompy.MakePipe(cercle, fondFissProlonge)
@@ -62,24 +63,24 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
     texte = "génération du pipe le long de la ligne de fond de fissure prolongée impossible. "
     texte += "Cause possible : la ligne s'autointersecte lorsqu'on la prolonge."
     raise fissError(traceback.extract_stack(),texte)
-  geomPublish(initLog.debug, pipeFiss, 'pipeFiss')
+  geomPublish(initLog.debug, pipeFiss, 'pipeFiss', nro_cas)
   partFissPipe = geompy.MakePartition([shapeDefaut, pipeFiss], [], [], [], geompy.ShapeType["FACE"], 0, [], 1)
-  geomPublish(initLog.debug, partFissPipe, 'partFissPipe')
+  geomPublish(initLog.debug, partFissPipe, 'partFissPipe', nro_cas)
   fissPipe = geompy.GetInPlaceByHistory(partFissPipe, shapeDefaut)
-  geomPublish(initLog.debug, fissPipe, 'fissPipe')
+  geomPublish(initLog.debug, fissPipe, 'fissPipe', nro_cas)
   partPipe = geompy.GetInPlaceByHistory(partFissPipe, pipeFiss)
-  geomPublish(initLog.debug, partPipe, 'partPipe')
+  geomPublish(initLog.debug, partPipe, 'partPipe', nro_cas)
 
   edgesPipeFiss = geompy.GetSharedShapesMulti([fissPipe, partPipe], geompy.ShapeType["EDGE"])
   for i_aux, edge in enumerate(edgesPipeFiss):
     name = "edgePipe{}".format(i_aux)
-    geomPublishInFather(initLog.debug,fissPipe, edge, name)
+    geomPublishInFather(initLog.debug,fissPipe, edge, name, nro_cas)
   try:
     wirePipeFiss = geompy.MakeWire(edgesPipeFiss)
   except:
     wirePipeFiss = geompy.MakeCompound(edgesPipeFiss)
     logging.debug("wirePipeFiss construit sous forme de compound")
-  geomPublish(initLog.debug, wirePipeFiss, "wirePipeFiss")
+  geomPublish(initLog.always, wirePipeFiss, "wirePipeFiss", nro_cas)
 
   wireFondFiss = geompy.GetInPlace(partFissPipe,fondFiss)
   edgesFondFiss = geompy.GetSharedShapesMulti([fissPipe, wireFondFiss], geompy.ShapeType["EDGE"])
@@ -87,6 +88,6 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
     name = "edgeFondFiss{}".format(i_aux)
     geomPublishInFather(initLog.debug,fissPipe, edge, name)
   wireFondFiss = geompy.MakeWire(edgesFondFiss)
-  geomPublish(initLog.debug, wireFondFiss,"wireFondFiss")
+  geomPublish(initLog.always, wireFondFiss, "wireFondFiss", nro_cas)
 
   return (fissPipe, edgesPipeFiss, edgesFondFiss, wirePipeFiss, wireFondFiss)

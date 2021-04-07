@@ -2,7 +2,7 @@
 # Copyright (C) 2014-2021  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
+# modify it under the terms of th79e GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
 #
@@ -37,7 +37,7 @@ from .putName import putName
 
 def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible, \
                          zoneDefaut_skin, shapeDefaut, listOfCorners, \
-                         nro_cas=-1):
+                         nro_cas=None):
   """Groupe de quadrangles de face transformé en face géométrique par filling"""
 
   logging.info("start")
@@ -76,7 +76,7 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
     tmpExplodeNum = geompy.ExtractShapes(tmpPartition, geompy.ShapeType["EDGE"], True)
     if len(tmpExplodeRef) == len(tmpExplodeNum):
       logging.debug("face de filling non coupee")
-      geompy.addToStudy( filling, "faceNonCoupee_{0}".format(i_aux+1)) # doit etre publie pour critere OK plus bas
+      geompy.addToStudy( filling, "faceNonCoupee_{0}".format(i_aux+1)) # doit etre publié pour critère OK plus bas
       facesNonCoupees.append(filling)
       maillagesNonCoupes.append(listOfNewMeshes[i_aux])
     else:

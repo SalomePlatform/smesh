@@ -20,7 +20,9 @@
 """Lancement des cas-tests de blocFissure"""
 
 import traceback
+
 import logging
+
 from blocFissure import gmu
 from blocFissure.gmu import initLog
 from blocFissure.gmu import geomsmesh
@@ -33,7 +35,7 @@ from blocFissure.gmu.casStandard import casStandard
 #initLog.setPerfTests()
 
 # ---tous les cas en séquence, ou les cas sélectionnés ...
-TORUNOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0] # OK
+TORUNOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] # OK
 #           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
 #RUNALL = False
 RUNALL = True
@@ -47,7 +49,7 @@ else:
   print ("TORUN = {} # OK".format(TORUNOK))
   print ("TORUN = {} # PB".format(TORUNPB))
 #                                                                                                    genereMateriel
-  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] # aucun
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] # aucun
   TORUN = [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # cubeAngle
   TORUN = [ 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # cubeFin
   TORUN = [ 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # decoupeCylindre
@@ -56,11 +58,12 @@ else:
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # ellipse_probleme + fissureGauche2
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # eprouvetteCourbe
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # eprouvetteDroite
-  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # fissureGauche + fissureGauche2
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # fissureGauche
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # fissureGauche2 fissureGauche2
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0] # vis
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] # tube
 #           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
-  TORUN = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0] # OK
+  TORUN = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] #  OK
 # -----------------------------------------------------------------------------------------------
 
 def caract_l_problemes ():
@@ -142,29 +145,30 @@ def caract_l_problemes ():
 
   n_cas = 13
   # genereMateriel : fissureGauche
-  # genereMateriel : fissureGauche2
   from blocFissure.CasTests.faceGauche import faceGauche
   l_problemes.append(faceGauche(n_cas))
 
   n_cas = 14
-  # genereMateriel : aucun
+  # genereMateriel : fissureGauche2
   from blocFissure.CasTests.faceGauche_2 import faceGauche_2
   l_problemes.append(faceGauche_2(n_cas))
-  #"boiteDefaut" has not been computed:
-  #-  "algo3d_boiteDefaut" failed. Error: Algorithm failed. Presumably, the surface mesh is not compatible with the domain being processed (warning).
+  #th. 140348470327040 - Trace /home/D68518/salome-dev/DEV_package/modules/src/SMESH/src/SMESH/SMESH_subMesh.cxx [2051] : MG-Tetra failed on sub-shape #1 with error COMPERR_ALGO_FAI
+  #LED "Presumably, the surface mesh is not compatible with the domain being processed (warning).
   #An edge is unique (i.e., bounds a hole in the surface).
   #The surface mesh includes at least one hole. The domain is not well defined.
-  #See /tmp/GHS3D_18605_10269264.log for more information
+  #See /tmp/GHS3D_6406_1149841264.log for more information"
+  #5845 construitFissureGenerale_c[89] Erreur au calcul du maillage.
+  #meshBoiteDefaut.Compute
   #Traceback (most recent call last):
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 222, in <module>
+    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 278, in calcul_cas
       #ok_maillage = cas.executeProbleme()
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 122, in executeProbleme
-      #self.maillageFissureParams, elementsDefaut, step)
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/faceGauche_2.py", line 108, in genereMaillageFissure
-      #maillageFissureParams, elementsDefaut, step)
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale.py", line 330, in construitFissureGenerale
-      #raise Exception(text)
-  #Exception: Erreur au calcul du maillage.
+    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 137, in executeProbleme
+      #elementsDefaut, step, mailleur)
+    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/faceGauche_2.py", line 118, in genereMaillageFissure
+      #step, mailleur, self.numeroCas)
+    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale.py", line 227, in construitFissureGenerale
+      #mailleur, nro_cas )
+    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale_c.py", line 90, in construitFisureGenerale_c
 
   n_cas = 15
   # genereMateriel : aucun
@@ -220,35 +224,11 @@ def caract_l_problemes ():
   # genereMateriel : aucun
   from blocFissure.CasTests.fissure_Coude import fissure_Coude
   l_problemes.append(fissure_Coude(n_cas))
-#"Mesh_366" has not been computed:
-#-  global 1D algorithm is missing
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 274, in calcul_cas
-    #ok_maillage = cas.executeProbleme()
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 137, in executeProbleme
-    #elementsDefaut, step, mailleur)
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/fissure_Coude.py", line 513, in genereMaillageFissure
-    #step, mailleur)
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/insereFissureLongue.py", line 435, in insereFissureLongue
-    #mailleur )
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/insereFissureLongue_c.py", line 82, in insereFissureLongue_c
-    #raise Exception(text)
 
   n_cas = 26
   # genereMateriel : aucun
   from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
   l_problemes.append(fissure_Coude_4(n_cas))
-#"Mesh_375" has not been computed:
-#-  global 1D algorithm is missing
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 274, in calcul_cas
-    #ok_maillage = cas.executeProbleme()
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 137, in executeProbleme
-    #elementsDefaut, step, mailleur)
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/fissure_Coude.py", line 513, in genereMaillageFissure
-    #step, mailleur)
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/insereFissureLongue.py", line 435, in insereFissureLongue
-    #mailleur )
-  #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/insereFissureLongue_c.py", line 82, in insereFissureLongue_c
-    #raise Exception(text)
 
   n_cas = 27
   # genereMateriel : vis
