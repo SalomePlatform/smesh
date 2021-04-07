@@ -86,8 +86,8 @@ def insereFissureLongue_b (edgesInside, centreFondFiss, tangentFondFiss, \
   #pipeFondFiss = geompy.MakePartition([pipeFondFiss], [planfiss, wireFondFiss, planBord1, planBord2], list(), list(), geompy.ShapeType["SOLID"], 0, list(), 0)
 
   geomPublish(initLog.debug,  disque, 'disque')
-  geomPublish(initLog.debug,  wireFondFiss, 'wireFondFiss')
-  geomPublish(initLog.debug,  pipeFondFiss, 'pipeFondFiss')
+  geomPublish(initLog.always,  wireFondFiss, 'wireFondFiss', nro_cas)
+  geomPublish(initLog.always,  pipeFondFiss, 'pipeFondFiss', nro_cas)
 
   VerticesEndFondFiss, _ = findWireEndVertices(wireFondFiss)
   for i_aux, vertex in enumerate(VerticesEndFondFiss):

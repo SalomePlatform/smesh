@@ -156,7 +156,6 @@ def insereFissureLongue(geometriesSaines, \
                           zoneDefaut, zoneDefaut_skin, zoneDefaut_internalEdges, zoneDefaut_internalFaces, \
                           nro_cas)
 
-
   if salome.sg.hasDesktop():
     salome.sg.updateObjBrowser()
 

@@ -90,13 +90,13 @@ def insereFissureLongue_a(facePorteFissure, WirePorteFondFissure, \
 
   # --- partition peau -face fissure - pipe fond de fissure prolongé
   partitionPeauFissByPipe = geompy.MakePartition([facesInside[0], facesOnside[0]], [pipefiss], list(), list(), geompy.ShapeType["FACE"], 0, list(), 0)
-  geomPublish(initLog.debug,  partitionPeauFissByPipe, 'partitionPeauFissByPipe', nro_cas )
+  geomPublish(initLog.always, partitionPeauFissByPipe, 'partitionPeauFissByPipe', nro_cas )
 
   # --- identification face de peau
   [facesPeauFissInside, _, facesPeauFissOnside] = extractionOrientee(fillingFaceExterne, partitionPeauFissByPipe, centreFondFiss, "FACE", 0.1, "peauFiss_bord_")
   facesPeauSorted, _, _ = sortFaces(facesPeauFissOnside) # 4 demi disques, une grande face
   facePeau = facesPeauSorted[-1] # la plus grande face
-  geomPublishInFather(initLog.debug,partitionPeauFissByPipe, facePeau, "facePeau", nro_cas)
+  geomPublishInFather(initLog.always, partitionPeauFissByPipe, facePeau, "facePeau", nro_cas)
 
   # --- identification edges de bord face peau
   edgesFilling = geompy.ExtractShapes(fillingFaceExterne, geompy.ShapeType["EDGE"], False)
@@ -106,7 +106,7 @@ def insereFissureLongue_a(facePorteFissure, WirePorteFondFissure, \
     edgesBords.append(edgepeau)
   groupEdgesBordPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
   geompy.UnionList(groupEdgesBordPeau, edgesBords)
-  geomPublishInFather(initLog.debug,facePeau, groupEdgesBordPeau , "EdgesBords", nro_cas)
+  geomPublishInFather(initLog.always, facePeau, groupEdgesBordPeau , "EdgesBords", nro_cas)
 
   # --- identification face fissure externe au pipe et edge commune peau fissure
   for face in facesPeauFissInside:
@@ -115,9 +115,9 @@ def insereFissureLongue_a(facePorteFissure, WirePorteFondFissure, \
       if sharedEdges is not None:
         faceFiss = face
         edgePeauFiss = sharedEdges[0]
-        geomPublishInFather(initLog.debug,partitionPeauFissByPipe, faceFiss, "faceFiss", nro_cas)
-        geomPublishInFather(initLog.debug,faceFiss, edgePeauFiss, "edgePeauFiss", nro_cas)
-        geomPublishInFather(initLog.debug,facePeau, edgePeauFiss, "edgePeauFiss", nro_cas)
+        geomPublishInFather(initLog.always, partitionPeauFissByPipe, faceFiss, "faceFiss", nro_cas)
+        geomPublishInFather(initLog.always, faceFiss, edgePeauFiss, "edgePeauFiss", nro_cas)
+        geomPublishInFather(initLog.always, facePeau, edgePeauFiss, "edgePeauFiss", nro_cas)
         break
     except:
       pass
@@ -151,7 +151,7 @@ def insereFissureLongue_a(facePorteFissure, WirePorteFondFissure, \
     group = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
     geompy.UnionList(group, demis)
     name = "Cercle{}".format(i_aux)
-    geomPublishInFather(initLog.debug,facePeau, group , name, nro_cas)
+    geomPublishInFather(initLog.always,facePeau, group , name, nro_cas)
     groupsDemiCerclesPeau.append(group)
 
   # --- identification edges commune pipe face fissure externe au pipe
