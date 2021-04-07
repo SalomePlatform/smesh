@@ -20,7 +20,9 @@
 """Lancement des cas-tests de blocFissure"""
 
 import traceback
+
 import logging
+
 from blocFissure import gmu
 from blocFissure.gmu import initLog
 from blocFissure.gmu import geomsmesh
@@ -33,7 +35,7 @@ from blocFissure.gmu.casStandard import casStandard
 #initLog.setPerfTests()
 
 # ---tous les cas en séquence, ou les cas sélectionnés ...
-TORUNOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0] # OK
+TORUNOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] # OK
 #           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
 #RUNALL = False
 RUNALL = True
@@ -60,7 +62,7 @@ else:
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0] # vis
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] # tube
 #           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
-  TORUN = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0] # OK
+  TORUN = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0] #  OK
 # -----------------------------------------------------------------------------------------------
 
 def caract_l_problemes ():
