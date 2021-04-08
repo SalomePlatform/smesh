@@ -36,7 +36,7 @@ def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibr
                            mailleur="MeshGems", nro_cas=None):
   """maillage face de peau"""
   logging.info('start')
-  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Maillage avec %s pour le cas n°%s", mailleur, nro_cas)
 
   meshFacePeau = smesh.Mesh(facePeau)
   putName(meshFacePeau, "facePeau", i_pref=nro_cas)

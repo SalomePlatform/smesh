@@ -35,7 +35,7 @@ def insereFissureLongue_e (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_gen
                            mailleur="MeshGems", nro_cas=None):
   """maillage face de fissure"""
   logging.info('start')
-  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Maillage avec %s pour le cas n°%s", mailleur, nro_cas)
 
   meshFaceFiss = smesh.Mesh(faceFiss)
   putName(meshFaceFiss, "faceFiss", i_pref=nro_cas)

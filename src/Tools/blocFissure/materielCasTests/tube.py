@@ -21,18 +21,17 @@
 . tube
 """
 
-__revision__ = "V02.07"
+__revision__ = "V02.08"
 
 import os
 
 import logging
 
 import salome
-from SketchAPI import *
 from salome.shaper import model
-import SHAPERSTUDY
 from salome.smesh import smeshBuilder
-from salome.StdMeshers import StdMeshersBuilder
+from SketchAPI import *
+import SHAPERSTUDY
 import SMESH
 
 from blocFissure import gmu

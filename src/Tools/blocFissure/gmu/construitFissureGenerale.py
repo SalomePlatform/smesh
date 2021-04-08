@@ -60,7 +60,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
                              step=-1, mailleur="MeshGems", nro_cas=None):
   """procédure complète fissure générale"""
   logging.info('start')
-  logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Usage du mailleur %s pour le cas n°%s", mailleur, nro_cas)
 
   shapeDefaut       = shapesFissure[0] # faces de fissure, débordant
 
@@ -149,7 +149,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
       identifieFacesEdgesFissureExterne(fsFissuExt, edFisExtPe, edFisExtPi, edgesPipeFiss, \
                                         nro_cas)
 
-  # --- preparation maillage du pipe :
+  # --- préparation maillage du pipe :
   #     - détections des points a respecter : jonction des edges/faces constituant la face de fissure externe au pipe
   #     - points sur les edges de fond de fissure et edges pipe/face fissure,
   #     - vecteurs tangents au fond de fissure (normal au disque maillé)
@@ -216,7 +216,8 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
   for mfpeau in meshesFacesPeau:
     listMeshes.append(mfpeau.GetMesh())
 
-  meshBoiteDefaut = smesh.Concatenate(listMeshes, 1, 1, 1e-05,False)
+  # Attention à la précision... 1.e-5 est trop exigeant. Il faudrait mettre une valeur en cohérence avec les tailles de mailles.
+  meshBoiteDefaut = smesh.Concatenate(listMeshes, 1, 1, 1.e-04)
   putName(meshBoiteDefaut, "boiteDefaut", i_pref=nro_cas)
 
 # Maillage complet

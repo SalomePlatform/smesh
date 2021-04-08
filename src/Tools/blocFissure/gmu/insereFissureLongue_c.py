@@ -40,7 +40,7 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
                            nro_cas=None):
   """maillage pipe fond fissure"""
   logging.info('start')
-  logging.info("Maillage pour le cas n°%d", nro_cas)
+  logging.info("Maillage pour le cas n°%s", nro_cas)
 
   meshFondFiss = smesh.Mesh(pipeFondFiss)
   putName(meshFondFiss, "pipeFondFiss", i_pref=nro_cas)

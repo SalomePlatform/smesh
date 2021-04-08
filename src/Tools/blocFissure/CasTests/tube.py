@@ -24,6 +24,7 @@ import os
 import logging
 
 from blocFissure import gmu
+from blocFissure.gmu import initLog
 from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.geomsmesh import geomPublish
 from blocFissure.gmu.geomsmesh import geomPublishInFather

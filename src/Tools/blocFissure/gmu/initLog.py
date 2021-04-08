@@ -36,7 +36,7 @@ loglevel = warning
 
 logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s', \
                     level=logging.WARNING, \
-                    filename=filelog)
+                    filename=filelog, filemode='w')
 ch = None
 fh = None
 

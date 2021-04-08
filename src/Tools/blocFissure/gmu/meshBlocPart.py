@@ -39,7 +39,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
                 mailleur="MeshGems", nro_cas=None):
   """Maillage du bloc partitionné"""
   logging.info('start')
-  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Maillage avec %s pour le cas n°%s", mailleur, nro_cas)
 
   # --- edges de bord à respecter
 

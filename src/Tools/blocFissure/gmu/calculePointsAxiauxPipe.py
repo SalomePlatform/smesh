@@ -40,7 +40,7 @@ def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut,
   """
 
   logging.info('start')
-  logging.info("Pour le cas n°%d", nro_cas)
+  logging.info("Pour le cas n°%s", nro_cas)
 
   # --- option de maillage selon le rayon de courbure du fond de fissure
   lenEdgeFondExt = 0

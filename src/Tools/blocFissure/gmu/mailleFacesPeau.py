@@ -40,7 +40,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
                     mailleur="MeshGems", nro_cas=None):
   """maillage faces de peau"""
   logging.info('start')
-  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Maillage avec %s pour le cas n°%s", mailleur, nro_cas)
 
   nbFacesFilling = len(partitionsPeauFissFond)
   boutFromIfil = [None for _ in range(nbFacesFilling)]

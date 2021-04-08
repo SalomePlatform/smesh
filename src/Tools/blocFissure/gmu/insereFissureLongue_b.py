@@ -49,7 +49,7 @@ def insereFissureLongue_b (edgesInside, centreFondFiss, tangentFondFiss, \
                            nro_cas=None):
   """procedure complete fissure longue"""
   logging.info('start')
-  logging.info("Maillage pour le cas n°%d", nro_cas)
+  logging.info("Maillage pour le cas n°%s", nro_cas)
 
   # -----------------------------------------------------------------------------
   # --- pipe de fond de fissure

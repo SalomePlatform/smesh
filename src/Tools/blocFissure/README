@@ -30,9 +30,4 @@ from blocFissure.CasTests import execution_Cas
 # bug et problèmes des cas tests
 --------------------------------
 
-Mauvaise détection d'arête vive avec GetInPlace : cas 7, 24
-
-Le maillage longitudinal du pipe peut créer des mailles de faible épaisseur
-à une des extrémités : le maillage en triangles des faces de fissure et de peau
-peut être moche au voisinage, de même que les tétraèdres qui s'appuient dessus.
-(2,3,16,26 ?)
+Mauvais maillage : cas 28
