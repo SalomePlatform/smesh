@@ -45,7 +45,7 @@ def insereFissureLongue(geometriesSaines, \
                         step=-1, mailleur="MeshGems", nro_cas=None):
   """procedure complete fissure longue"""
   logging.info('start')
-  logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Usage du mailleur %s pour le cas n°%s", mailleur, nro_cas)
 
   #geometrieSaine    = geometriesSaines[0]
   shapeDefaut       = shapesFissure[0] # face de fissure, debordant

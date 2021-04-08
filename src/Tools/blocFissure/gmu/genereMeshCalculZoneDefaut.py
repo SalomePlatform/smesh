@@ -52,7 +52,7 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
   """
 
   logging.info('start')
-  logging.info("Maillage avec %s pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Maillage avec %s pour le cas n°%s", mailleur, nro_cas)
 
   meshFissure = smesh.Mesh(facefiss)
   putName(meshFissure, "facefiss", i_pref=nro_cas)

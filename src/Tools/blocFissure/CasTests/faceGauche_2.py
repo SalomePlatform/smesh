@@ -121,12 +121,12 @@ class faceGauche_2(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
     self.referencesMaillageFissure = dict( \
-                                          Entity_Quad_Quadrangle = 2542, \
-                                          Entity_Quad_Hexa = 3435, \
-                                          Entity_Node = 44095, \
-                                          Entity_Quad_Edge = 323, \
-                                          Entity_Quad_Triangle = 634, \
-                                          Entity_Quad_Tetra = 18400, \
-                                          Entity_Quad_Pyramid = 859, \
-                                          Entity_Quad_Penta = 288 \
+                                          Entity_Quad_Quadrangle = 2560, \
+                                          Entity_Quad_Hexa = 3467, \
+                                          Entity_Node = 44442, \
+                                          Entity_Quad_Edge = 328, \
+                                          Entity_Quad_Triangle = 772, \
+                                          Entity_Quad_Tetra = 18414, \
+                                          Entity_Quad_Pyramid = 867, \
+                                          Entity_Quad_Penta = 296 \
                                          )

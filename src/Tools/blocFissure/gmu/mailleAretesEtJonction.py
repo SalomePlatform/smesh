@@ -34,7 +34,7 @@ def mailleAretesEtJonction (internalBoundary, aretesVivesCoupees, lgAretesVives,
                             nro_cas=None):
   """edges de bord, faces défaut à respecter"""
   logging.info('start')
-  logging.info("Pour le cas n°%d", nro_cas)
+  logging.info("Pour le cas n°%s", nro_cas)
 
   _ = smesh.CreateFilterManager()
   _, internalBoundary, _NoneGroup = internalBoundary.MakeBoundaryElements( SMESH.BND_1DFROM2D, '', '', 0, [  ])

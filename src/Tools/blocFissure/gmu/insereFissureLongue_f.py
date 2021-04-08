@@ -33,7 +33,7 @@ def insereFissureLongue_f (internalBoundary, meshFondFiss, meshFacePeau, meshFac
                            mailleur="MeshGems", nro_cas=None):
   """maillage meshBoiteDefaut"""
   logging.info('start')
-  logging.info("Usage du mailleur %s pour le cas n°%d", mailleur, nro_cas)
+  logging.info("Usage du mailleur %s pour le cas n°%s", mailleur, nro_cas)
 
   meshBoiteDefaut = smesh.Concatenate( [internalBoundary.GetMesh(), \
                                         meshFondFiss.GetMesh(), \

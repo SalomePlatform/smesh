@@ -35,7 +35,7 @@ from blocFissure.gmu.casStandard import casStandard
 #initLog.setPerfTests()
 
 # ---tous les cas en séquence, ou les cas sélectionnés ...
-TORUNOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] # OK
+TORUNOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] # OK
 #           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
 #RUNALL = False
 RUNALL = True
@@ -63,7 +63,7 @@ else:
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0] # vis
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] # tube
 #           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
-  TORUN = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] #  OK
+  TORUN = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] #  OK
 # -----------------------------------------------------------------------------------------------
 
 def caract_l_problemes ():
@@ -152,23 +152,6 @@ def caract_l_problemes ():
   # genereMateriel : fissureGauche2
   from blocFissure.CasTests.faceGauche_2 import faceGauche_2
   l_problemes.append(faceGauche_2(n_cas))
-  #th. 140348470327040 - Trace /home/D68518/salome-dev/DEV_package/modules/src/SMESH/src/SMESH/SMESH_subMesh.cxx [2051] : MG-Tetra failed on sub-shape #1 with error COMPERR_ALGO_FAI
-  #LED "Presumably, the surface mesh is not compatible with the domain being processed (warning).
-  #An edge is unique (i.e., bounds a hole in the surface).
-  #The surface mesh includes at least one hole. The domain is not well defined.
-  #See /tmp/GHS3D_6406_1149841264.log for more information"
-  #5845 construitFissureGenerale_c[89] Erreur au calcul du maillage.
-  #meshBoiteDefaut.Compute
-  #Traceback (most recent call last):
-    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 278, in calcul_cas
-      #ok_maillage = cas.executeProbleme()
-    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 137, in executeProbleme
-      #elementsDefaut, step, mailleur)
-    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/faceGauche_2.py", line 118, in genereMaillageFissure
-      #step, mailleur, self.numeroCas)
-    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale.py", line 227, in construitFissureGenerale
-      #mailleur, nro_cas )
-    #File "/local01/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale_c.py", line 90, in construitFisureGenerale_c
 
   n_cas = 15
   # genereMateriel : aucun
@@ -234,21 +217,6 @@ def caract_l_problemes ():
   # genereMateriel : vis
   from blocFissure.CasTests.vis_1 import vis_1
   l_problemes.append(vis_1(n_cas))
-  #"Mesh_22" has not been computed:
-  #-  "algo2d_faceFiss" failed on FACE #2. Error: Algorithm failed. NgException at Surface meshing: Problem in Surface mesh generation
-  #-  "algo1d_edgeFissPeau" failed on EDGE #9. Error: Algorithm failed. Source elements don't cover totally the geometrical edge
-  #Traceback (most recent call last):
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/execution_Cas.py", line 233, in <module>
-      #ok_maillage = cas.executeProbleme()
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/fissureGenerique.py", line 122, in executeProbleme
-      #self.maillageFissureParams, elementsDefaut, step)
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/CasTests/vis_1.py", line 116, in genereMaillageFissure
-      #maillageFissureParams, elementsDefaut, step)
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/construitFissureGenerale.py", line 282, in construitFissureGenerale
-      #meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad)
-    #File "/home/D68518/salome-dev/DEV_package/appli_DEV_package/lib/python3.6/site-packages/salome/blocFissure/gmu/mailleFacesFissure.py", line 69, in mailleFacesFissure
-      #raise Exception(text)
-  #Exception: Erreur au calcul du maillage.
 
   n_cas = 28
   # genereMateriel : tube
