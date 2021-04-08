@@ -143,7 +143,7 @@ Extrusion_1 = geompy.MakePrismVecH(Face_2, OX, 15)
 Revolution_2 = geompy.MakeRevolution2Ways(generatrice, OY, 65*math.pi/180.0)
 Fissure = geompy.MakeCommonList([Extrusion_1, Revolution_2], True)
 fondFiss = geompy.CreateGroup(Fissure, geompy.ShapeType["EDGE"])
-geompy.UnionIDs(fondFiss, [9, 7, 4])
+geompy.UnionIDs(fondFiss, [6, 8])
 
 geomPublish(initLog.debug, Vertex_4, 'Vertex_4' )
 geomPublish(initLog.debug, Vertex_6, 'Vertex_6' )

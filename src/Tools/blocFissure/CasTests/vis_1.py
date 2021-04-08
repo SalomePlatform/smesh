@@ -84,7 +84,7 @@ class vis_1(fissureGenerique):
 
     shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "visFiss.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    geompy.UnionIDs(fondFiss, [6, 8, 3])
+    geompy.UnionIDs(fondFiss, [6, 8])
     geomPublish(initLog.always, shellFiss, "shellFiss", self.numeroCas)
     geomPublishInFather(initLog.always, shellFiss, fondFiss, "fondFiss", self.numeroCas)
 
@@ -130,12 +130,12 @@ class vis_1(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
     self.referencesMaillageFissure = dict( \
-                                          Entity_Quad_Quadrangle = 4285 ,\
-                                          Entity_Quad_Hexa       = 6416, \
-                                          Entity_Node            = 85673, \
-                                          Entity_Quad_Edge       = 758, \
-                                          Entity_Quad_Triangle   = 2336, \
-                                          Entity_Quad_Tetra      = 35990, \
-                                          Entity_Quad_Pyramid    = 1284, \
-                                          Entity_Quad_Penta      = 984 \
+                                          Entity_Quad_Quadrangle = 11596, \
+                                          Entity_Quad_Hexa = 37008, \
+                                          Entity_Node = 250929, \
+                                          Entity_Quad_Edge = 30356, \
+                                          Entity_Quad_Triangle = 8088, \
+                                          Entity_Quad_Tetra = 49055, \
+                                          Entity_Quad_Pyramid = 3026, \
+                                          Entity_Quad_Penta = 4392 \
                                          )
