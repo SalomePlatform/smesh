@@ -79,7 +79,6 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
     hypo3d.SetRemoveLogOnSuccess( 1 )
   putName(algo3d.GetSubMesh(), "boiteDefaut", i_pref=nro_cas)
   putName(algo3d, "algo3d_boiteDefaut", i_pref=nro_cas)
-  putName(meshBoiteDefaut, "boiteDefaut", i_pref=nro_cas)
 
   is_done = meshBoiteDefaut.Compute()
   text = "meshBoiteDefaut.Compute"

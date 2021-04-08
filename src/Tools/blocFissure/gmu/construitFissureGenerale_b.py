@@ -60,7 +60,8 @@ pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
     if partitionPeauFissFond is not None:
       dataPPFF,aretesVivesCoupees = identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, \
                                                                       edgesPipeFiss, edgesFondFiss, wireFondFiss, aretesVivesC, \
-                                                                      facesDefaut, centreFondFiss, rayonPipe, aretesVivesCoupees)
+                                                                      facesDefaut, centreFondFiss, rayonPipe, aretesVivesCoupees, \
+                                                                      nro_cas)
       ptEdgeFond[ifil] = dataPPFF['endsEdgeFond']
       fsPipePeau[ifil] = dataPPFF['facesPipePeau']
       edRadFPiPo[ifil] = dataPPFF['edgeRadFacePipePeau']

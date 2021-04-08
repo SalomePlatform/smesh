@@ -21,6 +21,7 @@
 
 import logging
 import os
+import tempfile
 
 debug = 10
 info = 20
@@ -29,9 +30,13 @@ error = 40
 critical = 50
 always = 100
 
+filelog = os.path.join(tempfile.gettempdir(),"blocFissure.log")
+
 loglevel = warning
-logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s',
-                    level=logging.WARNING)
+
+logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s', \
+                    level=logging.WARNING, \
+                    filename=filelog)
 ch = None
 fh = None
 

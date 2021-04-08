@@ -47,6 +47,7 @@ from .construitMaillagePipe import construitMaillagePipe
 from .mailleAretesEtJonction import mailleAretesEtJonction
 from .mailleFacesFissure import mailleFacesFissure
 from .mailleFacesPeau import mailleFacesPeau
+from .putName import putName
 
 from .construitFissureGenerale_a import construitFissureGenerale_a
 from .construitFissureGenerale_b import construitFissureGenerale_b
@@ -216,6 +217,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
     listMeshes.append(mfpeau.GetMesh())
 
   meshBoiteDefaut = smesh.Concatenate(listMeshes, 1, 1, 1e-05,False)
+  putName(meshBoiteDefaut, "boiteDefaut", i_pref=nro_cas)
 
 # Maillage complet
   maillageComplet = construitFissureGenerale_c( maillageSain, meshBoiteDefaut, \

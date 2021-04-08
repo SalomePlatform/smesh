@@ -81,7 +81,6 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
       bordsVifs          = gpedgeVifs[ifil] # pour chaque face de peau : groupe subshape des edges aux bords correspondant à des arêtes vives
       edgesFissurePeau   = edFissPeau[ifil] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
 
-      logging.info("a")
       meshFacePeau = smesh.Mesh(facePeau)
 
       algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
@@ -90,7 +89,6 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
       putName(algo1d, "algo1d_bordsLibres", ifil, nro_cas)
       putName(hypo1d, "hypo1d_bordsLibres", ifil, nro_cas)
 
-      logging.info("b")
       algo1d = meshFacePeau.UseExisting1DElements(geom=geompy.MakeCompound(edgesFissurePeau))
       hypo1d = algo1d.SourceEdges([ grpEdgesPeauFissureExterne ],0,0)
       putName(algo1d.GetSubMesh(), "edgePeauFiss", ifil, nro_cas)
@@ -118,7 +116,6 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
           putName(algo1d, "algo1d_" + name, ifil, nro_cas)
           putName(hypo1d, "hypo1d_" + name, ifil, nro_cas)
 
-    logging.info("c")
     logging.info("Maillage avec %s", mailleur)
     if ( mailleur == "MeshGems"):
       algo2d = meshFacePeau.Triangle(algo=smeshBuilder.MG_CADSurf)
@@ -136,7 +133,6 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
       hypo2d.SetFineness( 2 )
       hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
       hypo2d.SetQuadAllowed( 0 )
-    logging.info("d")
     putName(algo2d.GetSubMesh(), "facePeau", ifil, nro_cas)
     putName(algo2d, "algo2d_facePeau", ifil, nro_cas)
     putName(hypo2d, "hypo2d_facePeau", ifil, nro_cas)
