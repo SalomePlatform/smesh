@@ -60,8 +60,7 @@ def mailleFacesFissure(faceFissureExterne, \
   putName(algo2d, "{}_2d_faceFiss".format(mailleur), i_pref=nro_cas)
   putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
 
-  texte = "Récupération des arêtes de '{}'".format(edgesPipeFissureExterneC.GetName())
-  logging.info(texte)
+  logging.info("UseExisting1DElements depuis '%s'", edgesPipeFissureExterneC.GetName())
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
   hypo1d = algo1d.SourceEdges([ meshPipeGroups['edgeFaceFissGroup'] ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)

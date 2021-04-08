@@ -28,7 +28,8 @@ from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
 
 def identifieEdgesPeau_a(edgesFissExtPipe, facePeau, facesPeauSorted, edgesPeauFondIn, \
-                         endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, edgesListees):
+                         endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, edgesListees, \
+                        nro_cas=None):
   """Identification précise des edges et disques des faces de peau selon index extremité fissure"""
   logging.info('start')
 
@@ -48,13 +49,13 @@ def identifieEdgesPeau_a(edgesFissExtPipe, facePeau, facesPeauSorted, edgesPeauF
         nameEdge = "edgeRadFacePipePeau{}".format(i_aux)
         facesPipePeau[i_aux] = face
         endsEdgeFond[i_aux] = sharedVertices[0]
-        geomPublish(initLog.debug, face, nameFace)
-        geomPublish(initLog.debug, sharedVertices[0], nameVert)
+        geomPublish(initLog.debug, face, nameFace, nro_cas)
+        geomPublish(initLog.debug, sharedVertices[0], nameVert, nro_cas)
         edgesFace = geompy.ExtractShapes(face, geompy.ShapeType["EDGE"], True)
         for edge in edgesFace:
           if geompy.MinDistance(edge, sharedVertices[0]) < 1e-3:
             edgeRadFacePipePeau[i_aux] = edge
-            geomPublish(initLog.debug, edge, nameEdge)
+            geomPublish(initLog.debug, edge, nameEdge, nro_cas)
             break
 
   # --- edges circulaires de la face de peau et points de jonction de la face externe de fissure
@@ -67,7 +68,7 @@ def identifieEdgesPeau_a(edgesFissExtPipe, facePeau, facesPeauSorted, edgesPeauF
     geompy.UnionList(grpEdgesCirc, edges)
     edgesCircPeau[i_aux] = grpEdgesCirc
     name = "edgeCirc{}".format(i_aux)
-    geomPublishInFather(initLog.debug, facePeau, grpEdgesCirc, name)
+    geomPublishInFather(initLog.always, facePeau, grpEdgesCirc, name)
     edgesListees = edgesListees + edges
     vertices = geompy.GetSharedShapesMulti([facePeau, fcirc], geompy.ShapeType["VERTEX"])
     grpVertCircPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["VERTEX"])

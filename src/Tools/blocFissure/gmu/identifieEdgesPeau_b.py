@@ -27,15 +27,16 @@ from .geomsmesh import geompy
 from .geomsmesh import geomPublishInFather
 
 def identifieEdgesPeau_b(facePeau, edgesListees, \
-                         fillingFaceExterne, aretesVivesC, aretesVivesCoupees):
+                         fillingFaceExterne, aretesVivesC, aretesVivesCoupees, \
+                          nro_cas=None):
   """edges de bord de la face de peau"""
   logging.info('start')
 
   edgesFilling = geompy.ExtractShapes(fillingFaceExterne, geompy.ShapeType["EDGE"], False)
   edgesBords = list()
-  for i, edge in enumerate(edgesFilling):
+  for i_aux, edge in enumerate(edgesFilling):
     edgepeau = geompy.GetInPlace(facePeau, edge)
-    name = "edgepeau%d"%i
+    name = "edgepeau{}".format(i_aux)
     geomPublishInFather(initLog.debug, facePeau,edgepeau, name)
     logging.debug("edgepeau %s", geompy.ShapeInfo(edgepeau))
     if geompy.ShapeInfo(edgepeau)['EDGE'] > 1:
@@ -74,7 +75,7 @@ def identifieEdgesPeau_b(facePeau, edgesListees, \
           geompy.AddObject(bordsVifs, geompy.GetSubShapeID(facePeau, edge))
 
   if bordsVifs is not None:
-    geomPublishInFather(initLog.debug, facePeau, bordsVifs, "bordsVifs")
+    geomPublishInFather(initLog.always, facePeau, bordsVifs, "bordsVifs")
     groupEdgesBordPeau = geompy.CutGroups(groupEdgesBordPeau, bordsVifs)
     grptmp = None
     if len(aretesVivesCoupees) > 0:
@@ -89,6 +90,6 @@ def identifieEdgesPeau_b(facePeau, edgesListees, \
       aretesVivesCoupees += edv
 
   logging.debug("aretesVivesCoupees %s",aretesVivesCoupees)
-  geomPublishInFather(initLog.debug, facePeau, groupEdgesBordPeau , "EdgesBords")
+  geomPublishInFather(initLog.always, facePeau, groupEdgesBordPeau , "EdgesBords")
 
   return groupEdgesBordPeau, bordsVifs
