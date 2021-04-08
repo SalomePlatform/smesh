@@ -58,7 +58,7 @@ def insereFissureLongue_e (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_gen
     hypo2d.SetMinSize( 2 )
     hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "faceFiss", i_pref=nro_cas)
-  putName(algo2d, "algo2d_faceFiss", i_pref=nro_cas)
+  putName(algo2d, "{}_2d_faceFiss".format(mailleur), i_pref=nro_cas)
   putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
   #
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgePeauFiss)

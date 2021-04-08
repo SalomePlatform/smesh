@@ -76,7 +76,7 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( minSize )
     hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d, "algo2d_zoneFiss", i_pref=nro_cas)
+  putName(algo2d, "{}_2d_zoneFiss".format(mailleur), i_pref=nro_cas)
   putName(hypo2d, "hypo1d_zoneFiss", i_pref=nro_cas)
 
   is_done = meshFissure.Compute()

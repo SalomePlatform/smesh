@@ -54,9 +54,10 @@ def mailleFacesFissure(faceFissureExterne, \
     hypo2d.SetOptimize( 1 )
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
+    hypo2d.SetChordalError( areteFaceFissure*0.25 )
     hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "faceFiss", i_pref=nro_cas)
-  putName(algo2d, "algo2d_faceFiss", i_pref=nro_cas)
+  putName(algo2d, "{}_2d_faceFiss".format(mailleur), i_pref=nro_cas)
   putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
 
   texte = "Récupération des arêtes de '{}'".format(edgesPipeFissureExterneC.GetName())

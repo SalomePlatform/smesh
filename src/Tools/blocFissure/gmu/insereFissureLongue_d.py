@@ -58,7 +58,7 @@ def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibr
     hypo2d.SetMinSize( 2 )
     hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "facePeau", i_pref=nro_cas)
-  putName(algo2d, "algo2d_facePeau", i_pref=nro_cas)
+  putName(algo2d, "{}_2d_facePeau".format(mailleur), i_pref=nro_cas)
   putName(hypo2d, "hypo2d_facePeau", i_pref=nro_cas)
   #
   lenEdgePeauFiss = geompy.BasicProperties(edgePeauFiss)[0]

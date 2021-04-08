@@ -233,8 +233,8 @@ class fissure_Coude(fissureGenerique):
 
     algo3d = maillageSain.Hexahedron()
     algo2d = maillageSain.Quadrangle()
-    putName(algo3d, "algo3d_maillageSain", i_pref=self.numeroCas)
-    putName(algo2d, "algo2d_maillageSain", i_pref=self.numeroCas)
+    putName(algo3d, "{}_3d_maillageSain".format(self.mailleur), i_pref=self.numeroCas)
+    putName(algo2d, "{}_2d_maillageSain".format(self.mailleur), i_pref=self.numeroCas)
 
     algo1d_long_p1 = maillageSain.Segment(geom=long_p1)
     hypo1d_long_p1 = algo1d_long_p1.NumberOfSegments(n_long_p1)
