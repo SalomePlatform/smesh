@@ -1643,7 +1643,8 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
       theMode |= eVolumes;
   }
 
-  myBaseActor->myGeomFilter->SetInside(myEntityMode != anObjectEntities);
+  // rnv : Fix volume selection on Display Entity
+  //myBaseActor->myGeomFilter->SetInside(myEntityMode != anObjectEntities);
 
   if ( anObjectEntities == 0 && myRepresentation != ePoint ) // no elements, show nodes
   {
