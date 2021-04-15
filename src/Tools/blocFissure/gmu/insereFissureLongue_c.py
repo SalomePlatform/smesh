@@ -52,6 +52,8 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
   putName(algo2d, "QUADRANGLE", i_pref=nro_cas)
 
   for i_aux, face in enumerate(disques):
+    #print (i_aux)
+    # la commande suivante entraîne addToStudy() failed
     algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.RADIAL_QUAD,geom=face)
     putName(algo2d.GetSubMesh(), "disque", i_aux, nro_cas)
     putName(algo2d, "RADIAL_QUAD", i_aux, nro_cas)
