@@ -24,7 +24,6 @@ import os
 import logging
 
 import salome
-import SMESH
 
 from .partitionBlocDefaut import partitionBlocDefaut
 from .facesVolumesToriques import facesVolumesToriques
@@ -38,9 +37,6 @@ from .meshBlocPart import meshBlocPart
 from .enleveDefaut import enleveDefaut
 from .regroupeSainEtDefaut import RegroupeSainEtDefaut
 from .putName import putName
-
-# -----------------------------------------------------------------------------
-# --- procedure complete fissure elliptique
 
 def insereFissureElliptique(geometriesSaines, maillagesSains, \
                             shapesFissure, shapeFissureParams, \

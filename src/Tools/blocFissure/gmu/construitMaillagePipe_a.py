@@ -19,8 +19,6 @@
 #
 """Les points"""
 
-import logging
-
 from .geomsmesh import geompy
 
 def construitMaillagePipe_a(idisk, \

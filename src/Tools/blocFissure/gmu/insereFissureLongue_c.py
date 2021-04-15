@@ -22,7 +22,6 @@
 import logging
 import math
 
-import salome
 from salome.smesh import smeshBuilder
 import SMESH
 

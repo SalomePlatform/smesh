@@ -19,10 +19,6 @@
 #
 """Mailles volumiques, groupes noeuds et edges de fond de fissure, groupe de face de fissure"""
 
-import logging
-
-import SMESH
-
 def construitMaillagePipe_d(idisk, \
                             idisklim, nbsegCercle, nbsegRad, \
                             meshPipe, mptdsk, oldmpts, \

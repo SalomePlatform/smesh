@@ -22,10 +22,6 @@
 import os
 import logging
 
-import GEOM
-import SALOMEDS
-import SMESH
-
 from .geomsmesh import geompy, smesh
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather

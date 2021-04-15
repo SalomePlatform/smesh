@@ -24,7 +24,6 @@ import math
 
 import SMESH
 from salome.smesh import smeshBuilder
-import salome
 
 from .geomsmesh import smesh
 

@@ -25,8 +25,6 @@ from . import initLog
 
 import salome
 from salome.smesh import smeshBuilder
-import GEOM
-import SMESH
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublishInFather

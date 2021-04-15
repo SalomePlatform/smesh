@@ -20,9 +20,6 @@
 """Construit les arêtes débouchantes"""
 
 import logging
-import GEOM
-
-from . import initLog
 
 from .construitEdgesRadialesDebouchantes_a import construitEdgesRadialesDebouchantes_a
 from .construitEdgesRadialesDebouchantes_b import construitEdgesRadialesDebouchantes_b

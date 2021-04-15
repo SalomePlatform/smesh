@@ -24,7 +24,6 @@ import os
 import logging
 import math
 import GEOM
-import SALOMEDS
 import SMESH
 
 from . import initLog

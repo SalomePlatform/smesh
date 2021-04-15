@@ -23,6 +23,8 @@ import logging
 
 from . import initLog
 
+import GEOM
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublishInFather
 

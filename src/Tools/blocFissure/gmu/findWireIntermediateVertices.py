@@ -21,8 +21,6 @@
 
 import logging
 
-from . import initLog
-
 from .geomsmesh import geompy
 
 from .findWireVertices import findWireVertices

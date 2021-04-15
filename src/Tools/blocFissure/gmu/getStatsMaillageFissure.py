@@ -21,8 +21,6 @@
 
 import os
 import logging
-import SMESH
-
 
 def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissureParams):
   """"Statistiques maillage"""

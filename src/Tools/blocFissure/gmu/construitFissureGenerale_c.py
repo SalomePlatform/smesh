@@ -23,13 +23,10 @@ import os
 
 import logging
 
-import salome
 from salome.smesh import smeshBuilder
-import GEOM
 import SMESH
 
 from .geomsmesh import geompy
-from .geomsmesh import smesh
 
 from .putName import putName
 from .enleveDefaut import enleveDefaut

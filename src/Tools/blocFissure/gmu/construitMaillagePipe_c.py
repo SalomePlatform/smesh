@@ -19,8 +19,6 @@
 #
 """Les groupes des faces débouchantes"""
 
-import logging
-
 def construitMaillagePipe_c(idisk, \
                             idisklim, nbsegCercle, \
                             meshPipe, mptdsk, nbsegRad, \

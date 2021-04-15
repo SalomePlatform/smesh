@@ -21,8 +21,6 @@
 
 import logging
 
-import salome
-
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather

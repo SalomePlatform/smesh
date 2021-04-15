@@ -138,7 +138,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
         texte = "i_aux = {}".format(i_aux)
         logging.info(texte)
         if edgeCirc is not None:
-          logging.info("UseExisting1DElements depuis edgeCirc ='%s'", edgeCirc.GetName())
+          logging.info("UseExisting1DElements depuis edgeCirc = '%s'", edgeCirc.GetName())
           algo1d = meshFacePeau.UseExisting1DElements(geom=edgeCirc) # addToStudy() failed ?
           if boutFromIfil[ifil] is None:
             hypo1d = algo1d.SourceEdges([ edgesCircPipeGroup[i_aux] ],0,0)

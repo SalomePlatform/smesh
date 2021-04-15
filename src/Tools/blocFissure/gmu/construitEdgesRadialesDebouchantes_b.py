@@ -20,11 +20,11 @@
 """Mise en correspondance avec les indices des faces disque débouchantes (facesPipePeau)"""
 
 import logging
-import GEOM
 
 from .geomsmesh import geompy
-from .geomsmesh import geomPublish
-from . import initLog
+#from .geomsmesh import geomPublish
+
+#from . import initLog
 
 def construitEdgesRadialesDebouchantes_b(facesPipePeau, facesDebouchantes, listNappes):
   """Mise en correspondance avec les indices des faces disque débouchantes (facesPipePeau)"""

@@ -19,8 +19,6 @@
 #
 """Les groupes des edges des cercles débouchants"""
 
-import logging
-
 def construitMaillagePipe_b(idisk, \
                             idisklim, nbsegCercle, \
                             meshPipe, mptdsk, \
