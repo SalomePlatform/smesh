@@ -22,7 +22,6 @@
 import logging
 import math
 
-import salome
 from salome.smesh import smeshBuilder
 import SMESH
 
@@ -45,16 +44,19 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
   meshFondFiss = smesh.Mesh(pipeFondFiss)
   putName(meshFondFiss, "pipeFondFiss", i_pref=nro_cas)
 
-  algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.QUADRANGLE)
   algo3d = meshFondFiss.Prism()
   putName(algo3d.GetSubMesh(), "pipe", i_pref=nro_cas)
-  putName(algo3d, "algo3d_pipe", i_pref=nro_cas)
-  putName(algo2d, "algo2d_pipe", i_pref=nro_cas)
+  putName(algo3d, "Prism", i_pref=nro_cas)
+
+  algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.QUADRANGLE)
+  putName(algo2d, "QUADRANGLE", i_pref=nro_cas)
 
   for i_aux, face in enumerate(disques):
+    #print (i_aux)
+    # la commande suivante entraîne addToStudy() failed
     algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.RADIAL_QUAD,geom=face)
     putName(algo2d.GetSubMesh(), "disque", i_aux, nro_cas)
-    putName(algo2d, "algo2d_disque", i_aux, nro_cas)
+    putName(algo2d, "RADIAL_QUAD", i_aux, nro_cas)
 
   for i_aux, edge in enumerate(rayons):
     algo1d = meshFondFiss.Segment(geom=edge)

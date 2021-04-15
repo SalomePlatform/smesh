@@ -27,12 +27,8 @@ from blocFissure.gmu import initLog
 from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.geomsmesh import geomPublish
 from blocFissure.gmu.geomsmesh import geomPublishInFather
+
 from blocFissure.gmu.putName import putName
-
-import GEOM
-import SALOMEDS
-import SMESH
-
 from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
@@ -124,7 +120,7 @@ class vis_1(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

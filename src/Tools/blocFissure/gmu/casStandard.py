@@ -22,10 +22,6 @@
 import os
 import logging
 
-import GEOM
-import SALOMEDS
-import SMESH
-
 from .geomsmesh import geompy, smesh
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather
@@ -178,7 +174,7 @@ class casStandard(fissureGenerique):
                                   mailleur="MeshGems"):
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

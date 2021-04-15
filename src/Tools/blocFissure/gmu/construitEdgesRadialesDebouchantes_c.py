@@ -20,11 +20,12 @@
 """Construction des listes d'edges radiales sur chaque extrémité débouchante"""
 
 import logging
-import GEOM
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
+
 from . import initLog
+
 from .sortEdges import sortEdges
 
 def construitEdgesRadialesDebouchantes_c(facesPipePeau, edgeRadFacePipePeau, \

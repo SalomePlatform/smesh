@@ -31,10 +31,6 @@ from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetS
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 from blocFissure.gmu.putName import putName
 
-import GEOM
-import SALOMEDS
-import SMESH
-
 class cylindre(fissureGenerique):
   """problème de fissure plane sur cylindre, grand fond de fissure en arc de cercle"""
 
@@ -110,7 +106,7 @@ class cylindre(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

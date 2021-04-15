@@ -22,8 +22,6 @@
 import os
 
 import logging
-import SMESH
-import SALOMEDS
 
 from .geomsmesh import smesh
 

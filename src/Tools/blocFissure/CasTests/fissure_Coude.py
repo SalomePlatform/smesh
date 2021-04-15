@@ -23,16 +23,16 @@ import logging
 import os
 import math
 
-from blocFissure.gmu import initLog
-from blocFissure.gmu.geomsmesh import geompy, smesh
-from blocFissure.gmu.geomsmesh import geomPublish
-from blocFissure.gmu.geomsmesh import geomPublishInFather
-from blocFissure.gmu.putName import putName
-
 import GEOM
-import SALOMEDS
 import SMESH
 
+from blocFissure.gmu.geomsmesh import geompy
+from blocFissure.gmu.geomsmesh import smesh
+from blocFissure.gmu.geomsmesh import geomPublish
+from blocFissure.gmu.geomsmesh import geomPublishInFather
+
+from blocFissure.gmu import initLog
+from blocFissure.gmu.putName import putName
 from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
@@ -233,8 +233,8 @@ class fissure_Coude(fissureGenerique):
 
     algo3d = maillageSain.Hexahedron()
     algo2d = maillageSain.Quadrangle()
-    putName(algo3d, "algo3d_maillageSain", i_pref=self.numeroCas)
-    putName(algo2d, "algo2d_maillageSain", i_pref=self.numeroCas)
+    putName(algo3d, "3d_maillageSain", i_pref=self.numeroCas)
+    putName(algo2d, "2d_maillageSain", i_pref=self.numeroCas)
 
     algo1d_long_p1 = maillageSain.Segment(geom=long_p1)
     hypo1d_long_p1 = algo1d_long_p1.NumberOfSegments(n_long_p1)
@@ -510,10 +510,9 @@ class fissure_Coude(fissureGenerique):
                                   mailleur="MeshGems"):
 
     mailleur = self.mailleur2d3d()
-    maillageFissure = insereFissureLongue(geometriesSaines, \
-                                          shapesFissure, shapeFissureParams, \
+    maillageFissure = insereFissureLongue(shapesFissure, shapeFissureParams, \
                                           maillageFissureParams, elementsDefaut, \
-                                          step, mailleur, self.numeroCas)
+                                          mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

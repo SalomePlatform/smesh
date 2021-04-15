@@ -21,6 +21,8 @@
 
 import logging
 
+import GEOM
+
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish
 from .geomsmesh import geomPublishInFather

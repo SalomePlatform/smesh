@@ -28,15 +28,12 @@ from blocFissure.gmu import initLog
 from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.geomsmesh import geomPublish
 from blocFissure.gmu.geomsmesh import geomPublishInFather
+
 from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 from blocFissure.gmu.putName import putName
-
-import GEOM
-import SALOMEDS
-import SMESH
 
 class tube(fissureGenerique):
   """problème de fissure plane dans un tube"""
@@ -123,7 +120,7 @@ class tube(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

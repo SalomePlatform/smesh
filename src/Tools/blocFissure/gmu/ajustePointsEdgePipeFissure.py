@@ -17,7 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""Ajustement precis des points sur edgesPipeFissureExterneC"""
+"""Ajustement précis des points sur edgesPipeFissureExterneC"""
 
 import logging
 
@@ -26,16 +26,17 @@ from .findWireIntermediateVertices import findWireIntermediateVertices
 from .projettePointSurCourbe import projettePointSurCourbe
 
 def ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne, gptsdisks, idisklim):
-  """Ajustement precis des points sur edgesPipeFissureExterneC"""
+  """Ajustement précis des points sur edgesPipeFissureExterneC"""
   logging.info('start')
 
   edgesPFE = geompy.ExtractShapes(edgesPipeFissureExterneC, geompy.ShapeType["EDGE"], False)
   verticesPFE, _ = findWireIntermediateVertices(wirePipeFissureExterne)  # vertices intermédiaires (des points en trop dans ptsInWireFissExtPipe)
   idiskmin = idisklim[0] + 1 # on ne prend pas le disque sur la peau, déjà ajusté
-  idiskmax = idisklim[1]     # on ne prend pas le disque sur la peau, déjà ajusté
-  idiskint = []
+  idiskmax = idisklim[1]
+  idiskint = list()
+
   for vtx in verticesPFE:
-    distPtVt = []
+    distPtVt = list()
     for idisk in range(idiskmin, idiskmax):
       gptdsk = gptsdisks[idisk]
       point = gptdsk[0][-1]       # le point sur l'edge de la fissure externe au pipe
@@ -44,6 +45,7 @@ def ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne
     idiskint.append(distPtVt[0][1])
     gptsdisks[idiskint[-1]][0][-1] = vtx
     logging.debug("ajustement point sur edgePipeFissureExterne, vertex: %s %s", idiskint[-1], distPtVt[0][0])
+
   for idisk in range(idiskmin, idiskmax):
     if idisk in idiskint:
       break

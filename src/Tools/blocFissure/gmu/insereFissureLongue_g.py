@@ -21,7 +21,6 @@
 
 import logging
 
-import salome
 import SMESH
 
 from .geomsmesh import geompy

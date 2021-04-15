@@ -17,7 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""procédure complète de construction d'une fissure longue"""
+"""Procédure complète de construction d'une fissure longue"""
 
 import os
 
@@ -39,15 +39,13 @@ from .insereFissureLongue_g import insereFissureLongue_g
 
 # -----------------------------------------------------------------------------
 
-def insereFissureLongue(geometriesSaines, \
-                        shapesFissure, shapeFissureParams, \
+def insereFissureLongue(shapesFissure, shapeFissureParams, \
                         maillageFissureParams, elementsDefaut, \
-                        step=-1, mailleur="MeshGems", nro_cas=None):
-  """procedure complete fissure longue"""
+                        mailleur="MeshGems", nro_cas=None):
+  """Procédure complète de construction d'une fissure longue"""
   logging.info('start')
   logging.info("Usage du mailleur %s pour le cas n°%s", mailleur, nro_cas)
 
-  #geometrieSaine    = geometriesSaines[0]
   shapeDefaut       = shapesFissure[0] # face de fissure, debordant
   #tailleDefaut      = shapesFissure[2]
   wiretube          = shapesFissure[4] # wire fond de fissure, debordant

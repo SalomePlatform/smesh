@@ -23,13 +23,10 @@ import os
 
 import logging
 
-import salome
 from salome.smesh import smeshBuilder
-import GEOM
 import SMESH
 
 from .geomsmesh import geompy
-from .geomsmesh import smesh
 
 from .putName import putName
 from .enleveDefaut import enleveDefaut
@@ -78,7 +75,7 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
     hypo3d.SetStandardOutputLog( 0 )
     hypo3d.SetRemoveLogOnSuccess( 1 )
   putName(algo3d.GetSubMesh(), "boiteDefaut", i_pref=nro_cas)
-  putName(algo3d, "algo3d_boiteDefaut", i_pref=nro_cas)
+  putName(algo3d, "{}_3d_boiteDefaut".format(mailleur), i_pref=nro_cas)
 
   is_done = meshBoiteDefaut.Compute()
   text = "meshBoiteDefaut.Compute"

@@ -19,18 +19,19 @@
 #
 """Les groupes des edges des cercles débouchants"""
 
-import logging
+import SMESH
 
 def construitMaillagePipe_b(idisk, \
                             idisklim, nbsegCercle, \
                             meshPipe, mptdsk, \
-                            edgeCircPipe0Group, edgeCircPipe1Group):
+                            edgesCircPipeGroup):
   """Les groupes des edges des cercles débouchants"""
   #logging.info('start')
 
   pts = list()
   for n_cercle in range(nbsegCercle):
     pts.append(mptdsk[n_cercle][-1])
+
   edges = list()
   nb_pts = len(pts)
   for n_cercle in range(nb_pts):
@@ -39,8 +40,11 @@ def construitMaillagePipe_b(idisk, \
     edges.append(id_edge)
 
   if idisk == idisklim[0]:
-    edgeCircPipe0Group.Add(edges)
+    groupe = meshPipe.CreateEmptyGroup(SMESH.EDGE, "edgeCircPipe0")
   else:
-    edgeCircPipe1Group.Add(edges)
+    groupe = meshPipe.CreateEmptyGroup(SMESH.EDGE, "edgeCircPipe1")
+
+  groupe.Add(edges)
+  edgesCircPipeGroup.append(groupe)
 
   return

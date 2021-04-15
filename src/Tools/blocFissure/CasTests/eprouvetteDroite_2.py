@@ -20,17 +20,13 @@
 """problème de fissure plane coupant 3 faces (éprouvette), débouches non normaux, objet plan"""
 
 import os
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
-
-import GEOM
-import SALOMEDS
-import SMESH
 import logging
 
-from .eprouvetteDroite import eprouvetteDroite
-
+from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
+
+from .eprouvetteDroite import eprouvetteDroite
 
 class eprouvetteDroite_2(eprouvetteDroite):
   """problème de fissure plane coupant 3 faces (éprouvette), débouches non normaux, objet plan"""

@@ -30,7 +30,7 @@ from .putName import putName
 
 def mailleFacesFissure(faceFissureExterne, \
                        edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
-                       meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad, \
+                       edgeFaceFissGroup, areteFaceFissure, rayonPipe, nbsegRad, \
                        mailleur="MeshGems", nro_cas=None):
   """maillage faces de fissure"""
   logging.info('start')
@@ -54,15 +54,15 @@ def mailleFacesFissure(faceFissureExterne, \
     hypo2d.SetOptimize( 1 )
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
+    hypo2d.SetChordalError( areteFaceFissure*0.25 )
     hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "faceFiss", i_pref=nro_cas)
-  putName(algo2d, "algo2d_faceFiss", i_pref=nro_cas)
+  putName(algo2d, "{}_2d_faceFiss".format(mailleur), i_pref=nro_cas)
   putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
 
-  texte = "Récupération des arêtes de '{}'".format(edgesPipeFissureExterneC.GetName())
-  logging.info(texte)
+  logging.info("UseExisting1DElements depuis '%s'", edgesPipeFissureExterneC.GetName())
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
-  hypo1d = algo1d.SourceEdges([ meshPipeGroups['edgeFaceFissGroup'] ],0,0)
+  hypo1d = algo1d.SourceEdges([ edgeFaceFissGroup ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
   putName(algo1d, "algo1d_edgeFissPeau", i_pref=nro_cas)
   putName(hypo1d, "hypo1d_edgeFissPeau", i_pref=nro_cas)

@@ -19,8 +19,6 @@
 #
 """Création d'une nouvelle étude"""
 
-import logging
-
 def initEtude():
   """Création nouvelle etude salome"""
   from . import geomsmesh

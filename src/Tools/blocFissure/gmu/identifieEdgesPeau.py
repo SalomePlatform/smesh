@@ -26,7 +26,8 @@ from .identifieEdgesPeau_b import identifieEdgesPeau_b
 from .identifieEdgesPeau_c import identifieEdgesPeau_c
 
 def identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSorted, \
-                       edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees):
+                       edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees, \
+                       nro_cas=None):
   """Identification précise des edges et disques des faces de peau selon index extremité fissure"""
   logging.info('start')
 
@@ -38,7 +39,8 @@ def identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSo
   if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
 
     edgesCircPeau, verticesCircPeau = identifieEdgesPeau_a(edgesFissExtPipe, facePeau, facesPeauSorted, edgesPeauFondIn, \
-                                                           endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, edgesListees)
+                                                           endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, edgesListees, \
+                                                          nro_cas)
   else:
     edgesCircPeau = list()
     verticesCircPeau = list()
@@ -47,7 +49,8 @@ def identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSo
   # --- edges de bord de la face de peau
 
   groupEdgesBordPeau, bordsVifs = identifieEdgesPeau_b(facePeau, edgesListees, \
-                                                      fillingFaceExterne, aretesVivesC, aretesVivesCoupees)
+                                                      fillingFaceExterne, aretesVivesC, aretesVivesCoupees, \
+                                                      nro_cas)
 
   # ---  edges de la face de peau partagées avec la face de fissure
 

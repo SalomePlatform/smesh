@@ -31,10 +31,6 @@ from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetS
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 from blocFissure.gmu.putName import putName
 
-import GEOM
-import SALOMEDS
-import SMESH
-
 class eprouvetteCourbe(fissureGenerique):
   """problème de fissure plane coupant 3 faces (éprouvette), faces au débouché non planes, incidence presque normale"""
 
@@ -118,7 +114,7 @@ class eprouvetteCourbe(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

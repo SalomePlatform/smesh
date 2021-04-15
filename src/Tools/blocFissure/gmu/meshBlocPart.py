@@ -63,7 +63,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
     hypo2d.LengthFromEdges()
     hypo2d.SetAllowQuadrangles(0)
     putName(algo2d.GetSubMesh(), "sharedFaces", i_aux, nro_cas)
-    putName(algo2d, "algo2d_sharedFaces", i_aux, nro_cas)
+    putName(algo2d, "{}_2d_sharedFaces".format(mailleur), i_aux, nro_cas)
     putName(hypo2d, "hypo2d_sharedFaces", i_aux, nro_cas)
 
   for i_aux, sharedEdges_i in enumerate(sharedEdges):
@@ -78,7 +78,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
     algo3d = bloc1.Tetrahedron(algo=smeshBuilder.NETGEN,geom=ellipsoidep)
     hypo3d = algo3d.MaxElementVolume(1000.0)
     putName(algo3d.GetSubMesh(), "ellipsoide", i_pref=nro_cas)
-    putName(algo3d, "algo3d_ellipsoide", i_pref=nro_cas)
+    putName(algo3d, "{}_3d_ellipsoide".format(mailleur), i_pref=nro_cas)
     putName(hypo3d, "hypo3d_ellipsoide", i_pref=nro_cas)
 
   algo3d = bloc1.Prism(geom=tore)
@@ -86,8 +86,8 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   algo1d = bloc1.Segment(geom=tore)
   hypo1d = algo1d.NumberOfSegments(nbsegGen)
   putName(algo3d.GetSubMesh(), "tore", i_pref=nro_cas)
-  putName(algo3d, "algo3d_tore", i_pref=nro_cas)
-  putName(algo2d, "algo2d_tore", i_pref=nro_cas)
+  putName(algo3d, "{}_3d_tore".format(mailleur), i_pref=nro_cas)
+  putName(algo2d, "{}_2d_tore".format(mailleur), i_pref=nro_cas)
   putName(algo1d, "algo1d_tore", i_pref=nro_cas)
   putName(hypo1d, "hypo1d_tore", i_pref=nro_cas)
 
@@ -98,7 +98,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
     hypo2d.SetQuadType( StdMeshersBuilder.QUAD_STANDARD )
     _ = bloc1.AddHypothesis(hypo2d,faces_i)
     putName(algo2d.GetSubMesh(), "faces", i_aux, nro_cas)
-    putName(algo2d, "algo2d_faces", i_aux, nro_cas)
+    putName(algo2d, "{}_2d_faces".format(mailleur), i_aux, nro_cas)
     putName(hypo2d, "hypo2d_faces", i_aux, nro_cas)
 
   for i_aux, edges_i in enumerate(edges):
@@ -152,7 +152,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   algo2d = bloc1.Triangle(algo=smeshBuilder.NETGEN_2D, geom=facefissoutore)
   hypo2d = algo2d.LengthFromEdges()
   putName(algo2d.GetSubMesh(), "facefissoutore", i_pref=nro_cas)
-  putName(algo2d, "algo2d_facefissoutore", i_pref=nro_cas)
+  putName(algo2d, "{}_2d_facefissoutore".format(mailleur), i_pref=nro_cas)
   putName(hypo2d, "hypo2d_facefissoutore", i_pref=nro_cas)
 
 
@@ -166,7 +166,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
       algo1d = bloc1.Segment(geom=facesExternes_i)
       hypo1d = algo1d.NumberOfSegments(1)
     putName(algo2d.GetSubMesh(), "facesExternes", i_aux, nro_cas)
-    putName(algo2d, "algo2d_facesExternes", i_aux, nro_cas)
+    putName(algo2d, "{}2d_facesExternes".format(mailleur), i_aux, nro_cas)
     putName(hypo2d, "hypo2d_facesExternes", i_aux, nro_cas)
     if edgesBords is None:
       putName(algo1d, "algo1d_facesExternes", i_aux, nro_cas)
@@ -190,7 +190,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
     algo3d = bloc1.Tetrahedron(algo=smeshBuilder.NETGEN,geom=ellipsoidep)
     hypo3d = algo3d.MaxElementVolume(1000.0)
     putName(algo3d.GetSubMesh(), "ellipsoide", i_pref=nro_cas)
-    putName(algo3d, "algo3d_ellipsoide", i_pref=nro_cas)
+    putName(algo3d, "{}_3d_ellipsoide".format(mailleur), i_pref=nro_cas)
     putName(hypo3d, "hypo3d_ellipsoide", i_pref=nro_cas)
 
   _ = bloc1.GroupOnGeom(faceFissure,'FACE1',SMESH.FACE)
@@ -232,7 +232,7 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   algo3d = blocMesh.Tetrahedron(algo=smeshBuilder.NETGEN)
   hypo3d = algo3d.MaxElementVolume(1000.0)
   putName(algo3d.GetSubMesh(), "bloc", i_pref=nro_cas)
-  putName(algo3d, "algo3d_bloc", i_pref=nro_cas)
+  putName(algo3d, "{}_3d_bloc".format(mailleur), i_pref=nro_cas)
   putName(hypo3d, "hypo3d_bloc", i_pref=nro_cas)
 
   is_done = blocMesh.Compute()

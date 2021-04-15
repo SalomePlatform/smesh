@@ -32,20 +32,21 @@ from .construitMaillagePipe_c import construitMaillagePipe_c
 from .construitMaillagePipe_d import construitMaillagePipe_d
 
 def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
-                                nro_cas=None):
+                          nro_cas=None):
   """maillage effectif du pipe"""
   logging.info('start')
+  logging.info("nbsegCercle = %d, nbsegRad = %d", nbsegCercle, nbsegRad)
+  logging.info("idisklim[0] = %d, idisklim[1] = %d", idisklim[0], idisklim[1])
+
   meshPipe = smesh.Mesh(None, "meshPipe")
   putName(meshPipe, "meshPipe", i_pref=nro_cas)
+
+  edgesCircPipeGroup = list()
 
   fondFissGroup = meshPipe.CreateEmptyGroup(SMESH.EDGE, "FONDFISS")
   nodesFondFissGroup = meshPipe.CreateEmptyGroup(SMESH.NODE, "nfondfis")
   faceFissGroup = meshPipe.CreateEmptyGroup(SMESH.FACE, "fisInPi")
   edgeFaceFissGroup = meshPipe.CreateEmptyGroup(SMESH.EDGE, "edgeFaceFiss")
-  edgeCircPipe0Group = meshPipe.CreateEmptyGroup(SMESH.EDGE, "edgeCircPipe0")
-  edgeCircPipe1Group = meshPipe.CreateEmptyGroup(SMESH.EDGE, "edgeCircPipe1")
-  faceCircPipe0Group = meshPipe.CreateEmptyGroup(SMESH.FACE, "faceCircPipe0")
-  faceCircPipe1Group = meshPipe.CreateEmptyGroup(SMESH.FACE, "faceCircPipe1")
 
   mptdsk     = list() # vertices de chaque disque au fur et à mesure
   mptsdisks  = list() # vertices maillage de tous les disques
@@ -55,14 +56,14 @@ def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
   mVols      = list() # identifiants volumes maillage pipe
 
   for idisk in range(idisklim[0], idisklim[1]+1): # boucle sur les disques internes
-    #print ("\nidisk = {}".format(idisk))
+    #logging.info(". Prise en compte du disque n°%d", idisk)
 
     # -----------------------------------------------------------------------
     # --- Les points
 
     oldmpts = mptdsk
     mptdsk = construitMaillagePipe_a(idisk, \
-                                      gptsdisks, idisklim, nbsegCercle, \
+                                      gptsdisks, nbsegCercle, \
                                       meshPipe, mptsdisks)
 
     # -----------------------------------------------------------------------
@@ -72,7 +73,7 @@ def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
       construitMaillagePipe_b(idisk, \
                               idisklim, nbsegCercle, \
                               meshPipe, mptdsk, \
-                              edgeCircPipe0Group, edgeCircPipe1Group)
+                              edgesCircPipeGroup)
 
     # -----------------------------------------------------------------------
     # --- Les groupes des faces débouchantes
@@ -80,8 +81,7 @@ def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
     if idisk in (idisklim[0],idisklim[1]):
       construitMaillagePipe_c(idisk, \
                               idisklim, nbsegCercle, \
-                              meshPipe, mptdsk, nbsegRad, \
-                              faceCircPipe0Group, faceCircPipe1Group)
+                              meshPipe, mptdsk, nbsegRad)
 
     # -----------------------------------------------------------------------
     # --- mailles volumiques, groupes noeuds et edges de fond de fissure, groupe de face de fissure
@@ -97,23 +97,10 @@ def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
   _ = pipeFissGroup.AddFrom( meshPipe.GetMesh() )
 
   _, _, _ = meshPipe.MakeBoundaryElements(SMESH.BND_2DFROM3D, "pipeBoundaries")
-  edgesCircPipeGroup = [edgeCircPipe0Group, edgeCircPipe1Group]
-
-  meshPipeGroups = dict(fondFissGroup = fondFissGroup, \
-                        nodesFondFissGroup = nodesFondFissGroup, \
-                        faceFissGroup = faceFissGroup, \
-                        edgeFaceFissGroup = edgeFaceFissGroup, \
-                        edgeCircPipe0Group = edgeCircPipe0Group, \
-                        edgeCircPipe1Group = edgeCircPipe1Group, \
-                        faceCircPipe0Group = faceCircPipe0Group, \
-                        faceCircPipe1Group = faceCircPipe1Group, \
-                        pipeFissGroup = pipeFissGroup, \
-                        edgesCircPipeGroup = edgesCircPipeGroup \
-                        )
 
   #if meshPipe:
     #text = "Arrêt rapide.\n"
     #logging.info(text)
     #raise Exception(text)
 
-  return (meshPipe, meshPipeGroups, edgesCircPipeGroup)
+  return (meshPipe, edgeFaceFissGroup, edgesCircPipeGroup)

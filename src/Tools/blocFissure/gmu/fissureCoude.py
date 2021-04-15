@@ -24,7 +24,6 @@ import os
 import logging
 import math
 import GEOM
-import SALOMEDS
 import SMESH
 
 from . import initLog
@@ -263,8 +262,8 @@ class fissureCoude(fissureGenerique):
 
     algo3d = maillageSain.Hexahedron()
     algo2d = maillageSain.Quadrangle()
-    putName(algo3d, "algo3d_maillageSain", i_pref=self.numeroCas)
-    putName(algo2d, "algo2d_maillageSain", i_pref=self.numeroCas)
+    putName(algo3d, "{}_3d_maillageSain".format(self.mailleur2d3d()), i_pref=self.numeroCas)
+    putName(algo2d, "{}_2d_maillageSain".format(self.mailleur2d3d()), i_pref=self.numeroCas)
 
     algo1d_long_p1 = maillageSain.Segment(geom=long_p1)
     hypo1d_long_p1 = algo1d_long_p1.NumberOfSegments(n_long_p1)
@@ -682,16 +681,18 @@ class fissureCoude(fissureGenerique):
                             mailleur="MeshGems"):
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Node            = 77917,
-                                          Entity_Quad_Edge       = 975,
-                                          Entity_Quad_Triangle   = 2182,
-                                          Entity_Quad_Quadrangle = 6842,
-                                          Entity_Quad_Tetra      = 20135,
-                                          Entity_Quad_Hexa       = 8994,
-                                          Entity_Quad_Penta      = 972,
-                                          Entity_Quad_Pyramid    = 1038)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Edge = 975, \
+                                          Entity_Quad_Quadrangle = 6842, \
+                                          Entity_Quad_Hexa = 8994, \
+                                          Entity_Node = 77917, \
+                                          Entity_Quad_Triangle = 2182, \
+                                          Entity_Quad_Tetra = 20135, \
+                                          Entity_Quad_Pyramid = 1038, \
+                                          Entity_Quad_Penta = 972 \
+                                         )

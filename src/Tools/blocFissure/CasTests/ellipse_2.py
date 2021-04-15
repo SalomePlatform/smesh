@@ -24,12 +24,8 @@ import os
 import logging
 
 from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
+from blocFissure.gmu.geomsmesh import geompy
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-
-import GEOM
-import SALOMEDS
-import SMESH
 
 from .ellipse_1 import ellipse_1
 

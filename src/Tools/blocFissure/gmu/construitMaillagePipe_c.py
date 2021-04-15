@@ -19,12 +19,11 @@
 #
 """Les groupes des faces débouchantes"""
 
-import logging
+import SMESH
 
 def construitMaillagePipe_c(idisk, \
                             idisklim, nbsegCercle, \
-                            meshPipe, mptdsk, nbsegRad, \
-                            faceCircPipe0Group, faceCircPipe1Group):
+                            meshPipe, mptdsk, nbsegRad):
   """Les groupes des faces débouchantes"""
   #logging.info('start')
 
@@ -41,8 +40,10 @@ def construitMaillagePipe_c(idisk, \
       faces.append(id_face)
 
   if idisk == idisklim[0]:
-    faceCircPipe0Group.Add(faces)
+    groupe = meshPipe.CreateEmptyGroup(SMESH.FACE, "faceCircPipe0")
   else:
-    faceCircPipe1Group.Add(faces)
+    groupe = meshPipe.CreateEmptyGroup(SMESH.FACE, "faceCircPipe1")
+
+  groupe.Add(faces)
 
   return
