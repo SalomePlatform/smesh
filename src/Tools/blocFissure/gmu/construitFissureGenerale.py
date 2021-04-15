@@ -24,7 +24,6 @@ import logging
 from . import initLog
 
 import salome
-from salome.smesh import smeshBuilder
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublishInFather
@@ -160,8 +159,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
   # --- recherche des points en trop (externes au volume à remailler)
   #     - on associe chaque extrémité du pipe à une face filling
   #     - on part des disques aux extrémités du pipe
-  #     - pour chaque disque, on prend les vertices de géométrie,
-  #       on marque leur position relative à la face.
+  #     - pour chaque disque, on prend les vertices de géométrie on marque leur position relative à la face.
   #     - on s'arrete quand tous les noeuds sont dedans
 
   (idFillingFromBout, idisklim, idiskout) = elimineExtremitesPipe(ptEdgeFond, facesDefaut, centres, gptsdisks, nbsegCercle)
@@ -173,8 +171,8 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
 
   # --- création des points du maillage du pipe sur la face de peau
 
-  (gptsdisks, idisklim) = creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout, \
-                                             ptEdgeFond, ptFisExtPi, edCircPeau, gptsdisks, idisklim, nbsegRad)
+  gptsdisks = creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout, \
+                                 ptEdgeFond, ptFisExtPi, edCircPeau, gptsdisks, idisklim, nbsegRad)
 
   # --- ajustement precis des points sur edgesPipeFissureExterneC
 

@@ -22,7 +22,7 @@
 from .geomsmesh import geompy
 
 def construitMaillagePipe_a(idisk, \
-                            gptsdisks, idisklim, nbsegCercle, \
+                            gptsdisks, nbsegCercle, \
                             meshPipe, mptsdisks):
   """Les points"""
   #logging.info('start')

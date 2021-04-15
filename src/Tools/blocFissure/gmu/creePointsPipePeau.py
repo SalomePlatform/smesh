@@ -33,33 +33,38 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
   logging.info('start')
 
   for n_edges, edges in enumerate(listEdges):
+
     idf = idFacesDebouchantes[n_edges] # indice de face débouchante (facesPipePeau)
+    logging.info("idf: %d", idf)
     if idf >= 0:
       gptdsk = list()
       if idf > 0: # idf vaut 0 ou 1
         idf = -1  # si idf vaut 1, on prend le dernier élément de la liste (1 ou 2 extrémités débouchent sur la face)
       centre = ptEdgeFond[idFillingFromBout[n_edges]][idf]
-      name = "centre%d"%idf
+      name = "centre_{}".format(idf)
       geomPublish(initLog.debug, centre, name)
       vertPipePeau = ptFisExtPi[idFillingFromBout[n_edges]][idf]
       geomPublishInFather(initLog.debug, centre, vertPipePeau, "vertPipePeau")
       grpsEdgesCirc = edCircPeau[idFillingFromBout[n_edges]] # liste de groupes
+
       edgesCirc = list()
       for grpEdgesCirc in grpsEdgesCirc:
         edgesCirc += geompy.ExtractShapes(grpEdgesCirc, geompy.ShapeType["EDGE"], False)
-      for k, edge in enumerate(edges):
+      logging.info("edgesCirc: %s", edgesCirc)
+
+      for i_aux, edge in enumerate(edges):
         extrems = geompy.ExtractShapes(edge, geompy.ShapeType["VERTEX"], True)
         if geompy.MinDistance(centre, extrems[0]) < geompy.MinDistance(centre, extrems[1]):
           bout = extrems[1]
         else:
           bout = extrems[0]
         # ajustement du point extrémité (bout) sur l'edge circulaire en face de peau
-        logging.debug("edgesCirc: %s", edgesCirc)
         distEdgeCirc = [(geompy.MinDistance(bout, edgeCirc), k2, edgeCirc) for k2, edgeCirc in enumerate(edgesCirc)]
         distEdgeCirc.sort()
         logging.debug("distEdgeCirc: %s", distEdgeCirc)
         dist = projettePointSurCourbe(bout, distEdgeCirc[0][2])
-        if (abs(dist) < 0.02) or (abs(1.-dist) < 0.02): # les points très proches d'une extrémité doivent y être mis précisément.
+        # les points très proches d'une extrémité doivent y être mis précisément.
+        if (abs(dist) < 0.02) or (abs(1.-dist) < 0.02):
           extrCircs = geompy.ExtractShapes(distEdgeCirc[0][2], geompy.ShapeType["VERTEX"], True)
           if geompy.MinDistance(bout, extrCircs[0]) < geompy.MinDistance(bout, extrCircs[1]):
             bout = extrCircs[0]
@@ -67,7 +72,7 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
             bout = extrCircs[1]
         else:
           bout = geompy.MakeVertexOnCurve(distEdgeCirc[0][2], dist)
-        name ="bout%d"%k
+        name = "bout_{}";format(i_aux)
         geomPublishInFather(initLog.debug, centre, bout, name)
         # enregistrement des points dans la structure
         points = list()
@@ -78,6 +83,8 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
         points[0] = centre
         points[-1] = bout
         gptdsk.append(points)
+
+      # Enregistrement des extrémités
       if n_edges == 0:
         gptsdisks[idisklim[0] -1] = gptdsk
         idisklim[0] = idisklim[0] -1
@@ -85,4 +92,4 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
         gptsdisks[idisklim[1] +1] = gptdsk
         idisklim[1] = idisklim[1] +1
 
-  return (gptsdisks, idisklim)
+  return gptsdisks

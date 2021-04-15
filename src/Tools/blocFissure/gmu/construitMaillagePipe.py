@@ -32,9 +32,12 @@ from .construitMaillagePipe_c import construitMaillagePipe_c
 from .construitMaillagePipe_d import construitMaillagePipe_d
 
 def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
-                                nro_cas=None):
+                          nro_cas=None):
   """maillage effectif du pipe"""
   logging.info('start')
+  logging.info("nbsegCercle = %d, nbsegRad = %d", nbsegCercle, nbsegRad)
+  logging.info("idisklim[0] = %d, idisklim[1] = %d", idisklim[0], idisklim[1])
+
   meshPipe = smesh.Mesh(None, "meshPipe")
   putName(meshPipe, "meshPipe", i_pref=nro_cas)
 
@@ -55,14 +58,14 @@ def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
   mVols      = list() # identifiants volumes maillage pipe
 
   for idisk in range(idisklim[0], idisklim[1]+1): # boucle sur les disques internes
-    #print ("\nidisk = {}".format(idisk))
+    #logging.info(". Prise en compte du disque n°%d", idisk)
 
     # -----------------------------------------------------------------------
     # --- Les points
 
     oldmpts = mptdsk
     mptdsk = construitMaillagePipe_a(idisk, \
-                                      gptsdisks, idisklim, nbsegCercle, \
+                                      gptsdisks, nbsegCercle, \
                                       meshPipe, mptsdisks)
 
     # -----------------------------------------------------------------------
