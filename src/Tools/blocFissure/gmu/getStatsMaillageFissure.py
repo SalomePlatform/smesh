@@ -51,7 +51,9 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
     text_2 = ""
     ok_maillage = True
     with open(fichierStatMaillageFissure, "w") as fic_stat :
-      for key in ('Entity_Quad_Quadrangle', 'Entity_Quad_Hexa'):
+
+      # Le nombre d'arêtes, de quadrangles ou d'hexaèdres doit être rigoureusement identique
+      for key in ('Entity_Quad_Edge', 'Entity_Quad_Quadrangle', 'Entity_Quad_Hexa'):
         if d_resu[key] != referencesMaillageFissure[key]:
           text = "Ecart"
           ok_maillage = False
@@ -61,14 +63,16 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
         logging.info(text)
         fic_stat.write(text+"\n")
         text_2 += "                                          {} = {}, \\\n".format(key,d_resu[key])
-      tolerance = 0.05
-      for key in ('Entity_Node', 'Entity_Quad_Edge', 'Entity_Quad_Triangle', 'Entity_Quad_Tetra', 'Entity_Quad_Pyramid', 'Entity_Quad_Penta'):
+
+      # Le nombre de noeuds, de triangles, de tétarèdres ou de pyramides peut varier du fait des algorithmes. On tolère 1% d'écart.
+      tolerance = 0.01
+      for key in ('Entity_Node', 'Entity_Quad_Triangle', 'Entity_Quad_Tetra', 'Entity_Quad_Pyramid', 'Entity_Quad_Penta'):
         if (d_resu[key] < (1.0 - tolerance)*referencesMaillageFissure[key]) \
         or (d_resu[key] > (1.0 + tolerance)*referencesMaillageFissure[key]):
           text = "Ecart"
           ok_maillage = False
         else:
-          text = "Valeur_OK"
+          text = "Valeur_OK à moins de {}%".format(tolerance*100.)
         text += ": {} reference: {} calcul: {}".format(key,referencesMaillageFissure[key],d_resu[key])
         logging.info(text)
         fic_stat.write(text+"\n")

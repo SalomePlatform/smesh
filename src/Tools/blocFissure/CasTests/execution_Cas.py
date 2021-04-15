@@ -23,9 +23,7 @@ import traceback
 
 import logging
 
-from blocFissure import gmu
 from blocFissure.gmu import initLog
-from blocFissure.gmu import geomsmesh
 from blocFissure.gmu.casStandard import casStandard
 
 # -----------------------------------------------------------------------------------------------
@@ -59,7 +57,7 @@ else:
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # eprouvetteCourbe
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # eprouvetteDroite
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # fissureGauche
-  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # fissureGauche2 fissureGauche2
+  TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # fissureGauche2
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0] # vis
   TORUN = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] # tube
 #           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
@@ -244,8 +242,9 @@ def calcul_cas (n_cas, cas, d_aux, ligne):
     ok_maillage = cas.executeProbleme()
   except:
     traceback.print_exc()
-    texte = "Problème avec le cas n° {}, '{}'\n".format(n_cas,nom)
     ok_maillage = False
+  if not ok_maillage:
+    texte = "Problème avec le cas n° {}, '{}'\n".format(n_cas,nom)
   print(ligne)
   return ok_maillage, texte
 #=============================================================
