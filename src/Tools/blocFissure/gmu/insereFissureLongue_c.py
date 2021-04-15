@@ -45,16 +45,17 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
   meshFondFiss = smesh.Mesh(pipeFondFiss)
   putName(meshFondFiss, "pipeFondFiss", i_pref=nro_cas)
 
-  algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.QUADRANGLE)
   algo3d = meshFondFiss.Prism()
   putName(algo3d.GetSubMesh(), "pipe", i_pref=nro_cas)
-  putName(algo3d, "{}_3d_pipe".format(mailleur), i_pref=nro_cas)
-  putName(algo2d, "{}_2d_pipe".format(mailleur), i_pref=nro_cas)
+  putName(algo3d, "Prism", i_pref=nro_cas)
+
+  algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.QUADRANGLE)
+  putName(algo2d, "QUADRANGLE", i_pref=nro_cas)
 
   for i_aux, face in enumerate(disques):
     algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.RADIAL_QUAD,geom=face)
     putName(algo2d.GetSubMesh(), "disque", i_aux, nro_cas)
-    putName(algo2d, "{}_2d_disque".format(mailleur), i_aux, nro_cas)
+    putName(algo2d, "RADIAL_QUAD", i_aux, nro_cas)
 
   for i_aux, edge in enumerate(rayons):
     algo1d = meshFondFiss.Segment(geom=edge)
