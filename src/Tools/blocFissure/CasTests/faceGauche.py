@@ -20,19 +20,14 @@
 """problème de fissure non plane, débouchante non normale"""
 
 import os
-from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
-from blocFissure.gmu.putName import putName
-
-import math
-import GEOM
-import SALOMEDS
-import SMESH
-
 import logging
 
-from blocFissure.gmu.fissureGenerique import fissureGenerique
+from blocFissure import gmu
+from blocFissure.gmu.geomsmesh import geompy
+from blocFissure.gmu.geomsmesh import smesh
+from blocFissure.gmu.putName import putName
 
+from blocFissure.gmu.fissureGenerique import fissureGenerique
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
@@ -113,18 +108,18 @@ class faceGauche(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
     self.referencesMaillageFissure = dict( \
-                                          Entity_Quad_Quadrangle = 3997, \
-                                          Entity_Quad_Hexa = 5904, \
-                                          Entity_Node = 77735, \
-                                          Entity_Quad_Edge = 725, \
-                                          Entity_Quad_Triangle = 2176, \
-                                          Entity_Quad_Tetra = 32320, \
-                                          Entity_Quad_Pyramid = 1156, \
-                                          Entity_Quad_Penta = 856 \
+                                          Entity_Quad_Edge = 750, \
+                                          Entity_Quad_Quadrangle = 4177, \
+                                          Entity_Quad_Hexa = 6224, \
+                                          Entity_Node = 81588, \
+                                          Entity_Quad_Triangle = 2298, \
+                                          Entity_Quad_Tetra = 33764, \
+                                          Entity_Quad_Pyramid = 1236, \
+                                          Entity_Quad_Penta = 936 \
                                          )
