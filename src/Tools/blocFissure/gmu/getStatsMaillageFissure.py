@@ -64,12 +64,14 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
         fic_stat.write(text+"\n")
         text_2 += "                                          {} = {}, \\\n".format(key,d_resu[key])
 
-      # Le nombre de noeuds, de triangles, de tétarèdres ou de pyramides peut varier du fait des algorithmes. On tolère 1% d'écart.
-      tolerance = 0.01
+      # Le nombre de noeuds, de triangles, de tétraèdres ou de pyramides peut varier du fait des algorithmes. On tolère 5% d'écart.
+      tolerance = 0.05
       for key in ('Entity_Node', 'Entity_Quad_Triangle', 'Entity_Quad_Tetra', 'Entity_Quad_Pyramid', 'Entity_Quad_Penta'):
-        if (d_resu[key] < (1.0 - tolerance)*referencesMaillageFissure[key]) \
-        or (d_resu[key] > (1.0 + tolerance)*referencesMaillageFissure[key]):
-          text = "Ecart"
+        if d_resu[key] == referencesMaillageFissure[key]:
+          text = "Valeur_OK"
+        elif (d_resu[key] < (1.0 - tolerance)*referencesMaillageFissure[key]) \
+          or (d_resu[key] > (1.0 + tolerance)*referencesMaillageFissure[key]):
+          text = "Ecart de plus de {}%".format(tolerance*100.)
           ok_maillage = False
         else:
           text = "Valeur_OK à moins de {}%".format(tolerance*100.)

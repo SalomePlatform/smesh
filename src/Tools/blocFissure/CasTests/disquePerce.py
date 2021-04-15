@@ -38,12 +38,12 @@ dicoParams = dict(nomCas            = 'disque',
   # ---------------------------------------------------------------------------
 
 referencesMaillageFissure = dict ( \
+                                  Entity_Quad_Edge = 376, \
                                   Entity_Quad_Quadrangle = 2748, \
                                   Entity_Quad_Hexa = 6232, \
-                                  Entity_Node = 43889, \
-                                  Entity_Quad_Edge = 376, \
-                                  Entity_Quad_Triangle = 1366, \
-                                  Entity_Quad_Tetra = 9112, \
+                                  Entity_Node = 43479, \
+                                  Entity_Quad_Triangle = 1340, \
+                                  Entity_Quad_Tetra = 8821, \
                                   Entity_Quad_Pyramid = 466, \
                                   Entity_Quad_Penta = 448 \
-                                )
+                                 )

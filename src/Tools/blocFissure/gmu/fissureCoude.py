@@ -687,11 +687,13 @@ class fissureCoude(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict(Entity_Node            = 77917,
-                                          Entity_Quad_Edge       = 975,
-                                          Entity_Quad_Triangle   = 2182,
-                                          Entity_Quad_Quadrangle = 6842,
-                                          Entity_Quad_Tetra      = 20135,
-                                          Entity_Quad_Hexa       = 8994,
-                                          Entity_Quad_Penta      = 972,
-                                          Entity_Quad_Pyramid    = 1038)
+    self.referencesMaillageFissure = dict( \
+                                          Entity_Quad_Edge = 975, \
+                                          Entity_Quad_Quadrangle = 6842, \
+                                          Entity_Quad_Hexa = 8994, \
+                                          Entity_Node = 77917, \
+                                          Entity_Quad_Triangle = 2182, \
+                                          Entity_Quad_Tetra = 20135, \
+                                          Entity_Quad_Pyramid = 1038, \
+                                          Entity_Quad_Penta = 972 \
+                                         )
