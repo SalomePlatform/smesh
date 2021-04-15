@@ -72,7 +72,7 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
             bout = extrCircs[1]
         else:
           bout = geompy.MakeVertexOnCurve(distEdgeCirc[0][2], dist)
-        name = "bout_{}";format(i_aux)
+        name = "bout_{}".format(i_aux)
         geomPublishInFather(initLog.debug, centre, bout, name)
         # enregistrement des points dans la structure
         points = list()

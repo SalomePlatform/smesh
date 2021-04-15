@@ -25,6 +25,9 @@ SET(plugin_SCRIPTS
   ajustePointsEdgePipeFissure.py
   blocDefaut.py
   calculePointsAxiauxPipe.py
+  calculePointsAxiauxPipe_a.py
+  calculePointsAxiauxPipe_b.py
+  calculePointsAxiauxPipe_c.py
   casStandard.py
   checkDecoupePartition.py
   commonSubShapes.py
