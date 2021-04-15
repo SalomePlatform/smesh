@@ -180,7 +180,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
 
    # --- maillage effectif du pipe
 
-  (meshPipe, meshPipeGroups, edgesCircPipeGroup) =  \
+  (meshPipe, edgeFaceFissGroup, edgesCircPipeGroup) =  \
       construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad, \
                              nro_cas)
 
@@ -195,7 +195,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
   (meshFaceFiss, _, grpEdgesPeauFissureExterne, _) = \
       mailleFacesFissure(faceFissureExterne, \
                          edgesPipeFissureExterneC, edgesPeauFissureExterneC, \
-                         meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad, \
+                         edgeFaceFissGroup, areteFaceFissure, rayonPipe, nbsegRad, \
                          mailleur, nro_cas)
 
   # --- maillage faces de peau
