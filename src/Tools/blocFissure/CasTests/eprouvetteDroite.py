@@ -20,17 +20,12 @@
 """problème de fissure plane coupant 3 faces (éprouvette), débouches normaux, objet plan"""
 
 import os
+
+import logging
+
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.putName import putName
-
-import GEOM
-import SALOMEDS
-import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
-import logging
 
 from blocFissure.gmu.fissureGenerique import fissureGenerique
 
@@ -115,7 +110,7 @@ class eprouvetteDroite(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

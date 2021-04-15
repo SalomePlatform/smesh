@@ -20,21 +20,12 @@
 """problème de fissure non plane, débouchante non normale"""
 
 import os
+import logging
+
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy, smesh
 from blocFissure.gmu.putName import putName
-
-import GEOM
-import SALOMEDS
-import SMESH
-#import StdMeshers
-#import GHS3DPlugin
-#import NETGENPlugin
-import logging
-
 from blocFissure.gmu.fissureGenerique import fissureGenerique
-
-
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
@@ -115,7 +106,7 @@ class faceGauche_2(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

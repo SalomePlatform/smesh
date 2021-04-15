@@ -31,10 +31,6 @@ from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetS
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 from blocFissure.gmu.putName import putName
 
-import GEOM
-import SALOMEDS
-import SMESH
-
 class ellipse_1(fissureGenerique):
   """problème de fissure non plane, débouchante non normale"""
 
@@ -124,7 +120,7 @@ class ellipse_1(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

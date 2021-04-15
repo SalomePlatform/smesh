@@ -24,12 +24,9 @@ import os
 import logging
 
 from blocFissure import gmu
-from blocFissure.gmu.geomsmesh import geompy, smesh
-from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
+from blocFissure.gmu.geomsmesh import geompy
 
-import GEOM
-import SALOMEDS
-import SMESH
+from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 
 from .cylindre import cylindre
 

@@ -31,10 +31,6 @@ from blocFissure.gmu.creeZoneDefautDansObjetSain import creeZoneDefautDansObjetS
 from blocFissure.gmu.construitFissureGenerale import construitFissureGenerale
 from blocFissure.gmu.putName import putName
 
-import GEOM
-import SALOMEDS
-import SMESH
-
 class cubeAngle(fissureGenerique):
   """problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan"""
 
@@ -115,7 +111,7 @@ class cubeAngle(fissureGenerique):
     mailleur = self.mailleur2d3d()
     maillageFissure = construitFissureGenerale(shapesFissure, shapeFissureParams, \
                                                maillageFissureParams, elementsDefaut, \
-                                               step, mailleur, self.numeroCas)
+                                               mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------

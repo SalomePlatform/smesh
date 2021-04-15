@@ -57,7 +57,7 @@ from .construitFissureGenerale_c import construitFissureGenerale_c
 
 def construitFissureGenerale(shapesFissure, shapeFissureParams, \
                              maillageFissureParams, elementsDefaut, \
-                             step=-1, mailleur="MeshGems", nro_cas=None):
+                             mailleur="MeshGems", nro_cas=None):
   """procédure complète fissure générale"""
   logging.info('start')
   logging.info("Usage du mailleur %s pour le cas n°%s", mailleur, nro_cas)
