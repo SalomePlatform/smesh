@@ -510,10 +510,9 @@ class fissure_Coude(fissureGenerique):
                                   mailleur="MeshGems"):
 
     mailleur = self.mailleur2d3d()
-    maillageFissure = insereFissureLongue(geometriesSaines, \
-                                          shapesFissure, shapeFissureParams, \
+    maillageFissure = insereFissureLongue(shapesFissure, shapeFissureParams, \
                                           maillageFissureParams, elementsDefaut, \
-                                          step, mailleur, self.numeroCas)
+                                          mailleur, self.numeroCas)
     return maillageFissure
 
   # ---------------------------------------------------------------------------
