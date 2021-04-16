@@ -30,7 +30,7 @@ from blocFissure.gmu.casStandard import casStandard
 # -----------------------------------------------------------------------------------------------
 LOGFILE = os.path.join(tempfile.gettempdir(),"blocFissure.log")
 #initLog.setDebug(LOGFILE)     # debug = 10
-initLog.setVerbose(LOGFILE)    # info = 20
+#initLog.setVerbose(LOGFILE)   # info = 20
 #initLog.setRelease(LOGFILE)   # warning = 30
 #initLog.setPerfTests(LOGFILE) # critical = 50
 #initLog.setAlways(LOGFILE)    # critical = 50
