@@ -50,36 +50,44 @@ class casStandard(fissureGenerique):
   referencesMaillageFissure = None
 
   # ---------------------------------------------------------------------------
-  def __init__ (self, dicoParams, references = None, numeroCas = 0):
+  def __init__ (self, dicoParams, references = None, numeroCas = None):
     initEtude()
     self.references = references
     self.dicoParams = dicoParams
+    self.numeroCas = numeroCas
+
+    if 'nomProbleme' in self.dicoParams:
+      self.nomProbleme = self.dicoParams['nomProbleme']
+
     if 'nomCas' in self.dicoParams:
       self.nomCas = self.dicoParams['nomCas']
     elif 'nomres' in self.dicoParams:
       self.nomCas = os.path.splitext(os.path.split(self.dicoParams['nomres'])[1])[0]
+    elif ( self.numeroCas is not None ):
+      self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
     else:
       self.nomCas = 'casStandard'
+
     if 'reptrav' in self.dicoParams:
       self.reptrav = self.dicoParams['reptrav']
     else:
       self.reptrav = os.curdir
-    self.numeroCas = numeroCas
-    if self.numeroCas != 0:
-      self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
-    else:
-      self.nomProbleme = self.nomCas
+
     if 'lenSegPipe' in self.dicoParams:
       self.lenSegPipe = self.dicoParams['lenSegPipe']
     else:
-      self.lenSegPipe =self.dicoParams['rayonPipe']
+      self.lenSegPipe = self.dicoParams['rayonPipe']
+
     if 'step' in self.dicoParams:
       step = self.dicoParams['step']
     else:
       step = -1 # exécuter toutes les étapes
+
     if 'aretesVives' not in self.dicoParams:
       self.dicoParams['aretesVives'] = 0
-    if self.numeroCas == 0: # valeur par défaut : exécution immédiate, sinon execution différée dans le cas d'une liste de problèmes
+
+    # valeur par défaut : exécution immédiate, sinon execution différée dans le cas d'une liste de problèmes
+    if ( self.numeroCas is None ):
       self.executeProbleme(step)
 
   # ---------------------------------------------------------------------------
@@ -87,7 +95,7 @@ class casStandard(fissureGenerique):
     logging.info("genereMaillageSain %s", self.nomCas)
 
     ([objetSain], _) = smesh.CreateMeshesFromMED(self.dicoParams['maillageSain'])
-    putName(objetSain.GetMesh(), 'objetSain', i_pref=self.numeroCas)
+    putName(objetSain.GetMesh(), objetSain.GetName(), i_pref=self.numeroCas)
 
     return [objetSain, True] # True : maillage hexa
 
@@ -154,8 +162,8 @@ class casStandard(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
     self.maillageFissureParams = dict(nomRep           = self.reptrav,
-                                      nomFicSain       = self.nomCas +'_sain',
-                                      nomFicFissure    = self.nomCas,
+                                      nomFicSain       = self.nomCas,
+                                      nomFicFissure    = self.nomProbleme + "_fissure",
                                       nbsegRad         = self.dicoParams['nbSegRad'],
                                       nbsegCercle      = self.dicoParams['nbSegCercle'],
                                       areteFaceFissure = self.dicoParams['areteFaceFissure'],

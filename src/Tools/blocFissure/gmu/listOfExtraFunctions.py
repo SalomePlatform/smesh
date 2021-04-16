@@ -17,15 +17,18 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-"""Cette fonction permet de scanner la liste de noeuds qui composent le maillage passé en paramètre
+"""Fonctions générrales sur les maillages
 
 Created on Mon Jun 23 14:49:36 2014
 @author: I48174 (Olivier HOAREAU)
 """
 
 import logging
+
 import SMESH
 from .geomsmesh import smesh
+
+from .putName import putName
 
 def lookForCorner(maillageAScanner):
 
@@ -188,7 +191,8 @@ def createLinesFromMesh(maillageSupport):
 
   return nodelines
 
-def createNewMeshesFromCorner(maillageSupport, listOfCorners):
+def createNewMeshesFromCorner(maillageSupport, listOfCorners, \
+                              nro_cas=None):
 
   """ Cette fonction permet de générer un nouveau maillage plus facile à
       utiliser. On démarre d'un coin et on récupère les trois éléments
@@ -200,21 +204,26 @@ def createNewMeshesFromCorner(maillageSupport, listOfCorners):
 
   tmp = list()
   listOfNewMeshes = list()
+  n_msh = -1
   for corner in listOfCorners:
     elems = maillageSupport.GetNodeInverseElements(corner)
-    for i_aux, elem in enumerate(elems):
+    for elem in elems:
       # --- Filtre selon le critère 'coplanar' --- #
       critere = smesh.GetCriterion(SMESH.FACE, SMESH.FT_CoplanarFaces, \
                                     SMESH.FT_Undefined, elem, SMESH.FT_Undefined, SMESH.FT_Undefined, 30)
       filtre = smesh.GetFilterFromCriteria([critere])
-      grp = maillageSupport.GroupOnFilter(SMESH.FACE, 'grp', filtre)
+      n_msh += 1
+      nom = "coin_{}".format(n_msh)
+      grp = maillageSupport.GroupOnFilter(SMESH.FACE, nom, filtre)
       # On copie le maillage en fonction du filtre
-      msh = smesh.CopyMesh(grp, 'new_{0}'.format(i_aux+1), False, True)
+      msh = smesh.CopyMesh(grp, nom, False, True)
+      putName(msh, nom, i_pref=nro_cas)
       # On stocke l'ensemble des noeuds du maillage dans tmp
       # On ajoute le maillage à la liste des nouveaux maillages
       # seulement s'il n'y est pas déjà
       tmp.append(msh.GetNodesId())
       if ( tmp.count(msh.GetNodesId()) <= 1 ):
+        putName(msh, "Face", len(listOfNewMeshes), nro_cas)
         listOfNewMeshes.append(msh)
 
   return listOfNewMeshes

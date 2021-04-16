@@ -58,15 +58,13 @@ def mailleFacesFissure(faceFissureExterne, \
     hypo2d.SetChordalError( areteFaceFissure*0.25 )
     hypo2d.SetUseSurfaceCurvature (True)
     hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d, "{}_2d_faceFiss".format(mailleur), i_pref=nro_cas)
-  putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
+  putName(hypo2d, "faceFiss", i_pref=nro_cas)
 
   logging.info("UseExisting1DElements depuis '%s'", edgesPipeFissureExterneC.GetName())
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
   putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
-  putName(algo1d, "edgeFissPeau_UseExisting1DElements", i_pref=nro_cas)
   hypo1d = algo1d.SourceEdges([ edgeFaceFissGroup ],0,0)
-  putName(hypo1d, "edgeFissPeau_SourceEdges", i_pref=nro_cas)
+  putName(hypo1d, "SourceEdges_edgeFissPeau", i_pref=nro_cas)
 
   grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
   grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)

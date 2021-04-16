@@ -83,8 +83,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
       hypo2d.SetChordalError( dmoyen*0.25 )
       hypo2d.SetUseSurfaceCurvature (True)
       hypo2d.SetQuadAllowed( 0 )
-    putName(algo2d, "{}_2d_facePeau".format(mailleur), ifil, nro_cas)
-    putName(hypo2d, "hypo2d_facePeau", ifil, nro_cas)
+    putName(hypo2d, "{}_2d_facePeau".format(mailleur), ifil, nro_cas)
 
     if partitionsPeauFissFond[ifil] is None: # face de peau maillage sain intacte
 
@@ -98,10 +97,9 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
 
       logging.info("UseExisting1DElements depuis '%s'", groupEdgesBordPeau.GetName())
       algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
-      hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
       putName(algo1d.GetSubMesh(), "bordsLibres", ifil, nro_cas)
-      putName(algo1d, "algo1d_bordsLibres", ifil, nro_cas)
-      putName(hypo1d, "hypo1d_bordsLibres", ifil, nro_cas)
+      hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
+      putName(hypo1d, "SourceEdges_{}".format(bordsLibres.GetName()), ifil, nro_cas)
 
     else:
 
@@ -114,27 +112,24 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
 
       logging.info("UseExisting1DElements depuis groupEdgesBordPeau = '%s'", groupEdgesBordPeau.GetName())
       algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
-      hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
       putName(algo1d.GetSubMesh(), "bordsLibres", ifil, nro_cas)
-      putName(algo1d, "algo1d_bordsLibres", ifil, nro_cas)
-      putName(hypo1d, "hypo1d_bordsLibres", ifil, nro_cas)
+      hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
+      putName(hypo1d, "SourceEdges_{}".format(bordsLibres.GetName()), ifil, nro_cas)
 
       objet = geompy.MakeCompound(edgesFissurePeau)
       geomPublishInFather(initLog.always, facePeau, objet, "edgesFissurePeau")
       logging.info("UseExisting1DElements depuis objet = '%s'", objet.GetName())
       algo1d = meshFacePeau.UseExisting1DElements(geom=objet)
-      hypo1d = algo1d.SourceEdges([ grpEdgesPeauFissureExterne ],0,0)
       putName(algo1d.GetSubMesh(), "edgePeauFiss", ifil, nro_cas)
-      putName(algo1d, "algo1d_edgePeauFiss", ifil, nro_cas)
-      putName(hypo1d, "hypo1d_edgePeauFiss", ifil, nro_cas)
+      hypo1d = algo1d.SourceEdges([ grpEdgesPeauFissureExterne ],0,0)
+      putName(hypo1d, "SourceEdges_{}".format(grpEdgesPeauFissureExterne.GetName()), ifil, nro_cas)
 
       if bordsVifs is not None:
         logging.info("UseExisting1DElements depuis bordsVifs = '%s'", bordsVifs.GetName())
         algo1d = meshFacePeau.UseExisting1DElements(geom=bordsVifs)
-        hypo1d = algo1d.SourceEdges([ grpAretesVives ],0,0)
         putName(algo1d.GetSubMesh(), "bordsVifs", ifil, nro_cas)
-        putName(algo1d, "algo1d_bordsVifs", ifil, nro_cas)
-        putName(hypo1d, "hypo1d_bordsVifs", ifil, nro_cas)
+        hypo1d = algo1d.SourceEdges([ grpAretesVives ],0,0)
+        putName(hypo1d, "SourceEdges_{}".format(grpAretesVives.GetName()), ifil, nro_cas)
 
       for i_aux, edgeCirc in enumerate(edgesCircPeau):
         texte = "i_aux = {}".format(i_aux)
@@ -142,14 +137,13 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
         if edgeCirc is not None:
           logging.info("UseExisting1DElements depuis edgeCirc = '%s'", edgeCirc.GetName())
           algo1d = meshFacePeau.UseExisting1DElements(geom=edgeCirc) # addToStudy() failed ?
+          name = "cercle{}".format(i_aux)
+          putName(algo1d.GetSubMesh(), name, ifil, nro_cas)
           if boutFromIfil[ifil] is None:
             hypo1d = algo1d.SourceEdges([ edgesCircPipeGroup[i_aux] ],0,0)
           else:
             hypo1d = algo1d.SourceEdges([ edgesCircPipeGroup[boutFromIfil[ifil]] ],0,0)
-          name = "cercle{}".format(i_aux)
-          putName(algo1d.GetSubMesh(), name, ifil, nro_cas)
-          putName(algo1d, "algo1d_" + name, ifil, nro_cas)
-          putName(hypo1d, "hypo1d_" + name, ifil, nro_cas)
+          putName(hypo1d, "SourceEdges_" + name, ifil, nro_cas)
 
     is_done = meshFacePeau.Compute()
     text = "meshFacePeau {} .Compute".format(ifil)

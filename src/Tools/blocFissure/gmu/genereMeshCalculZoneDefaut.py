@@ -79,8 +79,7 @@ def genereMeshCalculZoneDefaut(facefiss, minSize, maxSize, \
     hypo2d.SetChordalError( maxSize*0.25 )
     hypo2d.SetUseSurfaceCurvature (True)
     hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d, "{}_2d_zoneFiss".format(mailleur), i_pref=nro_cas)
-  putName(hypo2d, "hypo1d_zoneFiss", i_pref=nro_cas)
+  putName(hypo2d, "zoneFiss", i_pref=nro_cas)
 
   is_done = meshFissure.Compute()
   text = "meshFissure.Compute"

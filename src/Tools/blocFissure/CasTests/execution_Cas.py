@@ -257,7 +257,7 @@ def calcul_tout (l_problemes, d_aux):
   """Calcul de tous les cas"""
 
   ligne = "---------------------------------------------------------------------"
-  texte = ""
+  texte = "\n"
   nb_cas_ok = 0
   nb_cas_nook = 0
   for n_cas, cas in enumerate(l_problemes):
@@ -279,6 +279,7 @@ def calcul_tout (l_problemes, d_aux):
     else:
       texte += "Les {} tests se sont bien passés.\n".format(nb_cas)
   print (texte+ligne)
+  logging.critical(ligne+texte)
 
   return
 #=============================================================

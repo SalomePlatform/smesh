@@ -58,76 +58,66 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
 
   for i_aux, sharedFaces_i in enumerate(sharedFaces):
     algo2d = bloc1.Triangle(algo=smeshBuilder.NETGEN, geom=sharedFaces_i)
+    putName(algo2d.GetSubMesh(), "sharedFaces", i_aux, nro_cas)
     hypo2d = algo2d.Parameters(which=smesh.SIMPLE)
     hypo2d.SetLocalLength(lensegEllipsoide)
     hypo2d.LengthFromEdges()
     hypo2d.SetAllowQuadrangles(0)
-    putName(algo2d.GetSubMesh(), "sharedFaces", i_aux, nro_cas)
-    putName(algo2d, "{}_2d_sharedFaces".format(mailleur), i_aux, nro_cas)
-    putName(hypo2d, "hypo2d_sharedFaces", i_aux, nro_cas)
+    putName(hypo2d, "sharedFaces", i_aux, nro_cas)
 
   for i_aux, sharedEdges_i in enumerate(sharedEdges):
     algo1d = bloc1.Segment(geom=sharedEdges_i)
-    hypo1d = algo1d.LocalLength(lensegEllipsoide)
     putName(algo1d.GetSubMesh(), "sharedEdges", i_aux, nro_cas)
-    putName(algo1d, "algo1d_sharedEdges", i_aux, nro_cas)
-    putName(hypo1d, "hypo1d_sharedEdges", i_aux, nro_cas)
+    hypo1d = algo1d.LocalLength(lensegEllipsoide)
+    putName(hypo1d, "sharedEdges={}".format(lensegEllipsoide), i_aux, nro_cas)
 
   declareAlgoEllipsoideFirst = False
   if declareAlgoEllipsoideFirst:
     algo3d = bloc1.Tetrahedron(algo=smeshBuilder.NETGEN,geom=ellipsoidep)
-    hypo3d = algo3d.MaxElementVolume(1000.0)
     putName(algo3d.GetSubMesh(), "ellipsoide", i_pref=nro_cas)
-    putName(algo3d, "{}_3d_ellipsoide".format(mailleur), i_pref=nro_cas)
-    putName(hypo3d, "hypo3d_ellipsoide", i_pref=nro_cas)
+    hypo3d = algo3d.MaxElementVolume(1000.0)
+    putName(hypo3d, "ellipsoide", i_pref=nro_cas)
 
   algo3d = bloc1.Prism(geom=tore)
+  putName(algo3d.GetSubMesh(), "tore", i_pref=nro_cas)
   algo2d = bloc1.Quadrangle(geom=tore)
   algo1d = bloc1.Segment(geom=tore)
   hypo1d = algo1d.NumberOfSegments(nbsegGen)
-  putName(algo3d.GetSubMesh(), "tore", i_pref=nro_cas)
-  putName(algo3d, "{}_3d_tore".format(mailleur), i_pref=nro_cas)
-  putName(algo2d, "{}_2d_tore".format(mailleur), i_pref=nro_cas)
-  putName(algo1d, "algo1d_tore", i_pref=nro_cas)
-  putName(hypo1d, "hypo1d_tore", i_pref=nro_cas)
+  putName(hypo1d, "tore={}".format(nbsegGen), i_pref=nro_cas)
 
   for i_aux, faces_i in enumerate(faces):
     algo2d = bloc1.Quadrangle(geom=faces_i)
+    putName(algo2d.GetSubMesh(), "faces", i_aux, nro_cas)
     hypo2d = smesh.CreateHypothesis('QuadrangleParams')
     hypo2d.SetTriaVertex( geompy.GetSubShapeID(blocPartition,centres[i_aux]) )
     hypo2d.SetQuadType( StdMeshersBuilder.QUAD_STANDARD )
     _ = bloc1.AddHypothesis(hypo2d,faces_i)
-    putName(algo2d.GetSubMesh(), "faces", i_aux, nro_cas)
-    putName(algo2d, "{}_2d_faces".format(mailleur), i_aux, nro_cas)
-    putName(hypo2d, "hypo2d_faces", i_aux, nro_cas)
+    putName(hypo2d, "faces", i_aux, nro_cas)
 
   for i_aux, edges_i in enumerate(edges):
     algo1d = bloc1.Segment(geom=edges_i)
+    putName(algo1d.GetSubMesh(), "edges", i_aux, nro_cas)
     if reverses[i_aux] > 0:
       hypo1d = algo1d.NumberOfSegments(nbsegRad, scaleRad,[ geompy.GetSubShapeID(blocPartition,edges_i) ])
     else:
       hypo1d = algo1d.NumberOfSegments(nbsegRad, scaleRad,[ ])
-    putName(algo1d.GetSubMesh(), "edges", i_aux, nro_cas)
-    putName(algo1d, "algo1d_edges", i_aux, nro_cas)
-    putName(hypo1d, "hypo1d_edges", i_aux, nro_cas)
+    putName(hypo1d, "edges", i_aux, nro_cas)
 
   for i_aux, circles_i in enumerate(circles):
     algo1d = bloc1.Segment(geom=circles_i)
-    hypo1d = algo1d.NumberOfSegments(nbsegCercle)
     putName(algo1d.GetSubMesh(), "circles", i_aux, nro_cas)
-    putName(algo1d, "algo1d_circles", i_aux, nro_cas)
-    putName(hypo1d, "hypo1d_circles", i_aux, nro_cas)
+    hypo1d = algo1d.NumberOfSegments(nbsegCercle)
+    putName(hypo1d, "circles={}".format(nbsegCercle), i_aux, nro_cas)
 
   if len(edgeext) == 1:
     densite = int(round(nbsegFis/2))
     algo1d = bloc1.Segment(geom=edgeext[0])
+    putName(algo1d.GetSubMesh(), "edgeext", i_pref=nro_cas)
     hypo1d = algo1d.NumberOfSegments(nbsegFis)
     hypo1d.SetDistrType( 2 )
     hypo1d.SetConversionMode( 1 )
     hypo1d.SetTableFunction( [ 0, densite, 0.4, 1, 0.6, 1, 1, densite ] )
-    putName(algo1d.GetSubMesh(), "edgeext", i_pref=nro_cas)
-    putName(algo1d, "algo1d_edgeext", i_pref=nro_cas)
-    putName(hypo1d, "hypo1d_edgeext", i_pref=nro_cas)
+    putName(hypo1d, "edgeext", i_pref=nro_cas)
   else:
     longTotal = 0
     longEdgeExts = list()
@@ -139,21 +129,19 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
       nbLocal = int(round(nbsegFis*longEdgeExts[i_aux]/longTotal))
       densite = int(round(nbLocal/2))
       algo1d = bloc1.Segment(geom=edgeext_i)
+      putName(algo1d.GetSubMesh(), "edgeext", i_aux, nro_cas)
       hypo1d = algo1d.NumberOfSegments(nbLocal)
       hypo1d.SetDistrType( 2 )
       hypo1d.SetConversionMode( 1 )
       hypo1d.SetTableFunction( [ 0, densite, 0.8, 1, 1, 1 ] )
       if reverext[i_aux]:
         hypo1d.SetReversedEdges([ geompy.GetSubShapeID(blocPartition, edgeext_i) ])
-      putName(algo1d.GetSubMesh(), "edgeext", i_aux, nro_cas)
-      putName(algo1d, "algo1d_edgeext", i_aux, nro_cas)
-      putName(hypo1d, "hypo1d_edgeext", i_aux, nro_cas)
+      putName(hypo1d, "edgeext", i_aux, nro_cas)
 
   algo2d = bloc1.Triangle(algo=smeshBuilder.NETGEN_2D, geom=facefissoutore)
-  hypo2d = algo2d.LengthFromEdges()
   putName(algo2d.GetSubMesh(), "facefissoutore", i_pref=nro_cas)
-  putName(algo2d, "{}_2d_facefissoutore".format(mailleur), i_pref=nro_cas)
-  putName(hypo2d, "hypo2d_facefissoutore", i_pref=nro_cas)
+  hypo2d = algo2d.LengthFromEdges()
+  putName(hypo2d, "facefissoutore", i_pref=nro_cas)
 
 
   maxElemArea = 0.5*dmoyen*dmoyen
@@ -161,37 +149,31 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
 
   for i_aux, facesExternes_i in enumerate(facesExternes):
     algo2d = bloc1.Triangle(algo=smeshBuilder.NETGEN_2D, geom=facesExternes_i)
+    putName(algo2d.GetSubMesh(), "facesExternes", i_aux, nro_cas)
     hypo2d = algo2d.MaxElementArea(maxElemArea)
+    putName(hypo2d, "facesExternes={}".format(maxElemArea), i_aux, nro_cas)
     if edgesBords is None:
       algo1d = bloc1.Segment(geom=facesExternes_i)
       hypo1d = algo1d.NumberOfSegments(1)
-    putName(algo2d.GetSubMesh(), "facesExternes", i_aux, nro_cas)
-    putName(algo2d, "{}2d_facesExternes".format(mailleur), i_aux, nro_cas)
-    putName(hypo2d, "hypo2d_facesExternes", i_aux, nro_cas)
-    if edgesBords is None:
-      putName(algo1d, "algo1d_facesExternes", i_aux, nro_cas)
-      putName(hypo1d, "hypo1d_facesExternes", i_aux, nro_cas)
+      putName(hypo1d, "facesExternes", i_aux, nro_cas)
 
   for i_aux, aretesInternes_i in enumerate(aretesInternes):
     algo1d = bloc1.Segment(geom=aretesInternes_i)
-    hypo1d = algo1d.NumberOfSegments(nbsegExt)
     putName(algo1d.GetSubMesh(), "aretesInternes", i_aux, nro_cas)
-    putName(algo1d, "algo1d_aretesInternes", i_aux, nro_cas)
-    putName(hypo1d, "hypo1d_aretesInternes", i_aux, nro_cas)
+    hypo1d = algo1d.NumberOfSegments(nbsegExt)
+    putName(hypo1d, "aretesInternes={}".format(nbsegExt), i_aux, nro_cas)
 
   if edgesBords is not None:
     algo1d = bloc1.UseExisting1DElements(geom=edgesBords)
-    hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
     putName(algo1d.GetSubMesh(), "bordsLibres", i_pref=nro_cas)
-    putName(algo1d, "algo1d_bordsLibres", i_pref=nro_cas)
-    putName(hypo1d, "hypo1d_bordsLibres", i_pref=nro_cas)
+    hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
+    putName(hypo1d, "bordsLibres", i_pref=nro_cas)
 
   if not declareAlgoEllipsoideFirst:
     algo3d = bloc1.Tetrahedron(algo=smeshBuilder.NETGEN,geom=ellipsoidep)
-    hypo3d = algo3d.MaxElementVolume(1000.0)
     putName(algo3d.GetSubMesh(), "ellipsoide", i_pref=nro_cas)
-    putName(algo3d, "{}_3d_ellipsoide".format(mailleur), i_pref=nro_cas)
-    putName(hypo3d, "hypo3d_ellipsoide", i_pref=nro_cas)
+    hypo3d = algo3d.MaxElementVolume(1000.0)
+    putName(hypo3d, "ellipsoide", i_pref=nro_cas)
 
   _ = bloc1.GroupOnGeom(faceFissure,'FACE1',SMESH.FACE)
   _ = bloc1.GroupOnGeom(gencnt,'nfondfis',SMESH.NODE)
@@ -230,10 +212,9 @@ def meshBlocPart(blocPartition, faceFissure, tore, centres, edges, diams, circle
   blocMesh = smesh.Concatenate(meshesBloc, 1, 1, 1e-05,False)
 
   algo3d = blocMesh.Tetrahedron(algo=smeshBuilder.NETGEN)
-  hypo3d = algo3d.MaxElementVolume(1000.0)
   putName(algo3d.GetSubMesh(), "bloc", i_pref=nro_cas)
-  putName(algo3d, "{}_3d_bloc".format(mailleur), i_pref=nro_cas)
-  putName(hypo3d, "hypo3d_bloc", i_pref=nro_cas)
+  hypo3d = algo3d.MaxElementVolume(1000.0)
+  putName(hypo3d, "bloc", i_pref=nro_cas)
 
   is_done = blocMesh.Compute()
   text = "blocMesh.Compute"

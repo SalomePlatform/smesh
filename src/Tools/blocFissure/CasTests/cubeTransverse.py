@@ -24,6 +24,7 @@ import os
 from blocFissure import gmu
 
 dicoParams = dict(nomCas            = "cubeTransverse",
+                  nomProbleme       = "cubeTransverse",
                   maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin.med"),
                   CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "cubeFin_Transverse.brep"),
                   edgeFiss          = [6],

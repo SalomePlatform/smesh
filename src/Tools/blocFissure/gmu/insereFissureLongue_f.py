@@ -65,7 +65,6 @@ def insereFissureLongue_f (internalBoundary, meshFondFiss, meshFacePeau, meshFac
     hypo3d.SetStandardOutputLog( 0 )
     hypo3d.SetRemoveLogOnSuccess( 1 )
   putName(algo3d.GetSubMesh(), "boiteDefaut", i_pref=nro_cas)
-  putName(algo3d, "{}_3d_boiteDefaut".format(mailleur), i_pref=nro_cas)
   putName(meshBoiteDefaut, "boiteDefaut", i_pref=nro_cas)
 
   is_done = meshBoiteDefaut.Compute()

@@ -19,10 +19,10 @@
 #
 """Fissure dans un coude"""
 
-import os
-
 import logging
+import os
 import math
+
 import GEOM
 import SMESH
 
@@ -259,50 +259,34 @@ class fissureCoude(fissureGenerique):
     n_long_p2    = meshParams['n_long_p2']
 
     maillageSain = smesh.Mesh(geometrieSaine)
+    putName(maillageSain, "maillageSain", i_pref=self.numeroCas)
 
     algo3d = maillageSain.Hexahedron()
     algo2d = maillageSain.Quadrangle()
-    putName(algo3d, "{}_3d_maillageSain".format(self.mailleur2d3d()), i_pref=self.numeroCas)
-    putName(algo2d, "{}_2d_maillageSain".format(self.mailleur2d3d()), i_pref=self.numeroCas)
 
     algo1d_long_p1 = maillageSain.Segment(geom=long_p1)
     hypo1d_long_p1 = algo1d_long_p1.NumberOfSegments(n_long_p1)
-    putName(algo1d_long_p1, "algo1d_long_p1", i_pref=self.numeroCas)
-    putName(hypo1d_long_p1, "hypo1d_long_p1", i_pref=self.numeroCas)
+    putName(hypo1d_long_p1, "n_long_p1={}".format(n_long_p1), i_pref=self.numeroCas)
 
     algo1d_ep = maillageSain.Segment(geom=ep)
     hypo1d_ep = algo1d_ep.NumberOfSegments(n_ep)
-    putName(algo1d_ep, "algo1d_ep", i_pref=self.numeroCas)
-    putName(hypo1d_ep, "hypo1d_ep", i_pref=self.numeroCas)
+    putName(hypo1d_ep, "n_ep={}".format(n_ep), i_pref=self.numeroCas)
 
     algo1d_long_coude = maillageSain.Segment(geom=long_coude)
     hypo1d_long_coude = algo1d_long_coude.NumberOfSegments(n_long_coude)
-    putName(algo1d_long_coude, "algo1d_long_coude", i_pref=self.numeroCas)
-    putName(hypo1d_long_coude, "hypo1d_long_coude", i_pref=self.numeroCas)
+    putName(hypo1d_long_coude, "n_long_coude={}".format(n_long_coude), i_pref=self.numeroCas)
 
     algo1d_circ_g = maillageSain.Segment(geom=circ_g)
     hypo1d_circ_g = algo1d_circ_g.NumberOfSegments(n_circ_g)
-    putName(algo1d_circ_g, "algo1d_circ_g", i_pref=self.numeroCas)
-    putName(hypo1d_circ_g, "hypo1d_circ_g", i_pref=self.numeroCas)
+    putName(hypo1d_circ_g, "n_circ_g={}".format(n_circ_g), i_pref=self.numeroCas)
 
     algo1d_circ_d = maillageSain.Segment(geom=circ_d)
     hypo1d_circ_d = algo1d_circ_d.NumberOfSegments(n_circ_d)
-    putName(algo1d_circ_d, "algo1d_circ_d", i_pref=self.numeroCas)
-    putName(hypo1d_circ_d, "hypo1d_circ_d", i_pref=self.numeroCas)
+    putName(hypo1d_circ_d, "n_circ_d={}".format(n_circ_d), i_pref=self.numeroCas)
 
     algo1d_long_p2 = maillageSain.Segment(geom=long_p2)
     hypo1d_long_p2 = algo1d_long_p2.NumberOfSegments(n_long_p2)
-    putName(algo1d_long_p2, "algo1d_long_p2", i_pref=self.numeroCas)
-    putName(hypo1d_long_p2, "hypo1d_long_p2", i_pref=self.numeroCas)
-
-    is_done = maillageSain.Compute()
-    text = "maillageSain.Compute"
-    if is_done:
-      logging.info(text+" OK")
-    else:
-      text = "Erreur au calcul du maillage.\n" + text
-      logging.info(text)
-      raise Exception(text)
+    putName(hypo1d_long_p2, "n_long_p2={}".format(n_long_p2), i_pref=self.numeroCas)
 
     _ = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
     _ = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
@@ -312,6 +296,15 @@ class fissureCoude(fissureGenerique):
     _ = maillageSain.GroupOnGeom(PEAUINT,'PEAUINT',SMESH.FACE)
     _ = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
     _ = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
+
+    is_done = maillageSain.Compute()
+    text = "maillageSain.Compute"
+    if is_done:
+      logging.info(text+" OK")
+    else:
+      text = "Erreur au calcul du maillage.\n" + text
+      logging.info(text)
+      raise Exception(text)
 
     return [maillageSain, True] # True : maillage hexa
 
@@ -367,7 +360,7 @@ class fissureCoude(fissureGenerique):
 
     azimut = -azimut # axe inverse / ASCOUF
     axe = geompy.MakeTranslation(OY, -r_cintr, 0, -l_tube_p1)
-    geomPublish(initLog.debug, axe,"axe", self.numeroCas)
+    geomPublish(initLog.debug, axe, "axe", self.numeroCas)
 
     if not lgInfluence:
       lgInfluence = profondeur
@@ -662,8 +655,8 @@ class fissureCoude(fissureGenerique):
     areteFaceFissure = taille cible de l'arête des triangles en face de fissure.
     """
     self.maillageFissureParams = dict(nomRep        = os.curdir,
-                                      nomFicSain    = self.nomCas,
-                                      nomFicFissure = 'fissure_' + self.nomCas,
+                                      nomFicSain       = self.nomProbleme,
+                                      nomFicFissure    = self.nomProbleme + "_fissure",
                                       nbsegRad      = 5,
                                       nbsegCercle   = 6,
                                       areteFaceFissure = 5)

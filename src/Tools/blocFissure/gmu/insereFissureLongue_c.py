@@ -45,32 +45,26 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
   putName(meshFondFiss, "pipeFondFiss", i_pref=nro_cas)
 
   algo3d = meshFondFiss.Prism()
-  putName(algo3d.GetSubMesh(), "pipe", i_pref=nro_cas)
-  putName(algo3d, "Prism", i_pref=nro_cas)
 
   algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.QUADRANGLE)
-  putName(algo2d, "QUADRANGLE", i_pref=nro_cas)
 
   for i_aux, face in enumerate(disques):
     #print (i_aux)
     # la commande suivante entraîne addToStudy() failed
     algo2d = meshFondFiss.Quadrangle(algo=smeshBuilder.RADIAL_QUAD,geom=face)
     putName(algo2d.GetSubMesh(), "disque", i_aux, nro_cas)
-    putName(algo2d, "RADIAL_QUAD", i_aux, nro_cas)
 
   for i_aux, edge in enumerate(rayons):
     algo1d = meshFondFiss.Segment(geom=edge)
-    hypo1d = algo1d.NumberOfSegments(4)
     putName(algo1d.GetSubMesh(), "rayon", i_aux, nro_cas)
-    putName(algo1d, "algo1d_rayon", i_aux, nro_cas)
-    putName(hypo1d, "hypo1d_rayon", i_aux, nro_cas)
+    hypo1d = algo1d.NumberOfSegments(4)
+    putName(hypo1d, "rayon={}".format(4), i_aux, nro_cas)
 
   for i_aux, edge in enumerate(demiCercles):
     algo1d = meshFondFiss.Segment(geom=edge)
-    hypo1d = algo1d.NumberOfSegments(6)
     putName(algo1d.GetSubMesh(), "demiCercle", i_aux, nro_cas)
-    putName(algo1d, "algo1d_demiCercle", i_aux, nro_cas)
-    putName(hypo1d, "hypo1d_demiCercle", i_aux, nro_cas)
+    hypo1d = algo1d.NumberOfSegments(6)
+    putName(hypo1d, "demiCercle={}".format(6), i_aux, nro_cas)
 
   generSorted, minlg, maxlg = sortEdges(generatrices)
   nbSegGenLong = int(math.sqrt(3.0)*maxlg/(profondeur - rayonPipe)) # on veut 2 triangles equilateraux dans la largeur de la face
@@ -78,13 +72,13 @@ def insereFissureLongue_c (pipeFondFiss, disques, rayons, demiCercles, demiCercl
   logging.info("min %s, max %s, nombre de segments %s, nombre de generatrices %s", minlg, maxlg, nbSegGenLong, len(generSorted))
   for i_aux, edge in enumerate(generSorted):
     algo1d = meshFondFiss.Segment(geom=edge)
-    if i_aux < 6:
-      hypo1d = algo1d.NumberOfSegments(nbSegGenBout)
-    else:
-      hypo1d = algo1d.NumberOfSegments(nbSegGenLong)
     putName(algo1d.GetSubMesh(), "generatrice", i_aux, nro_cas)
-    putName(algo1d, "algo1d_generatrice", i_aux, nro_cas)
-    putName(hypo1d, "hypo1d_generatrice", i_aux, nro_cas)
+    if i_aux < 6:
+      nbSeg = nbSegGenBout
+    else:
+      nbSeg = nbSegGenLong
+    hypo1d = algo1d.NumberOfSegments(nbSeg)
+    putName(hypo1d, "generatrice={}".format(nbSeg), i_aux, nro_cas)
 
   disks = list()
   for i_aux, face in enumerate(disques[:4]):

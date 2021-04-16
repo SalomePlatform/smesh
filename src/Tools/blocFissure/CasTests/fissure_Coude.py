@@ -76,6 +76,7 @@ class fissure_Coude(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def genereGeometrieSaine(self, geomParams):
+    """a écrire"""
     logging.info("genereGeometrieSaine %s", self.nomCas)
 
     angleCoude = geomParams['angleCoude']
@@ -107,7 +108,6 @@ class fissure_Coude(fissureGenerique):
     P2 = geompy.MakeRotation(op2, axe, angleCoude*math.pi/180.0)
     P2 = geompy.MakeTranslationVectorDistance(P2, Rotation_2, -l_tube_p2)
     geomPublish(initLog.always, P2, "P2", self.numeroCas )
-
 
     # --- tube coude sain
 
@@ -146,7 +146,7 @@ class fissure_Coude(fissureGenerique):
 
     pp2 = geompy.MakeTranslationVectorDistance(P2, Rotation_2, 10)
     vec2 = geompy.MakeVector(P2, pp2)
-    #geomPublish(initLog.debug,vec2, 'vec2')
+    #geomPublish(initLog.debug, vec2, 'vec2', self.numeroCas)
     facesIds = geompy.GetShapesOnPlaneIDs(geometrieSaine, geompy.ShapeType["FACE"], vec2, GEOM.ST_ON)
     CLGV = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(CLGV, facesIds)
@@ -160,7 +160,7 @@ class fissure_Coude(fissureGenerique):
     extru2 = geompy.MakePrismVecH(rot1, Rotation_2, -l_tube_p2)
     interne = geompy.MakeFuse(extru1, revol1)
     interne = geompy.MakeFuse(extru2, interne)
-    geomPublish(initLog.debug,interne, 'interne')
+    geomPublish(initLog.debug, interne, 'interne', self.numeroCas)
     facesIds = geompy.GetShapesOnShapeIDs(interne, geometrieSaine, geompy.ShapeType["FACE"], GEOM.ST_ONIN)
     PEAUINT = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(PEAUINT, facesIds)
@@ -176,7 +176,7 @@ class fissure_Coude(fissureGenerique):
     extru2 = geompy.MakePrismVecH(rot1, Rotation_2, -l_tube_p2)
     externe = geompy.MakeFuse(extru1, revol1)
     externe = geompy.MakeFuse(extru2, externe)
-    geomPublish(initLog.debug,externe, 'externe')
+    geomPublish(initLog.debug, externe, 'externe', self.numeroCas)
     facesIds = geompy.GetShapesOnShapeIDs(externe, geometrieSaine, geompy.ShapeType["FACE"], GEOM.ST_ON)
     PEAUEXT = geompy.CreateGroup(geometrieSaine, geompy.ShapeType["FACE"])
     geompy.UnionIDs(PEAUEXT, facesIds)
@@ -230,41 +230,34 @@ class fissure_Coude(fissureGenerique):
     n_long_p2    = meshParams['n_long_p2']
 
     maillageSain = smesh.Mesh(geometrieSaine)
+    putName(maillageSain, "maillageSain", i_pref=self.numeroCas)
 
     algo3d = maillageSain.Hexahedron()
     algo2d = maillageSain.Quadrangle()
-    putName(algo3d, "3d_maillageSain", i_pref=self.numeroCas)
-    putName(algo2d, "2d_maillageSain", i_pref=self.numeroCas)
 
     algo1d_long_p1 = maillageSain.Segment(geom=long_p1)
     hypo1d_long_p1 = algo1d_long_p1.NumberOfSegments(n_long_p1)
-    putName(algo1d_long_p1, "algo1d_long_p1", i_pref=self.numeroCas)
-    putName(hypo1d_long_p1, "hypo1d_long_p1", i_pref=self.numeroCas)
+    putName(hypo1d_long_p1, "n_long_p1={}".format(n_long_p1), i_pref=self.numeroCas)
 
     algo1d_ep = maillageSain.Segment(geom=ep)
     hypo1d_ep = algo1d_ep.NumberOfSegments(n_ep)
-    putName(algo1d_ep, "algo1d_ep", i_pref=self.numeroCas)
-    putName(hypo1d_ep, "hypo1d_ep", i_pref=self.numeroCas)
+    putName(hypo1d_ep, "n_ep={}".format(n_ep), i_pref=self.numeroCas)
 
     algo1d_long_coude = maillageSain.Segment(geom=long_coude)
     hypo1d_long_coude = algo1d_long_coude.NumberOfSegments(n_long_coude)
-    putName(algo1d_long_coude, "algo1d_long_coude", i_pref=self.numeroCas)
-    putName(hypo1d_long_coude, "hypo1d_long_coude", i_pref=self.numeroCas)
+    putName(hypo1d_long_coude, "n_long_coude={}".format(n_long_coude), i_pref=self.numeroCas)
 
     algo1d_circ_g = maillageSain.Segment(geom=circ_g)
     hypo1d_circ_g = algo1d_circ_g.NumberOfSegments(n_circ_g)
-    putName(algo1d_circ_g, "algo1d_circ_g", i_pref=self.numeroCas)
-    putName(hypo1d_circ_g, "hypo1d_circ_g", i_pref=self.numeroCas)
+    putName(hypo1d_circ_g, "n_circ_g={}".format(n_circ_g), i_pref=self.numeroCas)
 
     algo1d_circ_d = maillageSain.Segment(geom=circ_d)
     hypo1d_circ_d = algo1d_circ_d.NumberOfSegments(n_circ_d)
-    putName(algo1d_circ_d, "algo1d_circ_d", i_pref=self.numeroCas)
-    putName(hypo1d_circ_d, "hypo1d_circ_d", i_pref=self.numeroCas)
+    putName(hypo1d_circ_d, "n_circ_d={}".format(n_circ_d), i_pref=self.numeroCas)
 
     algo1d_long_p2 = maillageSain.Segment(geom=long_p2)
     hypo1d_long_p2 = algo1d_long_p2.NumberOfSegments(n_long_p2)
-    putName(algo1d_long_p2, "algo1d_long_p2", i_pref=self.numeroCas)
-    putName(hypo1d_long_p2, "hypo1d_long_p2", i_pref=self.numeroCas)
+    putName(hypo1d_long_p2, "n_long_p2={}".format(n_long_p2), i_pref=self.numeroCas)
 
     _ = maillageSain.GroupOnGeom(P1,'P1',SMESH.NODE)
     _ = maillageSain.GroupOnGeom(P2,'P2',SMESH.NODE)
@@ -275,14 +268,21 @@ class fissure_Coude(fissureGenerique):
     _ = maillageSain.GroupOnGeom(PEAUEXT,'PEAUEXT',SMESH.FACE)
     _ = maillageSain.GroupOnGeom(COUDE,'COUDSAIN',SMESH.VOLUME)
 
-    _ = maillageSain.Compute()
+    is_done = maillageSain.Compute()
+    text = "maillageSain.Compute"
+    if is_done:
+      logging.info(text+" OK")
+    else:
+      text = "Erreur au calcul du maillage.\n" + text
+      logging.info(text)
+      raise Exception(text)
 
     return [maillageSain, True] # True : maillage hexa
 
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):
     """
-    paramètres de la fissure
+    paramètres de la fissure pour le tuyau coude
     profondeur  : 0 < profondeur <= épaisseur
     azimut      : entre 0 et 360°
     alpha       : 0 < alpha < angleCoude
@@ -487,8 +487,8 @@ class fissure_Coude(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
     self.maillageFissureParams = dict(nomRep        = os.curdir,
-                                      nomFicSain    = self.nomCas,
-                                      nomFicFissure = self.nomCas + "_fissure",
+                                      nomFicSain    = self.nomProbleme,
+                                      nomFicFissure = self.nomProbleme + "_fissure",
                                       nbsegExt      = 5,
                                       nbsegGen      = 25,
                                       nbsegRad      = 5,
