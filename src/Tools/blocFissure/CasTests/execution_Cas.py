@@ -19,18 +19,21 @@
 #
 """Lancement des cas-tests de blocFissure"""
 
-import traceback
-
 import logging
+import os
+import tempfile
+import traceback
 
 from blocFissure.gmu import initLog
 from blocFissure.gmu.casStandard import casStandard
 
 # -----------------------------------------------------------------------------------------------
-#initLog.setDebug()
-#initLog.setVerbose()
-#initLog.setRelease()
-#initLog.setPerfTests()
+LOGFILE = os.path.join(tempfile.gettempdir(),"blocFissure.log")
+#initLog.setDebug(LOGFILE)     # debug = 10
+initLog.setVerbose(LOGFILE)    # info = 20
+#initLog.setRelease(LOGFILE)   # warning = 30
+#initLog.setPerfTests(LOGFILE) # critical = 50
+#initLog.setAlways(LOGFILE)    # critical = 50
 
 # ---tous les cas en séquence, ou les cas sélectionnés ...
 TORUNOK = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] # OK
@@ -238,6 +241,7 @@ def calcul_cas (n_cas, cas, d_aux, ligne):
     nom = cas.nomProbleme
   texte_a = "\n=== Exécution du cas n° {}, '{}'".format(n_cas,nom)
   logging.critical(ligne+texte_a)
+
   try:
     ok_maillage = cas.executeProbleme()
   except:
@@ -246,6 +250,7 @@ def calcul_cas (n_cas, cas, d_aux, ligne):
   if not ok_maillage:
     texte = "Problème avec le cas n° {}, '{}'\n".format(n_cas,nom)
   print(ligne)
+
   return ok_maillage, texte
 #=============================================================
 def calcul_tout (l_problemes, d_aux):

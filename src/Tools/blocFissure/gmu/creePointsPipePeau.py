@@ -34,12 +34,14 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
 
   for n_edges, edges in enumerate(listEdges):
 
-    idf = idFacesDebouchantes[n_edges] # indice de face débouchante (facesPipePeau)
+     # idf = indice de face débouchante (facesPipePeau) ; idf vaut 0 ou 1
+    idf = idFacesDebouchantes[n_edges]
     logging.info("idf: %d", idf)
-    if idf >= 0:
+    if ( idf >= 0 ):
       gptdsk = list()
-      if idf > 0: # idf vaut 0 ou 1
-        idf = -1  # si idf vaut 1, on prend le dernier élément de la liste (1 ou 2 extrémités débouchent sur la face)
+      # si idf vaut 1, on prend le dernier élément de la liste (1 ou 2 extrémités débouchent sur la face)
+      if ( idf > 0 ):
+        idf = -1
       centre = ptEdgeFond[idFillingFromBout[n_edges]][idf]
       name = "centre_{}".format(idf)
       geomPublish(initLog.debug, centre, name)
@@ -50,7 +52,7 @@ def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
       edgesCirc = list()
       for grpEdgesCirc in grpsEdgesCirc:
         edgesCirc += geompy.ExtractShapes(grpEdgesCirc, geompy.ShapeType["EDGE"], False)
-      logging.info("edgesCirc: %s", edgesCirc)
+      logging.debug("edgesCirc: %s", edgesCirc)
 
       for i_aux, edge in enumerate(edges):
         extrems = geompy.ExtractShapes(edge, geompy.ShapeType["VERTEX"], True)

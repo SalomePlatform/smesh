@@ -30,13 +30,13 @@ error = 40
 critical = 50
 always = 100
 
-filelog = os.path.join(tempfile.gettempdir(),"blocFissure.log")
+LOGFILE = os.path.join(tempfile.gettempdir(),"blocFissure.log")
 
-loglevel = warning
+LOG_LEVEL = warning
 
 logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s', \
                     level=logging.WARNING, \
-                    filename=filelog, filemode='w')
+                    filename=LOGFILE, filemode='w')
 ch = None
 fh = None
 
@@ -64,49 +64,58 @@ def setLogger(logfile, level, formatter):
 
 def setDebug(logfile=None):
   """setDebug"""
-  global loglevel
-  loglevel = debug
+  global LOG_LEVEL
+  LOG_LEVEL = debug
   level = logging.DEBUG
   formatter = logging.Formatter('%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s')
   setLogger(logfile, level, formatter)
-  logging.info('start Debug %s', loglevel)
+  logging.info('start Debug %s', LOG_LEVEL)
 
 def setVerbose(logfile=None):
   """setVerbose"""
-  global loglevel
-  loglevel = info
+  global LOG_LEVEL
+  LOG_LEVEL = info
   level = logging.INFO
   formatter = logging.Formatter('%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s')
   setLogger(logfile, level, formatter)
-  logging.info('start Verbose %s', loglevel)
+  logging.info('start Verbose %s', LOG_LEVEL)
 
 def setRelease(logfile=None):
   """setRelease"""
-  global loglevel
-  loglevel = warning
+  global LOG_LEVEL
+  LOG_LEVEL = warning
   level = logging.WARNING
   formatter = logging.Formatter('%(funcName)s[%(lineno)d] %(message)s')
   setLogger(logfile, level, formatter)
-  logging.warning('start Release %s', loglevel)
+  logging.warning('start Release %s', LOG_LEVEL)
 
 def setUnitTests(logfile=None):
   """setUnitTests"""
-  global loglevel
-  loglevel = critical
+  global LOG_LEVEL
+  LOG_LEVEL = critical
   level = logging.CRITICAL
   formatter = logging.Formatter('%(funcName)s[%(lineno)d] %(message)s')
   setLogger(logfile, level, formatter)
-  logging.critical('start UnitTests %s', loglevel)
+  logging.critical('start UnitTests %s', LOG_LEVEL)
 
 def setPerfTests(logfile=None):
   """setPerfTests"""
-  global loglevel
-  loglevel = critical
+  global LOG_LEVEL
+  LOG_LEVEL = critical
   level = logging.CRITICAL
   formatter = logging.Formatter('%(funcName)s[%(lineno)d] %(message)s')
   setLogger(logfile, level, formatter)
-  logging.info('start PerfTests %s', loglevel)
+  logging.info('start PerfTests %s', LOG_LEVEL)
+
+def setAlways(logfile=None):
+  """setAlways"""
+  global LOG_LEVEL
+  LOG_LEVEL = always
+  level = logging.CRITICAL
+  formatter = logging.Formatter('%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s')
+  setLogger(logfile, level, formatter)
+  logging.info('start Always %s', LOG_LEVEL)
 
 def getLogLevel():
   """getLogLevel"""
-  return loglevel
+  return LOG_LEVEL
