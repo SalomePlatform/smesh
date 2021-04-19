@@ -46,31 +46,20 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones, \
   #for grp in groups:
     #print ("\t{}".format(grp.GetName()))
   zoneDefaut = None
-  for grp in groups:
-    logging.debug("groupe %s",grp.GetName())
-    if grp.GetName() == nomZones + "_vol":
-      zoneDefaut = grp
-      break
-  #print ("zoneDefaut = {}".format(zoneDefaut))
   zoneDefaut_skin = None
-  for grp in groups:
-    if grp.GetName() == nomZones + "_skin":
-      zoneDefaut_skin = grp
-      break
-  #print ("zoneDefaut_skin = {}".format(zoneDefaut_skin))
   zoneDefaut_internalFaces = None
-  for grp in groups:
-    if grp.GetName() == nomZones + "_internalFaces":
-      zoneDefaut_internalFaces = grp
-      break
-  #print ("zoneDefaut_internalFaces = {}".format(zoneDefaut_internalFaces))
   zoneDefaut_internalEdges = None
   for grp in groups:
-    if grp.GetName() == nomZones + "_internalEdges":
+    nom = grp.GetName()
+    logging.debug("groupe %s",nom)
+    if ( nom == nomZones + "_vol" ):
+      zoneDefaut = grp
+    elif ( nom == nomZones + "_skin" ):
+      zoneDefaut_skin = grp
+    elif ( nom == nomZones + "_internalFaces" ):
+      zoneDefaut_internalFaces = grp
+    elif ( nom == nomZones + "_internalEdges" ):
       zoneDefaut_internalEdges = grp
-      break
-  #print ("zoneDefaut_internalEdges = {}".format(zoneDefaut_internalEdges))
-
   # --- Le groupe ZoneDefaut ne doit contenir que des Hexaèdres"
 
   info = maillageSain.GetMeshInfo(zoneDefaut)
@@ -106,6 +95,8 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones, \
   logging.debug(texte)
   if listOfCorner:
     logging.info("présence de coins à la surface externe de la zone à reconstruire")
-    zoneDefaut_skin, internalBoundary = fusionMaillageDefaut(maillageSain, maillageDefautCible, internalBoundary, zoneDefaut_skin, shapeDefaut, listOfCorner)
+    zoneDefaut_skin, internalBoundary = \
+          fusionMaillageDefaut(maillageSain, maillageDefautCible, internalBoundary, zoneDefaut_skin, shapeDefaut, listOfCorner, \
+          nro_cas)
 
   return maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges

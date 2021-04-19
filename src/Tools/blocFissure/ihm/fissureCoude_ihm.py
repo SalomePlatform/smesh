@@ -97,8 +97,8 @@ class fissureCoude_ihm(fissureCoude):
     areteFaceFissure = taille cible de l'arête des triangles en face de fissure.
     """
     self.maillageFissureParams = dict(nomRep        = os.curdir, \
-                                      nomFicSain    = self.nomCas, \
-                                      nomFicFissure = 'fissure_' + self.nomCas, \
+                                      nomFicSain    = self.nomProbleme, \
+                                      nomFicFissure = self.nomProbleme + '_fissure', \
                                       nbsegRad      = self.dico['nbCouronnes'], \
                                       nbsegCercle   = self.dico['nbSecteurs'], \
                                       areteFaceFissure = self.dico['aretesFaceFissure'])

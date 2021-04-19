@@ -75,7 +75,6 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
     hypo3d.SetStandardOutputLog( 0 )
     hypo3d.SetRemoveLogOnSuccess( 1 )
   putName(algo3d.GetSubMesh(), "boiteDefaut", i_pref=nro_cas)
-  putName(algo3d, "{}_3d_boiteDefaut".format(mailleur), i_pref=nro_cas)
 
   is_done = meshBoiteDefaut.Compute()
   text = "meshBoiteDefaut.Compute"
@@ -94,9 +93,11 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
   _, normfiss = shapeSurFissure(facesPortFissure)
   maillageComplet = RegroupeSainEtDefaut(maillageSain, meshBoiteDefaut, \
                                          None, None, 'COMPLET', normfiss)
+  putName(maillageComplet, nomFicFissure)
 
   logging.info("conversion quadratique")
   maillageComplet.ConvertToQuadratic( 1 )
+
   logging.info("groupes")
   groups = maillageComplet.GetGroups()
   grps = [ grp for grp in groups if grp.GetName() == 'FONDFISS']
@@ -116,7 +117,6 @@ def construitFissureGenerale_c(maillageSain, meshBoiteDefaut, \
   logging.info("export maillage fini")
   fichierMaillageFissure = os.path.join (nomRep , '{}.med'.format(nomFicFissure))
   maillageComplet.ExportMED(fichierMaillageFissure)
-  putName(maillageComplet, nomFicFissure)
   logging.info("fichier maillage fissure %s", fichierMaillageFissure)
 
   return maillageComplet

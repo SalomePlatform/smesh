@@ -44,9 +44,9 @@ def identifieEdgesPeau_a(edgesFissExtPipe, facePeau, facesPeauSorted, edgesPeauF
             j_aux_0 = j_aux
             break
         sharedVertices = geompy.GetSharedShapesMulti([face, edgesPeauFondIn[j_aux_0]], geompy.ShapeType["VERTEX"])
-        nameFace = "facePipePeau{}".format(i_aux)
-        nameVert = "endEdgeFond{}".format(i_aux)
-        nameEdge = "edgeRadFacePipePeau{}".format(i_aux)
+        nameFace = "facePipePeau_{}".format(i_aux)
+        nameVert = "endEdgeFond_{}".format(i_aux)
+        nameEdge = "edgeRadFacePipePeau_{}".format(i_aux)
         facesPipePeau[i_aux] = face
         endsEdgeFond[i_aux] = sharedVertices[0]
         geomPublish(initLog.debug, face, nameFace, nro_cas)
@@ -58,23 +58,26 @@ def identifieEdgesPeau_a(edgesFissExtPipe, facePeau, facesPeauSorted, edgesPeauF
             geomPublish(initLog.debug, edge, nameEdge, nro_cas)
             break
 
-  # --- edges circulaires de la face de peau et points de jonction de la face externe de fissure
-  logging.debug("facesPipePeau: %s", facesPipePeau)
+  # --- edges elliptiques de la face de peau et points de jonction de la face externe de fissure
+  logging.info("Traitement des arêtes de '%s'", facePeau.GetName())
   edgesCircPeau = [None for _ in range(len(facesPipePeau))]
   verticesCircPeau = [None for _ in range(len(facesPipePeau))]
   for i_aux,fcirc in enumerate(facesPipePeau):
+    logging.info(". Partage avec la face '%s'", fcirc.GetName())
     edges = geompy.GetSharedShapesMulti([facePeau, fcirc], geompy.ShapeType["EDGE"])
     grpEdgesCirc = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
     geompy.UnionList(grpEdgesCirc, edges)
     edgesCircPeau[i_aux] = grpEdgesCirc
-    name = "edgeCirc{}".format(i_aux)
+    name = "edgeCirc_{}".format(i_aux)
     geomPublishInFather(initLog.always, facePeau, grpEdgesCirc, name)
     edgesListees = edgesListees + edges
     vertices = geompy.GetSharedShapesMulti([facePeau, fcirc], geompy.ShapeType["VERTEX"])
     grpVertCircPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["VERTEX"])
     geompy.UnionList(grpVertCircPeau, vertices)
     verticesCircPeau[i_aux] = grpVertCircPeau
-    name = "pointEdgeCirc{}".format(i_aux)
-    geomPublishInFather(initLog.debug, facePeau, grpVertCircPeau, name)
+    name = "pointEdgeCirc_{}".format(i_aux)
+    geomPublishInFather(initLog.info, facePeau, grpVertCircPeau, name)
+
+  logging.info('==> Nombre de sommets : len(verticesCircPeau) = %d', len(verticesCircPeau))
 
   return edgesCircPeau, verticesCircPeau

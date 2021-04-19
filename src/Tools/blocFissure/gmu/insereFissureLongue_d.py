@@ -55,10 +55,12 @@ def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibr
     hypo2d.SetOptimize( 1 )
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( 2 )
+    hypo2d.SetChordalErrorEnabled (True)
+    hypo2d.SetChordalError( 250. )
+    hypo2d.SetUseSurfaceCurvature (True)
     hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "facePeau", i_pref=nro_cas)
-  putName(algo2d, "{}_2d_facePeau".format(mailleur), i_pref=nro_cas)
-  putName(hypo2d, "hypo2d_facePeau", i_pref=nro_cas)
+  putName(hypo2d, "facePeau", i_pref=nro_cas)
   #
   lenEdgePeauFiss = geompy.BasicProperties(edgePeauFiss)[0]
   frac = profondeur/lenEdgePeauFiss
@@ -72,21 +74,18 @@ def insereFissureLongue_d (facePeau, edgePeauFiss, groupEdgesBordPeau, bordsLibr
   hypo1d.SetConversionMode( 1 )
   hypo1d.SetTableFunction( [ 0, ratio, frac, 1, (1.-frac), 1, 1, ratio ] )
   putName(algo1d.GetSubMesh(), "edgePeauFiss", i_pref=nro_cas)
-  putName(algo1d, "algo1d_edgePeauFiss", i_pref=nro_cas)
-  putName(hypo1d, "hypo1d_edgePeauFiss", i_pref=nro_cas)
+  putName(hypo1d, "edgePeauFiss", i_pref=nro_cas)
   #
   algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
   hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
   putName(algo1d.GetSubMesh(), "bordsLibres", i_pref=nro_cas)
-  putName(algo1d, "algo1d_bordsLibres", i_pref=nro_cas)
-  putName(hypo1d, "hypo1d_bordsLibres", i_pref=nro_cas)
+  putName(hypo1d, "bordsLibres", i_pref=nro_cas)
   #
   for i_aux in range(2):
     algo1d = meshFacePeau.UseExisting1DElements(geom=groupsDemiCerclesPeau[i_aux])
     hypo1d = algo1d.SourceEdges([ groups_demiCercles[i_aux] ],0,0)
     putName(algo1d.GetSubMesh(), "DemiCercles", i_aux, nro_cas)
-    putName(algo1d, "algo1d_groupDemiCercles", i_aux, nro_cas)
-    putName(hypo1d, "hypo1d_groupDemiCercles", i_aux, nro_cas)
+    putName(hypo1d, "groupDemiCercles", i_aux, nro_cas)
 
   _ = meshFacePeau.GroupOnGeom(verticesOutCercles[0], "THOR", SMESH.NODE)
   _ = meshFacePeau.GroupOnGeom(verticesOutCercles[1], "THEX", SMESH.NODE)

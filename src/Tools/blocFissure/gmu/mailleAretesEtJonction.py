@@ -60,10 +60,9 @@ def mailleAretesEtJonction (internalBoundary, aretesVivesCoupees, lgAretesVives,
     geomPublish(initLog.always, aretesVivesC, "aretesVives", nro_cas)
     meshAretesVives = smesh.Mesh(aretesVivesC)
     algo1d = meshAretesVives.Segment()
-    hypo1d = algo1d.LocalLength(lgAretesVives,[],1e-07)
     putName(algo1d.GetSubMesh(), "aretesVives", i_pref=nro_cas)
-    putName(algo1d, "algo1d_aretesVives", i_pref=nro_cas)
-    putName(hypo1d, "hypo1d_aretesVives", i_pref=nro_cas)
+    hypo1d = algo1d.LocalLength(lgAretesVives,[],1e-07)
+    putName(hypo1d, "aretesVives={}".format(lgAretesVives), i_pref=nro_cas)
 
     is_done = meshAretesVives.Compute()
     text = "meshAretesVives.Compute"

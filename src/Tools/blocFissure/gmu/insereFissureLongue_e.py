@@ -55,22 +55,22 @@ def insereFissureLongue_e (faceFiss, edgePeauFiss, groupEdgesPeauFiss, group_gen
     hypo2d.SetOptimize( 1 )
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( 2 )
+    hypo2d.SetChordalErrorEnabled (True)
+    hypo2d.SetChordalError( mesh_size*0.25 )
+    hypo2d.SetUseSurfaceCurvature (True)
     hypo2d.SetQuadAllowed( 0 )
   putName(algo2d.GetSubMesh(), "faceFiss", i_pref=nro_cas)
-  putName(algo2d, "{}_2d_faceFiss".format(mailleur), i_pref=nro_cas)
-  putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
+  putName(hypo2d, "faceFiss", i_pref=nro_cas)
   #
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgePeauFiss)
   hypo1d = algo1d.SourceEdges([ groupEdgesPeauFiss ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
-  putName(algo1d, "algo1d_edgeFissPeau", i_pref=nro_cas)
-  putName(hypo1d, "hypo1d_edgeFissPeau", i_pref=nro_cas)
+  putName(hypo1d, "edgeFissPeau", i_pref=nro_cas)
   #
   algo1d = meshFaceFiss.UseExisting1DElements(geom=groupEdgesFaceFissPipe)
   hypo1d = algo1d.SourceEdges([ group_generFiss ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
-  putName(algo1d, "algo1d_edgeFissPeau", i_pref=nro_cas)
-  putName(hypo1d, "hypo1d_edgeFissPeau", i_pref=nro_cas)
+  putName(hypo1d, "edgeFissPeau", i_pref=nro_cas)
 
   _ = meshFaceFiss.GroupOnGeom(faceFiss, "fisOutPi", SMESH.FACE)
 

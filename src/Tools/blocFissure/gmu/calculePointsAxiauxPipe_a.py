@@ -56,10 +56,9 @@ def calculePointsAxiauxPipe_a(facesDefaut, centreFondFiss, wireFondFiss, \
   meshFondFiss = smesh.Mesh(wireFondFiss)
   putName(meshFondFiss, "wireFondFiss", i_pref=nro_cas)
   algo1d = meshFondFiss.Segment()
-  hypo1d = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
   putName(algo1d.GetSubMesh(), "wireFondFiss", i_pref=nro_cas)
-  putName(algo1d, "algo1d_wireFondFiss", i_pref=nro_cas)
-  putName(hypo1d, "hypo1d_wireFondFiss", i_pref=nro_cas)
+  hypo1d = algo1d.Adaptive(lgmin, lgmax, deflexion) # a ajuster selon la profondeur de la fissure
+  putName(hypo1d, "Adaptive_wireFondFiss", i_pref=nro_cas)
 
   is_done = meshFondFiss.Compute()
   text = "calculePointsAxiauxPipe meshFondFiss.Compute"

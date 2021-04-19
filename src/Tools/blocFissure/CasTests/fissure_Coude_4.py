@@ -76,7 +76,7 @@ class fissure_Coude_4(fissure_Coude):
     """
     self.shapeFissureParams = dict(nomRep        = os.curdir,
                                    nomFicSain    = self.nomCas,
-                                   nomFicFissure = self.nomCas + "_fissure",
+                                   nomFicFissure = self.nomProbleme + "_fissure",
                                    profondeur  = 10,
                                    azimut      = 90,
                                    alpha       = 20,

@@ -36,7 +36,7 @@ def identifieEdgesPeau_b(facePeau, edgesListees, \
   edgesBords = list()
   for i_aux, edge in enumerate(edgesFilling):
     edgepeau = geompy.GetInPlace(facePeau, edge)
-    name = "edgepeau{}".format(i_aux)
+    name = "edgepeau_{}".format(i_aux)
     geomPublishInFather(initLog.debug, facePeau,edgepeau, name)
     logging.debug("edgepeau %s", geompy.ShapeInfo(edgepeau))
     if geompy.ShapeInfo(edgepeau)['EDGE'] > 1:

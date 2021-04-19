@@ -49,7 +49,7 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
   maillagesCoupes = list()
 
   # On crée une liste contenant le maillage de chaque face.
-  listOfNewMeshes = createNewMeshesFromCorner(maillageDefautCible, listOfCorners)
+  listOfNewMeshes = createNewMeshesFromCorner(maillageDefautCible, listOfCorners, nro_cas)
 
   i_aux = 0
   while i_aux < len(listOfNewMeshes):
@@ -89,6 +89,7 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
   listOfInternMeshes = [maillageInterneCible] + [msh.GetMesh() for msh in maillagesNonCoupes]
 
   newMaillageInterne = smesh.Concatenate(listOfInternMeshes, 1, 1, 1e-05, False)
+  putName(newMaillageInterne, 'newInternalBoundary', i_pref=nro_cas)
 
   facesEnTrop = list()
   criteres = [smesh.GetCriterion(SMESH.FACE, SMESH.FT_BelongToGenSurface, SMESH.FT_Undefined, face) for face in facesNonCoupees]
@@ -99,7 +100,5 @@ def fusionMaillageDefaut(maillageSain, maillageDefautCible, maillageInterneCible
     facesEnTrop.append(faceEnTrop)
 
   newZoneDefaut_skin = maillageSain.GetMesh().CutListOfGroups([zoneDefaut_skin], facesEnTrop, 'newZoneDefaut_skin')
-
-  putName(newMaillageInterne, 'newInternalBoundary', i_pref=nro_cas)
 
   return newZoneDefaut_skin, newMaillageInterne

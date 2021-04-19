@@ -37,7 +37,7 @@ def mailleFacesFissure(faceFissureExterne, \
   logging.info("Maillage avec %s pour le cas n°%s", mailleur, nro_cas)
 
   meshFaceFiss = smesh.Mesh(faceFissureExterne)
-  logging.info("Maillage avec %s", mailleur)
+  putName(meshFaceFiss.GetMesh(), "faceFiss", i_pref=nro_cas)
   if ( mailleur == "MeshGems"):
     algo2d = meshFaceFiss.Triangle(algo=smeshBuilder.MG_CADSurf)
     hypo2d = algo2d.Parameters()
@@ -54,22 +54,21 @@ def mailleFacesFissure(faceFissureExterne, \
     hypo2d.SetOptimize( 1 )
     hypo2d.SetFineness( 2 )
     hypo2d.SetMinSize( rayonPipe/float(nbsegRad) )
+    hypo2d.SetChordalErrorEnabled (True)
     hypo2d.SetChordalError( areteFaceFissure*0.25 )
+    hypo2d.SetUseSurfaceCurvature (True)
     hypo2d.SetQuadAllowed( 0 )
-  putName(algo2d.GetSubMesh(), "faceFiss", i_pref=nro_cas)
-  putName(algo2d, "{}_2d_faceFiss".format(mailleur), i_pref=nro_cas)
-  putName(hypo2d, "hypo2d_faceFiss", i_pref=nro_cas)
+  putName(hypo2d, "faceFiss", i_pref=nro_cas)
 
   logging.info("UseExisting1DElements depuis '%s'", edgesPipeFissureExterneC.GetName())
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
-  hypo1d = algo1d.SourceEdges([ edgeFaceFissGroup ],0,0)
   putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
-  putName(algo1d, "algo1d_edgeFissPeau", i_pref=nro_cas)
-  putName(hypo1d, "hypo1d_edgeFissPeau", i_pref=nro_cas)
+  hypo1d = algo1d.SourceEdges([ edgeFaceFissGroup ],0,0)
+  putName(hypo1d, "SourceEdges_edgeFissPeau", i_pref=nro_cas)
 
-  grpFaceFissureExterne = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
-  grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
   grpEdgesPipeFissureExterne = meshFaceFiss.GroupOnGeom(edgesPipeFissureExterneC,'edgesPipeFissureExterne',SMESH.EDGE)
+  grpEdgesPeauFissureExterne = meshFaceFiss.GroupOnGeom(edgesPeauFissureExterneC,'edgesPeauFissureExterne',SMESH.EDGE)
+  grpFaceFissureExterne = meshFaceFiss.GroupOnGeom(faceFissureExterne, "fisOutPi", SMESH.FACE)
 
   is_done = meshFaceFiss.Compute()
   text = "meshFaceFiss.Compute"

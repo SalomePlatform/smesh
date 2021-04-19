@@ -44,8 +44,8 @@ class cubeAngle2(cubeAngle):
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
     self.maillageFissureParams = dict(nomRep           = os.curdir,
-                                      nomFicSain       = self.nomCas,
-                                      nomFicFissure    = self.nomCas + "_fissure",
+                                      nomFicSain       = self.nomProbleme,
+                                      nomFicFissure    = self.nomProbleme + "_fissure",
                                       nbsegRad         = 5,
                                       nbsegCercle      = 32,
                                       areteFaceFissure = 5)

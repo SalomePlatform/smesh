@@ -30,13 +30,15 @@ def identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSo
                        nro_cas=None):
   """Identification précise des edges et disques des faces de peau selon index extremité fissure"""
   logging.info('start')
+  logging.info('Nombre de sommets : len(verticesPipePeau) = %d', len(verticesPipePeau))
 
   facesPipePeau = [None for _ in range(len(edgesFissExtPipe))]
   endsEdgeFond = [None for _ in range(len(edgesFissExtPipe))]
   edgeRadFacePipePeau = [None for _ in range(len(edgesFissExtPipe))]
 
   edgesListees = list()
-  if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
+  # --- au moins une extrémité du pipe sur cette face de peau
+  if verticesPipePeau:
 
     edgesCircPeau, verticesCircPeau = identifieEdgesPeau_a(edgesFissExtPipe, facePeau, facesPeauSorted, edgesPeauFondIn, \
                                                            endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, edgesListees, \
@@ -53,7 +55,6 @@ def identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSo
                                                       nro_cas)
 
   # ---  edges de la face de peau partagées avec la face de fissure
-
   edgesFissurePeau = identifieEdgesPeau_c(verticesPipePeau, facePeau, edgesListees, verticesCircPeau)
 
   return (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau,

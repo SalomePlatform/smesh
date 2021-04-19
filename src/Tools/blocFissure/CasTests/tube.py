@@ -49,7 +49,7 @@ class tube(fissureGenerique):
     logging.info(texte)
 
     ([objetSain], _) = smesh.CreateMeshesFromMED(os.path.join(gmu.pathBloc, "materielCasTests", "Tube.med"))
-    putName(objetSain.GetMesh(), "{}_objetSain".format(self.nomProbleme), i_pref=self.numeroCas)
+    putName(objetSain.GetMesh(), self.nomProbleme, i_pref=self.numeroCas)
 
     return [objetSain, True] # True : maillage hexa
 
@@ -96,8 +96,8 @@ class tube(fissureGenerique):
     texte = "setParamMaillageFissure pour '{}'".format(self.nomCas)
     logging.info(texte)
     self.maillageFissureParams = dict(nomRep           = os.curdir,
-                                      nomFicSain       = self.nomCas,
-                                      nomFicFissure    = self.nomCas + "_fissure",
+                                      nomFicSain       = self.nomProbleme,
+                                      nomFicFissure    = self.nomProbleme + "_fissure",
                                       nbsegRad         = 5,
                                       nbsegCercle      = 8,
                                       areteFaceFissure = 0.5)
