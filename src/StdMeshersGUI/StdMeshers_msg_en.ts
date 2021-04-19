@@ -355,6 +355,22 @@ Consider creating another hypothesis instead of using this one for this mesh/sub
         <translation>Hypothesis Construction</translation>
     </message>
     <message>
+        <source>SMESH_PROJECTION_SOURCE_2D_HYPOTHESIS</source>
+        <translation>Source faces</translation>
+    </message>
+    <message>
+        <source>SMESH_PROJECTION_SOURCE_2D_TITLE</source>
+        <translation>Hypothesis Construction</translation>
+    </message>
+    <message>
+        <source>SMESH_PROJECTION_SOURCE_1D_HYPOTHESIS</source>
+        <translation>Source edges</translation>
+    </message>
+    <message>
+        <source>SMESH_PROJECTION_SOURCE_1D_TITLE</source>
+        <translation>Hypothesis Construction</translation>
+    </message>
+    <message>
         <source>SMESH_REMOVE_ROW</source>
         <translation>Remove row</translation>
     </message>

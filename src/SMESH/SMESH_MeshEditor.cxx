@@ -1808,17 +1808,17 @@ namespace
     TSplitMethod( int nbTet=0, const int* conn=0, bool addNode=false)
       : _nbSplits(nbTet), _nbCorners(4), _connectivity(conn), _baryNode(addNode), _ownConn(false) {}
     ~TSplitMethod() { if ( _ownConn ) delete [] _connectivity; _connectivity = 0; }
-	TSplitMethod(const TSplitMethod &splitMethod)
-		: _nbSplits(splitMethod._nbSplits),
-		_nbCorners(splitMethod._nbCorners),
-		_baryNode(splitMethod._baryNode),
-		_ownConn(splitMethod._ownConn),
-		_faceBaryNode(splitMethod._faceBaryNode)
-	{
-		_connectivity = splitMethod._connectivity;
-		const_cast<TSplitMethod&>(splitMethod)._connectivity = nullptr;
-		const_cast<TSplitMethod&>(splitMethod)._ownConn = false;
-	}
+    TSplitMethod(const TSplitMethod &splitMethod)
+      : _nbSplits(splitMethod._nbSplits),
+        _nbCorners(splitMethod._nbCorners),
+        _baryNode(splitMethod._baryNode),
+        _ownConn(splitMethod._ownConn),
+        _faceBaryNode(splitMethod._faceBaryNode)
+    {
+      _connectivity = splitMethod._connectivity;
+      const_cast<TSplitMethod&>(splitMethod)._connectivity = nullptr;
+      const_cast<TSplitMethod&>(splitMethod)._ownConn = false;
+    }
     bool hasFacet( const TTriangleFacet& facet ) const
     {
       if ( _nbCorners == 4 )
@@ -2069,6 +2069,8 @@ namespace
                                     const int        methodFlags,
                                     const int        facetToSplit)
   {
+    TSplitMethod method;
+
     // order of facets in HEX according to SMDS_VolumeTool::Hexa_F :
     // B, T, L, B, R, F
     const int iF = ( facetToSplit < 2 ) ? 0 : 1 + ( facetToSplit-2 ) % 2; // [0,1,2]
@@ -2099,11 +2101,11 @@ namespace
         to4methods[iF]._nbSplits  = 4;
         to4methods[iF]._nbCorners = 6;
       }
-      return to4methods[iF];
+      method = to4methods[iF];
+      to4methods[iF]._connectivity = method._connectivity; // as copy ctor resets _connectivity
+      return method;
     }
     // else if ( methodFlags == HEXA_TO_2_PRISMS )
-
-    TSplitMethod method;
 
     const int iQ = vol.Element()->IsQuadratic() ? 2 : 1;
 
@@ -2276,7 +2278,7 @@ void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
     TSplitMethod splitMethod = ( facetToSplit < 0  ?
                                  getTetraSplitMethod( volTool, theMethodFlags ) :
                                  getPrismSplitMethod( volTool, theMethodFlags, facetToSplit ));
-	if ( splitMethod._nbSplits < 1 ) continue;
+    if ( splitMethod._nbSplits < 1 ) continue;
 
     // find submesh to add new tetras to
     if ( !subMesh || !subMesh->Contains( elem ))
