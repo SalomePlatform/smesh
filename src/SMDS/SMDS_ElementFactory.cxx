@@ -218,7 +218,7 @@ const SMDS_MeshElement* SMDS_ElementFactory::FindElement( const smIdType id ) co
 //================================================================================
 /*!
  * \brief Return an SMDS ID by a Vtk one
- *  \param [inout] vtkID - Vtk ID
+ *  \param [in] vtkID - Vtk ID
  *  \return smIdType - SMDS ID
  */
 //================================================================================

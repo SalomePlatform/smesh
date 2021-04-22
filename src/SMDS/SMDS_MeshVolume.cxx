@@ -88,7 +88,7 @@ bool SMDS_MeshVolume::ChangeNodes(const std::vector<const SMDS_MeshNode*>& nodes
 
   // stream size and nb faces should not change
 
-  if ((int) quantities.size() != nFaces )
+  if ((vtkIdType) quantities.size() != nFaces )
   {
     return false;
   }

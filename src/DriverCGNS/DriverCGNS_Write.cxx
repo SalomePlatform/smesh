@@ -474,7 +474,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
                             cgID-1, /*nbndry=*/0, elemData.data(), &iSec) != CG_OK )
         return addMessage( cg_get_error(), /*fatal = */true );
     }
-  }
+  } // while ( elem )
 
   // Write polyhedral volumes
   // -------------------------

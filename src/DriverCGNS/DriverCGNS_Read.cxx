@@ -552,9 +552,9 @@ namespace
     nbNodes = ids[0];
     ++ids;
 #endif
-    vector<smIdType> idVec( ids[0] );
-    for ( int i = 0; i < ids[0]; ++i )
-      idVec[ i ] = ToSmIdType( ids[ i + 1]);
+    vector<smIdType> idVec( nbNodes );
+    for ( int i = 0; i < nbNodes; ++i )
+      idVec[ i ] = ToSmIdType( ids[ i ]);
     return mesh->AddPolygonalFaceWithID( idVec, ToSmIdType(ID) );
   }
 
@@ -892,6 +892,8 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
         curAddElemFun = addElemFuns[ elemType ];
         SMDS_MeshElement* newElem = 0;
         const SMDS_MeshElement* face;
+        vector<int> quantities;
+        vector<const SMDS_MeshNode*> nodes, faceNodes;
 
         while ( pos < eDataSize )
         {
@@ -923,9 +925,8 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
                 //                       Face1M, Face2M, ... FaceNM
                 nbFaces = polyOffset[ iElem + 1 ] - polyOffset[ iElem ];
 
-              vector<int> quantities( nbFaces );
-              vector<const SMDS_MeshNode*> nodes, faceNodes;
-              nodes.reserve( nbFaces * 4 );
+              quantities.resize( nbFaces ); quantities.back() = 0;
+              nodes.clear();                nodes.reserve( nbFaces * 4 );
               for ( int iF = 0; iF < nbFaces; ++iF )
               {
                 const int faceID = std::abs( elemData[ pos++ ]) + zone._elemIdShift;
@@ -947,6 +948,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
                 }
                 else {
                   polyhedError = true;
+                  pos += nbFaces - iF - 1;
                   break;
                 }
               }
