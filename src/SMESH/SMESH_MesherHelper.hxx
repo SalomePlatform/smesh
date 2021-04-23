@@ -100,7 +100,7 @@ class SMESH_EXPORT SMESH_MesherHelper
    * \brief Load nodes bound to face into a map of node columns
     * \param theParam2ColumnMap - map of node columns to fill
     * \param theFace - the face on which nodes are searched for
-    * \param theBaseSide - the edges holding nodes on which columns' bases
+    * \param theBaseSide - the edges holding nodes on which columns base
     * \param theMesh - the mesh containing nodes
     * \retval bool - false if something is wrong
    * 

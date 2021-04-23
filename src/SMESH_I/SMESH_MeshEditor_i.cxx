@@ -6671,7 +6671,7 @@ SMESH_MeshEditor_i::DoubleNodeElemGroupsInRegion(const SMESH::ListOfGroups& theE
          duplication is not performed.
   This method is the first step of DoubleNodeElemGroupsInRegion.
   \param theElems - list of groups of elements (edges or faces) to be replicated
-  \param theNodesNot - list of groups of nodes not to replicated
+  \param theNodesNot - list of groups of nodes not to replicate
   \param theShape - shape to detect affected elements (element which geometric center
          located on or inside shape).
          The replicated nodes should be associated to affected elements.

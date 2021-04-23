@@ -1438,7 +1438,7 @@ int SMDS_Mesh::GetElementsByNodes(const std::vector<const SMDS_MeshNode *>& node
     }
 
   foundElems.clear();
-  if ( n0 )
+  if ( n0 && minNbInverse > 0 )
   {
     foundElems.reserve( minNbInverse );
     SMDS_ElemIteratorPtr eIt = n0->GetInverseElementIterator( type );

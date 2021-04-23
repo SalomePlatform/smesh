@@ -10241,7 +10241,8 @@ namespace // automatically find theAffectedElems for DoubleNodes()
       if ( maxX < 0 )
       {
         _elems[0]->setIsMarked( false );
-        _elems[1]->setIsMarked( true );
+        if ( _elems[1] )
+          _elems[1]->setIsMarked( true );
       }
     }
 
@@ -10413,7 +10414,11 @@ namespace // automatically find theAffectedElems for DoubleNodes()
     {
       fissure.reserve( theElemsOrNodes.size() );
       for ( ; elIt != theElemsOrNodes.end(); ++elIt )
+      {
         fissure.push_back( std::move( FissureBorder( *elIt, elemsByFacet )));
+        if ( !fissure.back()._elems[1] )
+          fissure.pop_back();
+      }
     }
     if ( fissure.empty() )
       return;
@@ -10920,7 +10925,7 @@ namespace {
   \brief Identify the elements that will be affected by node duplication (actual duplication is not performed).
   This method is the first step of DoubleNodeElemGroupsInRegion.
   \param theElems - list of groups of elements (edges or faces) to be replicated
-  \param theNodesNot - list of groups of nodes not to replicated
+  \param theNodesNot - list of groups of nodes not to replicate
   \param theShape - shape to detect affected elements (element which geometric center
          located on or inside shape). If the shape is null, detection is done on faces orientations
          (select elements with a gravity center on the side given by faces normals).
