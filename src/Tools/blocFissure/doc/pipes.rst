@@ -11,7 +11,7 @@ Cracked bended pipes being a common encountered case, a specific module was deve
    :align: center
    :alt: Print screen of GUI
 
-   Print screen of GUI of the extension *Meshed Pipe with a crack*
+Print screen of GUI of the extension *Meshed Pipe with a crack*
 
 The GUI is a window with mandatory and optional parameters. Optional parameters have to be activated by ticking the corresponding check box. Parameters are explained on the following figures and table. Angles are in degrees and lengths dimensions are all the same and shall then be consistent with each other’s.
 
