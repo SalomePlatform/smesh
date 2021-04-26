@@ -237,6 +237,14 @@ CORBA::Object_var SMESH_Gen_i::SObjectToObject( SALOMEDS::SObject_ptr theSObject
   return anObj;
 }
 
+// Set Naming Service object
+void SMESH_Gen_i::SetNS(SALOME_NamingService_Abstract *ns)
+{
+  if(myNS)
+    delete myNS;
+  myNS = ns;
+}
+
 //=============================================================================
 /*!
  *  GetNS [ static ]
@@ -247,7 +255,7 @@ CORBA::Object_var SMESH_Gen_i::SObjectToObject( SALOMEDS::SObject_ptr theSObject
 
 SALOME_NamingService_Abstract* SMESH_Gen_i::GetNS()
 {
-  if ( myNS == NULL ) {
+  if ( !myNS ) {
     myNS = SINGLETON_<SALOME_NamingService>::Instance();
     ASSERT(SINGLETON_<SALOME_NamingService>::IsAlreadyExisting());
     myNS->init_orb( GetORB() );

@@ -183,10 +183,10 @@ namespace MED
     if (!CheckCompatibility(fileName)) {
       EXCEPTION(std::runtime_error, "Cannot open file '"<<fileName<<"'.");
     }
-    return new MED::TWrapper(fileName, false);
+    return new MED::TWrapper(fileName, false, nullptr);
   }
 
-  PWrapper CrWrapperW(const std::string& fileName, int theVersion)
+  PWrapper CrWrapperW(const std::string& fileName, int theVersion, TFileInternal *tfileInst)
   {
     bool isCreated = false;
     if (!CheckCompatibility(fileName, true))
@@ -204,6 +204,6 @@ namespace MED
       wantedMajor = theVersion/10;
       wantedMinor = theVersion%10;
     }
-    return new MED::TWrapper(fileName, true, wantedMajor, wantedMinor);
+    return new MED::TWrapper(fileName, true, tfileInst, wantedMajor, wantedMinor);
   }
 }

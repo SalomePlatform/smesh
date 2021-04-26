@@ -74,7 +74,10 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
   /*! add one mesh
    */
-  virtual Status Perform();
+  Status Perform() override;
+
+  template<class LowLevelWriter>
+  Driver_Mesh::Status PerformInternal(LowLevelWriter myMed);
 
  private:
 
@@ -92,6 +95,17 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   bool myDoAllInGroups;
   int  myVersion;
   double myZTolerance;
+};
+
+#include "MEDCouplingMemArray.hxx"
+
+class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh_Mem : public DriverMED_W_SMESHDS_Mesh
+{
+public:
+  Status Perform() override;
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> getData() { return _data; }
+private:
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> _data;
 };
 
 #endif

@@ -26,7 +26,6 @@
 //  Module : SMESH
 //
 #include "DriverMED_Family.h"
-#include "MED_Factory.hxx"
 
 #include <sstream>      
 
@@ -364,67 +363,6 @@ DriverMED_Family
   }
 
   return aFamilies;
-}
-
-//=============================================================================
-/*!
- *  Create TFamilyInfo for this family
- */
-//=============================================================================
-MED::PFamilyInfo
-DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper, 
-                                const MED::PMeshInfo& theMeshInfo) const
-{
-  ostringstream aStr;
-  aStr << "FAM_" << myId;
-  set<string>::const_iterator aGrIter = myGroupNames.begin();
-  for(; aGrIter != myGroupNames.end(); aGrIter++){
-    aStr << "_" << *aGrIter;
-  }
-  string aValue = aStr.str();
-  // PAL19785,0019867 - med forbids whitespace to be the last char in the name
-  int maxSize = MED::GetNOMLength();
-  int lastCharPos = min( maxSize, (int) aValue.size() ) - 1;
-  while ( isspace( aValue[ lastCharPos ] ))
-    aValue.resize( lastCharPos-- );
-
-  MED::PFamilyInfo anInfo;
-  if(myId == 0 || myGroupAttributVal == 0){
-    anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
-                                      aValue,
-                                      myId,
-                                      myGroupNames);
-  }else{
-    MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
-    MED::TIntVector anAttrIds (1, myId);        // Id=0,
-    MED::TIntVector anAttrVals (1, myGroupAttributVal);
-    anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
-                                      aValue,
-                                      myId,
-                                      myGroupNames,
-                                      anAttrDescs,
-                                      anAttrIds,
-                                      anAttrVals);
-  }
-
-//  cout << endl;
-//  cout << "Groups: ";
-//  set<string>::iterator aGrIter = myGroupNames.begin();
-//  for (; aGrIter != myGroupNames.end(); aGrIter++)
-//  {
-//    cout << " " << *aGrIter;
-//  }
-//  cout << endl;
-//
-//  cout << "Elements: ";
-//  set<const SMDS_MeshElement *>::iterator anIter = myElements.begin();
-//  for (; anIter != myElements.end(); anIter++)
-//  {
-//    cout << " " << (*anIter)->GetID();
-//  }
-//  cout << endl;
-
-  return anInfo;
 }
 
 //=============================================================================

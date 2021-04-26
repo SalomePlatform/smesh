@@ -2299,6 +2299,69 @@ class Mesh(metaclass = MeshMeta):
             self.mesh.RemoveHypothesis( self.geom, hyp )
             pass
         pass
+
+    def ExportMEDCoupling(self, *args, **kwargs):
+        """
+        Export the mesh in a memory representation.
+
+        Parameters:
+        auto_groups (boolean): parameter for creating/not creating
+                the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
+                the typical use is auto_groups=False.
+        overwrite (boolean): parameter for overwriting/not overwriting the file
+        meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
+        autoDimension: if *True* (default), a space dimension of a MED mesh can be either
+
+                - 1D if all mesh nodes lie on OX coordinate axis, or
+                - 2D if all mesh nodes lie on XOY coordinate plane, or
+                - 3D in the rest cases.
+
+                If *autoDimension* is *False*, the space dimension is always 3.
+        fields: list of GEOM fields defined on the shape to mesh.
+        geomAssocFields: each character of this string means a need to export a 
+                corresponding field; correspondence between fields and characters 
+                is following:
+
+                - 'v' stands for "_vertices_" field;
+                - 'e' stands for "_edges_" field;
+                - 'f' stands for "_faces_" field;
+                - 's' stands for "_solids_" field.
+
+        zTolerance (float): tolerance in Z direction. If Z coordinate of a node is 
+                        close to zero within a given tolerance, the coordinate is set to zero.
+                        If *ZTolerance* is negative (default), the node coordinates are kept as is.
+        """
+        auto_groups     = args[0] if len(args) > 0 else False
+        meshPart        = args[1] if len(args) > 1 else None
+        autoDimension   = args[2] if len(args) > 2 else True
+        fields          = args[3] if len(args) > 3 else []
+        geomAssocFields = args[4] if len(args) > 4 else ''
+        z_tolerance     = args[5] if len(args) > 5 else -1.
+        # process keywords arguments
+        auto_groups     = kwargs.get("auto_groups", auto_groups)
+        meshPart        = kwargs.get("meshPart", meshPart)
+        autoDimension   = kwargs.get("autoDimension", autoDimension)
+        fields          = kwargs.get("fields", fields)
+        geomAssocFields = kwargs.get("geomAssocFields", geomAssocFields)
+        z_tolerance     = kwargs.get("zTolerance", z_tolerance)
+
+        # invoke engine's function
+        if meshPart or fields or geomAssocFields or z_tolerance > 0:
+            unRegister = genObjUnRegister()
+            if isinstance( meshPart, list ):
+                meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+                unRegister.set( meshPart )
+
+            z_tolerance,Parameters,hasVars = ParseParameters(z_tolerance)
+            self.mesh.SetParameters(Parameters)
+
+            return self.mesh.ExportPartToMEDCoupling(meshPart, auto_groups, autoDimension, fields, geomAssocFields, z_tolerance)
+        else:
+            intPtr = self.mesh.ExportMEDCoupling(auto_groups, autoDimension)
+            import medcoupling
+            dab = medcoupling.FromPyIntPtrToDataArrayByte(intPtr)
+            return medcoupling.MEDFileMesh.New(dab)
+
     def ExportMED(self, *args, **kwargs):
         """
         Export the mesh in a file in MED format
