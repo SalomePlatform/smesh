@@ -17,7 +17,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-__revision__ = "V02.01"
+__revision__ = "V03.01"
 
 """Lancement des cas-tests de blocFissure"""
 
@@ -533,24 +533,3 @@ if __name__ == "__main__" :
     sys.stdout.write(TEXTE)
 
   del BLOCFISSURE_TEST
-
-  #sys.exit(0)
-
-
-#while True:
-
-  #import sys
-  #print ("arguments = '{}'".format(sys.argv[1:]))
-
-  #L_PROBLEMES, D_AUX = caract_l_problemes()
-
-  #if ( len(L_PROBLEMES) != len(TORUN) ):
-    #TEXTE  = "\nNombre de problèmes définis  : {}\n".format(len(L_PROBLEMES))
-    #TEXTE += "Longueur de la liste 'TORUN' : {}\n".format(len(TORUN))
-    #TEXTE += "\t==> Incohérence de programmation à corriger dans {}".format(__name__)
-    #print (TEXTE)
-    #break
-
-  #calcul_tout (L_PROBLEMES, D_AUX)
-
-  #break

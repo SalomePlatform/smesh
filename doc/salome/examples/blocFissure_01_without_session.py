@@ -7,39 +7,32 @@ Gérald NICOLAS
 +33.1.78.19.43.52
 """
 
-__revision__ = "V02.01"
+__revision__ = "V02.02"
 
 import os
-import tempfile
 import sys
-
-# Fichier de diagnostic
-LOGFILE = os.path.join(tempfile.gettempdir(),"blocFissure.log")
-if os.path.isfile(LOGFILE):
-  os.remove(LOGFILE)
 
 # Lancement des cas-tests
 import salome
 salome.standalone()
 salome.salome_init()
 
-from blocFissure.materielCasTests import genereMateriel
-
-from blocFissure.CasTests import execution_Cas
+from blocFissure.CasTests import blocFissureTest
+BLOCFISSURE_TEST = blocFissureTest(["cubeAngle", "cubeAngle2", "cubeCoin", "cubeMilieu", "cubeTransverse"])
+TEXTE = BLOCFISSURE_TEST.lancement()
+del BLOCFISSURE_TEST
 
 # Diagnostic
 ERREUR = 0
-if os.path.isfile(LOGFILE):
-  with open(LOGFILE, 'r') as FICHIER:
-    LES_LIGNES = FICHIER.readlines()
-  for LIGNE in LES_LIGNES:
+if TEXTE:
+  for LIGNE in TEXTE:
     #print (LIGNE[:-1])
     if ( "NOOK" in LIGNE ):
-      MESSAGE_ERREUR = LIGNE
+      MESSAGE_ERREUR = TEXTE
       ERREUR = int(LIGNE.split()[-1])
       break
 else:
-  MESSAGE_ERREUR = "Impossible de trouver le fichier de diagnostic {}".format(LOGFILE)
+  MESSAGE_ERREUR = "Impossible de trouver le diagnostic de la procédure de tests."
   ERREUR = -1
 
 if ERREUR:

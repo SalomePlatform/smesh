@@ -46,7 +46,7 @@ SET(BAD_TESTS
   test_smeshplugin_mg_tetra_parallele.py
   test_smeshplugins.py
   MGAdaptTests_without_session.py
-  blocFissure_without_session.py
+  blocFissure_01_without_session.py
   )
 
 SET(GOOD_TESTS
