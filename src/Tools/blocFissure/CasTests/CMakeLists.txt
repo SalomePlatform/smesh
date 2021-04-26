@@ -22,6 +22,7 @@
 # scripts / static
 SET(plugin_SCRIPTS
   __init__.py
+  blocFissureTest.py
   cubeAngle2.py
   cubeAngle.py
   cubeCoin.py
@@ -35,7 +36,6 @@ SET(plugin_SCRIPTS
   eprouvetteCourbe.py
   eprouvetteDroite_2.py
   eprouvetteDroite.py
-  execution_Cas.py
   faceGauche_2.py
   faceGauche.py
   fissureCoude_10.py
