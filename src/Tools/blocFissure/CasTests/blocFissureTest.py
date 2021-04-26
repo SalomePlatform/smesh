@@ -19,7 +19,23 @@
 #
 __revision__ = "V03.01"
 
-"""Lancement des cas-tests de blocFissure"""
+"""Lancement des cas-tests de blocFissure
+
+Temps par type de matériel :
+. cubeAngle : 24s ["cubeAngle", "cubeAngle2"])
+. cubeFin : 42s ["cubeCoin", "cubeMilieu", "cubeTransverse"]
+. decoupeCylindre : 8s ["cylindre", "cylindre_2"]
+. disque_perce (+ ellipse_disque) : 9s ["disque_perce"]
+. fissureGauche : 26s ["faceGauche"]
+. fissureGauche2 (+ ellipse + ellipse_probleme): 22s ["ellipse_1", "ellipse_2", "faceGauche_2"]
+. eprouvetteCourbe : 22s ["eprouvetteCourbe"]
+. eprouvetteDroite : 31s ["eprouvetteDroite", "eprouvetteDroite_2"]
+. vis : 9s ["vis"]
+. tube : ["tube"]
+. sans matériel : 66s ["fissureCoude_1", "fissureCoude_2", "fissureCoude_3", "fissureCoude_4", "fissureCoude_5"]
+. sans matériel : 69s ["fissureCoude_6", "fissureCoude_7", "fissureCoude_8", "fissureCoude_9", "fissureCoude_10"]
+. sans matériel : 28s ["fissure_Coude", "fissure_Coude_4"]
+"""
 
 import logging
 import os
@@ -47,7 +63,7 @@ for IAUX in TORUNOK:
 print ("TORUN = {} # OK".format(TORUNOK))
 print ("TORUN = {} # PB".format(TORUNPB))
 
-# Numéro de référence associé à chaque problème
+# Numéro de référence associé à chaque problème défini par le nom de son fichier dans le répertoire CasTests
 NREF_PB = dict()
 NREF_PB["cubeAngle"] = 0
 NREF_PB["cubeAngle2"] = 1
@@ -55,10 +71,10 @@ NREF_PB["cubeCoin"] = 2
 NREF_PB["cubeMilieu"] = 3
 NREF_PB["cubeTransverse"] = 4
 NREF_PB["cylindre"] = 5
-NREF_PB["cylindre2"] = 6
+NREF_PB["cylindre_2"] = 6
 NREF_PB["disquePerce"] = 7
-NREF_PB["ellipse1"] = 8
-NREF_PB["ellipse2"] = 9
+NREF_PB["ellipse_1"] = 8
+NREF_PB["ellipse_2"] = 9
 NREF_PB["eprouvetteCourbe"] = 10
 NREF_PB["eprouvetteDroite"] = 11
 NREF_PB["eprouvetteDroite_2"] = 12
@@ -154,8 +170,6 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     if self._verbose_max:
       initLog.setVerbose(LOGFILE)   # info = 20
-    #if self._verbose_max:
-      #initLog.setDebug(LOGFILE)     # debug = 10
 
 #===========================  Fin de la méthode ==================================
 
@@ -178,21 +192,18 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     n_cas = 0
     if n_cas in self.l_cas:
-      # genereMateriel : cubeAngle
       from blocFissure.CasTests.cubeAngle import cubeAngle
       self.l_problemes.append(cubeAngle(n_cas))
       self.l_materiels.append("cubeAngle")
 
     n_cas = 1
     if n_cas in self.l_cas:
-      # genereMateriel : cubeAngle
       from blocFissure.CasTests.cubeAngle2 import cubeAngle2
       self.l_problemes.append(cubeAngle2(n_cas))
       self.l_materiels.append("cubeAngle")
 
     n_cas = 2
     if n_cas in self.l_cas:
-      # genereMateriel : cubeFin
       from blocFissure.CasTests import cubeCoin
       self.l_problemes.append(casStandard(cubeCoin.dicoParams, cubeCoin.referencesMaillageFissure, n_cas))
       self.d_nom_probleme[n_cas] = "cubeCoin"
@@ -200,7 +211,6 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     n_cas = 3
     if n_cas in self.l_cas:
-      # genereMateriel : cubeFin
       from blocFissure.CasTests import cubeMilieu
       self.l_problemes.append(casStandard(cubeMilieu.dicoParams, cubeMilieu.referencesMaillageFissure, n_cas))
       self.d_nom_probleme[n_cas] = "cubeMilieu"
@@ -208,7 +218,6 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     n_cas = 4
     if n_cas in self.l_cas:
-      # genereMateriel : cubeFin
       from blocFissure.CasTests import cubeTransverse
       self.l_problemes.append(casStandard(cubeTransverse.dicoParams, cubeTransverse.referencesMaillageFissure, n_cas))
       self.d_nom_probleme[n_cas] = "cubeTransverse"
@@ -216,22 +225,18 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     n_cas = 5
     if n_cas in self.l_cas:
-      # genereMateriel : decoupeCylindre
       from blocFissure.CasTests.cylindre import cylindre
       self.l_problemes.append(cylindre(n_cas))
       self.l_materiels.append("decoupeCylindre")
 
     n_cas = 6
     if n_cas in self.l_cas:
-      # genereMateriel : decoupeCylindre
       from blocFissure.CasTests.cylindre_2 import cylindre_2
       self.l_problemes.append(cylindre_2(n_cas))
       self.l_materiels.append("decoupeCylindre")
 
     n_cas = 7
     if n_cas in self.l_cas:
-      # genereMateriel : disque_perce
-      # genereMateriel : ellipse_disque
       from blocFissure.CasTests import disquePerce
       self.l_problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, n_cas))
       self.d_nom_probleme[n_cas] = "disquePerce"
@@ -240,8 +245,6 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     n_cas = 8
     if n_cas in self.l_cas:
-      # genereMateriel: ellipse
-      # genereMateriel : fissureGauche2
       from blocFissure.CasTests.ellipse_1 import ellipse_1
       self.l_problemes.append(ellipse_1(n_cas))
       self.l_materiels.append("ellipse")
@@ -249,8 +252,6 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     n_cas = 9
     if n_cas in self.l_cas:
-      # genereMateriel: ellipse_probleme
-      # genereMateriel : fissureGauche2
       from blocFissure.CasTests.ellipse_2 import ellipse_2
       self.l_problemes.append(ellipse_2(n_cas))
       self.l_materiels.append("ellipse_probleme")
@@ -258,108 +259,91 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     n_cas = 10
     if n_cas in self.l_cas:
-      # genereMateriel : eprouvetteCourbe
       from blocFissure.CasTests.eprouvetteCourbe import eprouvetteCourbe
       self.l_problemes.append(eprouvetteCourbe(n_cas))
       self.l_materiels.append("eprouvetteCourbe")
 
     n_cas = 11
     if n_cas in self.l_cas:
-      # genereMateriel : eprouvetteDroite
       from blocFissure.CasTests.eprouvetteDroite import eprouvetteDroite
       self.l_problemes.append(eprouvetteDroite(n_cas))
       self.l_materiels.append("eprouvetteDroite")
 
     n_cas = 12
     if n_cas in self.l_cas:
-      # genereMateriel : eprouvetteDroite
       from blocFissure.CasTests.eprouvetteDroite_2 import eprouvetteDroite_2
       self.l_problemes.append(eprouvetteDroite_2(n_cas))
       self.l_materiels.append("eprouvetteDroite")
 
     n_cas = 13
     if n_cas in self.l_cas:
-      # genereMateriel : fissureGauche
       from blocFissure.CasTests.faceGauche import faceGauche
       self.l_problemes.append(faceGauche(n_cas))
       self.l_materiels.append("fissureGauche")
 
     n_cas = 14
     if n_cas in self.l_cas:
-      # genereMateriel : fissureGauche2
       from blocFissure.CasTests.faceGauche_2 import faceGauche_2
       self.l_problemes.append(faceGauche_2(n_cas))
       self.l_materiels.append("fissureGauche2")
 
     n_cas = 15
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_1 import fissureCoude_1
       self.l_problemes.append(fissureCoude_1(n_cas))
 
     n_cas = 16
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_2 import fissureCoude_2
       self.l_problemes.append(fissureCoude_2(n_cas))
 
     n_cas = 17
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_3 import fissureCoude_3
       self.l_problemes.append(fissureCoude_3(n_cas))
 
     n_cas = 18
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_4 import fissureCoude_4
       self.l_problemes.append(fissureCoude_4(n_cas))
 
     n_cas = 19
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_5 import fissureCoude_5
       self.l_problemes.append(fissureCoude_5(n_cas))
 
     n_cas = 20
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_6 import fissureCoude_6
       self.l_problemes.append(fissureCoude_6(n_cas))
 
     n_cas = 21
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_7 import fissureCoude_7
       self.l_problemes.append(fissureCoude_7(n_cas))
 
     n_cas = 22
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_8 import fissureCoude_8
       self.l_problemes.append(fissureCoude_8(n_cas))
 
     n_cas = 23
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_9 import fissureCoude_9
       self.l_problemes.append(fissureCoude_9(n_cas))
 
     n_cas = 24
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissureCoude_10 import fissureCoude_10
       self.l_problemes.append(fissureCoude_10(n_cas))
 
     n_cas = 25
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissure_Coude import fissure_Coude
       self.l_problemes.append(fissure_Coude(n_cas))
 
     n_cas = 26
     if n_cas in self.l_cas:
-      # genereMateriel : aucun
       from blocFissure.CasTests.fissure_Coude_4 import fissure_Coude_4
       self.l_problemes.append(fissure_Coude_4(n_cas))
 
@@ -406,6 +390,9 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     if "ellipse_disque" in self.l_materiels:
       from blocFissure.materielCasTests import ellipse_disque
+
+    if "ellipse_probleme" in self.l_materiels:
+      from blocFissure.materielCasTests import ellipse_probleme
 
     if "ellipse" in self.l_materiels:
       from blocFissure.materielCasTests import ellipse
