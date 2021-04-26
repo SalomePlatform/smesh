@@ -58,17 +58,17 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
 
   const char* GetStoreName () const { return myStoreName.c_str(); }
 
-  virtual int Extent() const;
+  virtual smIdType Extent() const;
 
   virtual bool IsEmpty();
 
-  virtual bool Contains (const int theID);
+  virtual bool Contains (const smIdType theID);
 
   virtual bool Contains (const SMDS_MeshElement* elem);
 
   virtual SMDS_ElemIteratorPtr GetElements() const = 0;
 
-  virtual int GetID (const int theIndex);
+  virtual smIdType GetID (const int theIndex);
   // DON'T use it for iterations 1..Extent()
 
   virtual int GetTic() const = 0;
@@ -89,7 +89,7 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
   { myDefaultColor = theColor;}
 
  protected:
-  const SMDS_MeshElement* findInMesh (const int theID) const;
+  const SMDS_MeshElement* findInMesh (const smIdType theID) const;
   void resetIterator();
 
  private:
@@ -105,8 +105,8 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
   Quantity_Color       myColor;
 
   // for GetID()
-  int                  myCurIndex;
-  int                  myCurID;
+  smIdType             myCurIndex;
+  smIdType             myCurID;
   SMDS_ElemIteratorPtr myIterator;
 
   static Quantity_Color myDefaultColor;

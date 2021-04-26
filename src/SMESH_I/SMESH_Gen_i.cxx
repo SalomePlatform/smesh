@@ -2315,9 +2315,8 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
  */
 //=============================================================================
 
-SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
-                                         GEOM::GEOM_Object_ptr theShapeObject)
-//                                     SMESH::long_array& theNbElems)
+SMESH::smIdType_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
+                                             GEOM::GEOM_Object_ptr theShapeObject)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Evaluate" );
@@ -2328,7 +2327,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
   if ( CORBA::is_nil( theMesh ) )
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
 
-  SMESH::long_array_var nbels = new SMESH::long_array;
+  SMESH::smIdType_array_var nbels = new SMESH::smIdType_array;
   nbels->length(SMESH::Entity_Last);
   int i = SMESH::Entity_Node;
   for (; i < SMESH::Entity_Last; i++)
@@ -2358,9 +2357,9 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
       /*CORBA::Boolean ret =*/ myGen.Evaluate( myLocMesh, myLocShape, aResMap);
       MapShapeNbElemsItr anIt = aResMap.begin();
       for(; anIt!=aResMap.end(); anIt++) {
-        const vector<int>& aVec = (*anIt).second;
+        const vector<smIdType>& aVec = (*anIt).second;
         for ( i = SMESH::Entity_Node; i < (int)aVec.size(); i++ ) {
-          int nbElem = aVec[i];
+          smIdType nbElem = aVec[i];
           if ( nbElem < 0 ) // algo failed, check that it has reported a message
           {
             SMESH_subMesh*            sm = anIt->first;
@@ -2403,7 +2402,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
 
 GEOM::GEOM_Object_ptr
 SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
-                                       CORBA::Long            theElementID,
+                                       SMESH::smIdType        theElementID,
                                        const char*            theGeomName)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -2467,7 +2466,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
 
 GEOM::GEOM_Object_ptr
 SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
-                                        CORBA::Long            theElementID)
+                                        SMESH::smIdType            theElementID)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if ( CORBA::is_nil( theMesh ) )
@@ -2655,7 +2654,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
     }
 
     // remember nb of elements before filling in
-    SMESH::long_array_var prevState =  newMesh->GetNbElementsByType();
+    SMESH::smIdType_array_var prevState =  newMesh->GetNbElementsByType();
 
     // copy nodes
 
@@ -2705,7 +2704,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
         int _assert[( nbNames == SMESH::NB_ELEMENT_TYPES ) ? 2 : -1 ]; _assert[0]=_assert[1]=0;
       }
 
-      SMESH::long_array_var curState = newMesh->GetNbElementsByType();
+      SMESH::smIdType_array_var curState = newMesh->GetNbElementsByType();
 
       for( groupType = SMESH::NODE;
            groupType < SMESH::NB_ELEMENT_TYPES;
@@ -2752,7 +2751,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
 
       SMESH::SMESH_GroupBase_ptr group;
       CORBA::String_var          groupName;
-      SMESH::long_array_var newIDs = new SMESH::long_array();
+      SMESH::smIdType_array_var newIDs = new SMESH::smIdType_array();
 
       // loop on groups of a source mesh
       SMESH::ListOfGroups_var listOfGroups = initImpl->GetGroups();
@@ -2917,7 +2916,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
   }
   else
   {
-    SMESH::long_array_var ids = meshPart->GetIDs();
+    SMESH::smIdType_array_var ids = meshPart->GetIDs();
     if ( srcElemTypes->length() == 1 && srcElemTypes[0] == SMESH::NODE ) // group of nodes
     {
       for ( CORBA::ULong i=0; i < ids->length(); i++ )
@@ -3040,8 +3039,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
       {
         TE2EMap & e2eMap = e2eMapByType[ groupDS->GetType() ];
         if ( e2eMap.empty() ) continue;
-        int minID = e2eMap.begin()->first->GetID();
-        int maxID = e2eMap.rbegin()->first->GetID();
+        smIdType minID = e2eMap.begin()->first->GetID();
+        smIdType maxID = e2eMap.rbegin()->first->GetID();
         TE2EMap::iterator e2e;
         while ( eIt->more() && groupElems.size() < e2eMap.size())
         {
@@ -3872,7 +3871,7 @@ CORBA::Boolean SMESH_Gen_i::CopyMeshWithGeom( SMESH::SMESH_Mesh_ptr       theSou
     {
       if ( newMeshDS->GetMeshInfo().NbElements( SMDSAbs_ElementType( elemType )) > 0 )
       {
-        SMESH::long_array_var elemIDs = stdlGroup->GetIDs();
+        SMESH::smIdType_array_var elemIDs = stdlGroup->GetIDs();
         const bool isElem = ( elemType != SMESH::NODE );
         CORBA::ULong iE = 0;
         for ( ; iE < elemIDs->length(); ++iE ) // check if any element has been copied
@@ -4456,7 +4455,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             // write reference on a shape if exists
             SALOMEDS::SObject_wrap myRef;
             bool shapeRefFound = false;
-            bool found = gotBranch->FindSubObject( GetRefOnShapeTag(), myRef.inout() );
+            bool found = gotBranch->FindSubObject( (CORBA::Long)GetRefOnShapeTag(), myRef.inout() );
             if ( found ) {
               SALOMEDS::SObject_wrap myShape;
               bool ok = myRef->ReferencedObject( myShape.inout() );
@@ -4487,7 +4486,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
             // write applied hypotheses if exist
             SALOMEDS::SObject_wrap myHypBranch;
-            found = gotBranch->FindSubObject( GetRefOnAppliedHypothesisTag(), myHypBranch.inout() );
+            found = gotBranch->FindSubObject( (CORBA::Long)GetRefOnAppliedHypothesisTag(), myHypBranch.inout() );
             if ( found && !shapeRefFound && hasShape ) { // remove applied hyps
               aStudy->NewBuilder()->RemoveObjectWithChildren( myHypBranch );
             }
@@ -4957,7 +4956,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 {
                   SMDS_ElemIteratorPtr eIt =
                     mySMESHDSMesh->elementsIterator( isNode ? SMDSAbs_Node : SMDSAbs_All );
-                  int nbElems = isNode ? mySMESHDSMesh->NbNodes() : mySMESHDSMesh->GetMeshInfo().NbElements();
+                  smIdType nbElems = isNode ? mySMESHDSMesh->NbNodes() : mySMESHDSMesh->GetMeshInfo().NbElements();
                   if ( nbElems < 1 )
                     continue;
                   std::vector<int> smIDs; smIDs.reserve( nbElems );
@@ -4998,7 +4997,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   SMESHDS_SubMesh* aSubMesh = const_cast< SMESHDS_SubMesh* >( smIt->next() );
                   if ( aSubMesh->IsComplexSubmesh() )
                     continue; // submesh containing other submeshs
-                  int nbNodes = aSubMesh->NbNodes();
+                  smIdType nbNodes = aSubMesh->NbNodes();
                   if ( nbNodes == 0 ) continue;
 
                   int aShapeID = aSubMesh->GetID();
@@ -5716,7 +5715,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                     if ( aSubMesh->_is_nil() )
                       continue;
                     string iorSubString = GetORB()->object_to_string( aSubMesh );
-                    int newSubId = myStudyContext->findId( iorSubString );
+                    int        newSubId = myStudyContext->findId( iorSubString );
                     myStudyContext->mapOldToNew( subid, newSubId );
                   }
                 }
@@ -6233,7 +6232,7 @@ int SMESH_Gen_i::RegisterObject(CORBA::Object_ptr theObject)
  */
 //================================================================================
 
-CORBA::Long SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
+CORBA::Long  SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
 {
   if ( myStudyContext && !CORBA::is_nil( theObject )) {
     string iorString = GetORB()->object_to_string( theObject );
@@ -6533,7 +6532,7 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
   SMESH::SMESH_Group_var gsource = SMESH::SMESH_Group::_narrow(meshPart);
   if ( !gsource->_is_nil() ) {
     if(theElemType == SMESH::NODE) {
-      SMESH::long_array_var nodes = gsource->GetNodeIDs();
+      SMESH::smIdType_array_var nodes = gsource->GetNodeIDs();
       for ( CORBA::ULong i = 0; i < nodes->length(); ++i ) {
         if ( const SMDS_MeshNode* node = meshDS->FindNode( nodes[i] )) {
           long anId = node->GetID();
@@ -6542,7 +6541,7 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
         }
       }
     } else if (gsource->GetType() == theElemType || theElemType == SMESH::ALL ) {
-      SMESH::long_array_var elems = gsource->GetListOfID();
+      SMESH::smIdType_array_var elems = gsource->GetListOfID();
       for ( CORBA::ULong i = 0; i < elems->length(); ++i ) {
         if ( const SMDS_MeshElement* elem = meshDS->FindElement( elems[i] )) {
           long anId = elem->GetID();
@@ -6554,7 +6553,7 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
   }
   SMESH::SMESH_subMesh_var smsource = SMESH::SMESH_subMesh::_narrow(meshPart);
   if ( !smsource->_is_nil() ) {
-    SMESH::long_array_var elems = smsource->GetElementsByType( theElemType );
+    SMESH::smIdType_array_var elems = smsource->GetElementsByType( theElemType );
     for ( CORBA::ULong i = 0; i < elems->length(); ++i ) {
       const SMDS_MeshElement* elem = ( theElemType == SMESH::NODE ) ? meshDS->FindNode( elems[i] ) : meshDS->FindElement( elems[i] );
       if (elem) {

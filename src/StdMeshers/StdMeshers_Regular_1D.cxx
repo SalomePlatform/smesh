@@ -350,7 +350,7 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
 
 static bool computeParamByFunc(Adaptor3d_Curve& C3d,
                                double first, double last, double length,
-                               bool theReverse, int nbSeg, Function& func,
+                               bool theReverse, smIdType nbSeg, Function& func,
                                list<double>& theParams)
 {
   // never do this way
@@ -359,11 +359,11 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d,
   if ( nbSeg <= 0 )
     return false;
 
-  int nbPnt = 1 + nbSeg;
+  smIdType nbPnt = 1 + nbSeg;
   vector<double> x( nbPnt, 0. );
 
 
-  const double eps = Min( 1E-4, 1./nbSeg/100. );
+  const double eps = Min( 1E-4, 0.01 / double( nbSeg ));
 
   if ( !buildDistribution( func, 0.0, 1.0, nbSeg, x, eps ))
      return false;
@@ -377,7 +377,7 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d,
     sign  = -1.;
   }
 
-  for ( int i = 1; i < nbSeg; i++ )
+  for ( smIdType i = 1; i < nbSeg; i++ )
   {
     double curvLength = length * (x[i] - x[i-1]) * sign;
     double tol        = Min( Precision::Confusion(), curvLength / 100. );
@@ -420,7 +420,7 @@ static void compensateError(double a1, double an,
                             list<double> &    theParams,
                             bool              adjustNeighbors2an = false)
 {
-  int i, nPar = theParams.size();
+  smIdType i, nPar = theParams.size();
   if ( a1 + an <= length && nPar > 1 )
   {
     bool reverse = ( U1 > Un );
@@ -459,7 +459,7 @@ static void compensateError(double a1, double an,
     }
     else
     {
-      double q  = dUn / ( nPar - 1 );
+      double q  =  dUn / double( nPar - 1 );
       theParams.back() += dUn;
       double sign = reverse ? -1 : 1;
       double prevU = theParams.back();
@@ -567,12 +567,66 @@ StdMeshers_Regular_1D::getVertexHyp(SMESH_Mesh &          theMesh,
 
 //================================================================================
 /*!
+ * \brief Divide a curve into equal segments
+ */
+//================================================================================
+
+bool StdMeshers_Regular_1D::divideIntoEqualSegments( SMESH_Mesh &        theMesh,
+                                                     Adaptor3d_Curve &   theC3d,
+                                                     smIdType            theNbPoints,
+                                                     double              theTol,
+                                                     double              theLength,
+                                                     double              theFirstU,
+                                                     double              theLastU,
+                                                     std::list<double> & theParameters )
+{
+  bool ok = false;
+  if ( theNbPoints < IntegerLast() )
+  {
+    int nbPnt = FromSmIdType<int>( theNbPoints );
+    GCPnts_UniformAbscissa discret(theC3d, nbPnt, theFirstU, theLastU, theTol );
+    if ( !discret.IsDone() )
+      return error( "GCPnts_UniformAbscissa failed");
+    if ( discret.NbPoints() < nbPnt )
+      discret.Initialize(theC3d, nbPnt + 1, theFirstU, theLastU, theTol );
+
+    int nbPoints = Min( discret.NbPoints(), nbPnt );
+    for ( int i = 2; i < nbPoints; i++ ) // skip 1st and last points
+    {
+      double param = discret.Parameter(i);
+      theParameters.push_back( param );
+    }
+    ok = true;
+  }
+  else // huge nb segments
+  {
+    // use FIXED_POINTS_1D method
+    StdMeshers_FixedPoints1D fixedPointsHyp( GetGen()->GetANewId(), GetGen() );
+    _fpHyp = &fixedPointsHyp;
+    std::vector<double>   params = { 0., 1. };
+    std::vector<smIdType> nbSegs = { theNbPoints - 1 };
+    fixedPointsHyp.SetPoints( params );
+    fixedPointsHyp.SetNbSegments( nbSegs );
+
+    HypothesisType curType = _hypType;
+    _hypType = FIXED_POINTS_1D;
+
+    ok = computeInternalParameters( theMesh, theC3d, theLength, theFirstU, theLastU,
+                                    theParameters, /*reverse=*/false );
+    _hypType = curType;
+    _fpHyp = 0;
+  }
+  return ok;
+}
+
+//================================================================================
+/*!
  * \brief Tune parameters to fit "SegmentLengthAroundVertex" hypothesis
-  * \param theC3d - wire curve
-  * \param theLength - curve length
-  * \param theParameters - internal nodes parameters to modify
-  * \param theVf - 1st vertex
-  * \param theVl - 2nd vertex
+ *  \param theC3d - wire curve
+ *  \param theLength - curve length
+ *  \param theParameters - internal nodes parameters to modify
+ *  \param theVf - 1st vertex
+ *  \param theVl - 2nd vertex
  */
 //================================================================================
 
@@ -584,7 +638,7 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
                                                       const TopoDS_Vertex & theVl)
 {
   double f = theC3d.FirstParameter(), l = theC3d.LastParameter();
-  int nPar = theParameters.size();
+  size_t nPar = theParameters.size();
   for ( int isEnd1 = 0; isEnd1 < 2; ++isEnd1 )
   {
     const TopoDS_Vertex & V = isEnd1 ? theVf : theVl;
@@ -623,7 +677,7 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
       {
         // recompute params between the last segment and a middle one.
         // find size of a middle segment
-        int nHalf = ( nPar-1 ) / 2;
+        smIdType nHalf = ( nPar-1 ) / 2;
         list< double >::reverse_iterator itU = theParameters.rbegin();
         std::advance( itU, nHalf );
         double Um = *itU++;
@@ -714,7 +768,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     size_t  dSeg = theReverse ? -1 : +1;
     double param = theFirstU;
     size_t nbParams = 0;
-    for ( int i = 0, nb = segLen.size()-1; i < nb; ++i, iSeg += dSeg )
+    for ( size_t i = 1; i < segLen.size(); ++i, iSeg += dSeg )
     {
       double tol = Min( Precision::Confusion(), 0.01 * segLen[ iSeg ]);
       GCPnts_AbscissaPoint Discret( tol, theC3d, segLen[ iSeg ], param );
@@ -740,14 +794,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   case NB_SEGMENTS:
   {
     double eltSize = 1;
-    int nbSegments;
+    smIdType nbSegments;
     if ( _hypType == MAX_LENGTH )
     {
       double nbseg = ceil(theLength / _value[ BEG_LENGTH_IND ]); // integer sup
       if (nbseg <= 0)
         nbseg = 1; // degenerated edge
       eltSize = theLength / nbseg * ( 1. - 1e-9 );
-      nbSegments = (int) nbseg;
+      nbSegments = ToSmIdType( nbseg );
     }
     else if ( _hypType == LOCAL_LENGTH )
     {
@@ -770,10 +824,10 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
           }
           if (computed) {
             SMESHDS_SubMesh* smds = sm->GetSubMeshDS();
-            int       nb_segments = smds->NbElements();
+            smIdType  nb_segments = smds->NbElements();
             if (nbseg - 1 <= nb_segments && nb_segments <= nbseg + 1) {
               isFound = true;
-              nbseg = nb_segments;
+              nbseg = FromSmIdType<double>( nb_segments );
             }
           }
         }
@@ -788,7 +842,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       if (nbseg <= 0)
         nbseg = 1;                        // degenerated edge
       eltSize = theLength / nbseg;
-      nbSegments = (int) nbseg;
+      nbSegments = ToSmIdType( nbseg );
     }
     else
     {
@@ -805,19 +859,19 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
           if (fabs(scale - 1.0) < Precision::Confusion()) {
             // special case to avoid division by zero
-            for (int i = 1; i < nbSegments; i++) {
-              double param = f + (l - f) * i / nbSegments;
+            for ( smIdType i = 1; i < nbSegments; i++) {
+              double param = f + (l - f) * double( i ) / double( nbSegments );
               theParams.push_back( param );
             }
-          } else {
-            // general case of scale distribution
+          }
+          else { // general case of scale distribution
             if ( theReverse )
               scale = 1.0 / scale;
 
-            double  alpha = pow(scale, 1.0 / (nbSegments - 1));
+            double  alpha = pow(scale, 1.0 / double( nbSegments - 1 ));
             double factor = (l - f) / (1.0 - pow(alpha, nbSegments));
 
-            for (int i = 1; i < nbSegments; i++) {
+            for ( smIdType i = 1; i < nbSegments; i++) {
               double param = f + factor * (1.0 - pow(alpha, i));
               theParams.push_back( param );
             }
@@ -837,7 +891,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
         break;
       case StdMeshers_NumberOfSegments::DT_TabFunc:
         {
-          FunctionTable func(_vvalue[ TAB_FUNC_IND ], _ivalue[ CONV_MODE_IND ]);
+          FunctionTable func(_vvalue[ TAB_FUNC_IND ], FromSmIdType<int>( _ivalue[ CONV_MODE_IND ]));
           return computeParamByFunc(theC3d, f, l, theLength, theReverse,
                                     _ivalue[ NB_SEGMENTS_IND ], func,
                                     theParams);
@@ -845,14 +899,15 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
         break;
       case StdMeshers_NumberOfSegments::DT_ExprFunc:
         {
-          FunctionExpr func(_svalue[ EXPR_FUNC_IND ].c_str(), _ivalue[ CONV_MODE_IND ]);
+          FunctionExpr func(_svalue[ EXPR_FUNC_IND ].c_str(),
+                            FromSmIdType<int>( _ivalue[ CONV_MODE_IND ]));
           return computeParamByFunc(theC3d, f, l, theLength, theReverse,
                                     _ivalue[ NB_SEGMENTS_IND ], func,
                                     theParams);
         }
         break;
       case StdMeshers_NumberOfSegments::DT_Regular:
-        eltSize = theLength / nbSegments;
+        eltSize = theLength / double( nbSegments );
         break;
       default:
         return false;
@@ -860,18 +915,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     }
 
     double tol = Min( Precision::Confusion(), 0.01 * eltSize );
-    GCPnts_UniformAbscissa Discret(theC3d, nbSegments + 1, f, l, tol );
-    if ( !Discret.IsDone() )
-      return error( "GCPnts_UniformAbscissa failed");
-    if ( Discret.NbPoints() < nbSegments + 1 )
-      Discret.Initialize(theC3d, nbSegments + 2, f, l, tol );
+    divideIntoEqualSegments( theMesh, theC3d, nbSegments + 1, tol,
+                             theLength, theFirstU, theLastU, theParams );
 
-    int NbPoints = Min( Discret.NbPoints(), nbSegments + 1 );
-    for ( int i = 2; i < NbPoints; i++ ) // skip 1st and last points
-    {
-      double param = Discret.Parameter(i);
-      theParams.push_back( param );
-    }
     compensateError( eltSize, eltSize, f, l, theLength, theC3d, theParams, true ); // for PAL9899
     return true;
   }
@@ -1001,11 +1047,11 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   case FIXED_POINTS_1D:
   {
     const std::vector<double>& aPnts = _fpHyp->GetPoints();
-    std::vector<int>          nbsegs = _fpHyp->GetNbSegments();
+    std::vector<smIdType>     nbsegs = _fpHyp->GetNbSegments();
 
     // sort normalized params, taking into account theReverse
     TColStd_SequenceOfReal Params;
-    double tol = 1e-7 / theLength; // GCPnts_UniformAbscissa allows u2-u1 > 1e-7
+    double tol = 1e-7;
     for ( size_t i = 0; i < aPnts.size(); i++ )
     {
       if( aPnts[i] < tol || aPnts[i] > 1 - tol )
@@ -1013,72 +1059,82 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       double u = theReverse ? ( 1 - aPnts[i] ) : aPnts[i];
       int    j = 1;
       bool IsExist = false;
-      for ( ; j <= Params.Length(); j++ ) {
-        if ( Abs( u - Params.Value(j) ) < tol ) {
-          IsExist = true;
-          break;
-        }
+      for ( ; j <= Params.Length() &&  !IsExist; j++ )
+      {
+        IsExist = ( Abs( u - Params.Value(j) ) < tol );
         if ( u < Params.Value(j) ) break;
       }
       if ( !IsExist ) Params.InsertBefore( j, u );
     }
+    Params.InsertBefore( 1, 0.0 );
+    Params.Append( 1.0 );
 
-    // transform normalized Params into real ones
-    std::vector< double > uVec( Params.Length() + 2 );
-    uVec[ 0 ] = theFirstU;
-    double abscissa;
-    for ( int i = 1; i <= Params.Length(); i++ )
-    {
-      abscissa = Params( i ) * theLength;
-      tol      = Min( Precision::Confusion(), 0.01 * abscissa );
-      GCPnts_AbscissaPoint APnt( tol, theC3d, abscissa, theFirstU );
-      if ( !APnt.IsDone() )
-        return error( "GCPnts_AbscissaPoint failed");
-      uVec[ i ] = APnt.Parameter();
-    }
-    uVec.back() = theLastU;
-
-    // divide segments
     if ( theReverse )
     {
-      if ((int) nbsegs.size() > Params.Length() + 1 )
-        nbsegs.resize( Params.Length() + 1 );
+      if ((int) nbsegs.size() > Params.Length() - 1 )
+        nbsegs.resize( Params.Length() - 1 );
       std::reverse( nbsegs.begin(), nbsegs.end() );
     }
     if ( nbsegs.empty() )
     {
       nbsegs.push_back( 1 );
     }
-    Params.InsertBefore( 1, 0.0 );
-    Params.Append( 1.0 );
+    if ((int) nbsegs.size() < Params.Length() - 1 )
+      nbsegs.resize( Params.Length() - 1, nbsegs[0] );
+
+    // care of huge nbsegs - additionally divide diapasons
+    for ( int i = 2; i <= Params.Length(); i++ )
+    {
+      smIdType nbTot = nbsegs[ i-2 ];
+      if ( nbTot <= IntegerLast() )
+        continue;
+      smIdType   nbDiapason = nbTot / IntegerLast() + 1;
+      smIdType nbSegPerDiap = nbTot / nbDiapason;
+      double           par0 = Params( i - 1 ), par1 = Params( i );
+      for ( smIdType iDiap = 0; iDiap < nbDiapason - 1; ++iDiap )
+      {
+        double    r = double( nbSegPerDiap * ( iDiap + 1 )) / double( nbTot );
+        double parI = par0 + ( par1 - par0 ) * r;
+        Params.InsertBefore( i, parI );
+        auto it = nbsegs.begin();
+        smIdType incr_it = i - 2 + iDiap;
+        nbsegs.insert( it + incr_it, nbSegPerDiap );
+      }
+      nbsegs[ i-2 + nbDiapason - 1 ] = nbSegPerDiap + nbTot % nbDiapason;
+    }
+
+    // transform normalized Params into real ones
+    std::vector< double > uVec( Params.Length() );
+    uVec[ 0 ] = theFirstU;
+    double abscissa;
+    for ( int i = 2; i < Params.Length(); i++ )
+    {
+      abscissa = Params( i ) * theLength;
+      tol      = Min( Precision::Confusion(), 0.01 * abscissa );
+      GCPnts_AbscissaPoint APnt( tol, theC3d, abscissa, theFirstU );
+      if ( !APnt.IsDone() )
+        return error( "GCPnts_AbscissaPoint failed");
+      uVec[ i-1 ] = APnt.Parameter();
+    }
+    uVec.back() = theLastU;
+
+    // divide segments
     double eltSize, segmentSize, par1, par2;
-    for ( size_t i = 0; i < uVec.size()-1; i++ )
+    for ( int i = 0; i < (int)uVec.size()-1; i++ )
     {
       par1 = uVec[ i   ];
       par2 = uVec[ i+1 ];
-      int nbseg = ( i < nbsegs.size() ) ? nbsegs[i] : nbsegs[0];
-      if ( nbseg == 1 )
-      {
-        theParams.push_back( par2 );
-      }
-      else
+      smIdType nbseg = ( i < (int) nbsegs.size() ) ? nbsegs[i] : nbsegs[0];
+      if ( nbseg > 1 )
       {
         segmentSize = ( Params( i+2 ) - Params( i+1 )) * theLength;
-        eltSize     = segmentSize / nbseg;
+        eltSize     = segmentSize / double( nbseg );
         tol         = Min( Precision::Confusion(), 0.01 * eltSize );
-        GCPnts_UniformAbscissa Discret( theC3d, eltSize, par1, par2, tol );
-        if ( !Discret.IsDone() )
-          return error( "GCPnts_UniformAbscissa failed");
-        if ( Discret.NbPoints() < nbseg + 1 ) {
-          eltSize = segmentSize / ( nbseg + 0.5 );
-          Discret.Initialize( theC3d, eltSize, par1, par2, tol );
-        }
-        int NbPoints = Discret.NbPoints();
-        for ( int i = 2; i <= NbPoints; i++ ) {
-          double param = Discret.Parameter(i);
-          theParams.push_back( param );
-        }
+        if ( !divideIntoEqualSegments( theMesh, theC3d, nbseg + 1, tol,
+                                       segmentSize, par1, par2, theParams ))
+          return false;
       }
+      theParams.push_back( par2 );
     }
     theParams.pop_back();
 
@@ -1312,7 +1368,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh &         theMesh,
   ASSERT(!VFirst.IsNull());
   ASSERT(!VLast.IsNull());
 
-  std::vector<int> aVec(SMDSEntity_Last,0);
+  std::vector<smIdType> aVec(SMDSEntity_Last,0);
 
   double length = EdgeLength( E );
   if ( !Curve.IsNull() && length > 0 )
@@ -1396,7 +1452,7 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   if (nbHyp == 0) // nothing propagated nor assigned to aShape
   {
     SMESH_Algo::GetUsedHypothesis( aMesh, aShape, ignoreAuxiliary );
-    nbHyp = _usedHypList.size();
+    nbHyp = (int)_usedHypList.size();
   }
   else
   {

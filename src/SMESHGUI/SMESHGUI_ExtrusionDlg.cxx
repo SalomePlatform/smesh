@@ -289,12 +289,12 @@ void SMESHGUI_3TypesSelector::selectionIntoArgument()
     }
     else // get indices of selected elements
     {
-      TColStd_IndexedMapOfInteger aMapIndex;
+      SVTK_TIndexedMapOfVtkId aMapIndex;
       mySelector->GetIndex(IO,aMapIndex);
       int nbElements = aMapIndex.Extent();
       if ( nbElements > 0 )
       {
-        SMESH::long_array_var ids = new SMESH::long_array;
+        SMESH::smIdType_array_var ids = new SMESH::smIdType_array;
         ids->length( nbElements );
         for ( int i = 0; i < nbElements; ++i )
           aString += QString(" %1").arg( ids[ i ] = aMapIndex( i+1 ));
@@ -352,9 +352,9 @@ void SMESHGUI_3TypesSelector::onTextChange( const QString& theNewText )
       SMDSAbs_ElementType SMDSType = SMDSAbs_ElementType( iType+1 );
       const bool isNode = ( SMDSType == SMDSAbs_Node );
 
-      SMESH::long_array_var ids = new SMESH::long_array;
+      SMESH::smIdType_array_var ids = new SMESH::smIdType_array;
       ids->length( aListId.count() );
-      TColStd_MapOfInteger newIndices;
+      SVTK_TVtkIDsMap newIndices;
       for (int i = 0; i < aListId.count(); i++) {
         int id = aListId[ i ].toInt();
         bool validId = false;
@@ -392,7 +392,7 @@ void SMESHGUI_3TypesSelector::onTextChange( const QString& theNewText )
  */
 //================================================================================
 
-void SMESHGUI_3TypesSelector::addTmpIdSource( SMESH::long_array_var& ids, int iType, int index )
+void SMESHGUI_3TypesSelector::addTmpIdSource( SMESH::smIdType_array_var& ids, int iType, int index )
 {
   SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
   SMESH::SMESH_IDSource_var idSrc =
@@ -1368,7 +1368,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
   if ( SelectVectorButton->isChecked() )
   {
     Handle(SALOME_InteractiveObject) IO = aList.First();
-    TColStd_IndexedMapOfInteger aMapIndex;
+    SVTK_TIndexedMapOfVtkId aMapIndex;
     mySelector->GetIndex(IO,aMapIndex);
     if ( aMapIndex.Extent() != 1 )
       return;

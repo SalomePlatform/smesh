@@ -741,7 +741,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
     ReverseConnectivity( anIds, myGeomType, /*toReverse=*/true, /*toVtkOrder=*/false );
 
   int aNumberOfIds = anIds.size();
-  SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
+  SMESH::smIdType_array_var anArrayOfIdeces = new SMESH::smIdType_array;
   anArrayOfIdeces->length( aNumberOfIds );
 
   for (int i = 0; i < aNumberOfIds; i++)
@@ -841,7 +841,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
     }
 
     if ( !aGroupUsed->_is_nil() ) {
-      SMESH::long_array_var anIdList = new SMESH::long_array;
+      SMESH::smIdType_array_var anIdList = new SMESH::smIdType_array;
       anIdList->length( 1 );
       anIdList[0] = anElemId;
       aGroupUsed->Add( anIdList.inout() );
@@ -989,7 +989,7 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
     myCurrentLineEdit = send;
 
   if (aMesh) {
-    TColStd_MapOfInteger newIndices;
+    SVTK_TVtkIDsMap newIndices;
 
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
     bool allOk = true;

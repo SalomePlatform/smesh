@@ -132,7 +132,7 @@ SMDS_ElemIteratorPtr SMESHDS_GroupOnGeom::GetElements() const
 //purpose  : 
 //=======================================================================
 
-bool SMESHDS_GroupOnGeom::Contains (const int theID)
+bool SMESHDS_GroupOnGeom::Contains (const smIdType theID)
 {
   return mySubMesh->Contains( findInMesh( theID ));
 }

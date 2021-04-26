@@ -28,6 +28,7 @@
 
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLinks.h>
+#include <smIdType.hxx>
 
 #include <vector>
 #include <set>
@@ -73,17 +74,17 @@ class SMDS_EXPORT SMDS_UnstructuredGrid: public vtkUnstructuredGrid
 {
 public:
   void setSMDS_mesh(SMDS_Mesh *mesh);
-  void compactGrid(std::vector<int>& idNodesOldToNew,
-                   int               newNodeSize,
-                   std::vector<int>& idCellsOldToNew,
-                   int               newCellSize);
+  void compactGrid(std::vector<smIdType>& idNodesOldToNew,
+                   smIdType               newNodeSize,
+                   std::vector<smIdType>& idCellsOldToNew,
+                   smIdType               newCellSize);
   virtual vtkMTimeType GetMTime();
   virtual vtkPoints *GetPoints();
 
-  int InsertNextLinkedCell(int type, int npts, vtkIdType *pts);
+  vtkIdType InsertNextLinkedCell(int type, int npts, vtkIdType *pts);
 
-  int CellIdToDownId(int vtkCellId);
-  void setCellIdToDownId(int vtkCellId, int downId);
+  int CellIdToDownId(vtkIdType vtkCellId);
+  void setCellIdToDownId(vtkIdType vtkCellId, int downId);
   void CleanDownwardConnectivity();
   void BuildDownwardConnectivity(bool withEdges);
   int GetNeighbors(int* neighborsVtkIds, int* downIds, unsigned char* downTypes, int vtkId, bool getSkin=false);
@@ -115,10 +116,10 @@ public:
 protected:
   SMDS_UnstructuredGrid();
   ~SMDS_UnstructuredGrid();
-  void copyNodes(vtkPoints *newPoints, std::vector<int>& idNodesOldToNew, int& alreadyCopied, int start, int end);
+  void copyNodes(vtkPoints *newPoints, std::vector<smIdType>& idNodesOldToNew, vtkIdType& alreadyCopied, vtkIdType start, vtkIdType end);
   void copyBloc(vtkUnsignedCharArray *newTypes,
-                const std::vector<int>& idCellsOldToNew,
-                const std::vector<int>& idNodesOldToNew,
+                const std::vector<smIdType>& idCellsOldToNew,
+                const std::vector<smIdType>& idNodesOldToNew,
                 vtkCellArray* newConnectivity,
                 vtkIdTypeArray* newLocations,
                 std::vector<vtkIdType>& pointsCell);

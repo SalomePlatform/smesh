@@ -108,7 +108,7 @@ SMESH_SVTKActor
 void
 SMESH_SVTKActor
 ::MapCells(SALOME_Actor* theMapActor,
-           const TColStd_IndexedMapOfInteger& theMapIndex)
+           const SVTK_TIndexedMapOfVtkId& theMapIndex)
 {
   myUnstructuredGrid->Initialize();
   myUnstructuredGrid->Allocate();
@@ -134,8 +134,9 @@ SMESH_SVTKActor
     cd = aSourceGrid->GetCellData();
   }
   outputCD->CopyAllocate(cd,aNbOfParts,aNbOfParts/2);
-  for(int ind = 1; ind <= aNbOfParts; ind++){
-    int aPartId = theMapIndex( ind );
+  for(int ind = 1; ind <= aNbOfParts; ind++)
+  {
+    vtkIdType aPartId = theMapIndex( ind );
     if(vtkCell* aCell = theMapActor->GetElemCell(aPartId))
     {
       if (aCell->GetCellType() != VTK_POLYHEDRON)

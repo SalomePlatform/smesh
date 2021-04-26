@@ -33,6 +33,7 @@
 
 #include "SMESH_Mesh.idl"
 #include "SMESH_Hypothesis.idl"
+#include "SMESH_smIdType.idl"
 
 module SMESH
 {
@@ -387,8 +388,8 @@ module SMESH
     /*!
      * Evaluates size of prospective mesh on a shape
      */
-    long_array  Evaluate(in SMESH_Mesh        theMesh,
-                         in GEOM::GEOM_Object theSubObject)
+    smIdType_array  Evaluate(in SMESH_Mesh        theMesh,
+                             in GEOM::GEOM_Object theSubObject)
       raises ( SALOME::SALOME_Exception );
 
     /*!
@@ -446,17 +447,17 @@ module SMESH
      * The returned geometrical object, if not nil, is either found in the
      * study or is published by this method with the given name
      */
-    GEOM::GEOM_Object GetGeometryByMeshElement( in SMESH_Mesh  theMesh,
-                                                in long        theElementID,
-                                                in string      theGeomName)
+    GEOM::GEOM_Object GetGeometryByMeshElement( in SMESH_Mesh theMesh,
+                                                in smIdType   theElementID,
+                                                in string     theGeomName)
       raises ( SALOME::SALOME_Exception );
 
     /*!
      * Return geometrical object the given element is built on.
      * The returned geometrical object not published in study by this method.
      */
-    GEOM::GEOM_Object FindGeometryByMeshElement( in SMESH_Mesh  theMesh,
-                                                 in long        theElementID)
+    GEOM::GEOM_Object FindGeometryByMeshElement( in SMESH_Mesh theMesh,
+                                                 in smIdType   theElementID)
       raises ( SALOME::SALOME_Exception );
 
     /*!

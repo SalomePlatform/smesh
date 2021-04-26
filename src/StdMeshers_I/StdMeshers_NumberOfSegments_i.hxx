@@ -58,7 +58,7 @@ public:
   SMESH::double_array* BuildDistributionTab( const SMESH::double_array&, CORBA::Long, CORBA::Long );
 
   // Set number of segments
-  void SetNumberOfSegments( CORBA::Long theSegmentsNumber );
+  void SetNumberOfSegments( SMESH::smIdType theSegmentsNumber );
   // Get number of segments
   CORBA::Long GetNumberOfSegments();
 

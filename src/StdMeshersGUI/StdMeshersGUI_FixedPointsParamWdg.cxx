@@ -301,17 +301,18 @@ double StdMeshersGUI_FixedPointsParamWdg::point( int idx ) const
   return idx >= 0 && idx < myListWidget->count() ? myListWidget->item( idx )->data( Qt::UserRole ).toDouble() : 0.;
 }
 
-void StdMeshersGUI_FixedPointsParamWdg::setNbSegments( int idx, int val )
+void StdMeshersGUI_FixedPointsParamWdg::setNbSegments( int idx, SMESH::smIdType val )
 {
-  if ( idx >= 0 && idx < myTreeWidget->topLevelItemCount() ) {
-    myTreeWidget->topLevelItem( idx )->setData( 1, Qt::UserRole, val );
+  if ( idx >= 0 && idx < myTreeWidget->topLevelItemCount() )
+  {
+    myTreeWidget->topLevelItem( idx )->setData( 1, Qt::UserRole, qlonglong( val ));
     myTreeWidget->topLevelItem( idx )->setText( 1, idx > 0 && mySameValues->isChecked() ? QString( SAME_TEXT ) : QString::number( val ) );
   }
 }
 
-int StdMeshersGUI_FixedPointsParamWdg::nbSegments( int idx ) const
+smIdType StdMeshersGUI_FixedPointsParamWdg::nbSegments( int idx ) const
 {
-  return idx >= 0 && idx < myTreeWidget->topLevelItemCount() ? myTreeWidget->topLevelItem( idx )->data( 1, Qt::UserRole ).toInt() : 1;
+  return idx >= 0 && idx < myTreeWidget->topLevelItemCount() ? myTreeWidget->topLevelItem( idx )->data( 1, Qt::UserRole ).toLongLong() : 1;
 }
 
 //=================================================================================
@@ -369,9 +370,9 @@ void StdMeshersGUI_FixedPointsParamWdg::SetListOfPoints( SMESH::double_array_var
 // function : GetListOfSegments
 // purpose  : Called to get the list Number of Segments
 //=================================================================================
-SMESH::long_array_var StdMeshersGUI_FixedPointsParamWdg::GetListOfSegments()
+SMESH::smIdType_array_var StdMeshersGUI_FixedPointsParamWdg::GetListOfSegments()
 {
-  SMESH::long_array_var anArray = new SMESH::long_array;
+  SMESH::smIdType_array_var anArray = new SMESH::smIdType_array;
   int size = mySameValues->isChecked() ? 1 : myTreeWidget->topLevelItemCount();
   anArray->length( size );
   for (int i = 0; i < size; i++) {
@@ -384,7 +385,7 @@ SMESH::long_array_var StdMeshersGUI_FixedPointsParamWdg::GetListOfSegments()
 // function : SetListOfPoints
 // purpose  : Called to set the list of Points
 //=================================================================================
-void StdMeshersGUI_FixedPointsParamWdg::SetListOfSegments( SMESH::long_array_var theSegments)
+void StdMeshersGUI_FixedPointsParamWdg::SetListOfSegments( SMESH::smIdType_array_var theSegments)
 {
   if ( myListWidget->count() > 0 && theSegments->length() == 1)
     mySameValues->setChecked(true);

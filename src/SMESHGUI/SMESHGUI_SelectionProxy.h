@@ -176,7 +176,7 @@ namespace SMESH
     bool hasElement( int );
     SMESH::ElementType elementType( int ) const;
     int elementEntityType( int ) const;
-    bool elementConnectivity( int, Connectivity& );
+    bool elementConnectivity( SMESH::smIdType, Connectivity& );
     bool perFaceConnectivity( int, Connectivity&, int& );
     bool elementPosition( int, Position& );
     bool elementGravityCenter( int, XYZ& );
@@ -192,8 +192,8 @@ namespace SMESH
     // methods that work for group only
     SMESH::ElementType groupElementType() const;
     QColor color() const;
-    int size( bool = false ) const;
-    int nbNodes( bool = false ) const;
+    SMESH::smIdType size( bool = false ) const;
+    SMESH::smIdType nbNodes( bool = false ) const;
     QSet<uint> ids() const;
 
   private:

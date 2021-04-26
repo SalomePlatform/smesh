@@ -31,6 +31,8 @@
 
 #include "SMESHDS_Command.hxx"
 
+#include <smIdType.hxx>
+
 #include <list>
 #include <vector>
 
@@ -44,79 +46,79 @@ class SMESHDS_EXPORT SMESHDS_Script
         void SetModified(bool theModified);
         bool IsModified();
 
-        void AddNode(int NewNodeID, double x, double y, double z);
-        void Add0DElement(int New0DElementID, int idnode);
-        void AddEdge(int NewEdgeID, int idnode1, int idnode2);
-        void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3);
-        void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3,
-                int idnode4);
-        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                int idnode4);
-        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                int idnode4, int idnode5);
-        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                int idnode4, int idnode5, int idnode6);
-        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                int idnode4, int idnode5, int idnode6, int idnode7, int idnode8);
-        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                       int idnode4, int idnode5, int idnode6, int idnode7, int idnode8,
-                       int idnode9, int idnode10, int idnode11, int idnode12);
+        void AddNode(smIdType NewNodeID, double x, double y, double z);
+        void Add0DElement(smIdType New0DElementID, smIdType idnode);
+        void AddEdge(smIdType NewEdgeID, smIdType idnode1, smIdType idnode2);
+        void AddFace(smIdType NewFaceID, smIdType idnode1, smIdType idnode2, smIdType idnode3);
+        void AddFace(smIdType NewFaceID, smIdType idnode1, smIdType idnode2, smIdType idnode3,
+                smIdType idnode4);
+        void AddVolume(smIdType NewVolID, smIdType idnode1, smIdType idnode2, smIdType idnode3,
+                smIdType idnode4);
+        void AddVolume(smIdType NewVolID, smIdType idnode1, smIdType idnode2, smIdType idnode3,
+                smIdType idnode4, smIdType idnode5);
+        void AddVolume(smIdType NewVolID, smIdType idnode1, smIdType idnode2, smIdType idnode3,
+                smIdType idnode4, smIdType idnode5, smIdType idnode6);
+        void AddVolume(smIdType NewVolID, smIdType idnode1, smIdType idnode2, smIdType idnode3,
+                smIdType idnode4, smIdType idnode5, smIdType idnode6, smIdType idnode7, smIdType idnode8);
+        void AddVolume(smIdType NewVolID, smIdType idnode1, smIdType idnode2, smIdType idnode3,
+                       smIdType idnode4, smIdType idnode5, smIdType idnode6, smIdType idnode7, smIdType idnode8,
+                       smIdType idnode9, smIdType idnode10, smIdType idnode11, smIdType idnode12);
 
-        void AddPolygonalFace (const int               NewFaceID,
-                               const std::vector<int>& nodes_ids);
-        void AddQuadPolygonalFace (const int               NewFaceID,
-                                        const std::vector<int>& nodes_ids);
-        void AddPolyhedralVolume (const int               NewVolID,
-                                  const std::vector<int>& nodes_ids,
-                                  const std::vector<int>& quantities);
-        void AddBall(int NewBallID, int node, double diameter);
+        void AddPolygonalFace (const smIdType               NewFaceID,
+                               const std::vector<smIdType>& nodes_ids);
+        void AddQuadPolygonalFace (const smIdType               NewFaceID,
+                                        const std::vector<smIdType>& nodes_ids);
+        void AddPolyhedralVolume (const smIdType               NewVolID,
+                                  const std::vector<smIdType>& nodes_ids,
+                                  const std::vector<int>&      quantities);
+        void AddBall(smIdType NewBallID, smIdType node, double diameter);
 
         // special methods for quadratic elements
-        void AddEdge(int NewEdgeID, int n1, int n2, int n12);
-        void AddFace(int NewFaceID, int n1, int n2, int n3,
-                     int n12, int n23, int n31);
-        void AddFace(int NewFaceID, int n1, int n2, int n3,
-                     int n12, int n23, int n31, int nCenter);
-        void AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
-                     int n12, int n23, int n34, int n41);
-        void AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
-                     int n12, int n23, int n34, int n41, int nCenter);
-        void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
-                       int n12, int n23, int n31, int n14, int n24, int n34);
-        void AddVolume(int NewVolID, int n1, int n2, int n3, int n4, int n5,
-                       int n12, int n23, int n34, int n41,
-                       int n15, int n25, int n35, int n45);
-        void AddVolume(int NewVolID, int n1, int n2, int n3,
-                       int n4, int n5, int n6,
-                       int n12, int n23, int n31,
-                       int n45, int n56, int n64,
-                       int n14, int n25, int n36);
-        void AddVolume(int NewVolID, int n1, int n2, int n3,
-                       int n4, int n5, int n6,
-                       int n12, int n23, int n31,
-                       int n45, int n56, int n64,
-                       int n14, int n25, int n36,
-                       int n1245, int n2356, int n1346);
-        void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
-                       int n5, int n6, int n7, int n8,
-                       int n12, int n23, int n34, int n41,
-                       int n56, int n67, int n78, int n85,
-                       int n15, int n26, int n37, int n48);
-        void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
-                       int n5,  int n6,  int n7,  int n8,
-                       int n12, int n23, int n34, int n41,
-                       int n56, int n67, int n78, int n85,
-                       int n15, int n26, int n37, int n48,
-                       int n1234,int n1256,int n2367,int n3478,
-                       int n1458,int n5678,int nCenter);
-        void MoveNode(int NewNodeID, double x, double y, double z);
-        void RemoveNode(int NodeID);
-        void RemoveElement(int ElementID);
-        void ChangeElementNodes(int ElementID, int nodes[], int nbnodes);
-        void ChangePolyhedronNodes(const int               ElementID,
-                                   const std::vector<int>& nodes_ids,
+        void AddEdge(smIdType NewEdgeID, smIdType n1, smIdType n2, smIdType n12);
+        void AddFace(smIdType NewFaceID, smIdType n1, smIdType n2, smIdType n3,
+                     smIdType n12, smIdType n23, smIdType n31);
+        void AddFace(smIdType NewFaceID, smIdType n1, smIdType n2, smIdType n3,
+                     smIdType n12, smIdType n23, smIdType n31, smIdType nCenter);
+        void AddFace(smIdType NewFaceID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                     smIdType n12, smIdType n23, smIdType n34, smIdType n41);
+        void AddFace(smIdType NewFaceID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                     smIdType n12, smIdType n23, smIdType n34, smIdType n41, smIdType nCenter);
+        void AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                       smIdType n12, smIdType n23, smIdType n31, smIdType n14, smIdType n24, smIdType n34);
+        void AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3, smIdType n4, smIdType n5,
+                       smIdType n12, smIdType n23, smIdType n34, smIdType n41,
+                       smIdType n15, smIdType n25, smIdType n35, smIdType n45);
+        void AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3,
+                       smIdType n4, smIdType n5, smIdType n6,
+                       smIdType n12, smIdType n23, smIdType n31,
+                       smIdType n45, smIdType n56, smIdType n64,
+                       smIdType n14, smIdType n25, smIdType n36);
+        void AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3,
+                       smIdType n4, smIdType n5, smIdType n6,
+                       smIdType n12, smIdType n23, smIdType n31,
+                       smIdType n45, smIdType n56, smIdType n64,
+                       smIdType n14, smIdType n25, smIdType n36,
+                       smIdType n1245, smIdType n2356, smIdType n1346);
+        void AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                       smIdType n5, smIdType n6, smIdType n7, smIdType n8,
+                       smIdType n12, smIdType n23, smIdType n34, smIdType n41,
+                       smIdType n56, smIdType n67, smIdType n78, smIdType n85,
+                       smIdType n15, smIdType n26, smIdType n37, smIdType n48);
+        void AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                       smIdType n5,  smIdType n6,  smIdType n7,  smIdType n8,
+                       smIdType n12, smIdType n23, smIdType n34, smIdType n41,
+                       smIdType n56, smIdType n67, smIdType n78, smIdType n85,
+                       smIdType n15, smIdType n26, smIdType n37, smIdType n48,
+                       smIdType n1234,smIdType n1256,smIdType n2367,smIdType n3478,
+                       smIdType n1458,smIdType n5678,smIdType nCenter);
+        void MoveNode(smIdType NewNodeID, double x, double y, double z);
+        void RemoveNode(smIdType NodeID);
+        void RemoveElement(smIdType ElementID);
+        void ChangeElementNodes(smIdType ElementID, smIdType nodes[], smIdType nbnodes);
+        void ChangePolyhedronNodes(const smIdType               ElementID,
+                                   const std::vector<smIdType>& nodes_ids,
                                    const std::vector<int>& quantities);
-        void Renumber (const bool isNodes, const int startID, const int deltaID);
+        void Renumber (const bool isNodes, const smIdType startID, const smIdType deltaID);
         void ClearMesh();
         void Clear();
         const std::list<SMESHDS_Command*> & GetCommands();

@@ -533,9 +533,9 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     bool ok;
     int anId = myDlg->myId->text().toInt( &ok );
     if( !ok || anId < 1 )
-      anId = aMeshEditor->FindNodeClosestTo(myDlg->myDestinationX->GetValue(),
-                                            myDlg->myDestinationY->GetValue(),
-                                            myDlg->myDestinationZ->GetValue());
+      anId = FromSmIdType<int>(aMeshEditor->FindNodeClosestTo(myDlg->myDestinationX->GetValue(),
+                                                            myDlg->myDestinationY->GetValue(),
+                                                            myDlg->myDestinationZ->GetValue()));
 
     int aResult = aMeshEditor->MoveNode(anId,
                                         myDlg->myDestinationX->GetValue(),
@@ -770,9 +770,9 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
               myDlg->myDestDZ->setReadOnly(true);
             }
             if ( isPreview && isMoveNode && anId == 0 )
-              anId = aPreviewer->FindNodeClosestTo(myDlg->myDestinationX->GetValue(),
-                                                   myDlg->myDestinationY->GetValue(),
-                                                   myDlg->myDestinationZ->GetValue());
+              anId = FromSmIdType<int>(aPreviewer->FindNodeClosestTo(myDlg->myDestinationX->GetValue(),
+                                                                   myDlg->myDestinationY->GetValue(),
+                                                                   myDlg->myDestinationZ->GetValue()));
             // find id and/or just compute preview
             aPreviewer->MoveNode(anId,
                                  myDlg->myDestinationX->GetValue(),
@@ -869,8 +869,8 @@ void SMESHGUI_MakeNodeAtPointOp::onTextChange( const QString& theText )
 
       if( const SMDS_MeshNode* aNode = aMesh->FindNode( theText.toInt() ) )
       {
-        TColStd_MapOfInteger aListInd;
-        aListInd.Add( aNode->GetID() );
+        SVTK_TVtkIDsMap aListInd;
+        aListInd.Add( FromSmIdType<int>(aNode->GetID()) );
         selector()->AddOrRemoveIndex( anIO, aListInd, false );
         if( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( SMESHGUI::GetSMESHGUI() ) )
           aViewWindow->highlight( anIO, true, true );

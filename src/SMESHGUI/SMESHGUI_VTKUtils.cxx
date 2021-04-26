@@ -1194,7 +1194,7 @@ namespace SMESH
                              QString&                                theName)
   {
     theName = "";
-    TColStd_IndexedMapOfInteger aMapIndex;
+    SVTK_TIndexedMapOfVtkId aMapIndex;
     theSelector->GetIndex(theIO,aMapIndex);
 
     for(int i = 1; i <= aMapIndex.Extent(); i++)
@@ -1208,10 +1208,10 @@ namespace SMESH
                                 QString& theName)
   {
     theName = "";
-    TColStd_IndexedMapOfInteger aMapIndex;
+    SVTK_TIndexedMapOfVtkId aMapIndex;
     theSelector->GetIndex(theIO,aMapIndex);
 
-    typedef std::set<int> TIdContainer;
+    typedef std::set<vtkIdType> TIdContainer;
     TIdContainer anIdContainer;
     for( int i = 1; i <= aMapIndex.Extent(); i++)
       anIdContainer.insert(aMapIndex(i));
@@ -1226,8 +1226,8 @@ namespace SMESH
 
   int GetEdgeNodes(SVTK_Selector* theSelector,
                    const TVisualObjPtr& theVisualObject,
-                   int& theId1,
-                   int& theId2)
+                   smIdType& theId1,
+                   smIdType& theId2)
   {
     const SALOME_ListIO& selected = theSelector->StoredIObjects();
 
@@ -1238,14 +1238,14 @@ namespace SMESH
     if ( anIO.IsNull() || !anIO->hasEntry() )
       return -1;
 
-    TColStd_IndexedMapOfInteger aMapIndex;
+    SVTK_TIndexedMapOfVtkId aMapIndex;
     theSelector->GetIndex( anIO, aMapIndex );
     if ( aMapIndex.Extent() != 2 )
       return -1;
 
-    int anObjId = -1, anEdgeNum = -1;
-    for ( int i = 1; i <= aMapIndex.Extent(); i++ ) {
-      int aVal = aMapIndex( i );
+    smIdType anObjId = -1, anEdgeNum = -1;
+    for ( smIdType i = 1; i <= aMapIndex.Extent(); i++ ) {
+      smIdType aVal = aMapIndex( i );
       if ( aVal > 0 )
         anObjId = aVal;
       else
@@ -1343,7 +1343,7 @@ namespace SMESH
   }
 
 
-  int GetEdgeNodes( LightApp_SelectionMgr* theMgr, int& theId1, int& theId2 )
+  int GetEdgeNodes( LightApp_SelectionMgr* theMgr, smIdType& theId1, smIdType& theId2 )
   {
     SALOME_ListIO selected; theMgr->selectedObjects( selected );
 
@@ -1363,9 +1363,9 @@ namespace SMESH
     if ( aMapIndex.Extent() != 2 )
       return -1;
 
-    int anObjId = -1, anEdgeNum = -1;
-    for ( int i = 1; i <= aMapIndex.Extent(); i++ ) {
-      int aVal = aMapIndex( i );
+    smIdType anObjId = -1, anEdgeNum = -1;
+    for ( smIdType i = 1; i <= aMapIndex.Extent(); i++ ) {
+      smIdType aVal = aMapIndex( i );
       if ( aVal > 0 )
         anObjId = aVal;
       else

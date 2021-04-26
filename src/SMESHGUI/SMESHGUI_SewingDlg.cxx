@@ -1368,8 +1368,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
         QStringList aListElementsId1 = LineEdit1->text().split(" ", QString::SkipEmptyParts);
         QStringList aListElementsId2 = LineEdit4->text().split(" ", QString::SkipEmptyParts);
 
-        SMESH::long_array_var anElementsId1 = new SMESH::long_array;
-        SMESH::long_array_var anElementsId2 = new SMESH::long_array;
+        SMESH::smIdType_array_var anElementsId1 = new SMESH::smIdType_array;
+        SMESH::smIdType_array_var anElementsId2 = new SMESH::smIdType_array;
 
         anElementsId1->length(aListElementsId1.count());
         anElementsId2->length(aListElementsId2.count());
@@ -1541,7 +1541,7 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
     send->clear();
 
   if (aMesh) {
-    TColStd_MapOfInteger newIndices;
+    SVTK_TVtkIDsMap newIndices;
     
     if (GetConstructorId() != 3 || (send != LineEdit1 && send != LineEdit4)) {
       SMESH::SetPointRepresentation(true);

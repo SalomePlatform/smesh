@@ -60,9 +60,10 @@ namespace SMESH
   size_t TPythonDump::myCounter = 0;
   const char theNotPublishedObjectName[] = "__NOT__Published__Object__";
 
-  TVar::TVar(CORBA::Double value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
-  TVar::TVar(CORBA::Long   value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
-  TVar::TVar(CORBA::Short  value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(CORBA::Double   value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(CORBA::Long     value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(CORBA::LongLong value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(CORBA::Short    value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
   TVar::TVar(const SMESH::double_array& value):myVals(value.length()), myIsList(true)
   {
     for ( size_t i = 0; i < value.length(); i++)
@@ -139,6 +140,13 @@ namespace SMESH
   TPythonDump&
   TPythonDump::
   operator<<(int theArg){
+    myStream<<theArg;
+    return *this;
+  }
+
+  TPythonDump&
+  TPythonDump::
+  operator<<(long long theArg){
     myStream<<theArg;
     return *this;
   }
@@ -263,6 +271,13 @@ namespace SMESH
   }
 
   TPythonDump&
+  TPythonDump::operator<<(const SMESH::smIdType_array& theArg)
+  {
+    DumpArray( theArg, *this );
+    return *this;
+  }
+
+  TPythonDump&
   TPythonDump::operator<<(const SMESH::double_array& theArg)
   {
     DumpArray( theArg, *this );
@@ -352,11 +367,12 @@ namespace SMESH
     }
     if ( SMESH_MeshEditor_i::IsTemporaryIDSource( theArg ))
     {
-      SMESH::SMESH_Mesh_var            mesh = theArg->GetMesh();
-      SMESH::long_array_var    anElementsId = theArg->GetIDs();
-      SMESH::array_of_ElementType_var types = theArg->GetTypes();
-      SMESH::ElementType               type = types->length() ? types[0] : SMESH::ALL;
-      SALOMEDS::SObject_wrap         meshSO = mySmesh->ObjectToSObject(mesh);
+      SMESH::SMESH_Mesh_var             mesh = theArg->GetMesh();
+      SMESH::smIdType_array_var anElementsId = theArg->GetIDs();
+      SMESH::array_of_ElementType_var  types = theArg->GetTypes();
+      SMESH::ElementType                type = types->length() ? types[0] : SMESH::ALL;
+      SALOMEDS::SObject_wrap          meshSO = mySmesh->ObjectToSObject(mesh);
+
       if ( meshSO->_is_nil() ) // don't waste memory for dumping not published objects
         return *this << mesh << ".GetIDSource([], " << type << ")";
       else

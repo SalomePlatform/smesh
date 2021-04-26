@@ -55,7 +55,7 @@ SMESHDS_GroupBase::SMESHDS_GroupBase (const int                 theID,
  */
 //=============================================================================
 
-int SMESHDS_GroupBase::GetID (const int theIndex)
+smIdType SMESHDS_GroupBase::GetID (const int theIndex)
 {
   if (myCurIndex < 1 || myCurIndex > theIndex) {
     myIterator = GetElements();
@@ -75,7 +75,7 @@ int SMESHDS_GroupBase::GetID (const int theIndex)
  */
 //=============================================================================
 
-const SMDS_MeshElement* SMESHDS_GroupBase::findInMesh (const int theID) const
+const SMDS_MeshElement* SMESHDS_GroupBase::findInMesh (const smIdType theID) const
 {
   SMDSAbs_ElementType aType = GetType();
   const SMDS_MeshElement* aElem = NULL;
@@ -107,10 +107,10 @@ void SMESHDS_GroupBase::resetIterator()
 //purpose  : 
 //=======================================================================
 
-int SMESHDS_GroupBase::Extent() const
+smIdType SMESHDS_GroupBase::Extent() const
 {
   SMDS_ElemIteratorPtr it = GetElements();
-  int nb = 0;
+  smIdType nb = 0;
   if ( it )
     for ( ; it->more(); it->next() ) 
       nb++;
@@ -136,7 +136,7 @@ bool SMESHDS_GroupBase::IsEmpty()
 //purpose  : 
 //=======================================================================
 
-bool SMESHDS_GroupBase::Contains (const int theID)
+bool SMESHDS_GroupBase::Contains (const smIdType theID)
 {
   if ( SMDS_ElemIteratorPtr it = GetElements() ) {
     while ( it->more() )

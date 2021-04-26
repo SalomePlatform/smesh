@@ -475,7 +475,7 @@ bool StdMeshers_Projection_3D::Evaluate(SMESH_Mesh& aMesh,
     return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
 
 
-  std::vector<int> aVec(SMDSEntity_Last);
+  std::vector<smIdType> aVec(SMDSEntity_Last);
   for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
 
   aVec[SMDSEntity_Node] = srcSubMesh->GetSubMeshDS()->NbNodes();

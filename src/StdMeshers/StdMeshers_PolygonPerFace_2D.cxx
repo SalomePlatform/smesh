@@ -136,7 +136,7 @@ bool StdMeshers_PolygonPerFace_2D::Evaluate(SMESH_Mesh&         theMesh,
     nbQuadSegs += sm2vec->second.at( SMDSEntity_Quad_Edge );
   }
 
-  std::vector<int> aVec( SMDSEntity_Last, 0 );
+  std::vector<smIdType> aVec( SMDSEntity_Last, 0 );
   switch ( nbLinSegs + nbQuadSegs ) {
   case 3:
     aVec[ nbQuadSegs ? SMDSEntity_Quad_Triangle : SMDSEntity_Triangle ] = 1;

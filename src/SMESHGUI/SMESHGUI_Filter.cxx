@@ -63,7 +63,7 @@ SMESHGUI_PredicateFilter::~SMESHGUI_PredicateFilter()
 // name    : SMESHGUI_PredicateFilter::IsValid
 // Purpose : Verify whether entry id satisfies to criterion of the filter
 //=======================================================================
-bool SMESHGUI_PredicateFilter::IsValid( const int theCellId ) const
+bool SMESHGUI_PredicateFilter::IsValid( const vtkIdType theCellId ) const
 {
   if ( myActor == 0 || myPred->_is_nil() )
     return false;
@@ -196,7 +196,7 @@ SMESHGUI_QuadrangleFilter::~SMESHGUI_QuadrangleFilter()
 // name    : SMESHGUI_QuadrangleFilter::IsValid
 // Purpose : Verify whether selected cell is quadrangle
 //=======================================================================
-bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
+bool SMESHGUI_QuadrangleFilter::IsValid( const vtkIdType theCellId ) const
 {
   if ( myActor == 0 )
     return false;
@@ -275,7 +275,7 @@ SMESHGUI_TriangleFilter::~SMESHGUI_TriangleFilter()
 // name    : SMESHGUI_TriangleFilter::IsValid
 // Purpose : Verify whether selected cell is triangle
 //=======================================================================
-bool SMESHGUI_TriangleFilter::IsValid( const int theCellId ) const
+bool SMESHGUI_TriangleFilter::IsValid( const vtkIdType theCellId ) const
 {
   if ( myActor == 0 )
     return false;
@@ -353,7 +353,7 @@ SMESHGUI_FacesFilter::~SMESHGUI_FacesFilter()
 // name    : SMESHGUI_FacesFilter::IsValid
 // Purpose : Verify whether selected cell is face
 //=======================================================================
-bool SMESHGUI_FacesFilter::IsValid( const int theCellId ) const
+bool SMESHGUI_FacesFilter::IsValid( const vtkIdType theCellId ) const
 {
   if ( myActor == 0 )
     return false;
@@ -430,7 +430,7 @@ SMESHGUI_VolumesFilter::~SMESHGUI_VolumesFilter()
 // name    : SMESHGUI_VolumesFilter::IsValid
 // Purpose : Verify whether selected cell is volume
 //=======================================================================
-bool SMESHGUI_VolumesFilter::IsValid( const int theCellId ) const
+bool SMESHGUI_VolumesFilter::IsValid( const vtkIdType theCellId ) const
 {
   if ( myActor == 0 || theCellId < 1 )
     return false;
@@ -503,7 +503,7 @@ SMESHGUI_VolumeShapeFilter::SMESHGUI_VolumeShapeFilter(const SMDSAbs_GeometryTyp
 // name    : SMESHGUI_VolumeShapeFilter::IsValid
 // Purpose : Verify whether selected cell is a volume of a certain shape
 //=======================================================================
-bool SMESHGUI_VolumeShapeFilter::IsValid( const int theCellId ) const
+bool SMESHGUI_VolumeShapeFilter::IsValid( const vtkIdType theCellId ) const
 {
   if ( myActor == 0 || theCellId < 1 )
     return false;

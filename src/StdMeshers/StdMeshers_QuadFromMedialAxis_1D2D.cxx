@@ -1720,8 +1720,8 @@ namespace
         if ( isComputed[ edgeIDs1[i]] &&
              isComputed[ edgeIDs2[i]] )
         {
-          int nbNodes1 = meshDS->MeshElements(edgeIDs[ edgeIDs1[i]] )->NbNodes();
-          int nbNodes2 = meshDS->MeshElements(edgeIDs[ edgeIDs2[i]] )->NbNodes();
+          smIdType nbNodes1 = meshDS->MeshElements(edgeIDs[ edgeIDs1[i]] )->NbNodes();
+          smIdType nbNodes2 = meshDS->MeshElements(edgeIDs[ edgeIDs2[i]] )->NbNodes();
           if ( nbNodes1 != nbNodes2 )
             return false;
           if (( int(i)-1 >= 0 ) &&

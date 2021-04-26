@@ -63,27 +63,27 @@ public:
   virtual bool              Update( int theIsClear = true ) = 0;
   virtual bool              NulData() {return 0; };
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
-  virtual int               GetElemDimension( const int theObjId ) = 0;
+  virtual int               GetElemDimension( const smIdType theObjId ) = 0;
 
-  virtual int               GetNbEntities( const SMDSAbs_ElementType theType) const = 0;
-  virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const = 0;
+  virtual smIdType          GetNbEntities( const SMDSAbs_ElementType theType) const = 0;
+  virtual smIdType          GetEntities( const SMDSAbs_ElementType, TEntityList& ) const = 0;
   virtual bool              IsNodePrs() const = 0;
   virtual SMDS_Mesh*        GetMesh() const = 0;
   virtual SMESH::SMESH_Mesh_ptr GetMeshServer() = 0;
 
   virtual bool              IsValid() const;
 
-  virtual bool              GetEdgeNodes( const int theElemId,
-                                          const int theEdgeNum,
-                                          int&      theNodeId1,
-                                          int&      theNodeId2 ) const;
+  virtual bool              GetEdgeNodes( const smIdType theElemId,
+                                          const int      theEdgeNum,
+                                          smIdType&      theNodeId1,
+                                          smIdType&      theNodeId2 ) const;
 
   virtual vtkUnstructuredGrid* GetUnstructuredGrid();
   
-  virtual vtkIdType         GetNodeObjId( int theVTKID );
-  virtual vtkIdType         GetNodeVTKId( int theObjID );
-  virtual vtkIdType         GetElemObjId( int theVTKID );
-  virtual vtkIdType         GetElemVTKId( int theObjID );
+  virtual vtkIdType         GetNodeObjId( vtkIdType theVTKID );
+  virtual vtkIdType         GetNodeVTKId( vtkIdType theObjID );
+  virtual vtkIdType         GetElemObjId( vtkIdType theVTKID );
+  virtual vtkIdType         GetElemVTKId( vtkIdType theObjID );
   
   virtual void              ClearEntitiesFlags();
   virtual bool              GetEntitiesFlag();
@@ -108,7 +108,7 @@ protected:
   unsigned int              myEntitiesState;
 
   vtkUnstructuredGrid*      myGrid;
-  std::map<SMDSAbs_ElementType,int> myEntitiesCache;
+  std::map<SMDSAbs_ElementType,smIdType> myEntitiesCache;
 };
 
 
@@ -127,11 +127,11 @@ public:
   virtual bool              Update( int theIsClear = true );
   virtual bool              NulData();
   
-  virtual int               GetNbEntities( const SMDSAbs_ElementType) const;
-  virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
+  virtual smIdType          GetNbEntities( const SMDSAbs_ElementType) const;
+  virtual smIdType          GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
   virtual bool              IsNodePrs() const;
 
-  virtual int               GetElemDimension( const int theObjId );
+  virtual int               GetElemDimension( const smIdType theObjId );
 
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
   
@@ -160,7 +160,7 @@ public:
   virtual bool              Update( int theIsClear = true );
   
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
-  virtual int               GetElemDimension( const int theObjId );
+  virtual int               GetElemDimension( const smIdType theObjId );
   virtual SMDS_Mesh*        GetMesh() const { return myMeshObj->GetMesh(); }
   virtual SMESH::SMESH_Mesh_ptr GetMeshServer() { return myMeshObj->GetMeshServer(); }
   
@@ -181,8 +181,8 @@ public:
                             SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr, SMESH_MeshObj* );
   virtual                   ~SMESH_GroupObj();
 
-  virtual int               GetNbEntities( const SMDSAbs_ElementType) const;
-  virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
+  virtual smIdType          GetNbEntities( const SMDSAbs_ElementType) const;
+  virtual smIdType          GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
   virtual bool              IsNodePrs() const;
 
   virtual SMDSAbs_ElementType GetElementType() const;
@@ -206,8 +206,8 @@ public:
                                               SMESH_MeshObj* );
   virtual                   ~SMESH_subMeshObj();
 
-  virtual int               GetNbEntities( const SMDSAbs_ElementType) const;
-  virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
+  virtual smIdType          GetNbEntities( const SMDSAbs_ElementType) const;
+  virtual smIdType          GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
   virtual bool              IsNodePrs() const;    
   
 protected:

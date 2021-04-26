@@ -61,7 +61,7 @@ SMESH_NodeLabelActor::SMESH_NodeLabelActor()
 
   myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
   myPtsLabeledDataMapper->SetInputConnection(myPtsSelectVisiblePoints->GetOutputPort());
-  myPtsLabeledDataMapper->SetLabelFormat("%d");
+  //myPtsLabeledDataMapper->SetLabelFormat("%d");
   myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
 
   myPtsTextProp = vtkTextProperty::New();
@@ -145,18 +145,18 @@ void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled)
   {
     myPointsNumDataSet->ShallowCopy(aGrid);
     vtkUnstructuredGrid *aDataSet = myPointsNumDataSet;
-    
-    int aNbElem = aDataSet->GetNumberOfPoints();
-    
-    vtkIntArray *anArray = vtkIntArray::New();
+
+    vtkIdType aNbElem = aDataSet->GetNumberOfPoints();
+
+    vtkIdTypeArray *anArray = vtkIdTypeArray::New();
     anArray->SetNumberOfValues( aNbElem );
-    
+
     for ( vtkIdType anId = 0; anId < aNbElem; anId++ )
     {
-      int aSMDSId = myVisualObj->GetNodeObjId( anId );
+      vtkIdType aSMDSId = myVisualObj->GetNodeObjId( anId );
       anArray->SetValue( anId, aSMDSId );
     }
-    
+
     aDataSet->GetPointData()->SetScalars( anArray );
     myPtsMaskPoints->SetInputData( aDataSet );
     myPointLabels->SetVisibility( GetVisibility() );

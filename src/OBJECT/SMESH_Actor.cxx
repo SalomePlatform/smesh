@@ -139,8 +139,8 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   myIsFacesOriented = false;
 
-  int controlsIncrement = SMESH_ActorProps::props()->controlsIncrement();
-  int selectionIncrement = SMESH_ActorProps::props()->selectionIncrement();
+  float  controlsIncrement = (float) SMESH_ActorProps::props()->controlsIncrement();
+  float selectionIncrement = (float) SMESH_ActorProps::props()->selectionIncrement();
 
   myControlsPrecision = -1;
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
@@ -148,11 +148,11 @@ SMESH_ActorDef::SMESH_ActorDef()
   if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
     myControlsPrecision = mgr->integerValue( "SMESH", "controls_precision", -1);
 
-  double aElem0DSize    = SMESH::GetFloat("SMESH:elem0d_size",5);
-  double aBallElemSize  = SMESH::GetFloat("SMESH:ball_elem_size",10);
-  double aBallElemScale = SMESH::GetFloat("SMESH:ball_elem_scale",1.0);
-  double aLineWidth     = SMESH::GetFloat("SMESH:element_width",1);
-  double aOutlineWidth  = SMESH::GetFloat("SMESH:outline_width",1);
+  float aElem0DSize    = (float) SMESH::GetFloat("SMESH:elem0d_size",5);
+  float aBallElemSize  = (float) SMESH::GetFloat("SMESH:ball_elem_size",10);
+  float aBallElemScale = (float) SMESH::GetFloat("SMESH:ball_elem_scale",1.0);
+  float aLineWidth     = (float) SMESH::GetFloat("SMESH:element_width",1);
+  float aOutlineWidth  = (float) SMESH::GetFloat("SMESH:outline_width",1);
 
   SMESH::LabelFont aFamilyNd = SMESH::FntTimes;
   bool aBoldNd    = true;
@@ -1035,7 +1035,7 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       return;
     }
 
-    int aNbCells = myFunctor ? myVisualObj->GetNbEntities( myFunctor->GetType() ) : 0;
+    smIdType aNbCells = myFunctor ? myVisualObj->GetNbEntities( myFunctor->GetType() ) : 0;
     bool aShowOnlyScalarBarTitle = false;
     if(aNbCells) {
       //myControlMode = theMode;
@@ -1135,7 +1135,7 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
   //Update();
 }
 
-int SMESH_ActorDef::GetNumberControlEntities()
+smIdType SMESH_ActorDef::GetNumberControlEntities()
 {
   SMESH_DeviceActor* anAct = NULL;
   switch(myControlMode){
@@ -1161,7 +1161,7 @@ int SMESH_ActorDef::GetNumberControlEntities()
       break;
     default:;
   }
-  return (anAct) ? anAct->GetUnstructuredGrid()->GetNumberOfCells() : -1;
+  return anAct ? anAct->GetUnstructuredGrid()->GetNumberOfCells() : -1;
 }
 
 void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer)
@@ -1453,27 +1453,27 @@ void SMESH_ActorDef::UnShrink()
 }
 
 
-int SMESH_ActorDef::GetNodeObjId(int theVtkID)
+vtkIdType SMESH_ActorDef::GetNodeObjId(vtkIdType theVtkID)
 {
   return myPickableActor->GetNodeObjId(theVtkID);
 }
 
-double* SMESH_ActorDef::GetNodeCoord(int theObjID)
+double* SMESH_ActorDef::GetNodeCoord(vtkIdType theObjID)
 {
   return myPickableActor->GetNodeCoord(theObjID);
 }
 
-int SMESH_ActorDef::GetNodeVtkId(int theObjID)
+vtkIdType SMESH_ActorDef::GetNodeVtkId(vtkIdType theObjID)
 {
   return myPickableActor->GetNodeVtkId(theObjID);
 }
 
-int SMESH_ActorDef::GetElemObjId(int theVtkID)
+vtkIdType SMESH_ActorDef::GetElemObjId(vtkIdType theVtkID)
 {
   return myPickableActor->GetElemObjId(theVtkID);
 }
 
-vtkCell* SMESH_ActorDef::GetElemCell(int theObjID)
+vtkCell* SMESH_ActorDef::GetElemCell(vtkIdType theObjID)
 {
   return myPickableActor->GetElemCell(theObjID);
 }
@@ -1665,11 +1665,11 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
 
 void SMESH_ActorDef::SetRepresentation (int theMode)
 {
-  int aNbEdges   = myVisualObj->GetNbEntities(SMDSAbs_Edge);
-  int aNbFaces   = myVisualObj->GetNbEntities(SMDSAbs_Face);
-  int aNbVolumes = myVisualObj->GetNbEntities(SMDSAbs_Volume);
-  int aNb0Ds     = myVisualObj->GetNbEntities(SMDSAbs_0DElement);
-  int aNbBalls   = myVisualObj->GetNbEntities(SMDSAbs_Ball);
+  smIdType aNbEdges   = myVisualObj->GetNbEntities(SMDSAbs_Edge);
+  smIdType aNbFaces   = myVisualObj->GetNbEntities(SMDSAbs_Face);
+  smIdType aNbVolumes = myVisualObj->GetNbEntities(SMDSAbs_Volume);
+  smIdType aNb0Ds     = myVisualObj->GetNbEntities(SMDSAbs_0DElement);
+  smIdType aNbBalls   = myVisualObj->GetNbEntities(SMDSAbs_Ball);
 
   if ( myRepresentationCache && aNbEdges + aNbFaces + aNbVolumes + aNb0Ds + aNbBalls )
   {
@@ -1714,7 +1714,7 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   myPickableActor = myBaseActor;
   vtkProperty *aProp = NULL, *aBackProp = NULL;
   vtkProperty *aPropVN = NULL, *aPropVR = NULL;
-  SMESH_DeviceActor::EReperesent aReperesent = SMESH_DeviceActor::EReperesent(-1);
+  SMESH_DeviceActor::EReperesent aReperesent = SMESH_DeviceActor::eNoneRepr;
   SMESH_Actor::EQuadratic2DRepresentation aQuadraticMode = GetQuadratic2DRepresentation();
   switch (myRepresentation) {
   case ePoint:
@@ -2126,8 +2126,8 @@ void SMESH_ActorDef::UpdateSelectionProps()
 {
   QColor selectionColor = SMESH_ActorProps::props()->selectionColor();
   QColor highlightColor = SMESH_ActorProps::props()->highlightColor();
-  int selectionIncrement = SMESH_ActorProps::props()->selectionIncrement();
-  double width = GetLineWidth();
+  float  selectionIncrement = (float) SMESH_ActorProps::props()->selectionIncrement();
+  float  width = (float) GetLineWidth();
   myHighlightProp->SetColor(selectionColor.redF(), selectionColor.greenF(), selectionColor.blueF());
   myHighlightProp->SetLineWidth(width + selectionIncrement);
   myPreselectProp->SetColor(highlightColor.redF(), highlightColor.greenF(), highlightColor.blueF());
@@ -2143,17 +2143,17 @@ double SMESH_ActorDef::GetLineWidth()
 
 void SMESH_ActorDef::SetLineWidth(double theVal)
 {
-  int controlsIncrement = SMESH_ActorProps::props()->controlsIncrement();
-  int selectionIncrement = SMESH_ActorProps::props()->selectionIncrement();
+  float  controlsIncrement = (float) SMESH_ActorProps::props()->controlsIncrement();
+  float selectionIncrement = (float) SMESH_ActorProps::props()->selectionIncrement();
 
-  myEdgeProp->SetLineWidth(theVal);
+  myEdgeProp->SetLineWidth((float) theVal);
 
-  my1DProp->SetLineWidth(theVal + controlsIncrement);
-  my1DExtProp->SetLineWidth(theVal + controlsIncrement);
-  my2DExtProp->SetLineWidth(theVal + controlsIncrement);
-  my3DExtProp->SetLineWidth(theVal + controlsIncrement);
-  myHighlightProp->SetLineWidth(theVal + selectionIncrement);
-  myPreselectProp->SetLineWidth(theVal + selectionIncrement);
+  my1DProp       ->SetLineWidth((float) theVal + controlsIncrement);
+  my1DExtProp    ->SetLineWidth((float) theVal + controlsIncrement);
+  my2DExtProp    ->SetLineWidth((float) theVal + controlsIncrement);
+  my3DExtProp    ->SetLineWidth((float) theVal + controlsIncrement);
+  myHighlightProp->SetLineWidth((float) theVal + selectionIncrement);
+  myPreselectProp->SetLineWidth((float) theVal + selectionIncrement);
   Modified();
 }
 
@@ -2164,21 +2164,21 @@ double SMESH_ActorDef::GetOutlineWidth()
 
 void SMESH_ActorDef::SetOutlineWidth(double theVal)
 {
-  myOutLineProp->SetLineWidth(theVal);
+  myOutLineProp->SetLineWidth((float) theVal);
   Modified();
 }
 
 void SMESH_ActorDef::Set0DSize(double theVal)
 {
-  my0DProp->SetPointSize(theVal);
-  myHighlightProp->SetPointSize(theVal);
-  myPreselectProp->SetPointSize(theVal);
+  my0DProp       ->SetPointSize((float) theVal);
+  myHighlightProp->SetPointSize((float) theVal);
+  myPreselectProp->SetPointSize((float) theVal);
 
   if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myHighlightActor )) {
-    aCustom->Set0DSize(theVal);
+    aCustom->Set0DSize((float) theVal);
   }
   if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myPreHighlightActor )) {
-    aCustom->Set0DSize(theVal);
+    aCustom->Set0DSize((float) theVal);
   }
 
   Modified();
@@ -2191,13 +2191,13 @@ double SMESH_ActorDef::Get0DSize()
 
 void SMESH_ActorDef::SetBallSize(double theVal)
 {
-  myBallProp->SetPointSize(theVal);
+  myBallProp->SetPointSize((float) theVal);
 
   if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myHighlightActor )) {
-    aCustom->SetBallSize(theVal);
+    aCustom->SetBallSize((float) theVal);
   }
   if(SMESH_SVTKActor* aCustom = SMESH_SVTKActor::SafeDownCast( myPreHighlightActor )) {
-    aCustom->SetBallSize(theVal);
+    aCustom->SetBallSize((float) theVal);
   }
 
   Modified();
@@ -2226,7 +2226,7 @@ void SMESH_ActorDef::SetBallScale( double theVal )
   Modified();
 }
 
-int SMESH_ActorDef::GetObjDimension( const int theObjId )
+int SMESH_ActorDef::GetObjDimension( const vtkIdType theObjId )
 {
   return myVisualObj->GetElemDimension( theObjId );
 }
@@ -2496,7 +2496,7 @@ void SMESH_ActorDef::UpdateDistribution()
     SMESH_VisualObjDef::TEntityList elems;
     if ( dynamic_cast<SMESH_SubMeshObj*>(myVisualObj.get()))
       dynamic_cast<SMESH_SubMeshObj*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
-    std::vector<int> elemIds; elemIds.reserve( elems.size() );
+    std::vector<smIdType> elemIds; elemIds.reserve( elems.size() );
     for ( SMESH_VisualObjDef::TEntityList::iterator e = elems.begin(); e != elems.end(); ++e)
       elemIds.push_back( (*e)->GetID());
     vtkLookupTable* lookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
@@ -2682,7 +2682,7 @@ SPlot2d_Histogram* SMESH_ActorDef::UpdatePlot2Histogram()
     SMESH_VisualObjDef::TEntityList elems;
     if ( dynamic_cast<SMESH_SubMeshObj*>(myVisualObj.get()))
       dynamic_cast<SMESH_SubMeshObj*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
-    std::vector<int> elemIds;
+    std::vector<smIdType> elemIds;
 
     for ( SMESH_VisualObjDef::TEntityList::iterator e = elems.begin(); e != elems.end(); ++e)
       elemIds.push_back( (*e)->GetID());

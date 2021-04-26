@@ -57,7 +57,7 @@
 #include <SVTK_ViewWindow.h>
 #include <SVTK_Selector.h>
 #include <SALOME_ListIO.hxx>
-#include <VTKViewer_CellLocationsArray.h>
+//#include <VTKViewer_CellLocationsArray.h>
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
@@ -602,7 +602,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
       return;
 
     Handle(SALOME_InteractiveObject) IO = aList.First();
-    TColStd_IndexedMapOfInteger aMapIndex;
+    SVTK_TIndexedMapOfVtkId aMapIndex;
     mySelector->GetIndex(IO,aMapIndex);
     if ( aMapIndex.Extent() != 1 )
       return;

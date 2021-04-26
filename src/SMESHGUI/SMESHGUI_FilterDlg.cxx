@@ -69,6 +69,7 @@
 // SALOME KERNEL includes
 #include <SALOMEDSClient_Study.hxx>
 #include <Basics_Utils.hxx>
+#include <smIdType.hxx>
 
 // OCCT includes
 #include <StdSelect_TypeOfFace.hxx>
@@ -3005,13 +3006,13 @@ void SMESHGUI_FilterDlg::reject()
     SALOME_ListIO aList;
     mySelectionMgr->clearFilters();
     mySelectionMgr->clearSelected();
-    SALOME_DataMapIteratorOfDataMapOfIOMapOfInteger anIter (myIObjects);
+    SALOME_DataMapIteratorOfIOMapOfVtk anIter (myIObjects);
     for ( ; anIter.More(); anIter.Next())
     {
       aList.Append(anIter.Key());
 
-      TColStd_MapOfInteger aResMap;
-      const TColStd_IndexedMapOfInteger& anIndMap = anIter.Value();
+      SVTK_TVtkIDsMap aResMap;
+      const SVTK_TIndexedMapOfVtkId& anIndMap = anIter.Value();
       for (int i = 1, n = anIndMap.Extent(); i <= n; i++)
         aResMap.Add(anIndMap(i));
 
@@ -3342,7 +3343,7 @@ void SMESHGUI_FilterDlg::SetSelection()
     const SALOME_ListIO& anObjs = mySelector->StoredIObjects(); 
     SALOME_ListIteratorOfListIO anIter (anObjs);
     for ( ; anIter.More(); anIter.Next()) {
-      TColStd_IndexedMapOfInteger aMap;
+      SVTK_TIndexedMapOfVtkId aMap;
       mySelector->GetIndex(anIter.Value(), aMap);
       myIObjects.Bind(anIter.Value(), aMap);
     }
@@ -3536,9 +3537,9 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
   {
     if (myMesh->_is_nil())
       return;
-    SMESH::long_array_var anIds = myFilter[ theType ]->GetElementsId(myMesh);
+    SMESH::smIdType_array_var anIds = myFilter[ theType ]->GetElementsId(myMesh);
     for (int i = 0, n = anIds->length(); i < n; i++)
-      theResIds.append(anIds[ i ]);
+      theResIds.append(FromSmIdType<int>(anIds[ i ]));
   }
   else if (aSourceId == Selection)
   {
@@ -3579,7 +3580,7 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
 
   // Create map of entities to be filtered
   TColStd_MapOfInteger aToBeFiltered;
-  SALOME_DataMapIteratorOfDataMapOfIOMapOfInteger anIter(myIObjects);
+  SALOME_DataMapIteratorOfIOMapOfVtk anIter(myIObjects);
 
   for ( ; anIter.More(); anIter.Next())
   {
@@ -3589,10 +3590,10 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
     {
       if (aSubMesh->GetFather()->GetId() == myMesh->GetId())
       {
-        SMESH::long_array_var anIds =
+        SMESH::smIdType_array_var anIds =
           theType == SMESH::NODE ? aSubMesh->GetNodesId() : aSubMesh->GetElementsId();
         for (int i = 0, n = anIds->length(); i < n; i++)
-          aToBeFiltered.Add(anIds[ i ]);
+          aToBeFiltered.Add(FromSmIdType<int>(anIds[ i ]));
       }
     }
 
@@ -3603,9 +3604,9 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
     {
       if (aGroup->GetType() == theType && aGroup->GetMesh()->GetId() == myMesh->GetId())
       {
-        SMESH::long_array_var anIds = aGroup->GetListOfID();
+        SMESH::smIdType_array_var anIds = aGroup->GetListOfID();
         for (int i = 0, n = anIds->length(); i < n; i++)
-          aToBeFiltered.Add(anIds[ i ]);
+          aToBeFiltered.Add(FromSmIdType<int>(anIds[ i ]));
       }
     }
 
@@ -3613,7 +3614,7 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
     SMESH::SMESH_Mesh_var aMeshPtr = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIter.Key());
     if (!aMeshPtr->_is_nil() && aMeshPtr->GetId() == myMesh->GetId())
     {
-      const TColStd_IndexedMapOfInteger& aSelMap = anIter.Value();
+      const SVTK_TIndexedMapOfVtkId& aSelMap = anIter.Value();
 
       if (aSelMap.Extent() > 0)
       {
@@ -3646,7 +3647,7 @@ SMESH_Actor* SMESHGUI_FilterDlg::getActor()
   if ( meshActor && meshActor->GetVisibility() )
     return meshActor;
 
-  SALOME_DataMapIteratorOfDataMapOfIOMapOfInteger anIter(myIObjects);
+  SALOME_DataMapIteratorOfIOMapOfVtk anIter(myIObjects);
   for ( ; anIter.More(); anIter.Next())
   {
     Handle(SALOME_InteractiveObject) io = anIter.Key();
@@ -3706,7 +3707,7 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& th
   SMESH::RemoveFilter(aFilterId);
 
   // get vtk ids
-  TColStd_MapOfInteger aMap;
+  SVTK_TVtkIDsMap aMap;
   QList<int>::const_iterator anIter;
   for (anIter = theIds.begin(); anIter != theIds.end(); ++anIter) {
     aMap.Add(*anIter);

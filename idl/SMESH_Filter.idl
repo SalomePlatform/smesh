@@ -30,6 +30,7 @@
 #include "SALOME_GenericObj.idl"
 #include "GEOM_Gen.idl"
 #include "SMESH_Mesh.idl"
+#include "SMESH_smIdType.idl"
 
 module SMESH
 {
@@ -119,8 +120,8 @@ module SMESH
   */
   interface NumericalFunctor: Functor
   {
-    double  GetValue    ( in long theElementId );
-    boolean IsApplicable( in long theElementId );
+    double  GetValue    ( in smIdType theElementId );
+    boolean IsApplicable( in smIdType theElementId );
 
     Histogram GetHistogram     ( in short nbIntervals, in boolean isLogarithmic );
     Histogram GetLocalHistogram( in short nbIntervals, in boolean isLogarithmic,
@@ -374,7 +375,7 @@ module SMESH
   */
   interface RangeOfIds: Predicate
   {
-    void            SetRange( in long_array theIds );
+    void            SetRange( in smIdType_array theIds );
     boolean         SetRangeStr( in string theRange );
     string          GetRangeStr();
 
@@ -474,7 +475,7 @@ module SMESH
     void            SetElementType( in ElementType type );
     void            SetPoint      ( in double x, in double y, in double z );
     void            SetVertex     ( in GEOM::GEOM_Object vertex );
-    void            SetNode       ( in long nodeID );
+    void            SetNode       ( in smIdType nodeID );
     string          GetThreshold  ( out ThresholdType type );
     void            SetThreshold  ( in string threshold, in ThresholdType type ) 
       raises (SALOME::SALOME_Exception);
@@ -522,16 +523,16 @@ module SMESH
 
     typedef sequence<Criterion> Criteria;
 
-    void          SetPredicate( in Predicate thePredicate );
-    void          SetMesh( in SMESH_Mesh theMesh );
+    void           SetPredicate( in Predicate thePredicate );
+    void           SetMesh( in SMESH_Mesh theMesh );
 
-    long_array    GetElementsId( in SMESH_Mesh theMesh );
-    long_array    GetElementsIdFromParts( in ListOfIDSources theParts );
-    ElementType   GetElementType();
-    Predicate     GetPredicate();
+    smIdType_array GetElementsId( in SMESH_Mesh theMesh );
+    smIdType_array GetElementsIdFromParts( in ListOfIDSources theParts );
+    ElementType    GetElementType();
+    Predicate      GetPredicate();
 
-    boolean       GetCriteria( out Criteria theCriteria );
-    boolean       SetCriteria( in Criteria theCriteria );
+    boolean        GetCriteria( out Criteria theCriteria );
+    boolean        SetCriteria( in Criteria theCriteria );
   };
 
 

@@ -201,17 +201,17 @@ namespace
    */
   struct TPolyhedFace
   {
-    int _id; // id of NGON_n
-    vector< int > _nodes; // lowest node IDs used for sorting
+    smIdType _id; // id of NGON_n
+    vector< smIdType > _nodes; // lowest node IDs used for sorting
 
-    TPolyhedFace( const SMDS_MeshNode** nodes, const int nbNodes, int ID):_id(ID)
+    TPolyhedFace( const SMDS_MeshNode** nodes, const smIdType nbNodes, smIdType ID):_id(ID)
     {
-      set< int > ids;
-      for ( int i = 0; i < nbNodes; ++i )
+      set< smIdType > ids;
+      for ( smIdType i = 0; i < nbNodes; ++i )
         ids.insert( nodes[i]->GetID() );
 
       _nodes.resize( 3 ); // std::min( nbNodes, 4 )); hope 3 nodes is enough
-      set< int >::iterator idIt = ids.begin();
+      set< smIdType >::iterator idIt = ids.begin();
       for ( size_t j = 0; j < _nodes.size(); ++j, ++idIt )
         _nodes[j] = *idIt;
     }
@@ -267,6 +267,9 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
   if ( !myMesh || myMesh->GetMeshInfo().NbElements() < 1 )
     return addMessage( !myMesh ? "NULL mesh" : "Empty mesh (no elements)", /*fatal = */true );
 
+  if ( Driver_Mesh::IsMeshTooLarge< cgsize_t >( myMesh, /*checkIDs =*/ false))
+    return DRS_TOO_LARGE_MESH;
+
   // open the file
   if ( cg_open(myFile.c_str(), CG_MODE_MODIFY, &_fn) != CG_OK &&
        cg_open(myFile.c_str(), CG_MODE_WRITE,  &_fn) != CG_OK )
@@ -295,13 +298,15 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
   // create a Zone
   // --------------
 
-  int nbCells = myMesh->NbEdges();
+  smIdType nbCells = myMesh->NbEdges();
   if ( meshDim == 3 )
     nbCells = myMesh->NbVolumes();
   else if ( meshDim == 2 )
     nbCells = myMesh->NbFaces();
 
-  cgsize_t size[9] = { myMesh->NbNodes(), nbCells, /*NBoundVertex=*/0, 0,0,0,0,0,0 };
+  cgsize_t size[9] = { FromSmIdType<cgsize_t>( myMesh->NbNodes() ),
+                       FromSmIdType<cgsize_t>( nbCells ),
+                       /*NBoundVertex=*/0, 0,0,0,0,0,0 };
   int iZone;
   if ( cg_zone_write( _fn, iBase, "SMESH_Mesh", size,
                       CGNS_ENUMV( Unstructured ), &iZone) != CG_OK )
@@ -469,7 +474,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
                             cgID-1, /*nbndry=*/0, elemData.data(), &iSec) != CG_OK )
         return addMessage( cg_get_error(), /*fatal = */true );
     }
-  }
+  } // while ( elem )
 
   // Write polyhedral volumes
   // -------------------------

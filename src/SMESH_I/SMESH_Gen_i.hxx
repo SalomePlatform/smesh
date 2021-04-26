@@ -46,6 +46,7 @@
 #include <Utils_CorbaException.hxx>
 
 #include <GEOM_Client.hxx>
+#include <smIdType.hxx>
 
 #include <TCollection_AsciiString.hxx>
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
@@ -292,7 +293,7 @@ public:
    *  returns statistic of mesh elements
    * Result array of number enityties
    */
-  SMESH::long_array* Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
+  SMESH::smIdType_array* Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
                               GEOM::GEOM_Object_ptr theShapeObject);
 
   // Returns true if mesh contains enough data to be computed
@@ -328,12 +329,12 @@ public:
 
   // Return geometrical object the given element is built on. Publish it in study.
   GEOM::GEOM_Object_ptr GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
-                                                  CORBA::Long            theElementID,
+                                                  SMESH::smIdType        theElementID,
                                                   const char*            theGeomName);
 
   // Return geometrical object the given element is built on. Don't publish it in study.
   GEOM::GEOM_Object_ptr FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
-                                                   CORBA::Long            theElementID);
+                                                   SMESH::smIdType        theElementID);
 
   // Concatenate the given meshes into one mesh
   SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::ListOfIDSources& meshesArray,

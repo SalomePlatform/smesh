@@ -823,7 +823,7 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
   if ( srcGroups.empty() )
     return error("Invalid source groups");
 
-  vector<int> aVec(SMDSEntity_Last,0);
+  vector<smIdType> aVec(SMDSEntity_Last,0);
 
   bool toCopyMesh, toCopyGroups;
   _sourceHyp->GetCopySourceMesh(toCopyMesh, toCopyGroups);
@@ -913,7 +913,7 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
     {
       TopoDS_Edge geomEdge = TopoDS::Edge( exp.Current() );
       SMESH_subMesh* sm = theMesh.GetSubMesh( geomEdge );
-      vector<int>& edgeVec = aResMap[sm];
+      vector<smIdType>& edgeVec = aResMap[sm];
       if ( edgeVec.empty() )
       {
         edgeVec.resize(SMDSEntity_Last,0);

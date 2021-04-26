@@ -97,13 +97,13 @@ SMESHGUI_IdPreview::SMESHGUI_IdPreview(SVTK_ViewWindow* theViewWindow):
 }
 
 void SMESHGUI_IdPreview::SetPointsData ( SMDS_Mesh*                   theMesh,
-                                         const TColStd_MapOfInteger & theNodesIdMap )
+                                         const SVTK_TVtkIDsMap & theNodesIdMap )
 {
   vtkPoints* aPoints = vtkPoints::New();
   aPoints->SetNumberOfPoints(theNodesIdMap.Extent());
   myIDs.clear();
 
-  TColStd_MapIteratorOfMapOfInteger idIter( theNodesIdMap );
+  SVTK_TVtkIDsMapIterator idIter( theNodesIdMap );
   for( int i = 0; idIter.More(); idIter.Next(), i++ )
   {
     const SMDS_MeshNode* aNode = theMesh->FindNode(idIter.Key());

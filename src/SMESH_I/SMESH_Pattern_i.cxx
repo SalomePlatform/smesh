@@ -273,10 +273,10 @@ SMESH::point_array* SMESH_Pattern_i::ApplyTo3DBlock(GEOM::GEOM_Object_ptr theBlo
 //=======================================================================
 
 SMESH::point_array*
-  SMESH_Pattern_i::ApplyToMeshFaces(SMESH::SMESH_Mesh_ptr    theMesh,
-                                    const SMESH::long_array& theFacesIDs,
-                                    CORBA::Long              theNodeIndexOnKeyPoint1,
-                                    CORBA::Boolean           theReverse)
+  SMESH_Pattern_i::ApplyToMeshFaces(SMESH::SMESH_Mesh_ptr        theMesh,
+                                    const SMESH::smIdType_array& theFacesIDs,
+                                    CORBA::Short                 theNodeIndexOnKeyPoint1,
+                                    CORBA::Boolean               theReverse)
 {
   SMESH::point_array_var points = new SMESH::point_array;
 
@@ -286,9 +286,9 @@ SMESH::point_array*
 
   list<const gp_XYZ *> xyzList;
   set<const SMDS_MeshFace*> fset;
-  for ( CORBA::ULong i = 0; i < theFacesIDs.length(); i++)
+  for ( SMESH::smIdType i = 0; i < theFacesIDs.length(); i++)
   {
-    CORBA::Long index = theFacesIDs[i];
+    SMESH::smIdType index = theFacesIDs[i];
     const SMDS_MeshElement * elem = aMesh->GetMeshDS()->FindElement(index);
     if ( elem && elem->GetType() == SMDSAbs_Face )
       fset.insert( static_cast<const SMDS_MeshFace *>( elem ));
@@ -332,10 +332,10 @@ SMESH::point_array*
 //=======================================================================
 
 SMESH::point_array*
-  SMESH_Pattern_i::ApplyToHexahedrons(SMESH::SMESH_Mesh_ptr    theMesh,
-                                      const SMESH::long_array& theVolumesIDs,
-                                      CORBA::Long              theNode000Index,
-                                      CORBA::Long              theNode001Index)
+  SMESH_Pattern_i::ApplyToHexahedrons(SMESH::SMESH_Mesh_ptr        theMesh,
+                                      const SMESH::smIdType_array& theVolumesIDs,
+                                      CORBA::Short                 theNode000Index,
+                                      CORBA::Short                 theNode001Index)
 {
   SMESH::point_array_var points = new SMESH::point_array;
 
@@ -345,9 +345,9 @@ SMESH::point_array*
 
   list<const gp_XYZ *> xyzList;
   set<const SMDS_MeshVolume*> vset;
-  for ( CORBA::ULong i = 0; i < theVolumesIDs.length(); i++)
+  for ( SMESH::smIdType i = 0; i < theVolumesIDs.length(); i++)
   {
-    CORBA::Long index = theVolumesIDs[i];
+    SMESH::smIdType index = theVolumesIDs[i];
     const SMDS_MeshElement * elem = aMesh->GetMeshDS()->FindElement(index);
     if ( elem && elem->GetType() == SMDSAbs_Volume && elem->NbNodes() == 8 )
       vset.insert( static_cast<const SMDS_MeshVolume *>( elem ));
@@ -389,7 +389,7 @@ CORBA::Boolean SMESH_Pattern_i::MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
                 << CreatePolygons << ", " << CreatePolyedrs << " )";
   addErrorCode( "MakeMesh" );
 
-  int nb = aMesh->NbNodes() + aMesh->NbEdges() + aMesh->NbFaces() + aMesh->NbVolumes();
+  smIdType nb = aMesh->NbNodes() + aMesh->NbEdges() + aMesh->NbFaces() + aMesh->NbVolumes();
 
   bool res = myPattern.MakeMesh( aMesh, CreatePolygons, CreatePolyedrs );
 

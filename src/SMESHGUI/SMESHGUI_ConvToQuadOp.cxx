@@ -328,7 +328,7 @@ SMESHGUI_ConvToQuadOp::MeshDestinationType
 SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSource,
                                         bool*                            isMixOrder)
 {
-  SMESH::long_array_var nbElemOfType = idSource->GetMeshInfo();
+  SMESH::smIdType_array_var nbElemOfType = idSource->GetMeshInfo();
 
   bool hasBiQuad     = ( nbElemOfType[SMDSEntity_BiQuad_Triangle   ] ||
                          nbElemOfType[SMDSEntity_BiQuad_Quadrangle ] ||

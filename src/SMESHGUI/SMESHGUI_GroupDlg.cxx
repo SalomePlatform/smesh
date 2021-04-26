@@ -668,7 +668,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
 
     myIdList.clear();
     if (!theGroup->IsEmpty()) {
-      SMESH::long_array_var anElements = theGroup->GetListOfID();
+      SMESH::smIdType_array_var anElements = theGroup->GetListOfID();
       int k = anElements->length();
       for (int i = 0; i < k; i++) {
         myIdList.append(anElements[i]);
@@ -1003,7 +1003,7 @@ bool SMESHGUI_GroupDlg::onApply()
         }
         else
         {
-          SMESH::long_array_var anIdList = new SMESH::long_array;
+          SMESH::smIdType_array_var anIdList = new SMESH::smIdType_array;
           int i, k = myElements->count();
           anIdList->length(k);
           for (i = 0; i < k; i++) {
@@ -1037,7 +1037,7 @@ bool SMESHGUI_GroupDlg::onApply()
             myIdList.removeAt(idx);
         }
         if (!aAddList.empty()) {
-          SMESH::long_array_var anIdList = new SMESH::long_array;
+          SMESH::smIdType_array_var anIdList = new SMESH::smIdType_array;
           int added = aAddList.count();
           anIdList->length(added);
           for (i = 0; i < added; i++)
@@ -1045,7 +1045,7 @@ bool SMESHGUI_GroupDlg::onApply()
           myGroup->Add(anIdList.inout());
         }
         if (!myIdList.empty()) {
-          SMESH::long_array_var anIdList = new SMESH::long_array;
+          SMESH::smIdType_array_var anIdList = new SMESH::smIdType_array;
           int removed = myIdList.count();
           anIdList->length(removed);
           for (i = 0; i < removed; i++)
@@ -1263,7 +1263,7 @@ void SMESHGUI_GroupDlg::onListSelectionChanged()
 
   if (myCurrentLineEdit == 0) {
     mySelectionMgr->clearSelected();
-    TColStd_MapOfInteger aIndexes;
+    SVTK_TVtkIDsMap aIndexes;
     QList<QListWidgetItem*> selItems = myElements->selectedItems();
     QListWidgetItem* anItem;
     foreach(anItem, selItems) aIndexes.Add(anItem->text().toInt());
@@ -1956,7 +1956,7 @@ void SMESHGUI_GroupDlg::onAdd()
         // check if mesh is the same
         if (aSubMesh->GetFather()->GetId() == myMesh->GetId()) {
           try {
-            SMESH::long_array_var anElements = aSubMesh->GetElementsByType(aType);
+            SMESH::smIdType_array_var anElements = aSubMesh->GetElementsByType(aType);
             int k = anElements->length();
             for (int i = 0; i < k; i++) {
               QString aText = QString::number(anElements[i]);
@@ -2004,7 +2004,7 @@ void SMESHGUI_GroupDlg::onAdd()
       if (!aGroup->_is_nil()) {
         // check if mesh is the same
         if (aGroup->GetType() == aType && aGroup->GetMesh()->GetId() == myMesh->GetId()) {
-          SMESH::long_array_var anElements = aGroup->GetListOfID();
+          SMESH::smIdType_array_var anElements = aGroup->GetListOfID();
           int k = anElements->length();
           for (int i = 0; i < k; i++) {
             QString aText = QString::number(anElements[i]);
@@ -2062,7 +2062,7 @@ void SMESHGUI_GroupDlg::onAdd()
       aBelongToGeom->SetElementType(aType);
       aFilter->SetPredicate(aBelongToGeom);
 
-      SMESH::long_array_var anElements = aFilter->GetElementsId(myMesh);
+      SMESH::smIdType_array_var anElements = aFilter->GetElementsId(myMesh);
 
       int k = anElements->length();
       for (int i = 0; i < k; i++) {
@@ -2143,7 +2143,7 @@ void SMESHGUI_GroupDlg::onRemove()
           if (aSubMesh->GetFather()->GetId() == myMesh->GetId()) {
             if (aType == SMESH::NODE) {
               try {
-                SMESH::long_array_var anElements = aSubMesh->GetNodesId();
+                SMESH::smIdType_array_var anElements = aSubMesh->GetNodesId();
                 int k = anElements->length();
                 for (int i = 0; i < k; i++) {
                   QList<QListWidgetItem*> found = 
@@ -2158,7 +2158,7 @@ void SMESHGUI_GroupDlg::onRemove()
             }
             else {
               try {
-                SMESH::long_array_var anElements = aSubMesh->GetElementsId();
+                SMESH::smIdType_array_var anElements = aSubMesh->GetElementsId();
                 int k = anElements->length();
                 for (int i = 0; i < k; i++) {
                   QList<QListWidgetItem*> found = 
@@ -2185,7 +2185,7 @@ void SMESHGUI_GroupDlg::onRemove()
         if (!aGroup->_is_nil()) {
           // check if mesh is the same
           if (aGroup->GetType() == aType && aGroup->GetMesh()->GetId() == myMesh->GetId()) {
-            SMESH::long_array_var anElements = aGroup->GetListOfID();
+            SMESH::smIdType_array_var anElements = aGroup->GetListOfID();
             int k = anElements->length();
             for (int i = 0; i < k; i++) {
               QList<QListWidgetItem*> found = 
@@ -2213,15 +2213,19 @@ void SMESHGUI_GroupDlg::onSort()
   // PAL5412: sorts items in ascending by "string" value
   // myElements->sort(true);
   // myElements->update();
-  int i, k = myElements->count();
+  vtkIdType i, k = myElements->count();
   if (k > 0) {
     myIsBusy = true;
-    QList<int> aSelected;
-    std::vector<int> anArray(k);
+    QList<vtkIdType> aSelected;
+    std::vector<vtkIdType> anArray(k);
     //    QMemArray<int> anArray(k);
     // fill the array
     for (i = 0; i < k; i++) {
-      int id = myElements->item(i)->text().toInt();
+      vtkIdType id;
+      if (sizeof(vtkIdType)==8)
+        id = myElements->item(i)->text().toLongLong();
+      else
+        id = myElements->item(i)->text().toInt();
       anArray[i] = id;
       if (myElements->item(i)->isSelected())
         aSelected.append(id);

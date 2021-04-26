@@ -361,7 +361,7 @@ void SMESHGUI_FindElemByPointOp::onElemSelected()
 
     QList<QListWidgetItem *> ids = myDlg->myFoundList->selectedItems();
     QList<QListWidgetItem*>::iterator id = ids.begin();
-    TColStd_MapOfInteger idMap;
+    SVTK_TVtkIDsMap idMap;
     for ( ; id != ids.end(); ++id )
       idMap.Add( (*id)->text().toInt() );
 
@@ -434,7 +434,7 @@ void SMESHGUI_FindElemByPointOp::onFind()
     if (aMeshEditor->_is_nil())
       return;
 
-    SMESH::long_array_var foundIds;
+    SMESH::smIdType_array_var foundIds;
     if ( aMesh->_is_equivalent( myMeshOrPart ) )
       foundIds =
         aMeshEditor->FindElementsByPoint( myDlg->myX->GetValue(),

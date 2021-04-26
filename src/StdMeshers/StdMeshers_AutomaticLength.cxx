@@ -365,7 +365,7 @@ bool StdMeshers_AutomaticLength::SetParametersByMesh(const SMESH_Mesh*   theMesh
     SMESHDS_SubMesh * eSubMesh = aMeshDS->MeshElements( edge );
     if ( !eSubMesh )
       return false;
-    int nbSeg = eSubMesh->NbElements();
+    smIdType nbSeg = eSubMesh->NbElements();
     if ( nbSeg < 1 )
       continue;
     double segLen = L / nbSeg;

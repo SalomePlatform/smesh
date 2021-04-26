@@ -480,7 +480,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 
       if (GetConstructorId() == 0)
         {
-          SMESH::long_array_var anIdsOfNodes = new SMESH::long_array;
+          SMESH::smIdType_array_var anIdsOfNodes = new SMESH::smIdType_array;
           SMESH::long_array_var aQuantities  = new SMESH::long_array;
 
           aQuantities->length( myFacesByNodes->count() );
@@ -518,7 +518,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
         }
       else if (GetConstructorId() == 1)
         {
-          SMESH::long_array_var anIdsOfFaces = new SMESH::long_array;
+          SMESH::smIdType_array_var anIdsOfFaces = new SMESH::smIdType_array;
           
           QStringList aListId = myEditCurrentArgument->text().split( " ", QString::SkipEmptyParts );
           anIdsOfFaces->length(aListId.count());
@@ -562,7 +562,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
         }
         
         if ( !aGroupUsed->_is_nil() ) {
-          SMESH::long_array_var anIdList = new SMESH::long_array;
+          SMESH::smIdType_array_var anIdList = new SMESH::smIdType_array;
           anIdList->length( 1 );
           anIdList[0] = anElemId;
           aGroupUsed->Add( anIdList.inout() );
@@ -688,7 +688,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
   if (GetConstructorId() == 0)
     {
       if ( aMesh ) {
-        TColStd_MapOfInteger newIndices;
+        SVTK_TVtkIDsMap newIndices;
       
         QStringList aListId = theNewText.split( " ", QString::SkipEmptyParts );
         for ( int i = 0; i < aListId.count(); i++ ) {
@@ -720,7 +720,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
         // check entered ids of faces and highlight them
         QStringList aListId;
         if ( aMesh ) {
-          TColStd_MapOfInteger newIndices;
+          SVTK_TVtkIDsMap newIndices;
       
           aListId = theNewText.split( " ", QString::SkipEmptyParts );
 
@@ -1147,7 +1147,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onListSelectionChanged()
 
   SALOME_ListIO aList;
   mySelectionMgr->setSelectedObjects( aList );
-  TColStd_MapOfInteger aIndexes;
+  SVTK_TVtkIDsMap aIndexes;
 
   QList<QListWidgetItem*> selItems = myFacesByNodes->selectedItems();
   QListWidgetItem* anItem;

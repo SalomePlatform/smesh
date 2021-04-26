@@ -3315,7 +3315,7 @@ void SMESHGUI_MeshInfoDlg::idChanged()
   myIDPreview->SetPointsLabeled( false );
 
   if ( myProxy ) {
-    TColStd_MapOfInteger ID;
+    SVTK_TVtkIDsMap      ID;
     QSet<uint>           ids;
     std::vector<int>     idVec;
     std::list< gp_XYZ >  aGrCentersXYZ;
@@ -3646,14 +3646,14 @@ void SMESHGUI_CtrlInfo::showInfo( const SMESH::SelectionProxy& proxy )
     for ( int i = 0; i < myButtons.count(); ++i )
       myButtons[i]->setEnabled( true );
 
-  SMESH::long_array_var nbElemsByType = obj->GetNbElementsByType();
+  SMESH::smIdType_array_var nbElemsByType = obj->GetNbElementsByType();
   if ( ! &nbElemsByType.in() ) return;
 
   const CORBA::Long ctrlLimit =
     meshLoaded ? SMESHGUI::resourceMgr()->integerValue( "SMESH", "info_controls_limit", 3000 ) : -1;
 
   // nodes info
-  const CORBA::Long nbNodes =   nbElemsByType[ SMESH::NODE ];
+  const SMESH::smIdType nbNodes =  nbElemsByType[ SMESH::NODE ];
   // const CORBA::Long nbElems = ( nbElemsByType[ SMESH::EDGE ] +
   //                               nbElemsByType[ SMESH::FACE ] +
   //                               nbElemsByType[ SMESH::VOLUME ] );

@@ -1331,12 +1331,12 @@ static void cleanSubMesh( SMESH_subMesh * subMesh )
     if (SMESHDS_SubMesh * subMeshDS = subMesh->GetSubMeshDS())
     {
       SMESHDS_Mesh * meshDS = subMesh->GetFather()->GetMeshDS();
-      int nbElems = subMeshDS->NbElements();
+      smIdType nbElems = subMeshDS->NbElements();
       if ( nbElems > 0 )
         for ( SMDS_ElemIteratorPtr ite = subMeshDS->GetElements(); ite->more(); )
           meshDS->RemoveFreeElement( ite->next(), subMeshDS );
 
-      int nbNodes = subMeshDS->NbNodes();
+      smIdType nbNodes = subMeshDS->NbNodes();
       if ( nbNodes > 0 )
         for ( SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes(); itn->more() ; )
         {
@@ -1917,7 +1917,7 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
   bool ret = true;
 
   if (_subShape.ShapeType() == TopAbs_VERTEX) {
-    vector<int> aVec(SMDSEntity_Last,0);
+    vector<smIdType> aVec(SMDSEntity_Last,0);
     aVec[SMDSEntity_Node] = 1;
     aResMap.insert(make_pair(this,aVec));
     return ret;
@@ -1944,7 +1944,7 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
         SMESH_subMesh* sm = smIt->next();
         int dim = SMESH_Gen::GetShapeDim( sm->GetSubShape() );
         if (dim < dimToCheck) break; // the rest subMeshes are all of less dimension
-        const vector<int> & nbs = aResMap[ sm ];
+        const vector<smIdType> & nbs = aResMap[ sm ];
         subMeshEvaluated = (std::accumulate( nbs.begin(), nbs.end(), 0 ) > 0 );
       }
       if ( !subMeshEvaluated )
@@ -1954,7 +1954,7 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
 
     if ( IsMeshComputed() )
     {
-      vector<int> & nbEntities = aResMap[ this ];
+      vector<smIdType> & nbEntities = aResMap[ this ];
       nbEntities.resize( SMDSEntity_Last, 0 );
       if ( SMESHDS_SubMesh* sm = GetSubMeshDS() )
       {
@@ -1968,7 +1968,7 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
     {
       ret = algo->Evaluate((*_father), _subShape, aResMap);
     }
-    aResMap.insert( make_pair( this,vector<int>(0)));
+    aResMap.insert( make_pair( this,vector<smIdType>(0)));
   }
 
   return ret;

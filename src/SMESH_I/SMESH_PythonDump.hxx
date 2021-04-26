@@ -99,9 +99,10 @@ namespace SMESH
   {
     std::vector< std::string > myVals;
     bool                       myIsList;
-    TVar(CORBA::Double value);
-    TVar(CORBA::Long   value);
-    TVar(CORBA::Short  value);
+    TVar(CORBA::Double   value);
+    TVar(CORBA::Long     value);
+    TVar(CORBA::LongLong value);
+    TVar(CORBA::Short    value);
     TVar(const SMESH::double_array& value);
     // string used to temporary quote variable names in order
     // not to confuse variables with string arguments
@@ -137,6 +138,9 @@ namespace SMESH
     operator<<(int theArg);
 
     TPythonDump&
+    operator<<(long long theArg);
+
+    TPythonDump&
     operator<<(double theArg);
 
     TPythonDump&
@@ -159,6 +163,9 @@ namespace SMESH
 
     TPythonDump&
     operator<<(const SMESH::long_array& theArg);
+
+    TPythonDump&
+    operator<<(const SMESH::smIdType_array& theArg);
 
     TPythonDump&
     operator<<(const SMESH::double_array& theArg);

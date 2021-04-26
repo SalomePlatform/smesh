@@ -105,7 +105,7 @@ int SMDS_MeshElement::GetNodeIndex( const SMDS_MeshNode* node ) const
  */
 //================================================================================
 
-int SMDS_MeshElement::GetID() const
+smIdType SMDS_MeshElement::GetID() const
 {
   return myHolder ? myHolder->GetID( this ) : -1;
 }
@@ -138,7 +138,7 @@ int SMDS_MeshElement::GetShapeID() const
  */
 //================================================================================
 
-int SMDS_MeshElement::GetVtkID() const
+vtkIdType SMDS_MeshElement::GetVtkID() const
 {
   return myHolder->GetVtkID( this );
 }
@@ -171,7 +171,7 @@ bool SMDS_MeshElement::isMarked() const
  */
 //================================================================================
 
-void SMDS_MeshElement::setVtkID( const int vtkID )
+void SMDS_MeshElement::setVtkID( const vtkIdType vtkID )
 {
   myHolder->SetVTKID( this, vtkID );
 }

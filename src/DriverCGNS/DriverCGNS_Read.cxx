@@ -33,6 +33,8 @@
 #include "SMESH_Comment.hxx"
 #include "SMESH_TypeDefs.hxx"
 
+#include <smIdType.hxx>
+
 #include <gp_XYZ.hxx>
 
 #include <cgnslib.h>
@@ -59,9 +61,9 @@ namespace
   struct TZoneData
   {
     int                    _id;
-    int                    _nodeIdShift; // nb nodes in previously read zones
-    int                    _elemIdShift; // nb faces in previously read zones
-    int                    _nbNodes, _nbElems;
+    smIdType               _nodeIdShift; // nb nodes in previously read zones
+    smIdType               _elemIdShift; // nb faces in previously read zones
+    smIdType               _nbNodes, _nbElems;
     int                    _meshDim;
     int                    _sizeX, _sizeY, _sizeZ, _nbCells; // structured
     cgsize_t               _sizes[NB_ZONE_SIZE_VAL];
@@ -550,10 +552,10 @@ namespace
     nbNodes = ids[0];
     ++ids;
 #endif
-    vector<int> idVec( nbNodes );
+    vector<smIdType> idVec( nbNodes );
     for ( int i = 0; i < nbNodes; ++i )
-      idVec[ i ] = (int) ids[ i ];
-    return mesh->AddPolygonalFaceWithID( idVec, ID );
+      idVec[ i ] = ToSmIdType( ids[ i ]);
+    return mesh->AddPolygonalFaceWithID( idVec, ToSmIdType(ID) );
   }
 
   typedef SMDS_MeshElement* (* PAddElemFun) (cgsize_t* ids, SMESHDS_Mesh* mesh, int ID);
@@ -890,6 +892,8 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
         curAddElemFun = addElemFuns[ elemType ];
         SMDS_MeshElement* newElem = 0;
         const SMDS_MeshElement* face;
+        vector<int> quantities;
+        vector<const SMDS_MeshNode*> nodes, faceNodes;
 
         while ( pos < eDataSize )
         {
@@ -921,9 +925,8 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
                 //                       Face1M, Face2M, ... FaceNM
                 nbFaces = polyOffset[ iElem + 1 ] - polyOffset[ iElem ];
 
-              vector<int> quantities( nbFaces );
-              vector<const SMDS_MeshNode*> nodes, faceNodes;
-              nodes.reserve( nbFaces * 4 );
+              quantities.resize( nbFaces ); quantities.back() = 0;
+              nodes.clear();                nodes.reserve( nbFaces * 4 );
               for ( int iF = 0; iF < nbFaces; ++iF )
               {
                 const int faceID = std::abs( elemData[ pos++ ]) + zone._elemIdShift;
@@ -945,6 +948,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
                 }
                 else {
                   polyhedError = true;
+                  pos += nbFaces - iF - 1;
                   break;
                 }
               }
@@ -1172,7 +1176,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
             case 2: addElemFun = & add_QUAD_4; break;
             case 3: addElemFun = & add_HEXA_8; break;
             }
-            int elemID = meshInfo.NbElements();
+            smIdType elemID = meshInfo.NbElements();
             const SMDS_MeshElement* elem = 0;
             for ( size_t i = 0; i < ids.size(); i += nbElemNodes )
             {

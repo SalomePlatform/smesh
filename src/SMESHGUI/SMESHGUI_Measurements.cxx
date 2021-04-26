@@ -60,7 +60,7 @@
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkDataSetMapper.h>
-#include <VTKViewer_CellLocationsArray.h>
+//#include <VTKViewer_CellLocationsArray.h>
 #include <vtkProperty.h>
 
 #include <ElCLib.hxx>
@@ -357,7 +357,7 @@ void SMESHGUI_MinDistance::createPreview( double x1, double y1, double z1, doubl
   aCells->InsertNextCell( anIdList );
   aCellTypesArray->InsertNextValue( VTK_LINE );
   anIdList->Delete();
-  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
+  vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( 1 );
   aCells->InitTraversal();
@@ -492,7 +492,7 @@ void SMESHGUI_MinDistance::firstEdited()
   if ( myFirstActor && selector ) {
     Handle(SALOME_InteractiveObject) IO = myFirstActor->getIO();
     if ( myFirst->checkedId() == NodeTgt || myFirst->checkedId() == ElementTgt ) {
-      TColStd_MapOfInteger ID;
+      SVTK_TVtkIDsMap ID;
       ID.Add( myFirstTgt->text().toLong() );
       selector->AddOrRemoveIndex( IO, ID, false );
     }
@@ -520,7 +520,7 @@ void SMESHGUI_MinDistance::secondEdited()
     Handle(SALOME_InteractiveObject) IO = mySecondActor->getIO();
     if ( mySecond->checkedId() == NodeTgt || mySecond->checkedId() == ElementTgt ) {
       if ( !text.isEmpty() ) {
-        TColStd_MapOfInteger ID;
+        SVTK_TVtkIDsMap ID;
         ID.Add( text.toLong() );
         selector->AddOrRemoveIndex( IO, ID, false );
       }
@@ -546,7 +546,7 @@ void SMESHGUI_MinDistance::compute()
       SMESH::SMESH_Mesh_var m = myFirstSrc->GetMesh();
       long id = myFirstTgt->text().toLong();
       if ( !CORBA::is_nil( m ) && id ) {
-        SMESH::long_array_var ids = new SMESH::long_array();
+        SMESH::smIdType_array_var ids = new SMESH::smIdType_array();
         ids->length( 1 );
         ids[0] = id;
         SMESH::SMESH_MeshEditor_var me = m->GetMeshEditor();
@@ -565,7 +565,7 @@ void SMESHGUI_MinDistance::compute()
       SMESH::SMESH_Mesh_var m = mySecondSrc->GetMesh();
       long id = mySecondTgt->text().toLong();
       if ( !CORBA::is_nil( m ) && id ) {
-        SMESH::long_array_var ids = new SMESH::long_array();
+        SMESH::smIdType_array_var ids = new SMESH::smIdType_array();
         ids->length( 1 );
         ids[0] = id;
         SMESH::SMESH_MeshEditor_var me = m->GetMeshEditor();
@@ -891,7 +891,7 @@ void SMESHGUI_BoundingBox::createPreview( double minX, double maxX, double minY,
   aCells->InsertNextCell( anIdList );
   aCellTypesArray->InsertNextValue( VTK_LINE );
   anIdList->Delete();
-  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
+  vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( 12 );
   aCells->InitTraversal();
@@ -1022,7 +1022,7 @@ void SMESHGUI_BoundingBox::sourceEdited()
   if ( myActor && selector ) {
     Handle(SALOME_InteractiveObject) IO = myActor->getIO();
     if ( mySourceMode->checkedId() == NodesSrc || mySourceMode->checkedId() == ElementsSrc ) {
-      TColStd_MapOfInteger ID;
+      SVTK_TVtkIDsMap ID;
       if ( !mySource->isReadOnly() )
         myIDs = mySource->text();
       QStringList ids = myIDs.split( " ", QString::SkipEmptyParts );
@@ -1047,7 +1047,7 @@ void SMESHGUI_BoundingBox::compute()
       SMESH::SMESH_Mesh_var m = mySrc[0]->GetMesh();
       QStringList ids = myIDs.split( " ", QString::SkipEmptyParts );
       if ( !CORBA::is_nil( m ) && ids.count() > 0 ) {
-        SMESH::long_array_var ids_in = new SMESH::long_array();
+        SMESH::smIdType_array_var ids_in = new SMESH::smIdType_array();
         ids_in->length( ids.count() );
         for( int i = 0; i < ids.count(); i++ )
           ids_in[i] = ids[i].trimmed().toLong();
@@ -1420,7 +1420,7 @@ void SMESHGUI_Angle::selectionChanged()
   clear();
   QString nodesString;
 
-  TColStd_IndexedMapOfInteger idsMap;
+  SVTK_TIndexedMapOfVtkId idsMap;
   SALOME_ListIO selected;
   SMESHGUI::selectionMgr()->selectedObjects( selected );
   selected.Reverse(); // to keep order of selection
@@ -1528,7 +1528,7 @@ void SMESHGUI_Angle::nodesEdited()
 {
   clear();
 
-  TColStd_MapOfInteger ID;
+  SVTK_TVtkIDsMap ID;
   QStringList ids = myNodes->text().split( " ", QString::SkipEmptyParts );
   foreach ( QString idStr, ids )
   {

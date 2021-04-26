@@ -61,7 +61,7 @@ public:
   //! Allow to recostruct selected cells from source SALOME_Actor and map of subindexes
   virtual void
   MapCells(SALOME_Actor* theMapActor,
-           const TColStd_IndexedMapOfInteger& theMapIndex);
+           const SVTK_TIndexedMapOfVtkId& theMapIndex);
 
 
   //! To remove the actor an all its internal devices

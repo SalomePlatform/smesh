@@ -688,7 +688,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
         if (bOk) {
           const SMDS_MeshNode* n = aMesh->FindNode(ind);
           if (n) {
-            TColStd_MapOfInteger newIndices;
+            SVTK_TVtkIDsMap newIndices;
             newIndices.Add(n->GetID());
             mySelector->AddOrRemoveIndex( aPathActor->getIO(), newIndices, false );
             if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -1147,7 +1147,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::isValuesValid()
   }
   else
   {
-    SMESH::long_array_var elems = mesh->GetNodeInverseElements( aNodeStart, SMESH::ALL );
+    SMESH::smIdType_array_var elems = mesh->GetNodeInverseElements( aNodeStart, SMESH::ALL );
     if ( elems->length() != 1 ||
          mesh->GetElementType( elems[0], true ) != SMESH::EDGE )
       return false;

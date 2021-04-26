@@ -87,7 +87,7 @@ public:
   Standard_EXPORT SMESHGUI_PredicateFilter();
   Standard_EXPORT virtual ~SMESHGUI_PredicateFilter();
 
-  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsValid( const vtkIdType ) const;
   Standard_EXPORT virtual bool IsObjValid( const int ) const;
   Standard_EXPORT virtual int  GetId() const;
   Standard_EXPORT virtual bool IsNodeFilter() const;
@@ -115,7 +115,7 @@ public:
   Standard_EXPORT SMESHGUI_QuadrangleFilter();
   Standard_EXPORT virtual ~SMESHGUI_QuadrangleFilter();
 
-  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsValid( const vtkIdType ) const;
   Standard_EXPORT virtual bool IsObjValid( const int ) const;
   Standard_EXPORT virtual int  GetId() const;
   Standard_EXPORT virtual bool IsNodeFilter() const;
@@ -137,7 +137,7 @@ public:
   Standard_EXPORT SMESHGUI_TriangleFilter();
   Standard_EXPORT virtual ~SMESHGUI_TriangleFilter();
 
-  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsValid( const vtkIdType ) const;
   Standard_EXPORT virtual bool IsObjValid( const int ) const;
   Standard_EXPORT virtual int  GetId() const;
   Standard_EXPORT virtual bool IsNodeFilter() const;  
@@ -159,7 +159,7 @@ public:
   Standard_EXPORT SMESHGUI_FacesFilter();
   Standard_EXPORT virtual ~SMESHGUI_FacesFilter();
 
-  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsValid( const vtkIdType ) const;
   Standard_EXPORT virtual bool IsObjValid( const int ) const;
   Standard_EXPORT virtual int  GetId() const;
   Standard_EXPORT virtual bool IsNodeFilter() const;  
@@ -181,7 +181,7 @@ public:
   Standard_EXPORT SMESHGUI_VolumesFilter();
   Standard_EXPORT virtual ~SMESHGUI_VolumesFilter();
 
-  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsValid( const vtkIdType ) const;
   Standard_EXPORT virtual bool IsObjValid( const int ) const;
   Standard_EXPORT virtual int  GetId() const;
   Standard_EXPORT virtual bool IsNodeFilter() const;
@@ -203,7 +203,7 @@ class SMESHGUI_VolumeShapeFilter : public SMESHGUI_Filter
 public:
   Standard_EXPORT SMESHGUI_VolumeShapeFilter(const SMDSAbs_GeometryType shape);
 
-  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsValid( const vtkIdType ) const;
   Standard_EXPORT virtual bool IsObjValid( const int ) const;
   Standard_EXPORT virtual int  GetId() const;
   Standard_EXPORT virtual bool IsNodeFilter() const;

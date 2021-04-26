@@ -31,6 +31,8 @@
 
 #include "SMESH_SMDS.hxx"
 
+#include <smIdType.hxx>
+
 class SMDS_MeshElement;
 class SMDS_MeshNode;
 class SMDS_MeshVolume;
@@ -72,7 +74,7 @@ class SMDS_EXPORT SMDS_VolumeTool
   const SMDS_MeshVolume* Element() const;
   // return element
 
-  int ID() const;
+  smIdType ID() const;
   // return element ID
 
   bool IsPoly() const { return myPolyedre; }
@@ -95,7 +97,7 @@ class SMDS_EXPORT SMDS_VolumeTool
   const SMDS_MeshNode** GetNodes() const { return (const SMDS_MeshNode**) &myVolumeNodes[0]; }
   // Return array of volume nodes
 
-  int NbNodes() const { return myVolumeNodes.size(); }
+  int NbNodes() const { return (int) myVolumeNodes.size(); }
   // Return array of volume nodes
 
   double GetSize() const;
@@ -261,7 +263,7 @@ class SMDS_EXPORT SMDS_VolumeTool
   int                     myNbFaces;
   std::vector<const SMDS_MeshNode*> myVolumeNodes;
   std::vector< int >      myPolyIndices; // of a myCurFace
-  std::vector< int >      myPolyQuantities;
+  std::vector<int>        myPolyQuantities;
   std::vector< int >      myPolyFacetOri; // -1-in, +1-out, 0-undef
 
   typedef std::pair<int,int> Link;

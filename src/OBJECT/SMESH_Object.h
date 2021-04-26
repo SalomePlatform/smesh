@@ -45,6 +45,7 @@
 #include "SMDSAbs_ElementType.hxx"
 
 #include <SALOMEconfig.h>
+#include <smIdType.hxx>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class SMDS_Mesh;
@@ -61,24 +62,24 @@ public:
   virtual bool Update( int theIsClear = true ) = 0;
   virtual bool NulData() = 0;
   virtual void UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
-  virtual int GetElemDimension( const int theObjId ) = 0;
+  virtual int GetElemDimension( const smIdType theObjId ) = 0;
 
-  virtual int GetNbEntities( const SMDSAbs_ElementType theType) const = 0;
+  virtual smIdType GetNbEntities( const SMDSAbs_ElementType theType) const = 0;
   virtual SMDS_Mesh* GetMesh() const = 0;
   virtual SMESH::SMESH_Mesh_ptr GetMeshServer() = 0;
 
-  virtual bool GetEdgeNodes( const int theElemId,
-                             const int theEdgeNum,
-                             int&      theNodeId1,
-                             int&      theNodeId2 ) const = 0;
+  virtual bool GetEdgeNodes( const smIdType theElemId,
+                             const int      theEdgeNum,
+                             smIdType&      theNodeId1,
+                             smIdType&      theNodeId2 ) const = 0;
   virtual bool              IsValid() const = 0;
   
   virtual vtkUnstructuredGrid* GetUnstructuredGrid() = 0;
   
-  virtual vtkIdType GetNodeObjId( int theVTKID ) = 0;
-  virtual vtkIdType GetNodeVTKId( int theObjID ) = 0;
-  virtual vtkIdType GetElemObjId( int theVTKID ) = 0;
-  virtual vtkIdType GetElemVTKId( int theObjID ) = 0;
+  virtual vtkIdType GetNodeObjId( vtkIdType theVTKID ) = 0;
+  virtual vtkIdType GetNodeVTKId( vtkIdType theObjID ) = 0;
+  virtual vtkIdType GetElemObjId( vtkIdType theVTKID ) = 0;
+  virtual vtkIdType GetElemVTKId( vtkIdType theObjID ) = 0;
   virtual void              ClearEntitiesFlags() = 0;
   virtual bool              GetEntitiesFlag() = 0;
   virtual unsigned int      GetEntitiesState() = 0;

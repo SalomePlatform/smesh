@@ -80,7 +80,7 @@ public:
 
   // meshods of SMESH_IDSource interface
   SMESH::array_of_ElementType* GetTypes() const;
-  SMESH::long_array*           GetMeshInfo() const;
+  SMESH::smIdType_array*       GetMeshInfo() const;
   bool                         IsMeshInfoCorrect() const;
 
   ~SMESH_PreMeshInfo();

@@ -76,7 +76,7 @@ Driver_Mesh::Status DriverDAT_R_SMDS_Mesh::Perform()
     myMesh->AddNodeWithID(coordX, coordY, coordZ, intNumPoint);
   }
   
-  fprintf(stdout, "%d noeuds\n", myMesh->NbNodes());
+  fprintf(stdout, "%ld noeuds\n", myMesh->NbNodes());
   /****************************************************************************
    *                       LECTURE DES ELEMENTS                                *
    ****************************************************************************/

@@ -29,6 +29,9 @@
 
 #include "SMDS_ElemIterator.hxx"
 
+#include <smIdType.hxx>
+#include <vtkType.h>
+
 #include <vector>
 #include <set>
 
@@ -80,12 +83,12 @@ class SMDS_EXPORT SMDS_ElementHolder
   void beforeCompacting();
 
   //! restore pointers to elements
-  void restoreElements( const std::vector<int>& idNodessOldToNew,
-                        const std::vector<int>& idCellsOldToNew );
+  void restoreElements( const std::vector<smIdType>& idNodessOldToNew,
+                        const std::vector<smIdType>& idCellsOldToNew );
 
 
   std::vector<const SMDS_MeshElement*>      myExternalElems; //!< elements not contained in the mesh
-  std::vector< int >                        myVtkIDs;        //!< vtk IDs of elements
+  std::vector< vtkIdType >                  myVtkIDs;        //!< vtk IDs of elements
   std::vector< bool >                       myIsNode;
   std::set< SMDS_ElementHolder* >::iterator myPtrInMesh;
 };

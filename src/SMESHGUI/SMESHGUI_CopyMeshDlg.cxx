@@ -439,7 +439,7 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
     else
     {
       QStringList aListElementsId = myLineEditElements->text().split(" ", QString::SkipEmptyParts);
-      SMESH::long_array_var anElementsId = new SMESH::long_array;
+      SMESH::smIdType_array_var anElementsId = new SMESH::smIdType_array;
       anElementsId->length(aListElementsId.count());
       for (int i = 0; i < aListElementsId.count(); i++)
         anElementsId[i] = aListElementsId[i].toInt();
@@ -614,7 +614,7 @@ void SMESHGUI_CopyMeshDlg::onTextChange (const QString& theNewText)
   QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
   if (myActor && aMesh)
   {
-    TColStd_MapOfInteger newIndices;
+    SVTK_TVtkIDsMap newIndices;
     if (send == myLineEditElements) {
       for (int i = 0; i < aListId.count(); i++)
         if ( const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt()))

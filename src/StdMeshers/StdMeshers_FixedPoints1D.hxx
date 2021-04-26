@@ -25,13 +25,12 @@
 #ifndef _SMESH_FIXEDPOINTS1D_HXX_
 #define _SMESH_FIXEDPOINTS1D_HXX_
 
-
-
 #include "SMESH_StdMeshers.hxx"
 
 #include "StdMeshers_Reversible1D.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
+#include <smIdType.hxx>
 
 #include <vector>
 
@@ -43,11 +42,11 @@ public:
 
   void SetPoints(const std::vector<double>& listParams);
 
-  void SetNbSegments(const std::vector<int>& listNbSeg) ;
+  void SetNbSegments(const std::vector<smIdType>& listNbSeg) ;
 
   const std::vector<double>& GetPoints() const { return _params; }
 
-  const std::vector<int>& GetNbSegments() const { return _nbsegs; }
+  const std::vector<smIdType>& GetNbSegments() const { return _nbsegs; }
 
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
@@ -66,9 +65,9 @@ public:
    */
   virtual bool SetParametersByDefaults(const TDefaults& dflts, const SMESH_Mesh* theMesh=0);
 
-protected:
-  std::vector<double> _params;
-  std::vector<int>    _nbsegs;
+ protected:
+  std::vector<double>   _params;
+  std::vector<smIdType> _nbsegs;
 };
 
 #endif

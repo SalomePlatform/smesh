@@ -40,6 +40,7 @@
 #include <SUIT_MessageBox.h>
 #include <SVTK_Selector.h>
 #include <SalomeApp_Tools.h>
+#include <smIdType.hxx>
 
 // Qt includes
 #include <QButtonGroup>
@@ -426,7 +427,7 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
         SUIT_MessageBox::warning( myDlg, tr( "SMESH_WRN_WARNING" ), tr( "SMESH_BAD_SELECTION" ) );
         return false;
       }
-      SMESH::long_array_var idArray = new SMESH::long_array;
+      SMESH::smIdType_array_var idArray = new SMESH::smIdType_array;
       idArray->length( idList.count() );
       QStringList::iterator idIt = idList.begin();
       for ( int i = 0; idIt != idList.end(); ++idIt, ++i )
@@ -438,14 +439,14 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
 
     // Create 0D elements
 
-    int prevNb0D = mesh->Nb0DElements();
+    smIdType prevNb0D = mesh->Nb0DElements();
 
     QString groupName = myDlg->myGroupListCmBox->currentText();
     SMESH::SMESH_IDSource_var newObj =
       editor->Create0DElementsOnAllNodes( meshObject, groupName.toUtf8().data(),
                                           myDlg->myDuplicateElemsChkBox->isChecked() );
 
-    int newNb0D = mesh->Nb0DElements() - prevNb0D;
+    smIdType newNb0D = mesh->Nb0DElements() - prevNb0D;
     SUIT_MessageBox::information( myDlg, tr( "SMESH_INFORMATION" ),
                                   tr( "NB_NEW_0D" ).arg( newNb0D ),
                                   SUIT_MessageBox::Ok, SUIT_MessageBox::Ok);

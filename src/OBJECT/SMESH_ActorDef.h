@@ -144,14 +144,14 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetBallScale(double size);
   virtual double GetBallScale();
 
-  virtual int GetNodeObjId(int theVtkID);
-  virtual double* GetNodeCoord(int theObjID);
-  virtual int GetNodeVtkId(int theObjID);
+  virtual vtkIdType GetNodeObjId(vtkIdType theVtkID);
+  virtual double* GetNodeCoord(vtkIdType theObjID);
+  virtual vtkIdType GetNodeVtkId(vtkIdType theObjID);
 
-  virtual int GetElemObjId(int theVtkID);
-  virtual vtkCell* GetElemCell(int theObjID);
+  virtual vtkIdType GetElemObjId(vtkIdType theVtkID);
+  virtual vtkCell* GetElemCell(vtkIdType theObjID);
 
-  virtual int GetObjDimension( const int theObjId );
+  virtual int GetObjDimension( const vtkIdType theObjId ) override;
 
   virtual void SetVisibility(int theMode);
   void SetVisibility(int theMode, bool theIsUpdateRepersentation);
@@ -206,7 +206,7 @@ class SMESH_ActorDef : public SMESH_Actor
 
   virtual void SetControlMode(eControl theMode);
   virtual void SetControl(SMESH::Controls::FunctorPtr theFunctor);
-  virtual int GetNumberControlEntities();
+  virtual smIdType GetNumberControlEntities();
   virtual eControl GetControlMode(){ return myControlMode;}
   virtual SMESH::Controls::FunctorPtr GetFunctor() { return myFunctor; }
 

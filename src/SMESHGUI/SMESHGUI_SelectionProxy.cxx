@@ -276,7 +276,7 @@ SMESH::MeshInfo SMESH::SelectionProxy::meshInfo() const
   SMESH::MeshInfo info;
   if ( !isNull() )
   {
-    SMESH::long_array_var data = myObject->GetMeshInfo();
+    SMESH::smIdType_array_var data = myObject->GetMeshInfo();
     for ( uint type = SMESH::Entity_Node; type < SMESH::Entity_Last; type++ )
     {
       if ( type < data->length() )
@@ -494,7 +494,7 @@ bool SMESH::SelectionProxy::nodeConnectivity( int id, SMESH::Connectivity& conne
       SMESH::SMESH_Mesh_var mesh = myObject->GetMesh();
       if ( !CORBA::is_nil( mesh ) )
       {
-        SMESH::long_array_var elements = mesh->GetNodeInverseElements( id, SMESH::ALL );
+        SMESH::smIdType_array_var elements = mesh->GetNodeInverseElements( id, SMESH::ALL );
         for ( int i = 0, n = elements->length(); i < n; i++ )
         {
           SMESH::ElementType type = mesh->GetElementType( elements[i], true );
@@ -589,7 +589,7 @@ bool SMESH::SelectionProxy::hasElement( int id )
       SMESH::SMESH_Mesh_var mesh = myObject->GetMesh();
       if ( !CORBA::is_nil( mesh ) )
       {
-        SMESH::long_array_var nodes = mesh->GetElemNodes( id );
+        SMESH::smIdType_array_var nodes = mesh->GetElemNodes( id );
         result = nodes->length() > 0;
       }
     }
@@ -663,13 +663,13 @@ int SMESH::SelectionProxy::elementEntityType( int id ) const
   \param connectivity Return element connectivity.
   \return \c true if result is valid; \c false otherwise.
 */
-bool SMESH::SelectionProxy::elementConnectivity( int id, Connectivity& connectivity )
+bool SMESH::SelectionProxy::elementConnectivity( SMESH::smIdType id, Connectivity& connectivity )
 {
   bool result = false;
   connectivity.clear();
   if ( !isNull() )
   {
-    QSet<int> nodes; // order of nodes is important
+    QSet<SMESH::smIdType> nodes; // order of nodes is important
     if ( actor() )
     {
       const SMDS_MeshElement* element = actor()->GetObject()->GetMesh()->FindElement( id );
@@ -678,7 +678,7 @@ bool SMESH::SelectionProxy::elementConnectivity( int id, Connectivity& connectiv
         {
           while ( it->more() )
           {
-            int n = it->next()->GetID();
+            SMESH::smIdType n = it->next()->GetID();
             if ( !nodes.contains( n ))
             {
               connectivity[ SMDSAbs_Node ] << n;
@@ -693,7 +693,7 @@ bool SMESH::SelectionProxy::elementConnectivity( int id, Connectivity& connectiv
       SMESH::SMESH_Mesh_var mesh = myObject->GetMesh();
       if ( !CORBA::is_nil( mesh ) )
       {
-        SMESH::long_array_var nn = mesh->GetElemNodes( id );
+        SMESH::smIdType_array_var nn = mesh->GetElemNodes( id );
         for ( int i = 0, nb = nn->length(); i < nb; i++ )
         {
           if ( !nodes.contains( nn[i] ))
@@ -751,7 +751,7 @@ bool SMESH::SelectionProxy::perFaceConnectivity( int id, Connectivity& connectiv
         CORBA::Long nbFaces = mesh->ElemNbFaces( id );
         for ( CORBA::Long iF = 0; iF < nbFaces; ++iF )
         {
-          SMESH::long_array_var nodes = mesh->GetElemFaceNodes( id, iF );
+          SMESH::smIdType_array_var nodes = mesh->GetElemFaceNodes( id, iF );
           for ( CORBA::ULong iN = 0; iN < nodes->length(); ++iN )
           {
             connectivity[ iF+1 ] << nodes[iN];
@@ -825,7 +825,7 @@ bool SMESH::SelectionProxy::elementGravityCenter( int id, SMESH::XYZ& xyz )
       SMESH::SMESH_Mesh_var mesh = myObject->GetMesh();
       if ( !CORBA::is_nil( mesh ) )
       {
-        SMESH::long_array_var nodes = mesh->GetElemNodes( id );
+        SMESH::smIdType_array_var nodes = mesh->GetElemNodes( id );
         for ( int i = 0, n = nodes->length(); i < n; i++ )
         {
           SMESH::double_array_var coords = mesh->GetNodeXYZ( nodes[i]  );
@@ -1159,10 +1159,10 @@ QColor SMESH::SelectionProxy::color() const
   \param autoCompute Compute size if it is unavailable. Defaults to \c false.
   \return Group's size.
 */
-int SMESH::SelectionProxy::size( bool autoCompute ) const
+SMESH::smIdType SMESH::SelectionProxy::size( bool autoCompute ) const
 {
   // note: size is not computed for group on filter for performance reasons, see IPAL52831
-  int result = -1;
+  SMESH::smIdType result = -1;
   if ( !isNull() )
   {
     SMESH::SMESH_GroupBase_var group = SMESH::SMESH_GroupBase::_narrow( myObject );
@@ -1187,10 +1187,10 @@ int SMESH::SelectionProxy::size( bool autoCompute ) const
   \param autoCompute Compute size if it is unavailable. Defaults to \c false.
   \return Number of nodes contained in group.
 */
-int SMESH::SelectionProxy::nbNodes( bool autoCompute ) const
+SMESH::smIdType SMESH::SelectionProxy::nbNodes( bool autoCompute ) const
 {
   // note: nb of nodes is not computed automatically for performance reasons
-  int result = -1;
+  SMESH::smIdType result = -1;
   if ( !isNull() )
   {
     SMESH::SMESH_GroupBase_var group = SMESH::SMESH_GroupBase::_narrow( myObject );
@@ -1220,7 +1220,7 @@ QSet<uint> SMESH::SelectionProxy::ids() const
     SMESH::SMESH_GroupBase_var group = SMESH::SMESH_GroupBase::_narrow( myObject );
     if ( !CORBA::is_nil( group ) )
     {
-      SMESH::long_array_var seq = group->GetListOfID();
+      SMESH::smIdType_array_var seq = group->GetListOfID();
       for ( int i = 0, n = seq->length(); i < n; i++ )
         result << (uint)seq[i];
     }

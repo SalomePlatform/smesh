@@ -689,7 +689,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
       // check if the loaded grid corresponds to nb of quadrangles on the FACE
       const SMESHDS_SubMesh* faceSubMesh =
         proxymesh ? proxymesh->GetSubMesh( F ) : meshDS->MeshElements( F );
-      const int nbQuads = faceSubMesh->NbElements();
+      const smIdType nbQuads = faceSubMesh->NbElements();
       const int nbHor = aCubeSide[i]._u2nodesMap.size() - 1;
       const int nbVer = aCubeSide[i]._u2nodesMap.begin()->second.size() - 1;
       ok = ( nbQuads == nbHor * nbVer );
@@ -988,7 +988,7 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
     TopoDS_Shape aFace = aFaces.Value(i+1);
     SMESH_Algo *algo = _gen->GetAlgo(aMesh, aFace);
     if( !algo ) {
-      std::vector<int> aResVec(SMDSEntity_Last);
+      std::vector<smIdType> aResVec(SMDSEntity_Last);
       for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
       SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
       aResMap.insert(std::make_pair(sm,aResVec));
@@ -1001,8 +1001,8 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
     if (algoName == "Quadrangle_2D") {
       MapShapeNbElemsItr anIt = aResMap.find(meshFaces[i]);
       if( anIt == aResMap.end() ) continue;
-      std::vector<int> aVec = (*anIt).second;
-      int nbtri = Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
+      std::vector<smIdType> aVec = (*anIt).second;
+      smIdType nbtri = std::max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
       if( nbtri == 0 )
         isAllQuad = true;
     }
@@ -1022,8 +1022,8 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
     if( sm ) {
       MapShapeNbElemsItr anIt = aResMap.find(sm);
       if( anIt == aResMap.end() ) continue;
-      std::vector<int> aVec = (*anIt).second;
-      nb1d += Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
+      std::vector<smIdType> aVec = (*anIt).second;
+      nb1d += std::max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
       if(IsFirst) {
         IsQuadratic = (aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge]);
         IsFirst = false;
@@ -1051,20 +1051,20 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
     if( i == OppNum ) continue;
     MapShapeNbElemsItr anIt = aResMap.find( meshFaces[i-1] );
     if( anIt == aResMap.end() ) continue;
-    std::vector<int> aVec = (*anIt).second;
-    nb2d += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+    std::vector<smIdType> aVec = (*anIt).second;
+    nb2d += std::max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
   }
   
   MapShapeNbElemsItr anIt = aResMap.find( meshFaces[0] );
-  std::vector<int> aVec = (*anIt).second;
-  int nb2d_face0 = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
-  int nb0d_face0 = aVec[SMDSEntity_Node];
+  std::vector<smIdType> aVec = (*anIt).second;
+  smIdType nb2d_face0 = std::max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+  smIdType nb0d_face0 = aVec[SMDSEntity_Node];
 
-  std::vector<int> aResVec(SMDSEntity_Last);
+  std::vector<smIdType> aResVec(SMDSEntity_Last);
   for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
   if(IsQuadratic) {
     aResVec[SMDSEntity_Quad_Hexa] = nb2d_face0 * ( nb2d/nb1d );
-    int nb1d_face0_int = ( nb2d_face0*4 - nb1d ) / 2;
+    smIdType nb1d_face0_int = ( nb2d_face0*4 - nb1d ) / 2;
     aResVec[SMDSEntity_Node] = nb0d_face0 * ( 2*nb2d/nb1d - 1 ) - nb1d_face0_int * nb2d/nb1d;
   }
   else {

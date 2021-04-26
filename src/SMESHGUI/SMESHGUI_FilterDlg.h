@@ -39,6 +39,7 @@
 // SALOME GUI includes
 #include <SALOME_DataMapOfIOMapOfInteger.hxx>
 #include <SVTK_Selection.h>
+#include <SVTK_Hash.h>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -58,6 +59,9 @@ class SMESHGUI;
 class SMESHGUI_FilterLibraryDlg;
 class SMESH_Actor;
 class SVTK_Selector;
+
+typedef NCollection_DataMap<Handle(SALOME_InteractiveObject), SVTK_TIndexedMapOfVtkId> SALOME_DataMapOfIOMapOfVtk;
+typedef SALOME_DataMapOfIOMapOfVtk::Iterator SALOME_DataMapIteratorOfIOMapOfVtk;
 
 /*!
  *  Class       : SMESHGUI_FilterTable
@@ -308,7 +312,7 @@ private:
   bool                      myDiffSourcesEnabled;
   QWidget*                  mySourceWg;
 
-  SALOME_DataMapOfIOMapOfInteger myIObjects;
+  SALOME_DataMapOfIOMapOfVtk     myIObjects;
   bool                           myIsSelectionChanged;
   QMap< int, SMESH::Filter_var > myFilter;
   QMap< int, bool >              myInsertState;

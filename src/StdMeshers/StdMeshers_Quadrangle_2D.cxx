@@ -917,7 +917,7 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh&         aMesh,
   std::vector<int> aNbNodes(4);
   bool IsQuadratic = false;
   if (!checkNbEdgesForEvaluate(aMesh, aFace, aResMap, aNbNodes, IsQuadratic)) {
-    std::vector<int> aResVec(SMDSEntity_Last);
+    std::vector<smIdType> aResVec(SMDSEntity_Last);
     for (int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = aMesh.GetSubMesh(aFace);
     aResMap.insert(std::make_pair(sm,aResVec));
@@ -966,7 +966,7 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh&         aMesh,
   //int nbFaces4 = (nbhoriz-1-kdh)*(nbvertic-1-kdv);
   int nbFaces4 = (nbhoriz-1)*(nbvertic-1);
 
-  std::vector<int> aVec(SMDSEntity_Last,0);
+  std::vector<smIdType> aVec(SMDSEntity_Last,0);
   if (IsQuadratic) {
     aVec[SMDSEntity_Quad_Triangle] = nbFaces3;
     aVec[SMDSEntity_Quad_Quadrangle] = nbFaces4;
@@ -1531,7 +1531,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
 
   if ( theConsiderMesh )
   {
-    const int nbSegments = Max( faceSide.NbPoints()-1, faceSide.NbSegments() );
+    const smIdType nbSegments = std::max( faceSide.NbPoints()-1, faceSide.NbSegments() );
     if ( nbSegments < nbCorners )
       return error(COMPERR_BAD_INPUT_MESH, TComm("Too few boundary nodes: ") << nbSegments);
   }
@@ -1768,7 +1768,7 @@ bool StdMeshers_Quadrangle_2D::checkNbEdgesForEvaluate(SMESH_Mesh&          aMes
   if (anIt==aResMap.end()) {
     return false;
   }
-  std::vector<int> aVec = (*anIt).second;
+  std::vector<smIdType> aVec = (*anIt).second;
   IsQuadratic = (aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge]);
   if (nbEdgesInWire.front() == 3) { // exactly 3 edges
     if (myTriaVertexID>0) {
@@ -1790,7 +1790,7 @@ bool StdMeshers_Quadrangle_2D::checkNbEdgesForEvaluate(SMESH_Mesh&          aMes
         SMESH_subMesh * sm = aMesh.GetSubMesh(E1);
         MapShapeNbElemsItr anIt = aResMap.find(sm);
         if (anIt==aResMap.end()) return false;
-        std::vector<int> aVec = (*anIt).second;
+        std::vector<smIdType> aVec = (*anIt).second;
         if (IsQuadratic)
           aNbNodes[0] = (aVec[SMDSEntity_Node]-1)/2 + 2;
         else
@@ -1824,7 +1824,7 @@ bool StdMeshers_Quadrangle_2D::checkNbEdgesForEvaluate(SMESH_Mesh&          aMes
       if (anIt==aResMap.end()) {
         return false;
       }
-      std::vector<int> aVec = (*anIt).second;
+      std::vector<smIdType> aVec = (*anIt).second;
       if (IsQuadratic)
         aNbNodes[nbSides] = (aVec[SMDSEntity_Node]-1)/2 + 2;
       else
@@ -1861,7 +1861,7 @@ bool StdMeshers_Quadrangle_2D::checkNbEdgesForEvaluate(SMESH_Mesh&          aMes
         if (anIt==aResMap.end()) {
           return false;
         }
-        std::vector<int> aVec = (*anIt).second;
+        std::vector<smIdType> aVec = (*anIt).second;
         if (IsQuadratic)
           aNbNodes[nbSides] += (aVec[SMDSEntity_Node]-1)/2 + 1;
         else
@@ -1902,7 +1902,7 @@ bool StdMeshers_Quadrangle_2D::checkNbEdgesForEvaluate(SMESH_Mesh&          aMes
           if (anIt==aResMap.end()) {
             return false;
           }
-          std::vector<int> aVec = (*anIt).second;
+          std::vector<smIdType> aVec = (*anIt).second;
           if (IsQuadratic)
             aNbNodes[nbSides] += (aVec[SMDSEntity_Node]-1)/2 + 1;
           else
@@ -3179,7 +3179,7 @@ bool StdMeshers_Quadrangle_2D::evaluateQuadPref(SMESH_Mesh &        aMesh,
     nbFaces += (drl+addv)*(nb-1) + (nt-1);
   } // end new version implementation
 
-  std::vector<int> aVec(SMDSEntity_Last);
+  std::vector<smIdType> aVec(SMDSEntity_Last);
   for (int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
   if (IsQuadratic) {
     aVec[SMDSEntity_Quad_Quadrangle] = nbFaces;

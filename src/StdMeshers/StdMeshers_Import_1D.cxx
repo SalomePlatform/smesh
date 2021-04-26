@@ -1311,7 +1311,7 @@ bool StdMeshers_Import_1D::Evaluate(SMESH_Mesh &         theMesh,
   if ( srcGroups.empty() )
     return error("Invalid source groups");
 
-  vector<int> aVec(SMDSEntity_Last,0);
+  vector<smIdType> aVec(SMDSEntity_Last,0);
 
   bool toCopyMesh, toCopyGroups;
   _sourceHyp->GetCopySourceMesh(toCopyMesh, toCopyGroups);

@@ -46,11 +46,11 @@ class SMESHDS_EXPORT SMESHDS_Group : public SMESHDS_GroupBase
 
   virtual void SetType(SMDSAbs_ElementType theType);
 
-  virtual int Extent() const;
+  virtual smIdType Extent() const;
 
   virtual bool IsEmpty();
 
-  virtual bool Contains (const int theID);
+  virtual bool Contains (const smIdType theID);
 
   virtual bool Contains (const SMDS_MeshElement* elem);
 
@@ -58,11 +58,11 @@ class SMESHDS_EXPORT SMESHDS_Group : public SMESHDS_GroupBase
 
   virtual int GetTic() const;
 
-  bool Add (const int theID);
+  bool Add (const smIdType theID);
 
   bool Add (const SMDS_MeshElement* theElem );
 
-  bool Remove (const int theID);
+  bool Remove (const smIdType theID);
 
   void Clear();
 

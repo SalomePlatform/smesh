@@ -1924,7 +1924,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::getMediumNodeOnComposedWire(const SMDS_
 //purpose  : Creates a node
 //=======================================================================
 
-SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID,
+SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, smIdType ID,
                                            double u, double v)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -1953,7 +1953,7 @@ SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID,
 
 SMDS_MeshEdge* SMESH_MesherHelper::AddEdge(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n2,
-                                           const int            id,
+                                           const smIdType       id,
                                            const bool           force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -1987,7 +1987,7 @@ SMDS_MeshEdge* SMESH_MesherHelper::AddEdge(const SMDS_MeshNode* n1,
 SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n2,
                                            const SMDS_MeshNode* n3,
-                                           const int id,
+                                           const smIdType id,
                                            const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -2037,7 +2037,7 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n2,
                                            const SMDS_MeshNode* n3,
                                            const SMDS_MeshNode* n4,
-                                           const int            id,
+                                           const smIdType       id,
                                            const bool           force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -2101,7 +2101,7 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
 //=======================================================================
 
 SMDS_MeshFace* SMESH_MesherHelper::AddPolygonalFace (const vector<const SMDS_MeshNode*>& nodes,
-                                                     const int                           id,
+                                                     const smIdType                      id,
                                                      const bool                          force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -2147,7 +2147,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n4,
                                                const SMDS_MeshNode* n5,
                                                const SMDS_MeshNode* n6,
-                                               const int id,
+                                               const smIdType id,
                                                const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -2210,7 +2210,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n2,
                                                const SMDS_MeshNode* n3,
                                                const SMDS_MeshNode* n4,
-                                               const int id,
+                                               const smIdType id,
                                                const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -2251,7 +2251,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n3,
                                                const SMDS_MeshNode* n4,
                                                const SMDS_MeshNode* n5,
-                                               const int id,
+                                               const smIdType id,
                                                const bool force3d)
 {
   SMDS_MeshVolume* elem = 0;
@@ -2301,7 +2301,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n6,
                                                const SMDS_MeshNode* n7,
                                                const SMDS_MeshNode* n8,
-                                               const int id,
+                                               const smIdType id,
                                                const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -2420,7 +2420,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n10,
                                                const SMDS_MeshNode* n11,
                                                const SMDS_MeshNode* n12,
-                                               const int id, 
+                                               const smIdType id, 
                                                bool /*force3d*/)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -2442,7 +2442,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 SMDS_MeshVolume*
 SMESH_MesherHelper::AddPolyhedralVolume (const std::vector<const SMDS_MeshNode*>& nodes,
                                          const std::vector<int>&                  quantities,
-                                         const int                                id,
+                                         const smIdType                           id,
                                          const bool                               force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -3413,9 +3413,9 @@ TopoDS_Shape SMESH_MesherHelper::GetShapeOfHypothesis( const SMESHDS_Hypothesis 
 
 SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
 {
-  int NbAllEdgsAndFaces=0;
-  int NbQuadFacesAndEdgs=0;
-  int NbFacesAndEdges=0;
+  smIdType NbAllEdgsAndFaces=0;
+  smIdType NbQuadFacesAndEdgs=0;
+  smIdType NbFacesAndEdges=0;
   //All faces and edges
   NbAllEdgsAndFaces = myMesh->NbEdges() + myMesh->NbFaces();
   if ( NbAllEdgsAndFaces == 0 )

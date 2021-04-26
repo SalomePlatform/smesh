@@ -402,9 +402,9 @@ SMDS_ElemIteratorPtr SMESH_ProxyMesh::GetFaces() const
  */
 //================================================================================
 
-int SMESH_ProxyMesh::NbFaces() const
+smIdType SMESH_ProxyMesh::NbFaces() const
 {
-  int nb = 0;
+  smIdType nb = 0;
   if ( _mesh->HasShapeToMesh() )
   {
     TopTools_IndexedMapOfShape FF;
@@ -715,7 +715,7 @@ void SMESH_ProxyMesh::SubMesh::Clear()
  */
 //================================================================================
 
-int SMESH_ProxyMesh::SubMesh::NbElements() const
+smIdType SMESH_ProxyMesh::SubMesh::NbElements() const
 {
   return _uvPtStructVec.empty() ? _elements.size() : _uvPtStructVec.size() - 1;
 }
@@ -740,7 +740,7 @@ SMDS_ElemIteratorPtr SMESH_ProxyMesh::SubMesh::GetElements() const
  */
 //================================================================================
 
-int SMESH_ProxyMesh::SubMesh::NbNodes() const
+smIdType SMESH_ProxyMesh::SubMesh::NbNodes() const
 {
   return _uvPtStructVec.size();
 }

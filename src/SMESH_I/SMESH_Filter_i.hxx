@@ -98,8 +98,8 @@ namespace SMESH
                                            public virtual Functor_i
   {
   public:
-    CORBA::Double                   GetValue( CORBA::Long theElementId );
-    CORBA::Boolean                  IsApplicable( CORBA::Long theElementId );
+    CORBA::Double                   GetValue( SMESH::smIdType theElementId );
+    CORBA::Boolean                  IsApplicable( SMESH::smIdType theElementId );
     SMESH::Histogram*               GetHistogram(CORBA::Short   nbIntervals,
                                                  CORBA::Boolean isLogarithmic);
     SMESH::Histogram*               GetLocalHistogram(CORBA::Short               nbIntervals,
@@ -704,7 +704,7 @@ namespace SMESH
   {
   public:
     RangeOfIds_i();
-    void                            SetRange( const SMESH::long_array& theIds );
+    void                            SetRange( const SMESH::smIdType_array& theIds );
     CORBA::Boolean                  SetRangeStr( const char* theRange );
     char*                           GetRangeStr();
     
@@ -823,7 +823,7 @@ namespace SMESH
     void                    SetElementType( ElementType theType );
     void                    SetPoint( CORBA::Double x, CORBA::Double y, CORBA::Double z );
     void                    SetVertex( GEOM::GEOM_Object_ptr vertex );
-    void                    SetNode ( CORBA::Long nodeID );
+    void                    SetNode ( SMESH::smIdType nodeID );
     void                    SetThreshold ( const char* threshold,
                                            SMESH::ConnectedElements::ThresholdType type );
     char*                   GetThreshold ( SMESH::ConnectedElements::ThresholdType& type );
@@ -1006,11 +1006,11 @@ namespace SMESH
                    Controls::Filter::TIdSequence& );
     
     virtual
-    long_array*      
+    smIdType_array*      
     GetElementsId( SMESH_Mesh_ptr );
 
     virtual
-    long_array*
+    smIdType_array*
     GetElementsIdFromParts( const ListOfIDSources& theParts );
 
     virtual
@@ -1040,9 +1040,9 @@ namespace SMESH
     // =========================
     // SMESH_IDSource interface
     // =========================
-    virtual SMESH::long_array*           GetIDs();
-    virtual SMESH::long_array*           GetMeshInfo();
-    virtual SMESH::long_array*           GetNbElementsByType();
+    virtual SMESH::smIdType_array*       GetIDs();
+    virtual SMESH::smIdType_array*       GetMeshInfo();
+    virtual SMESH::smIdType_array*       GetNbElementsByType();
     virtual SMESH::array_of_ElementType* GetTypes();
     virtual SMESH::SMESH_Mesh_ptr        GetMesh();
     virtual bool                         IsMeshInfoCorrect() { return true; }

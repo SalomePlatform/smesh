@@ -127,7 +127,7 @@ StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& 
  */
 //=============================================================================
 
-void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( CORBA::Long theSegmentsNumber )
+void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( SMESH::smIdType theSegmentsNumber )
 {
   ASSERT( myBaseImpl );
   try {

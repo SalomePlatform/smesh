@@ -32,6 +32,7 @@
 #include "SALOMEDS_Attributes.idl"
 
 #include "SMESH_Mesh.idl"
+#include "SMESH_smIdType.idl"
 
 module SMESH
 {
@@ -61,7 +62,7 @@ module SMESH
     /*!
      * Returns the number of elements in the group
      */
-    long Size();
+    smIdType Size();
 
     /*!
      * Returns true if the group does not contain any elements
@@ -71,29 +72,29 @@ module SMESH
     /*!
      * returns true if the group contains an element with ID == <elem_id> 
      */
-    boolean Contains( in long elem_id );
+    boolean Contains( in smIdType elem_id );
 
     /*!
      * Returns ID of an element at position <elem_index> counted from 1
      */
-    long GetID( in long elem_index );
+    smIdType GetID( in smIdType elem_index );
 
     /*!
      * Returns a sequence of all element IDs in the group
      */
-    long_array GetListOfID();
+    smIdType_array GetListOfID();
 
     /*!
      * Get the number of nodes of cells included to the group
      * For a nodal group returns the same value as Size() function
      */
-    long GetNumberOfNodes();
+    smIdType GetNumberOfNodes();
 
     /*!
      * Get IDs of nodes of cells included to the group
      * For a nodal group returns result of GetListOfID() function
      */
-    long_array GetNodeIDs();
+    smIdType_array GetNodeIDs();
 
     /*!
      * Return true if GetNumberOfNodes() won't take a long time for computation
@@ -142,24 +143,24 @@ module SMESH
     /*!
      * Adds elements or nodes with specified identifiers to the group
      */
-    long Add( in long_array elem_ids );
+    smIdType Add( in smIdType_array elem_ids );
     /*!
      * Adds elements or nodes that match specified predicate to the group
      */
-    long AddByPredicate( in Predicate thePredicate );
+    smIdType AddByPredicate( in Predicate thePredicate );
     /*!
      * Add all elements or nodes from the specified source to the group
      */
-    long AddFrom( in SMESH_IDSource theSource );
+    smIdType AddFrom( in SMESH_IDSource theSource );
 
     /*!
      * Removes elements or nodes with specified identifiers from the group
      */
-    long Remove( in long_array elem_ids );
+    smIdType Remove( in smIdType_array elem_ids );
     /*!
      * Removes elements or nodes that match specified predicate from the group
      */
-    long RemoveByPredicate( in Predicate thePredicate );
+    smIdType RemoveByPredicate( in Predicate thePredicate );
 
   };
 

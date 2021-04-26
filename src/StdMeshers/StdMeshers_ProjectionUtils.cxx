@@ -2873,7 +2873,7 @@ namespace StdMeshers_ProjectionUtils
     const SMDS_MeshNode *srcNode, *tgtNode;
 
     // un-mark internal src nodes in order iterate them using _delaunay
-    int nbSrcNodes = 0;
+    smIdType nbSrcNodes = 0;
     SMDS_NodeIteratorPtr nIt = _srcSubMesh->GetSubMeshDS()->GetNodes();
     if ( !nIt || !nIt->more() ) return true;
     if ( moveAll )

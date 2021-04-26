@@ -608,7 +608,7 @@ namespace
     }
     if ( ! notSupportedElemTypes.empty() )
     {
-      SMESH::long_array_var nbElems = aMeshOrGroup->GetMeshInfo();
+      SMESH::smIdType_array_var nbElems = aMeshOrGroup->GetMeshInfo();
       for ( size_t iType = 0; iType < notSupportedElemTypes.size(); ++iType )
         if ( nbElems[ notSupportedElemTypes[ iType ]] > 0 )
           presentNotSupported.push_back( notSupportedElemTypes[ iType ]);
@@ -994,11 +994,19 @@ namespace
           aMesh->ExportGMF( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups );
         }
       }
-      catch (const SALOME::SALOME_Exception& S_ex){
+      catch (const SALOME::SALOME_Exception& S_ex)
+      {
         wc.suspend();
-        SUIT_MessageBox::warning(SMESHGUI::desktop(),
-                                 QObject::tr("SMESH_WRN_WARNING"),
-                                 QObject::tr("SMESH_EXPORT_FAILED") + SalomeApp_Tools::ExceptionToString(S_ex));
+        if ( S_ex.details.type == SALOME::COMM && // communicate about too large mesh
+             strncmp( "format=", S_ex.details.sourceFile.in(), 7 ) == 0 )
+
+          SUIT_MessageBox::critical(SMESHGUI::desktop(),
+                                    QObject::tr("SMESH_WRN_WARNING"),
+                                    QObject::tr(S_ex.details.text.in() ));
+        else
+          SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                   QObject::tr("SMESH_WRN_WARNING"),
+                                   QObject::tr("SMESH_EXPORT_FAILED") + SalomeApp_Tools::ExceptionToString(S_ex));
         wc.resume();
       }
     }
@@ -1218,14 +1226,14 @@ namespace
             SMESH::Controls::NumericalFunctor* aNumFun =
               dynamic_cast<SMESH::Controls::NumericalFunctor*>( aFunctor.get() );
             if ( aNumFun ) {
-              std::vector<int> elements;
+              std::vector<SMESH::smIdType> elements;
               SMESH::SMESH_Mesh_var mesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIO);
               if ( mesh->_is_nil() ) {
                 SMESH::SMESH_IDSource_var idSource =
                   SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(anIO);
                 if ( !idSource->_is_nil() )
                 {
-                  SMESH::long_array_var ids = idSource->GetIDs();
+                  SMESH::smIdType_array_var ids = idSource->GetIDs();
                   elements.resize( ids->length() );
                   for ( unsigned i = 0; i < elements.size(); ++i )
                     elements[i] = ids[i];
@@ -1853,7 +1861,7 @@ namespace
                 if ( anActor->GetControlMode() != aControl )
                   anActor->SetControlMode( aControl );
                 QString functorName = functorToString( anActor->GetFunctor() );
-                int anEntitiesCount = anActor->GetNumberControlEntities();
+                smIdType anEntitiesCount = anActor->GetNumberControlEntities();
                 if (anEntitiesCount >= 0)
                   functorName = functorName + ": " + QString::number(anEntitiesCount);
                 anActor->GetScalarBarActor()->SetTitle( functorName.toUtf8().constData() );
@@ -2261,7 +2269,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_IDSource_ptr theMesh,
   long updateLimit = resMgr->integerValue( "SMESH", "update_limit", 500000 );
   bool incrementalLimit = resMgr->booleanValue( "SMESH", "incremental_limit", false );
 
-  SMESH::long_array_var info = theMesh->GetMeshInfo();
+  SMESH::smIdType_array_var info = theMesh->GetMeshInfo();
   long nbOdElems = info[SMDSEntity_0D];
   long nbEdges   = info[SMDSEntity_Edge] + info[SMDSEntity_Quad_Edge];
   long nbFaces   = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_BiQuad_Triangle] +
@@ -3128,10 +3136,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
               try {
                 SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
                 // get submesh elements list by types
-                SMESH::long_array_var aNodes = aSubMesh->GetElementsByType(SMESH::NODE);
-                SMESH::long_array_var aEdges = aSubMesh->GetElementsByType(SMESH::EDGE);
-                SMESH::long_array_var aFaces = aSubMesh->GetElementsByType(SMESH::FACE);
-                SMESH::long_array_var aVolumes = aSubMesh->GetElementsByType(SMESH::VOLUME);
+                SMESH::smIdType_array_var aNodes = aSubMesh->GetElementsByType(SMESH::NODE);
+                SMESH::smIdType_array_var aEdges = aSubMesh->GetElementsByType(SMESH::EDGE);
+                SMESH::smIdType_array_var aFaces = aSubMesh->GetElementsByType(SMESH::FACE);
+                SMESH::smIdType_array_var aVolumes = aSubMesh->GetElementsByType(SMESH::VOLUME);
                 // create group for each type o elements
                 QString aName = IObject->getName();
                 QStringList anEntryList;
@@ -3639,7 +3647,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
             try {
               SUIT_OverrideCursor wc;
               SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
-              int removed = aMeshEditor->RemoveOrphanNodes();
+              smIdType removed = aMeshEditor->RemoveOrphanNodes();
               SUIT_MessageBox::information(SMESHGUI::desktop(),
                                            tr("SMESH_INFORMATION"),
                                            tr("NB_NODES_REMOVED").arg(removed));
@@ -5628,23 +5636,23 @@ void SMESHGUI::createPreferences()
   int size0d = addPreference(tr("PREF_SIZE_0D"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
   /* int ballSize = addPreference(tr("PREF_BALL_SIZE"), elemGroup,
-                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size"); */
-  double ballDiameter = addPreference(tr("PREF_BALL_DIAMETER"), elemGroup,
-                             LightApp_Preferences::DblSpin, "SMESH", "ball_elem_diameter");
-  double ballScale = addPreference(tr("PREF_BALL_SCALE"), elemGroup,
-                             LightApp_Preferences::DblSpin, "SMESH", "ball_elem_scale");
-  int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,
-                             LightApp_Preferences::IntSpin, "SMESH", "element_width");
-  int outW  = addPreference(tr("PREF_OUTLINE_WIDTH"), elemGroup,
-                             LightApp_Preferences::IntSpin, "SMESH", "outline_width");
-  int shrink = addPreference(tr("PREF_SHRINK_COEFF"), elemGroup,
-                             LightApp_Preferences::IntSpin, "SMESH", "shrink_coeff");
+     LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size"); */
+  int ballDiameter = addPreference(tr("PREF_BALL_DIAMETER"), elemGroup,
+                                   LightApp_Preferences::DblSpin, "SMESH", "ball_elem_diameter");
+  int ballScale    = addPreference(tr("PREF_BALL_SCALE"), elemGroup,
+                                   LightApp_Preferences::DblSpin, "SMESH", "ball_elem_scale");
+  int elemW        = addPreference(tr("PREF_WIDTH"), elemGroup,
+                                   LightApp_Preferences::IntSpin, "SMESH", "element_width");
+  int outW         = addPreference(tr("PREF_OUTLINE_WIDTH"), elemGroup,
+                                   LightApp_Preferences::IntSpin, "SMESH", "outline_width");
+  int shrink       = addPreference(tr("PREF_SHRINK_COEFF"), elemGroup,
+                                   LightApp_Preferences::IntSpin, "SMESH", "shrink_coeff");
 
   setPreferenceProperty( size0d, "min", 1 );
   setPreferenceProperty( size0d, "max", 10 );
 
- // setPreferenceProperty( ballSize, "min", 1 );
- // setPreferenceProperty( ballSize, "max", 10 );
+  // setPreferenceProperty( ballSize, "min", 1 );
+  // setPreferenceProperty( ballSize, "max", 10 );
 
   setPreferenceProperty( ballDiameter, "min", 1e-7 );
   setPreferenceProperty( ballDiameter, "max", 1e9 );
@@ -5822,8 +5830,8 @@ void SMESHGUI::createPreferences()
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
   if ( sect=="SMESH" ) {
-    float sbX1 = 0.01, sbY1 = 0.01, sbW = 0.08, sbH = 0.08;
-    float aTol = 1.00000009999999;
+    double sbX1 = 0.01, sbY1 = 0.01, sbW = 0.08, sbH = 0.08;
+    double aTol = 1.00000009999999;
     std::string aWarning;
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
 

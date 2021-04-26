@@ -818,7 +818,7 @@ namespace
       };
 
       vector< _nodeDef >      _nodes;
-      vector< int >           _quantities;
+      vector< int >      _quantities;
       _volumeDef*             _next; // to store several _volumeDefs in a chain
       TGeomID                 _solidID;
       const SMDS_MeshElement* _volume; // new volume
@@ -5257,7 +5257,7 @@ namespace
         if ( loopsJoined )
         {
           // set unchanged polygons
-          std::vector< int >                  newQuantities;
+          std::vector< int >             newQuantities;
           std::vector< _volumeDef::_nodeDef > newNodes;
           vector< SMESH_Block::TShapeID >     newNames;
           newQuantities.reserve( volDef->_quantities.size() );

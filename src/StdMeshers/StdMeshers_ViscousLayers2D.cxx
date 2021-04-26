@@ -83,6 +83,7 @@
 #include <gp_Ax1.hxx>
 #include <gp_Vec.hxx>
 #include <gp_XY.hxx>
+#include <smIdType.hxx>
 
 #include <list>
 #include <string>
@@ -113,7 +114,7 @@ namespace VISCOUS_2D
     {
       _EdgeSubMesh(const SMDS_Mesh* mesh, int index=0): SubMesh(mesh,index) {}
       //virtual int NbElements() const { return _elements.size()+1; }
-      virtual int NbNodes() const { return Max( 0, _uvPtStructVec.size()-2 ); }
+      virtual smIdType NbNodes() const { return Max( 0, _uvPtStructVec.size()-2 ); }
       void SetUVPtStructVec(UVPtStructVec& vec) { _uvPtStructVec.swap( vec ); }
       UVPtStructVec& GetUVPtStructVec() { return _uvPtStructVec; }
     };

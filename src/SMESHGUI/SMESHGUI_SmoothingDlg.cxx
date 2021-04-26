@@ -351,8 +351,8 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
     QStringList aListElementsId = LineEditElements->text().split(" ", QString::SkipEmptyParts);
     QStringList aListNodesId    = LineEditNodes->text().split(" ", QString::SkipEmptyParts);
 
-    SMESH::long_array_var anElementsId = new SMESH::long_array;
-    SMESH::long_array_var aNodesId = new SMESH::long_array;
+    SMESH::smIdType_array_var anElementsId = new SMESH::smIdType_array;
+    SMESH::smIdType_array_var aNodesId = new SMESH::smIdType_array;
 
     anElementsId->length(aListElementsId.count());
     for (int i = 0; i < aListElementsId.count(); i++)
@@ -523,7 +523,7 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
   QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
   if (send == LineEditElements) {
-    TColStd_MapOfInteger newIndices;
+    SVTK_TVtkIDsMap newIndices;
     for (int i = 0; i < aListId.count(); i++) {
       int id = aListId[ i ].toInt();
       if ( id > 0 ) {
@@ -538,7 +538,7 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
     }
   }
   else if (send == LineEditNodes) {
-    TColStd_MapOfInteger newIndices;
+    SVTK_TVtkIDsMap newIndices;
     for (int i = 0; i < aListId.count(); i++) {
       int id = aListId[ i ].toInt();
       if ( id > 0 ) {
@@ -619,7 +619,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
         myNbOkElements = true;
       } else {
         // get indices of selected elements
-        TColStd_IndexedMapOfInteger aMapIndex;
+        SVTK_TIndexedMapOfVtkId aMapIndex;
         mySelector->GetIndex(IO,aMapIndex);
         myNbOkElements = aMapIndex.Extent();
 

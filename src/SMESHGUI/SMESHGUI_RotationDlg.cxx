@@ -409,7 +409,7 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
   if (myNbOkElements && IsAxisOk()) {
     QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
 
-    SMESH::long_array_var anElementsId = new SMESH::long_array;
+    SMESH::smIdType_array_var anElementsId = new SMESH::smIdType_array;
 
     anElementsId->length(aListElementsId.count());
     for (int i = 0; i < aListElementsId.count(); i++)
@@ -644,7 +644,7 @@ void SMESHGUI_RotationDlg::onTextChange (const QString& theNewText)
     if (send == LineEditElements) {
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
 
-      TColStd_MapOfInteger newIndices;
+      SVTK_TVtkIDsMap newIndices;
 
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       for (int i = 0; i < aListId.count(); i++) {
@@ -1135,7 +1135,7 @@ void SMESHGUI_RotationDlg::onDisplaySimulation( bool toDisplayPreview ) {
   if (myPreviewCheckBox->isChecked() && toDisplayPreview) {
     if(myNbOkElements && isValid() && IsAxisOk()) {
       QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
-      SMESH::long_array_var anElementsId = new SMESH::long_array;
+      SMESH::smIdType_array_var anElementsId = new SMESH::smIdType_array;
       
       anElementsId->length(aListElementsId.count());
       for (int i = 0; i < aListElementsId.count(); i++)

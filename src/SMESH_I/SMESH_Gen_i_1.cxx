@@ -988,7 +988,7 @@ void SMESH_Gen_i::UpdateIcons( SMESH::SMESH_Mesh_ptr theMesh )
       {
         if ( isGroupOnFilter ) // GetTypes() can be very long on GroupOnFilter!
         {
-          SMESH::long_array_var nbByType = mesh_i->GetNbElementsByType();
+          SMESH::smIdType_array_var nbByType = mesh_i->GetNbElementsByType();
           isEmpty = ( nbByType[ grp->GetType() ] == 0 );
         }
         else

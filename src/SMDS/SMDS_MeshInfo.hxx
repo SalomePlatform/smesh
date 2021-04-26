@@ -30,6 +30,7 @@
 
 #include "SMDS_MeshElement.hxx"
 #include<utilities.h>
+#include <smIdType.hxx>
 
 class SMDS_EXPORT SMDS_MeshInfo
 {
@@ -39,39 +40,39 @@ public:
   inline SMDS_MeshInfo& operator=(const SMDS_MeshInfo& other);
   inline void Clear();
 
-  inline int NbElements(SMDSAbs_ElementType  type=SMDSAbs_All) const;
-  inline int NbElements(SMDSAbs_EntityType   type) const { return NbEntities(type); }
-  inline int NbElements(SMDSAbs_GeometryType type) const { return NbElementsOfGeom(type); }
+  inline smIdType NbElements(SMDSAbs_ElementType  type=SMDSAbs_All) const;
+  inline smIdType NbElements(SMDSAbs_EntityType   type) const { return NbEntities(type); }
+  inline smIdType NbElements(SMDSAbs_GeometryType type) const { return NbElementsOfGeom(type); }
 
-  inline int NbEntities(SMDSAbs_EntityType  type) const;
-  inline int NbElementsOfGeom(SMDSAbs_GeometryType geom) const;
+  inline smIdType NbEntities(SMDSAbs_EntityType  type) const;
+  inline smIdType NbElementsOfGeom(SMDSAbs_GeometryType geom) const;
 
-  int NbNodes()      const { return myNbNodes; }
-  int Nb0DElements() const { return myNb0DElements; }
-  int NbBalls()      const { return myNbBalls; }
-  inline int NbEdges      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbNodes()      const { return myNbNodes; }
+  smIdType Nb0DElements() const { return myNb0DElements; }
+  smIdType NbBalls()      const { return myNbBalls; }
+  inline smIdType NbEdges      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
 
-  inline int NbFaces      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  inline int NbTriangles  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  inline int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbBiQuadTriangles() const { return myNbBiQuadTriangles; }
-  int NbBiQuadQuadrangles() const { return myNbBiQuadQuadrangles; }
-  inline int NbPolygons(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  inline smIdType NbFaces      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  inline smIdType NbTriangles  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  inline smIdType NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbBiQuadTriangles() const { return myNbBiQuadTriangles; }
+  smIdType NbBiQuadQuadrangles() const { return myNbBiQuadQuadrangles; }
+  inline smIdType NbPolygons(SMDSAbs_ElementOrder order = ORDER_ANY) const;
 
-  inline int NbVolumes (SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  inline int NbTetras  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  inline int NbHexas   (SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  inline int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  inline int NbPrisms  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  inline int NbHexPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  int NbTriQuadHexas() const { return myNbTriQuadHexas; }
-  int NbQuadPrisms() const { return myNbQuadPrisms; }
-  int NbBiQuadPrisms() const { return myNbBiQuadPrisms; }
-  int NbPolyhedrons() const { return myNbPolyhedrons; }
+  inline smIdType NbVolumes (SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  inline smIdType NbTetras  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  inline smIdType NbHexas   (SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  inline smIdType NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  inline smIdType NbPrisms  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  inline smIdType NbHexPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const;
+  smIdType NbTriQuadHexas() const { return myNbTriQuadHexas; }
+  smIdType NbQuadPrisms() const { return myNbQuadPrisms; }
+  smIdType NbBiQuadPrisms() const { return myNbBiQuadPrisms; }
+  smIdType NbPolyhedrons() const { return myNbPolyhedrons; }
 
 protected:
   inline void addWithPoly(const SMDS_MeshElement* el);
-  inline void setNb(const SMDSAbs_EntityType geomType, const int nb);
+  inline void setNb(const SMDSAbs_EntityType geomType, const smIdType nb);
 
 private:
   friend class SMDS_Mesh;
@@ -79,29 +80,29 @@ private:
   // methods to count NOT POLY elements
   inline void remove(const SMDS_MeshElement* el);
   inline void add   (const SMDS_MeshElement* el);
-  inline int  index(SMDSAbs_ElementType type, int nbNodes) const;
+  inline smIdType  index(SMDSAbs_ElementType type, int nbNodes) const;
   // methods to remove elements of ANY kind
   inline void RemoveEdge(const SMDS_MeshElement* el);
   inline void RemoveFace(const SMDS_MeshElement* el);
   inline void RemoveVolume(const SMDS_MeshElement* el);
 
-  int myNbNodes;
+  smIdType myNbNodes;
 
-  int myNb0DElements;
-  int myNbBalls;
-  int myNbEdges      , myNbQuadEdges      ;
-  int myNbTriangles  , myNbQuadTriangles,   myNbBiQuadTriangles  ;
-  int myNbQuadrangles, myNbQuadQuadrangles, myNbBiQuadQuadrangles;
-  int myNbPolygons   , myNbQuadPolygons;
+  smIdType myNb0DElements;
+  smIdType myNbBalls;
+  smIdType myNbEdges      , myNbQuadEdges      ;
+  smIdType myNbTriangles  , myNbQuadTriangles,   myNbBiQuadTriangles  ;
+  smIdType myNbQuadrangles, myNbQuadQuadrangles, myNbBiQuadQuadrangles;
+  smIdType myNbPolygons   , myNbQuadPolygons;
 
-  int myNbTetras  , myNbQuadTetras  ;
-  int myNbHexas   , myNbQuadHexas,    myNbTriQuadHexas;
-  int myNbPyramids, myNbQuadPyramids;
-  int myNbPrisms  , myNbQuadPrisms,   myNbBiQuadPrisms;
-  int myNbHexPrism;
-  int myNbPolyhedrons;
+  smIdType myNbTetras  , myNbQuadTetras  ;
+  smIdType myNbHexas   , myNbQuadHexas,    myNbTriQuadHexas;
+  smIdType myNbPyramids, myNbQuadPyramids;
+  smIdType myNbPrisms  , myNbQuadPrisms,   myNbBiQuadPrisms;
+  smIdType myNbHexPrism;
+  smIdType myNbPolyhedrons;
 
-  std::vector<int*> myNb; // pointers to myNb... fields
+  std::vector<smIdType*> myNb; // pointers to myNb... fields
   std::vector<int>  myShift; // shift to get an index in myNb by elem->NbNodes()
 };
 
@@ -212,7 +213,7 @@ SMDS_MeshInfo::Clear()
   myNbPolygons=myNbQuadPolygons=myNbPolyhedrons=0;
 }
 
-inline int // index
+inline smIdType // index
 SMDS_MeshInfo::index(SMDSAbs_ElementType type, int nbNodes) const
 { return nbNodes + myShift[ type ]; }
 
@@ -250,54 +251,54 @@ inline void // RemoveVolume
 SMDS_MeshInfo::RemoveVolume(const SMDS_MeshElement* el)
 { if ( el->IsPoly() ) --myNbPolyhedrons; else remove( el ); }
 
-inline int  // NbEdges
+inline smIdType  // NbEdges
 SMDS_MeshInfo::NbEdges      (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbEdges+myNbQuadEdges : order == ORDER_LINEAR ? myNbEdges : myNbQuadEdges; }
 
-inline int  // NbFaces
+inline smIdType  // NbFaces
 SMDS_MeshInfo::NbFaces      (SMDSAbs_ElementOrder order) const
 { return NbTriangles(order)+NbQuadrangles(order)+(order == ORDER_ANY ? myNbPolygons+myNbQuadPolygons : order == ORDER_LINEAR ? myNbPolygons : myNbQuadPolygons ); }
 
-inline int  // NbTriangles
+inline smIdType  // NbTriangles
 SMDS_MeshInfo::NbTriangles  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbTriangles+myNbQuadTriangles+myNbBiQuadTriangles : order == ORDER_LINEAR ? myNbTriangles : myNbQuadTriangles+myNbBiQuadTriangles; }
 
-inline int  // NbQuadrangles
+inline smIdType  // NbQuadrangles
 SMDS_MeshInfo::NbQuadrangles(SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbQuadrangles+myNbQuadQuadrangles+myNbBiQuadQuadrangles : order == ORDER_LINEAR ? myNbQuadrangles : myNbQuadQuadrangles+myNbBiQuadQuadrangles; }
 
-inline int  // NbPolygons
+inline smIdType  // NbPolygons
 SMDS_MeshInfo::NbPolygons(SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbPolygons+myNbQuadPolygons : order == ORDER_LINEAR ? myNbPolygons : myNbQuadPolygons; }
 
-inline int  // NbVolumes
+inline smIdType  // NbVolumes
 SMDS_MeshInfo::NbVolumes (SMDSAbs_ElementOrder order) const
 { return NbTetras(order) + NbHexas(order) + NbPyramids(order) + NbPrisms(order) + NbHexPrisms(order) + (order == ORDER_QUADRATIC ? 0 : myNbPolyhedrons); }
 
-inline int  // NbTetras
+inline smIdType  // NbTetras
 SMDS_MeshInfo::NbTetras  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbTetras+myNbQuadTetras : order == ORDER_LINEAR ? myNbTetras : myNbQuadTetras; }
 
-inline int  // NbHexas
+inline smIdType  // NbHexas
 SMDS_MeshInfo::NbHexas   (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbHexas+myNbQuadHexas+myNbTriQuadHexas : order == ORDER_LINEAR ? myNbHexas : myNbQuadHexas+myNbTriQuadHexas; }
 
-inline int  // NbPyramids
+inline smIdType  // NbPyramids
 SMDS_MeshInfo::NbPyramids(SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbPyramids+myNbQuadPyramids : order == ORDER_LINEAR ? myNbPyramids : myNbQuadPyramids; }
 
-inline int  // NbPrisms
+inline smIdType  // NbPrisms
 SMDS_MeshInfo::NbPrisms  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbPrisms+myNbQuadPrisms+myNbBiQuadPrisms: order == ORDER_LINEAR ? myNbPrisms : myNbQuadPrisms+myNbBiQuadPrisms; }
 
-inline int  // NbHexPrisms
+inline smIdType  // NbHexPrisms
 SMDS_MeshInfo::NbHexPrisms  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbHexPrism : order == ORDER_LINEAR ? myNbHexPrism : 0; }
 
-inline int  // NbElements
+inline smIdType  // NbElements
 SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
 { 
-  int nb = 0;
+  smIdType nb = 0;
   switch (type) {
   case SMDSAbs_All:
     for ( size_t i=1+index( SMDSAbs_Node,1 ); i<myNb.size(); ++i ) if ( myNb[i] ) nb += *myNb[i];
@@ -330,7 +331,7 @@ SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
   return nb;
 }
 
-inline int  // NbEntities
+inline smIdType  // NbEntities
 SMDS_MeshInfo::NbEntities(SMDSAbs_EntityType type) const
 {
   switch (type) {
@@ -366,7 +367,7 @@ SMDS_MeshInfo::NbEntities(SMDSAbs_EntityType type) const
   return 0;
 }
 
-inline int  // NbElementsOfGeom
+inline smIdType  // NbElementsOfGeom
 SMDS_MeshInfo::NbElementsOfGeom(SMDSAbs_GeometryType geom) const
 {
   switch ( geom ) {
@@ -406,7 +407,7 @@ SMDS_MeshInfo::NbElementsOfGeom(SMDSAbs_GeometryType geom) const
 }
 
 inline void // setNb
-SMDS_MeshInfo::setNb(const SMDSAbs_EntityType geomType, const int nb)
+SMDS_MeshInfo::setNb(const SMDSAbs_EntityType geomType, const smIdType nb)
 {
   switch (geomType) {
   case SMDSEntity_Node:             myNbNodes             = nb; break;

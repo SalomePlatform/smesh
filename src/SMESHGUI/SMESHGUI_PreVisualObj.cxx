@@ -45,7 +45,7 @@ void SMESHGUI_PreVisualObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& th
   if ( theFunctor ) theFunctor->SetMesh( GetMesh() );
 }
 
-int SMESHGUI_PreVisualObj::GetElemDimension( const int theObjId )
+int SMESHGUI_PreVisualObj::GetElemDimension( const smIdType theObjId )
 {
   if ( const SMDS_MeshElement* anElem = myMesh->FindElement( theObjId ))
   {
@@ -62,7 +62,7 @@ int SMESHGUI_PreVisualObj::GetElemDimension( const int theObjId )
   return -1;
 }
 
-int SMESHGUI_PreVisualObj::GetNbEntities( const SMDSAbs_ElementType theType ) const
+smIdType SMESHGUI_PreVisualObj::GetNbEntities( const SMDSAbs_ElementType theType ) const
 {
   return myMesh->GetMeshInfo().NbElements( theType );
 }
@@ -77,10 +77,10 @@ SMESH::SMESH_Mesh_ptr SMESHGUI_PreVisualObj::GetMeshServer()
 // purpose  : Retrieve ids of nodes from edge of elements ( edge is numbered from 1 )
 //=================================================================================
 
-bool SMESHGUI_PreVisualObj::GetEdgeNodes( const int theElemId,
-                                          const int theEdgeNum,
-                                          int&      theNodeId1,
-                                          int&      theNodeId2 ) const
+bool SMESHGUI_PreVisualObj::GetEdgeNodes( const smIdType theElemId,
+                                          const int      theEdgeNum,
+                                          smIdType&      theNodeId1,
+                                          smIdType&      theNodeId2 ) const
 {
   const SMDS_MeshElement* e = myMesh->FindElement( theElemId );
   if ( !e || e->GetType() != SMDSAbs_Face )
@@ -107,24 +107,24 @@ vtkUnstructuredGrid* SMESHGUI_PreVisualObj::GetUnstructuredGrid()
 }
 
 
-vtkIdType SMESHGUI_PreVisualObj::GetNodeObjId( int theVTKID )
+vtkIdType SMESHGUI_PreVisualObj::GetNodeObjId( vtkIdType theVTKID )
 {
   const SMDS_MeshNode* aNode = myMesh->FindNodeVtk( theVTKID );
   return aNode ? aNode->GetID() : -1;
 }
 
-vtkIdType SMESHGUI_PreVisualObj::GetNodeVTKId( int theObjID )
+vtkIdType SMESHGUI_PreVisualObj::GetNodeVTKId( vtkIdType theObjID )
 {
   const SMDS_MeshNode* aNode = myMesh->FindNode( theObjID );
   return aNode ? aNode->GetID() : -1;
 }
 
-vtkIdType SMESHGUI_PreVisualObj::GetElemObjId( int theVTKID )
+vtkIdType SMESHGUI_PreVisualObj::GetElemObjId( vtkIdType theVTKID )
 {
   return this->GetMesh()->FromVtkToSmds(theVTKID);
 }
 
-vtkIdType SMESHGUI_PreVisualObj::GetElemVTKId( int theObjID )
+vtkIdType SMESHGUI_PreVisualObj::GetElemVTKId( vtkIdType theObjID )
 {
   const SMDS_MeshElement* e = myMesh->FindElement(theObjID);
   return e ? e->GetVtkID() : -1;

@@ -30,8 +30,9 @@
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-// Qt includes
+// GUI and Qt includes
 #include <QDialog>
+#include <SVTK_Hash.h>
 
 // OCCT includes
 #include <gp_XYZ.hxx>
@@ -88,7 +89,7 @@ private:
   bool                      isKeepIDsSelection();
   bool                      isNewKeepGroup( const char* entry );
 
-  void                      FindGravityCenter( TColStd_MapOfInteger&,
+  void                      FindGravityCenter( SVTK_TVtkIDsMap&,
                                                std::vector<int>& , 
                                                std::list<gp_XYZ>& );
   // add the centers of gravity of ElemsIdMap elements to the GrCentersXYZ list

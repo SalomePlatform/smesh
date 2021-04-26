@@ -124,7 +124,7 @@ public:
   bool Contain( const TopoDS_Vertex& vertex ) const;
   void AppendSide( const _FaceSide& side );
   void SetBottomSide( int i );
-  int GetNbSegments(SMESH_ProxyMesh& mesh, const SMESHDS_SubMesh* smToCheckEdges=0) const;
+  smIdType GetNbSegments(SMESH_ProxyMesh& mesh, const SMESHDS_SubMesh* smToCheckEdges=0) const;
   bool StoreNodes(SMESH_ProxyMesh& mesh, vector<const SMDS_MeshNode*>& myGrid,
                   bool reverse, bool isProxy, const SMESHDS_SubMesh* smToCheckEdges=0 );
   void SetID(EQuadSides id) { myID = id; }
@@ -1121,32 +1121,32 @@ bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh&         theMesh,
       lessComplexSide = & *face;
 
   // Get an 1D size of lessComplexSide
-  int nbSeg1 = 0;
+  smIdType nbSeg1 = 0;
   vector<TopoDS_Edge> edges;
   if ( !lessComplexSide->GetHoriEdges(edges) )
     return false;
   for ( size_t i = 0; i < edges.size(); ++i )
   {
-    const vector<int>& nbElems = aResMap[ theMesh.GetSubMesh( edges[i] )];
+    const vector<smIdType>& nbElems = aResMap[ theMesh.GetSubMesh( edges[i] )];
     if ( !nbElems.empty() )
-      nbSeg1 += Max( nbElems[ SMDSEntity_Edge ], nbElems[ SMDSEntity_Quad_Edge ]);
+      nbSeg1 += std::max( nbElems[ SMDSEntity_Edge ], nbElems[ SMDSEntity_Quad_Edge ]);
   }
 
   // Get an 1D size of a box side orthogonal to lessComplexSide
-  int nbSeg2 = 0;
+  smIdType nbSeg2 = 0;
   _QuadFaceGrid* ortoSide =
     lessComplexSide->FindAdjacentForSide( Q_LEFT, boxFaceContainer, B_UNDEFINED );
   edges.clear();
   if ( !ortoSide || !ortoSide->GetHoriEdges(edges) ) return false;
   for ( size_t i = 0; i < edges.size(); ++i )
   {
-    const vector<int>& nbElems = aResMap[ theMesh.GetSubMesh( edges[i] )];
+    const vector<smIdType>& nbElems = aResMap[ theMesh.GetSubMesh( edges[i] )];
     if ( !nbElems.empty() )
-      nbSeg2 += Max( nbElems[ SMDSEntity_Edge ], nbElems[ SMDSEntity_Quad_Edge ]);
+      nbSeg2 += std::max( nbElems[ SMDSEntity_Edge ], nbElems[ SMDSEntity_Quad_Edge ]);
   }
 
   // Get an 2D size of a box side orthogonal to lessComplexSide
-  int nbFaces = 0, nbQuadFace = 0;
+  smIdType nbFaces = 0, nbQuadFace = 0;
   list< TopoDS_Face > sideFaces;
   if ( ortoSide->IsComplex() )
     for ( _QuadFaceGrid::TChildIterator child = ortoSide->GetChildren(); child.more(); )
@@ -1157,7 +1157,7 @@ bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh&         theMesh,
   list< TopoDS_Face >::iterator f = sideFaces.begin();
   for ( ; f != sideFaces.end(); ++f )
   {
-    const vector<int>& nbElems = aResMap[ theMesh.GetSubMesh( *f )];
+    const vector<smIdType>& nbElems = aResMap[ theMesh.GetSubMesh( *f )];
     if ( !nbElems.empty() )
     {
       nbFaces    = nbElems[ SMDSEntity_Quadrangle ];
@@ -1166,8 +1166,8 @@ bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh&         theMesh,
   }
 
   // Fill nb of elements
-  vector<int> aResVec(SMDSEntity_Last,0);
-  int nbSeg3 = ( nbFaces + nbQuadFace ) / nbSeg2;
+  vector<smIdType> aResVec(SMDSEntity_Last,0);
+  smIdType nbSeg3 = ( nbFaces + nbQuadFace ) / nbSeg2;
   aResVec[SMDSEntity_Node]       = (nbSeg1-1) * (nbSeg2-1) * (nbSeg3-1);
   aResVec[SMDSEntity_Hexa]       = nbSeg1 * nbFaces;
   aResVec[SMDSEntity_Quad_Hexa]  = nbSeg1 * nbQuadFace;
@@ -2229,9 +2229,9 @@ void _FaceSide::SetBottomSide( int i )
 //purpose  : 
 //=======================================================================
 
-int _FaceSide::GetNbSegments(SMESH_ProxyMesh& mesh, const SMESHDS_SubMesh* smToCheckEdges) const
+smIdType _FaceSide::GetNbSegments(SMESH_ProxyMesh& mesh, const SMESHDS_SubMesh* smToCheckEdges) const
 {
-  int nb = 0;
+  smIdType nb = 0;
   if ( myChildren.empty() )
   {
     nb = mesh.GetSubMesh(myEdge)->NbElements();

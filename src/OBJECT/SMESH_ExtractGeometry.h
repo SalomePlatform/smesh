@@ -42,8 +42,8 @@ public:
   }
   bool GetStoreMapping(){ return myStoreMapping;}
 
-  virtual vtkIdType GetNodeObjId(int theVtkID);
-  virtual vtkIdType GetElemObjId(int theVtkID);
+  virtual vtkIdType GetNodeObjId(vtkIdType theVtkID);
+  virtual vtkIdType GetElemObjId(vtkIdType theVtkID);
 
 protected:
   SMESH_ExtractGeometry();

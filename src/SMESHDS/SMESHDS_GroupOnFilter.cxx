@@ -79,7 +79,7 @@ void SMESHDS_GroupOnFilter::SetPredicate( const SMESH_PredicatePtr& thePredicate
  */
 //================================================================================
 
-int SMESHDS_GroupOnFilter::Extent() const
+smIdType SMESHDS_GroupOnFilter::Extent() const
 {
   update();
   return std::accumulate( myMeshInfo.begin(), myMeshInfo.end(), 0 );
@@ -120,7 +120,7 @@ bool SMESHDS_GroupOnFilter::IsEmpty()
  */
 //================================================================================
 
-bool SMESHDS_GroupOnFilter::Contains (const int theID)
+bool SMESHDS_GroupOnFilter::Contains (const smIdType theID)
 {
   return myPredicate && myPredicate->IsSatisfy( theID );
 }
@@ -288,7 +288,7 @@ SMDS_ElemIteratorPtr SMESHDS_GroupOnFilter::GetElements() const
  */
 //================================================================================
 
-std::vector< int > SMESHDS_GroupOnFilter::GetMeshInfo() const
+std::vector< smIdType > SMESHDS_GroupOnFilter::GetMeshInfo() const
 {
   update();
   return myMeshInfo;
@@ -315,7 +315,7 @@ int SMESHDS_GroupOnFilter::getElementIds( void* ids, size_t idSize ) const
     if ( IsUpToDate() )
     {
       for ( ; elIt->more(); curID += idSize )
-        (*(int*) curID) = elIt->next()->GetID();
+        (*(smIdType*) curID) = elIt->next()->GetID();
     }
     else
     {
@@ -325,11 +325,11 @@ int SMESHDS_GroupOnFilter::getElementIds( void* ids, size_t idSize ) const
       me->myMeshInfo.assign( SMDSEntity_Last, 0 );
       me->myMeshInfo[ firstOkElem->GetEntityType() ]++;
 
-      (*(int*) curID) = firstOkElem->GetID();
+      (*(smIdType*) curID) = firstOkElem->GetID();
       for ( curID += idSize; elIt->more(); curID += idSize )
       {
         const SMDS_MeshElement* e = elIt->next();
-        (*(int*) curID) = e->GetID();
+        (*(smIdType*) curID) = e->GetID();
         me->myMeshInfo[ e->GetEntityType() ]++;
       }
     }
@@ -443,7 +443,7 @@ bool SMESHDS_GroupOnFilter::updateParallel() const
     return false; // no sense in parallel work
 
   SMDS_ElemIteratorPtr elemIt = GetMesh()->elementsIterator( GetType() );
-  const int minID = elemIt->next()->GetID();
+  const smIdType minID = elemIt->next()->GetID();
   myPredicate->IsSatisfy( minID ); // make myPredicate fully initialized for clone()
   SMESH_PredicatePtr clone( myPredicate->clone() );
   if ( !clone )
@@ -452,7 +452,7 @@ bool SMESHDS_GroupOnFilter::updateParallel() const
   TLocalPredicat threadPredicates;
   threadPredicates.local() = clone;
 
-  int maxID = ( GetType() == SMDSAbs_Node ) ? GetMesh()->MaxNodeID() : GetMesh()->MaxElementID();
+  smIdType maxID = ( GetType() == SMDSAbs_Node ) ? GetMesh()->MaxNodeID() : GetMesh()->MaxElementID();
   vector< char > isElemOK( 1 + maxID );
 
   tbb::parallel_for ( tbb::blocked_range<size_t>( 0, isElemOK.size() ),

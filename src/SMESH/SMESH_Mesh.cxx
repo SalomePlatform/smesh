@@ -1183,7 +1183,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   if ( !GetMeshDS()->IsUsedHypothesis( hyp ))
     return;
 
-  int nbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() );
+  smIdType nbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() );
   if ( hyp && _callUp && !_callUp->IsLoaded() ) // for not loaded mesh (#16648)
   {
     _callUp->HypothesisModified( hyp->GetID(), /*updateIcons=*/true );
@@ -1257,7 +1257,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
   GetMeshDS()->Modified();
 
-  int newNbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() );
+  smIdType newNbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() );
   if ( hyp && _callUp )
     _callUp->HypothesisModified( hyp->GetID(), newNbEntities != nbEntities );
 }
@@ -1428,6 +1428,8 @@ void SMESH_Mesh::ExportMED(const char *        file,
                            bool                theAllElemsToGroup)
 {
   MESSAGE("MED_VERSION:"<< theVersion);
+
+  Driver_Mesh::Status status;
   SMESH_TRY;
 
   DriverMED_W_SMESHDS_Mesh myWriter;
@@ -1482,9 +1484,12 @@ void SMESH_Mesh::ExportMED(const char *        file,
     }
   }
   // Perform export
-  myWriter.Perform();
+  status = myWriter.Perform();
 
   SMESH_CATCH( SMESH::throwSalomeEx );
+
+  if ( status == Driver_Mesh::DRS_TOO_LARGE_MESH )
+    throw TooLargeForExport("MED");
 }
 
 //================================================================================
@@ -1509,9 +1514,15 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
   cmd += "\"";
   system(cmd.c_str());
-  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, /*minor=*/-1,
-            /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
-            /*zTol=*/-1, /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
+  try {
+    ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, /*minor=*/-1,
+              /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
+              /*zTol=*/-1, /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
+  }
+  catch ( TooLargeForExport )
+  {
+    throw TooLargeForExport("SAUV");
+  }
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
@@ -1541,12 +1552,19 @@ void SMESH_Mesh::ExportSAUV(const char *file,
 void SMESH_Mesh::ExportDAT(const char *        file,
                            const SMESHDS_Mesh* meshPart)
 {
-  Unexpect aCatch(SalomeException);
+  Driver_Mesh::Status status;
+  SMESH_TRY;
+
   DriverDAT_W_SMDS_Mesh myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS );
   myWriter.SetMeshId(_id);
-  myWriter.Perform();
+  status = myWriter.Perform();
+
+  SMESH_CATCH( SMESH::throwSalomeEx );
+
+  if ( status == Driver_Mesh::DRS_TOO_LARGE_MESH )
+    throw TooLargeForExport("DAT");
 }
 
 //================================================================================
@@ -1558,7 +1576,9 @@ void SMESH_Mesh::ExportDAT(const char *        file,
 void SMESH_Mesh::ExportUNV(const char *        file,
                            const SMESHDS_Mesh* meshPart)
 {
-  Unexpect aCatch(SalomeException);
+  Driver_Mesh::Status status;
+
+  SMESH_TRY;
   DriverUNV_W_SMDS_Mesh myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS );
@@ -1579,7 +1599,12 @@ void SMESH_Mesh::ExportUNV(const char *        file,
       }
     }
   }
-  myWriter.Perform();
+  status = myWriter.Perform();
+
+  SMESH_CATCH( SMESH::throwSalomeEx );
+
+  if ( status == Driver_Mesh::DRS_TOO_LARGE_MESH )
+    throw TooLargeForExport("UNV");
 }
 
 //================================================================================
@@ -1593,14 +1618,21 @@ void SMESH_Mesh::ExportSTL(const char *        file,
                            const char *        name,
                            const SMESHDS_Mesh* meshPart)
 {
-  Unexpect aCatch(SalomeException);
+  Driver_Mesh::Status status;
+  SMESH_TRY;
+
   DriverSTL_W_SMDS_Mesh myWriter;
   myWriter.SetFile( file );
   myWriter.SetIsAscii( isascii );
   myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS);
   myWriter.SetMeshId(_id);
   if ( name ) myWriter.SetName( name );
-  myWriter.Perform();
+  status = myWriter.Perform();
+
+  SMESH_CATCH( SMESH::throwSalomeEx );
+
+  if ( status == Driver_Mesh::DRS_TOO_LARGE_MESH )
+    throw TooLargeForExport("STL");
 }
 
 //================================================================================
@@ -1614,7 +1646,9 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
                             const char *        meshName,
                             const bool          groupElemsByType)
 {
+
   int res = Driver_Mesh::DRS_FAIL;
+  SMESH_TRY;
 
   // pass group names to SMESHDS
   std::map<int, SMESH_Group*>::iterator it = _mapGroup.begin();
@@ -1644,6 +1678,11 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
   }
 
 #endif
+  SMESH_CATCH( SMESH::throwSalomeEx );
+
+  if ( res == Driver_Mesh::DRS_TOO_LARGE_MESH )
+    throw TooLargeForExport("CGNS");
+
   if ( res != Driver_Mesh::DRS_OK )
     throw SALOME_Exception("Export failed");
 }
@@ -1658,12 +1697,20 @@ void SMESH_Mesh::ExportGMF(const char *        file,
                            const SMESHDS_Mesh* meshDS,
                            bool                withRequiredGroups)
 {
+  Driver_Mesh::Status status;
+  SMESH_TRY;
+
   DriverGMF_Write myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
   myWriter.SetExportRequiredGroups( withRequiredGroups );
 
-  myWriter.Perform();
+  status = myWriter.Perform();
+
+  SMESH_CATCH( SMESH::throwSalomeEx );
+
+  if ( status == Driver_Mesh::DRS_TOO_LARGE_MESH )
+    throw TooLargeForExport("GMF");
 }
 
 //================================================================================
@@ -1746,7 +1793,7 @@ double SMESH_Mesh::GetComputeProgress() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbNodes() const
+smIdType SMESH_Mesh::NbNodes() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->NbNodes();
@@ -1758,7 +1805,7 @@ int SMESH_Mesh::NbNodes() const
  */
 //================================================================================
 
-int SMESH_Mesh::Nb0DElements() const
+smIdType SMESH_Mesh::Nb0DElements() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().Nb0DElements();
@@ -1770,7 +1817,7 @@ int SMESH_Mesh::Nb0DElements() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbEdges(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbEdges(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbEdges(order);
@@ -1782,7 +1829,7 @@ int SMESH_Mesh::NbEdges(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbFaces(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbFaces(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbFaces(order);
@@ -1794,7 +1841,7 @@ int SMESH_Mesh::NbFaces(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbTriangles(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbTriangles(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbTriangles(order);
@@ -1806,7 +1853,7 @@ int SMESH_Mesh::NbTriangles(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbBiQuadTriangles() const
+smIdType SMESH_Mesh::NbBiQuadTriangles() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbBiQuadTriangles();
@@ -1818,7 +1865,7 @@ int SMESH_Mesh::NbBiQuadTriangles() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbQuadrangles(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbQuadrangles(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbQuadrangles(order);
@@ -1830,7 +1877,7 @@ int SMESH_Mesh::NbQuadrangles(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbBiQuadQuadrangles() const
+smIdType SMESH_Mesh::NbBiQuadQuadrangles() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbBiQuadQuadrangles();
@@ -1842,7 +1889,7 @@ int SMESH_Mesh::NbBiQuadQuadrangles() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbPolygons(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbPolygons(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbPolygons(order);
@@ -1854,7 +1901,7 @@ int SMESH_Mesh::NbPolygons(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbVolumes(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbVolumes(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbVolumes(order);
@@ -1866,7 +1913,7 @@ int SMESH_Mesh::NbVolumes(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbTetras(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbTetras(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbTetras(order);
@@ -1878,7 +1925,7 @@ int SMESH_Mesh::NbTetras(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbHexas(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbHexas(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbHexas(order);
@@ -1890,7 +1937,7 @@ int SMESH_Mesh::NbHexas(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbTriQuadraticHexas() const
+smIdType SMESH_Mesh::NbTriQuadraticHexas() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbTriQuadHexas();
@@ -1902,7 +1949,7 @@ int SMESH_Mesh::NbTriQuadraticHexas() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbPyramids(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbPyramids(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbPyramids(order);
@@ -1914,19 +1961,19 @@ int SMESH_Mesh::NbPyramids(SMDSAbs_ElementOrder order) const
  */
 //================================================================================
 
-int SMESH_Mesh::NbPrisms(SMDSAbs_ElementOrder order) const
+smIdType SMESH_Mesh::NbPrisms(SMDSAbs_ElementOrder order) const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbPrisms(order);
 }
 
-int SMESH_Mesh::NbQuadPrisms() const
+smIdType SMESH_Mesh::NbQuadPrisms() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbQuadPrisms();
 }
 
-int SMESH_Mesh::NbBiQuadPrisms() const
+smIdType SMESH_Mesh::NbBiQuadPrisms() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbBiQuadPrisms();
@@ -1939,7 +1986,7 @@ int SMESH_Mesh::NbBiQuadPrisms() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbHexagonalPrisms() const
+smIdType SMESH_Mesh::NbHexagonalPrisms() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbHexPrisms();
@@ -1951,7 +1998,7 @@ int SMESH_Mesh::NbHexagonalPrisms() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbPolyhedrons() const
+smIdType SMESH_Mesh::NbPolyhedrons() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbPolyhedrons();
@@ -1963,7 +2010,7 @@ int SMESH_Mesh::NbPolyhedrons() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbBalls() const
+smIdType SMESH_Mesh::NbBalls() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbBalls();
@@ -1975,7 +2022,7 @@ int SMESH_Mesh::NbBalls() const
  */
 //================================================================================
 
-int SMESH_Mesh::NbSubMesh() const
+smIdType SMESH_Mesh::NbSubMesh() const
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->NbSubMesh();
@@ -2215,8 +2262,8 @@ ostream& SMESH_Mesh::Dump(ostream& save)
     save << ++clause << ") Total number of " << orderStr << " edges:\t" << NbEdges(order) << endl;
     save << ++clause << ") Total number of " << orderStr << " faces:\t" << NbFaces(order) << endl;
     if ( NbFaces(order) > 0 ) {
-      int nb3 = NbTriangles(order);
-      int nb4 = NbQuadrangles(order);
+      smIdType nb3 = NbTriangles(order);
+      smIdType nb4 = NbQuadrangles(order);
       save << clause << ".1) Number of " << orderStr << " triangles:  \t" << nb3 << endl;
       save << clause << ".2) Number of " << orderStr << " quadrangles:\t" << nb4 << endl;
       if ( nb3 + nb4 !=  NbFaces(order) ) {
@@ -2236,10 +2283,10 @@ ostream& SMESH_Mesh::Dump(ostream& save)
     }
     save << ++clause << ") Total number of " << orderStr << " volumes:\t" << NbVolumes(order) << endl;
     if ( NbVolumes(order) > 0 ) {
-      int nb8 = NbHexas(order);
-      int nb4 = NbTetras(order);
-      int nb5 = NbPyramids(order);
-      int nb6 = NbPrisms(order);
+      smIdType nb8 = NbHexas(order);
+      smIdType nb4 = NbTetras(order);
+      smIdType nb5 = NbPyramids(order);
+      smIdType nb6 = NbPrisms(order);
       save << clause << ".1) Number of " << orderStr << " hexahedrons: \t" << nb8 << endl;
       save << clause << ".2) Number of " << orderStr << " tetrahedrons:\t" << nb4 << endl;
       save << clause << ".3) Number of " << orderStr << " prisms:      \t" << nb6 << endl;
@@ -2270,7 +2317,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
 //purpose  : Returns type of mesh element with certain id
 //=======================================================================
 
-SMDSAbs_ElementType SMESH_Mesh::GetElementType( const int id, const bool iselem )
+SMDSAbs_ElementType SMESH_Mesh::GetElementType( const smIdType id, const bool iselem )
 {
   return _myMeshDS->GetElementType( id, iselem );
 }

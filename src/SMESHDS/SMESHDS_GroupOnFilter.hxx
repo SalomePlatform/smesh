@@ -47,20 +47,20 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase, SMDS_Eleme
 
   SMESH_PredicatePtr GetPredicate() const { return myPredicate; }
 
-  std::vector< int > GetMeshInfo() const;
+  std::vector< smIdType > GetMeshInfo() const;
 
   template< typename IDTYPE >
-    int GetElementIds( IDTYPE* ids ) const
+    smIdType GetElementIds( IDTYPE* ids ) const
   {
     return getElementIds( (void*)ids, sizeof(IDTYPE));
   }
 
 
-  virtual int  Extent() const;
+  virtual smIdType  Extent() const;
 
   virtual bool IsEmpty();
 
-  virtual bool Contains (const int theID);
+  virtual bool Contains (const smIdType theID);
 
   virtual bool Contains (const SMDS_MeshElement* elem);
 
@@ -92,7 +92,7 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase, SMDS_Eleme
   // 2) The case of enough free memory. Remember all OK elements (myElements).
 
   SMESH_PredicatePtr                    myPredicate;
-  std::vector< int >                    myMeshInfo;
+  std::vector< smIdType >               myMeshInfo;
   std::vector< const SMDS_MeshElement*> myElements;
   bool                                  myElementsOK;
   size_t                                myMeshModifTime; // when myMeshInfo was updated

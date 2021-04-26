@@ -36,6 +36,7 @@
 #include "MED_Utilities.hxx"
 
 #include <NCollection_Map.hxx>
+#include <smIdType.hxx>
 
 #include "utilities.h"
 
@@ -225,7 +226,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 
       // Reading pre information about all MED cells
       //--------------------------------------------
-      typedef MED::TVector<int> TNodeIds;
+      typedef MED::TVector<smIdType> TNodeIds;
       bool takeNumbers = true;  // initially we trust the numbers from file
       MED::TEntityInfo aEntityInfo = aMed->GetEntityInfo(aMeshInfo, eNOD);
       MED::TEntityInfo::iterator anEntityIter = aEntityInfo.begin();
@@ -269,7 +270,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
               aNodeIds.assign( aBallInfo->myConn->begin(), aBallInfo->myConn->end());
 
             // allocate array of diameters
-            vtkIdType maxID = myMesh->MaxElementID() + aNbBalls;
+            vtkIdType maxID = FromSmIdType<vtkIdType>(myMesh->MaxElementID() + aNbBalls);
             if ( anIsElemNum && !aBallInfo->myElemNum->empty() )
               maxID = *std::max_element( aBallInfo->myElemNum->begin(),
                                          aBallInfo->myElemNum->end() );
@@ -318,7 +319,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
             EBooleen anIsElemNum = takeNumbers ? aPolygoneInfo->IsElemNum() : eFAUX;
 
             typedef SMDS_MeshFace* (SMESHDS_Mesh::* FAddPolyWithID)
-              (const std::vector<int> & nodes_ids, const int ID);
+              (const std::vector<smIdType> & nodes_ids, const smIdType ID);
             typedef SMDS_MeshFace* (SMESHDS_Mesh::* FAddPolygon)
               (const std::vector<const SMDS_MeshNode*> & nodes);
 
@@ -355,7 +356,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 #endif
                 if ( anIsElemNum ) {
                   TInt anElemId = aPolygoneInfo->GetElemNum( iElem );
-                  anElement = (myMesh->*addPolyWithID)( aNodeIds, anElemId );
+                  anElement = (myMesh->*addPolyWithID)( aNodeIds, ToSmIdType(anElemId) );
                 }
                 if ( !anElement ) {
                   aNodes.resize( aNbConn );
@@ -436,7 +437,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 #endif
                 if(anIsElemNum){
                   TInt anElemId = aPolyedreInfo->GetElemNum(iElem);
-                  anElement = myMesh->AddPolyhedralVolumeWithID(aNodeIds,aQuantities,anElemId);
+                  anElement = myMesh->AddPolyhedralVolumeWithID(aNodeIds,aQuantities,ToSmIdType(anElemId));
                 }
                 if(!anElement){
                   vector<const SMDS_MeshNode*> aNodes(aNbNodes);

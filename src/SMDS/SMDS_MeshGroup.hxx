@@ -45,7 +45,7 @@ class SMDS_EXPORT SMDS_MeshGroup: public SMDS_MeshObject, SMDS_ElementHolder
   bool Add(const SMDS_MeshElement * theElem);
   bool Remove(const SMDS_MeshElement * theElem);
   bool IsEmpty() const { return myElements.empty(); }
-  int  Extent() const { return myElements.size(); }
+  smIdType  Extent() const { return (smIdType) myElements.size(); }
   int  Tic() const { return myTic; }
   bool Contains(const SMDS_MeshElement * theElem) const;
 

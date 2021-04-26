@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <TColStd_MapOfInteger.hxx>
+#include <SVTK_Hash.h>
 
 #include <gp_XYZ.hxx>
 
@@ -52,7 +53,7 @@ public:
   SMESHGUI_IdPreview(SVTK_ViewWindow* theViewWindow);
   ~SMESHGUI_IdPreview();
 
-  void SetPointsData( SMDS_Mesh* theMesh, const TColStd_MapOfInteger & theNodesIdMap );
+  void SetPointsData( SMDS_Mesh* theMesh, const SVTK_TVtkIDsMap & theNodesIdMap );
   void SetElemsData ( const std::vector<int> &  theElemsIdMap,
                       const std::list<gp_XYZ> & theGrCentersXYZ );
   template< class INT_ITER, class XYZ_ITER >

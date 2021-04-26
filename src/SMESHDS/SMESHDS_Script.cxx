@@ -89,7 +89,7 @@ SMESHDS_Command* SMESHDS_Script::getCommand(const SMESHDS_CommandType aType)
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddNode(int NewNodeID, double x, double y, double z)
+void SMESHDS_Script::AddNode(smIdType NewNodeID, double x, double y, double z)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -102,7 +102,7 @@ void SMESHDS_Script::AddNode(int NewNodeID, double x, double y, double z)
 //function :
 //purpose  :
 //=======================================================================
-void SMESHDS_Script::Add0DElement (int New0DElementID, int idnode)
+void SMESHDS_Script::Add0DElement (smIdType New0DElementID, smIdType idnode)
 {
   if (myIsEmbeddedMode) {
     myIsModified = true;
@@ -115,7 +115,7 @@ void SMESHDS_Script::Add0DElement (int New0DElementID, int idnode)
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddEdge(int NewEdgeID, int idnode1, int idnode2)
+void SMESHDS_Script::AddEdge(smIdType NewEdgeID, smIdType idnode1, smIdType idnode2)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -128,8 +128,8 @@ void SMESHDS_Script::AddEdge(int NewEdgeID, int idnode1, int idnode2)
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddFace(int NewFaceID,
-                             int idnode1, int idnode2, int idnode3)
+void SMESHDS_Script::AddFace(smIdType NewFaceID,
+                             smIdType idnode1, smIdType idnode2, smIdType idnode3)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -143,9 +143,9 @@ void SMESHDS_Script::AddFace(int NewFaceID,
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddFace(int NewFaceID,
-                             int idnode1, int idnode2,
-                             int idnode3, int idnode4)
+void SMESHDS_Script::AddFace(smIdType NewFaceID,
+                             smIdType idnode1, smIdType idnode2,
+                             smIdType idnode3, smIdType idnode4)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -160,9 +160,9 @@ void SMESHDS_Script::AddFace(int NewFaceID,
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewID,
-                               int idnode1, int idnode2,
-                               int idnode3, int idnode4)
+void SMESHDS_Script::AddVolume(smIdType NewID,
+                               smIdType idnode1, smIdType idnode2,
+                               smIdType idnode3, smIdType idnode4)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -177,9 +177,9 @@ void SMESHDS_Script::AddVolume(int NewID,
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewID,
-                               int idnode1, int idnode2,
-                               int idnode3, int idnode4, int idnode5)
+void SMESHDS_Script::AddVolume(smIdType NewID,
+                               smIdType idnode1, smIdType idnode2,
+                               smIdType idnode3, smIdType idnode4, smIdType idnode5)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -194,9 +194,9 @@ void SMESHDS_Script::AddVolume(int NewID,
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewID,
-                               int idnode1, int idnode2, int idnode3,
-                               int idnode4, int idnode5, int idnode6)
+void SMESHDS_Script::AddVolume(smIdType NewID,
+                               smIdType idnode1, smIdType idnode2, smIdType idnode3,
+                               smIdType idnode4, smIdType idnode5, smIdType idnode6)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -211,9 +211,9 @@ void SMESHDS_Script::AddVolume(int NewID,
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewID,
-                               int idnode1, int idnode2, int idnode3, int idnode4,
-                               int idnode5, int idnode6, int idnode7, int idnode8)
+void SMESHDS_Script::AddVolume(smIdType NewID,
+                               smIdType idnode1, smIdType idnode2, smIdType idnode3, smIdType idnode4,
+                               smIdType idnode5, smIdType idnode6, smIdType idnode7, smIdType idnode8)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -228,9 +228,9 @@ void SMESHDS_Script::AddVolume(int NewID,
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-                               int idnode4, int idnode5, int idnode6, int idnode7, int idnode8,
-                               int idnode9, int idnode10, int idnode11, int idnode12)
+void SMESHDS_Script::AddVolume(smIdType NewVolID, smIdType idnode1, smIdType idnode2, smIdType idnode3,
+                               smIdType idnode4, smIdType idnode5, smIdType idnode6, smIdType idnode7, smIdType idnode8,
+                               smIdType idnode9, smIdType idnode10, smIdType idnode11, smIdType idnode12)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -246,7 +246,7 @@ void SMESHDS_Script::AddVolume(int NewVolID, int idnode1, int idnode2, int idnod
 //function : AddPolygonalFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddPolygonalFace (int NewFaceID, const std::vector<int>& nodes_ids)
+void SMESHDS_Script::AddPolygonalFace (smIdType NewFaceID, const std::vector<smIdType>& nodes_ids)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -259,7 +259,7 @@ void SMESHDS_Script::AddPolygonalFace (int NewFaceID, const std::vector<int>& no
 //function : AddQuadPolygonalFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddQuadPolygonalFace(int NewFaceID, const std::vector<int>& nodes_ids)
+void SMESHDS_Script::AddQuadPolygonalFace(smIdType NewFaceID, const std::vector<smIdType>& nodes_ids)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -272,9 +272,9 @@ void SMESHDS_Script::AddQuadPolygonalFace(int NewFaceID, const std::vector<int>&
 //function : AddPolyhedralVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddPolyhedralVolume (int                     NewID,
-                                          const std::vector<int>& nodes_ids,
-                                          const std::vector<int>& quantities)
+void SMESHDS_Script::AddPolyhedralVolume (smIdType                     NewID,
+                                          const std::vector<smIdType>& nodes_ids,
+                                          const std::vector<int>&      quantities)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -289,7 +289,7 @@ void SMESHDS_Script::AddPolyhedralVolume (int                     NewID,
 //purpose  : Record adding a Ball
 //=======================================================================
 
-void SMESHDS_Script::AddBall(int NewBallID, int node, double diameter)
+void SMESHDS_Script::AddBall(smIdType NewBallID, smIdType node, double diameter)
 {
   if ( myIsEmbeddedMode )
     myIsModified = true;
@@ -301,7 +301,7 @@ void SMESHDS_Script::AddBall(int NewBallID, int node, double diameter)
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::MoveNode(int NewNodeID, double x, double y, double z)
+void SMESHDS_Script::MoveNode(smIdType NewNodeID, double x, double y, double z)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -314,7 +314,7 @@ void SMESHDS_Script::MoveNode(int NewNodeID, double x, double y, double z)
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::RemoveNode(int ID)
+void SMESHDS_Script::RemoveNode(smIdType ID)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -327,7 +327,7 @@ void SMESHDS_Script::RemoveNode(int ID)
 //function : 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::RemoveElement(int ElementID)
+void SMESHDS_Script::RemoveElement(smIdType ElementID)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -341,7 +341,7 @@ void SMESHDS_Script::RemoveElement(int ElementID)
 //purpose  : 
 //=======================================================================
 
-void SMESHDS_Script::ChangeElementNodes(int ElementID, int nodes[], int nbnodes)
+void SMESHDS_Script::ChangeElementNodes(smIdType ElementID, smIdType nodes[], smIdType nbnodes)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -354,8 +354,8 @@ void SMESHDS_Script::ChangeElementNodes(int ElementID, int nodes[], int nbnodes)
 //function : ChangePolyhedronNodes
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::ChangePolyhedronNodes (const int               ElementID,
-                                            const std::vector<int>& nodes_ids,
+void SMESHDS_Script::ChangePolyhedronNodes (const smIdType               ElementID,
+                                            const std::vector<smIdType>& nodes_ids,
                                             const std::vector<int>& quantities)
 {
   if(myIsEmbeddedMode){
@@ -370,7 +370,7 @@ void SMESHDS_Script::ChangePolyhedronNodes (const int               ElementID,
 //function : Renumber
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::Renumber (const bool isNodes, const int startID, const int deltaID)
+void SMESHDS_Script::Renumber (const bool isNodes, const smIdType startID, const smIdType deltaID)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -424,7 +424,7 @@ const list<SMESHDS_Command*>& SMESHDS_Script::GetCommands()
 //function : AddEdge
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddEdge(int NewEdgeID, int n1, int n2, int n12)
+void SMESHDS_Script::AddEdge(smIdType NewEdgeID, smIdType n1, smIdType n2, smIdType n12)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -437,8 +437,8 @@ void SMESHDS_Script::AddEdge(int NewEdgeID, int n1, int n2, int n12)
 //function : AddFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3,
-                             int n12, int n23, int n31)
+void SMESHDS_Script::AddFace(smIdType NewFaceID, smIdType n1, smIdType n2, smIdType n3,
+                             smIdType n12, smIdType n23, smIdType n31)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -452,8 +452,8 @@ void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3,
 //function : AddFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3,
-                             int n12, int n23, int n31, int nCenter)
+void SMESHDS_Script::AddFace(smIdType NewFaceID, smIdType n1, smIdType n2, smIdType n3,
+                             smIdType n12, smIdType n23, smIdType n31, smIdType nCenter)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -467,8 +467,8 @@ void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3,
 //function : AddFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
-                             int n12, int n23, int n34, int n41)
+void SMESHDS_Script::AddFace(smIdType NewFaceID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                             smIdType n12, smIdType n23, smIdType n34, smIdType n41)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -482,8 +482,8 @@ void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
 //function : AddFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
-                             int n12, int n23, int n34, int n41, int nCenter)
+void SMESHDS_Script::AddFace(smIdType NewFaceID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                             smIdType n12, smIdType n23, smIdType n34, smIdType n41, smIdType nCenter)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -497,9 +497,9 @@ void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
 //function : AddVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
-                               int n12, int n23, int n31,
-                               int n14, int n24, int n34)
+void SMESHDS_Script::AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                               smIdType n12, smIdType n23, smIdType n31,
+                               smIdType n14, smIdType n24, smIdType n34)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -514,9 +514,9 @@ void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
 //function : AddVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
-                               int n5, int n12, int n23, int n34, int n41,
-                               int n15, int n25, int n35, int n45)
+void SMESHDS_Script::AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                               smIdType n5, smIdType n12, smIdType n23, smIdType n34, smIdType n41,
+                               smIdType n15, smIdType n25, smIdType n35, smIdType n45)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -531,10 +531,10 @@ void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
 //function : AddVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
-                                int n5,int n6, int n12, int n23, int n31,
-                                int n45, int n56, int n64,
-                                int n14, int n25, int n36)
+void SMESHDS_Script::AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                                smIdType n5,smIdType n6, smIdType n12, smIdType n23, smIdType n31,
+                                smIdType n45, smIdType n56, smIdType n64,
+                                smIdType n14, smIdType n25, smIdType n36)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -550,11 +550,11 @@ void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
 //function : AddVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
-                                int n5,int n6, int n12, int n23, int n31,
-                                int n45, int n56, int n64,
-                                int n14, int n25, int n36,
-                                int n1245, int n2356, int n1346)
+void SMESHDS_Script::AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3, smIdType n4,
+                                smIdType n5,smIdType n6, smIdType n12, smIdType n23, smIdType n31,
+                                smIdType n45, smIdType n56, smIdType n64,
+                                smIdType n14, smIdType n25, smIdType n36,
+                                smIdType n1245, smIdType n2356, smIdType n1346)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -571,11 +571,11 @@ void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
 //function : AddVolume
 //purpose  :
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3,
-                               int n4, int n5, int n6, int n7, int n8,
-                               int n12, int n23, int n34, int n41,
-                               int n56, int n67, int n78, int n85,
-                               int n15, int n26, int n37, int n48)
+void SMESHDS_Script::AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3,
+                               smIdType n4, smIdType n5, smIdType n6, smIdType n7, smIdType n8,
+                               smIdType n12, smIdType n23, smIdType n34, smIdType n41,
+                               smIdType n56, smIdType n67, smIdType n78, smIdType n85,
+                               smIdType n15, smIdType n26, smIdType n37, smIdType n48)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;
@@ -592,13 +592,13 @@ void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3,
 //function : AddVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3,
-                               int n4, int n5, int n6, int n7, int n8,
-                               int n12, int n23, int n34, int n41,
-                               int n56, int n67, int n78, int n85,
-                               int n15, int n26, int n37, int n48,
-                               int n1234,int n1256,int n2367,int n3478,
-                               int n1458,int n5678,int nCenter)
+void SMESHDS_Script::AddVolume(smIdType NewVolID, smIdType n1, smIdType n2, smIdType n3,
+                               smIdType n4, smIdType n5, smIdType n6, smIdType n7, smIdType n8,
+                               smIdType n12, smIdType n23, smIdType n34, smIdType n41,
+                               smIdType n56, smIdType n67, smIdType n78, smIdType n85,
+                               smIdType n15, smIdType n26, smIdType n37, smIdType n48,
+                               smIdType n1234,smIdType n1256,smIdType n2367,smIdType n3478,
+                               smIdType n1458,smIdType n5678,smIdType nCenter)
 {
   if(myIsEmbeddedMode){
     myIsModified = true;

@@ -45,7 +45,7 @@ SMESHDS_Group::SMESHDS_Group (const int                 theID,
 //purpose  : 
 //=======================================================================
 
-int SMESHDS_Group::Extent() const
+smIdType SMESHDS_Group::Extent() const
 {
   return myGroup.Extent();
 }
@@ -66,7 +66,7 @@ bool SMESHDS_Group::IsEmpty()
  */
 //=============================================================================
 
-bool SMESHDS_Group::Contains (const int theID)
+bool SMESHDS_Group::Contains (const smIdType theID)
 {
   const SMDS_MeshElement* aElem = findInMesh (theID);
   if (aElem)
@@ -92,7 +92,7 @@ bool SMESHDS_Group::Contains (const SMDS_MeshElement* elem)
  */
 //=============================================================================
 
-bool SMESHDS_Group::Add (const int theID)
+bool SMESHDS_Group::Add (const smIdType theID)
 {
   return Add( findInMesh( theID ));
 }
@@ -121,7 +121,7 @@ bool SMESHDS_Group::Add (const SMDS_MeshElement* aElem )
  */
 //=============================================================================
 
-bool SMESHDS_Group::Remove (const int theID)
+bool SMESHDS_Group::Remove (const smIdType theID)
 {
   bool removed = false;
   if ( const SMDS_MeshElement* aElem = findInMesh( theID ))

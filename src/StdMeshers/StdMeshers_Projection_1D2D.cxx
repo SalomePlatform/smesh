@@ -251,7 +251,7 @@ bool StdMeshers_Projection_1D2D::Evaluate(SMESH_Mesh&         theMesh,
     TopAbs_ShapeEnum shapeType = srcSM->GetSubShape().ShapeType();
     if ( shapeType == TopAbs_EDGE )
     {
-      std::vector<int> aVec;
+      std::vector<smIdType> aVec;
       SMESHDS_SubMesh* srcSubMeshDS = srcSM->GetSubMeshDS();
       if ( srcSubMeshDS && srcSubMeshDS->NbElements() )
       {

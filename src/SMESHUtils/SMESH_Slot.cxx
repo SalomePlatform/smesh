@@ -380,10 +380,10 @@ namespace
    */
   //================================================================================
 
-  void findGroups( const SMDS_MeshElement *                theFace,
-                   TGroupVec &                             theGroupsToUpdate,
-                   NCollection_DataMap< int, TGroupVec > & theFaceID2Groups,
-                   TGroupVec &                             theWorkGroups )
+  void findGroups( const SMDS_MeshElement *                                 theFace,
+                   TGroupVec &                                              theGroupsToUpdate,
+                   NCollection_DataMap< smIdType, TGroupVec, smIdHasher > & theFaceID2Groups,
+                   TGroupVec &                                              theWorkGroups )
   {
     theWorkGroups.clear();
     for ( size_t i = 0; i < theGroupsToUpdate.size(); ++i )
@@ -583,7 +583,7 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
   std::vector< SMESH_NodeXYZ > facePoints(4);
   std::vector< Intersector::TFace > cutFacePoints;
 
-  NCollection_DataMap< int, TGroupVec > faceID2Groups;
+  NCollection_DataMap< smIdType, TGroupVec, smIdHasher > faceID2Groups;
   TGroupVec groupVec;
 
   std::vector< gp_Ax1 > planeNormalVec(2);

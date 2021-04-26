@@ -349,7 +349,7 @@ namespace
     // Find all block sides starting from mesh faces sharing the corner node
     // --------------------------------------------------------------------
 
-    int nbFacesOnSides = 0;
+    smIdType nbFacesOnSides = 0;
     TIDSortedElemSet cornerFaces; // corner faces of found _BlockSide's
     list< const SMDS_MeshNode* > corners( 1, nCorner );
     list< const SMDS_MeshNode* >::iterator corner = corners.begin();
@@ -1200,7 +1200,7 @@ bool StdMeshers_HexaFromSkin_3D::Evaluate(SMESH_Mesh &         aMesh,
   bool secondOrder = aMesh.NbFaces( ORDER_QUADRATIC );
 
   int entity = secondOrder ? SMDSEntity_Quad_Hexa : SMDSEntity_Hexa;
-  vector<int>& nbByType = aResMap[ aMesh.GetSubMesh( aShape )];
+  vector<smIdType>& nbByType = aResMap[ aMesh.GetSubMesh( aShape )];
   if ( entity >= (int) nbByType.size() )
     nbByType.resize( SMDSEntity_Last, 0 );
 

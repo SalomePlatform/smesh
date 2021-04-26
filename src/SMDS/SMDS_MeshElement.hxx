@@ -38,6 +38,7 @@
 
 #include <vtkType.h>
 #include <vtkCellType.h>
+#include <smIdType.hxx>
 
 class SMDS_ElementChunk;
 class SMDS_Mesh;
@@ -127,10 +128,10 @@ public:
   virtual int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
 
-  virtual int GetID() const;
-  virtual int GetVtkID()   const;
-  virtual int getshapeId() const { return GetShapeID(); }
-  virtual int GetShapeID() const;
+  virtual smIdType  GetID() const;
+  virtual vtkIdType GetVtkID()   const;
+  virtual int  getshapeId() const { return GetShapeID(); }
+  virtual int  GetShapeID() const;
 
   // mark this element; to be used in algos
   virtual void setIsMarked( bool is ) const;
@@ -182,7 +183,7 @@ public:
 
   SMDS_MeshElement();
 
-  void setVtkID(const int vtkID );
+  void setVtkID(const vtkIdType vtkID );
   virtual void setShapeID( const int shapeID ) const;
 
   SMDS_UnstructuredGrid* getGrid() const;

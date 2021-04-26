@@ -214,12 +214,12 @@ ElementType Functor_i::GetElementType()
   Class       : NumericalFunctor_i
   Description : Base class for numerical functors
 */
-CORBA::Double NumericalFunctor_i::GetValue( CORBA::Long theId )
+CORBA::Double NumericalFunctor_i::GetValue( SMESH::smIdType theId )
 {
   return myNumericalFunctorPtr->GetValue( theId );
 }
 
-CORBA::Boolean NumericalFunctor_i::IsApplicable( CORBA::Long theElementId )
+CORBA::Boolean NumericalFunctor_i::IsApplicable( SMESH::smIdType theElementId )
 {
   return myNumericalFunctorPtr->IsApplicable( theElementId );
 }
@@ -228,7 +228,7 @@ SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals, COR
 {
   std::vector<int> nbEvents;
   std::vector<double> funValues;
-  std::vector<int> elements;
+  std::vector<SMESH::smIdType> elements;
   myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements,0,isLogarithmic);
 
   SMESH::Histogram_var histogram = new SMESH::Histogram;
@@ -255,9 +255,9 @@ SMESH::Histogram* NumericalFunctor_i::GetLocalHistogram(CORBA::Short            
 {
   SMESH::Histogram_var histogram = new SMESH::Histogram;
 
-  std::vector<int>    nbEvents;
-  std::vector<double> funValues;
-  std::vector<int>    elements;
+  std::vector<int>             nbEvents;
+  std::vector<double>          funValues;
+  std::vector<SMESH::smIdType> elements;
 
   SMDS_ElemIteratorPtr elemIt;
   if ( SMESH::DownCast< SMESH_GroupOnFilter_i* >( object ) ||
@@ -268,9 +268,9 @@ SMESH::Histogram* NumericalFunctor_i::GetLocalHistogram(CORBA::Short            
   }
   else
   {
-    SMESH::SMESH_Mesh_var        mesh = object->GetMesh();
-    SMESH::long_array_var  objNbElems = object->GetNbElementsByType();
-    SMESH::long_array_var meshNbElems = mesh->  GetNbElementsByType();
+    SMESH::SMESH_Mesh_var            mesh = object->GetMesh();
+    SMESH::smIdType_array_var  objNbElems = object->GetNbElementsByType();
+    SMESH::smIdType_array_var meshNbElems = mesh->  GetNbElementsByType();
     if ( meshNbElems[ GetElementType() ] !=
          objNbElems [ GetElementType() ] )
     {
@@ -1412,10 +1412,10 @@ RangeOfIds_i::RangeOfIds_i()
   myFunctorPtr = myPredicatePtr = myRangeOfIdsPtr;
 }
 
-void RangeOfIds_i::SetRange( const SMESH::long_array& theIds )
+void RangeOfIds_i::SetRange( const SMESH::smIdType_array& theIds )
 {
-  CORBA::Long iEnd = theIds.length();
-  for ( CORBA::Long i = 0; i < iEnd; i++ )
+  SMESH::smIdType iEnd = theIds.length();
+  for ( SMESH::smIdType i = 0; i < iEnd; i++ )
     myRangeOfIdsPtr->AddToRange( theIds[ i ] );
   TPythonDump()<<this<<".SetRange("<<theIds<<")";
 }
@@ -1657,7 +1657,7 @@ void ConnectedElements_i::SetVertex( GEOM::GEOM_Object_ptr vertex )
   TPythonDump() << this << ".SetVertex( " << vertex << " )";
 }
 
-void ConnectedElements_i::SetNode ( CORBA::Long nodeID )
+void ConnectedElements_i::SetNode ( SMESH::smIdType nodeID )
 {
   if ( nodeID < 1 )
     THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetNode(): nodeID must be > 0",
@@ -2574,7 +2574,7 @@ SetMesh( SMESH_Mesh_ptr theMesh )
       myPredicate->GetPredicate()->SetMesh( aMesh );
 }
 
-SMESH::long_array*
+SMESH::smIdType_array*
 Filter_i::
 GetIDs()
 {
@@ -2606,11 +2606,11 @@ GetElementsId( Predicate_i* thePredicate,
       Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
 }
 
-SMESH::long_array*
+SMESH::smIdType_array*
 Filter_i::
 GetElementsId( SMESH_Mesh_ptr theMesh )
 {
-  SMESH::long_array_var anArray = new SMESH::long_array;
+  SMESH::smIdType_array_var anArray = new SMESH::smIdType_array;
   if(!CORBA::is_nil(theMesh) && myPredicate){
     theMesh->Load();
     Controls::Filter::TIdSequence aSequence;
@@ -2623,11 +2623,11 @@ GetElementsId( SMESH_Mesh_ptr theMesh )
   return anArray._retn();
 }
 
-SMESH::long_array*
+SMESH::smIdType_array*
 Filter_i::
 GetElementsIdFromParts( const ListOfIDSources& theParts )
 {
-  SMESH::long_array_var array = new SMESH::long_array;
+  SMESH::smIdType_array_var array = new SMESH::smIdType_array;
   if ( theParts.length() > 0 && myPredicate )
   {
     SMESH_Mesh_ptr mesh = theParts[0]->GetMesh();
@@ -2659,9 +2659,9 @@ GetElementsIdFromParts( const ListOfIDSources& theParts )
  */
 //=============================================================================
 
-SMESH::long_array* ::Filter_i::GetMeshInfo()
+SMESH::smIdType_array* ::Filter_i::GetMeshInfo()
 {
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   aRes->length(SMESH::Entity_Last);
   for (int i = 0; i < SMESH::Entity_Last; i++)
     aRes[i] = 0;
@@ -2687,9 +2687,9 @@ SMESH::long_array* ::Filter_i::GetMeshInfo()
  */
 //=============================================================================
 
-SMESH::long_array* ::Filter_i::GetNbElementsByType()
+SMESH::smIdType_array* ::Filter_i::GetNbElementsByType()
 {
-  SMESH::long_array_var aRes = new SMESH::long_array();
+  SMESH::smIdType_array_var aRes = new SMESH::smIdType_array();
   aRes->length(SMESH::NB_ELEMENT_TYPES);
   for (int i = 0; i < SMESH::NB_ELEMENT_TYPES; i++)
     aRes[i] = 0;
@@ -2697,7 +2697,7 @@ SMESH::long_array* ::Filter_i::GetNbElementsByType()
   if ( !CORBA::is_nil(myMesh) && myPredicate ) {
     const SMDS_Mesh*  aMesh = MeshPtr2SMDSMesh(myMesh);
     SMDS_ElemIteratorPtr it = aMesh->elementsIterator( SMDSAbs_ElementType( GetElementType() ));
-    CORBA::Long& nbElems = aRes[ GetElementType() ];
+    SMESH::smIdType& nbElems = aRes[ GetElementType() ];
     while ( it->more() )
     {
       const SMDS_MeshElement* anElem = it->next();

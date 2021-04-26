@@ -469,7 +469,7 @@ void SMESHGUI_MergeDlg::Init()
 // function : FindGravityCenter()
 // purpose  :
 //=================================================================================
-void SMESHGUI_MergeDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap,
+void SMESHGUI_MergeDlg::FindGravityCenter(SVTK_TVtkIDsMap &      theElemsIdMap,
                                           std::vector<int>&      theIDs,
                                           std::list< gp_XYZ > &  theGrCentersXYZ)
 {
@@ -484,7 +484,7 @@ void SMESHGUI_MergeDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap,
   int nbNodes;
 
   theIDs.reserve( theElemsIdMap.Extent() );
-  TColStd_MapIteratorOfMapOfInteger idIter( theElemsIdMap );
+  SVTK_TVtkIDsMapIterator idIter( theElemsIdMap );
   for( ; idIter.More(); idIter.Next() ) {
     const SMDS_MeshElement* anElem = aMesh->FindElement(idIter.Key());
     if ( !anElem )
@@ -556,7 +556,7 @@ bool SMESHGUI_MergeDlg::ClickOnApply()
       int i, nb = KeepList->count();
       if ( isKeepIDsSelection() )
       {
-        SMESH::long_array_var anIdList = new SMESH::long_array();
+        SMESH::smIdType_array_var anIdList = new SMESH::smIdType_array();
         anIdList->length(nb);
         for (i = 0; i < nb; i++)
           anIdList[i] = KeepList->item(i)->text().toInt();
@@ -845,7 +845,7 @@ void SMESHGUI_MergeDlg::onSelectGroup()
   myIsBusy = true;
   ListEdit->clear();
 
-  TColStd_MapOfInteger anIndices;
+  SVTK_TVtkIDsMap anIndices;
   QList<QListWidgetItem*> selItems = ListCoincident->selectedItems();
   QListWidgetItem* anItem;
   QStringList aListIds;
@@ -908,7 +908,7 @@ void SMESHGUI_MergeDlg::onSelectElementFromGroup()
   if (myIsBusy || !myActor)
     return;
 
-  TColStd_MapOfInteger anIndices;
+  SVTK_TVtkIDsMap anIndices;
   QList<QListWidgetItem*> selItems = ListEdit->selectedItems();
   QListWidgetItem* anItem;
 
@@ -1595,7 +1595,7 @@ void SMESHGUI_MergeDlg::onSelectKeep()
     if ( myActor )
     {
       mySelectionMgr->clearSelected();
-      TColStd_MapOfInteger aIndexes;
+      SVTK_TVtkIDsMap aIndexes;
       QList<QListWidgetItem*> selItems = KeepList->selectedItems();
       QListWidgetItem* anItem;
       foreach(anItem, selItems) aIndexes.Add(anItem->text().toInt());

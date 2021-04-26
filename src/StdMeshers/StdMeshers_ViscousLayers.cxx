@@ -10752,7 +10752,7 @@ namespace VISCOUS_3D
     {
       points.reserve( _boundarySize );
       size_t  nb = _boundary.rbegin()->_nodes.size();
-      int lastID = _boundary.rbegin()->Node( nb - 1 )->GetID();
+      smIdType lastID = _boundary.rbegin()->Node( nb - 1 )->GetID();
       std::list< BndPart >::const_iterator part = _boundary.begin();
       for ( ; part != _boundary.end(); ++part )
       {
@@ -12114,7 +12114,7 @@ void _Shrinker1D::AddEdge( const _LayerEdge*   e,
     GeomAdaptor_Curve aCurve(C, f,l);
     const double totLen = GCPnts_AbscissaPoint::Length(aCurve, f, l);
 
-    int nbExpectNodes = eSubMesh->NbNodes();
+    smIdType nbExpectNodes = eSubMesh->NbNodes();
     _initU  .reserve( nbExpectNodes );
     _normPar.reserve( nbExpectNodes );
     _nodes  .reserve( nbExpectNodes );

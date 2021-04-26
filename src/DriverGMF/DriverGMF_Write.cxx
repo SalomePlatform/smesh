@@ -57,8 +57,8 @@ extern "C"
   elemIt = elementIterator( SMDSGeom );                                 \
   if ( elemIt->more() )                                                 \
   {                                                                     \
-  int totalNbElems  = myMesh->GetMeshInfo().NbElements( SMDSGeom );     \
-  int nbLinearElems = myMesh->GetMeshInfo().NbElements( LinType );      \
+  smIdType totalNbElems  = myMesh->GetMeshInfo().NbElements( SMDSGeom );\
+  smIdType nbLinearElems = myMesh->GetMeshInfo().NbElements( LinType ); \
   if ( totalNbElems - nbLinearElems > 0 )                               \
   {                                                                     \
   GmfSetKwd(meshID, GmfKwd, totalNbElems - nbLinearElems);              \
@@ -100,6 +100,9 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
 {
   Kernel_Utils::Localizer loc;
 
+  if ( Driver_Mesh::IsMeshTooLarge< int >( myMesh, /*checkIDs =*/ false))
+    return DRS_TOO_LARGE_MESH;
+
   const int dim = 3, version = sizeof(double) < 8 ? 1 : 2;
 
   int meshID = GmfOpenMesh( myFile.c_str(), GmfWrite, version, dim );
@@ -115,7 +118,7 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
 
   // nodes
   std::map< const SMDS_MeshNode* , int > node2IdMap;
-  int iN = 0, nbNodes = myMesh->NbNodes();
+  smIdType iN = 0, nbNodes = myMesh->NbNodes();
   GmfSetKwd( meshID, GmfVertices, nbNodes );
   double xyz[3];
   SMDS_NodeIteratorPtr nodeIt = myMesh->nodesIterator();

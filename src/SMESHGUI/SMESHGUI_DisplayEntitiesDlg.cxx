@@ -33,6 +33,7 @@
 #include <SUIT_OverrideCursor.h>
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
+#include <smIdType.hxx>
 
 #include <QCheckBox>
 #include <QGridLayout>
@@ -81,7 +82,7 @@ SMESHGUI_DisplayEntitiesDlg::SMESHGUI_DisplayEntitiesDlg( QWidget* parent )
   QGridLayout* hl = new QGridLayout( anEntitiesGrp );
   hl->setMargin( MARGIN );
   hl->setSpacing( SPACING );
-  int nbElements;
+  smIdType nbElements;
 
   // 0DElements
   nbElements = myActor ? myActor->GetObject()->GetNbEntities( SMDSAbs_0DElement ) : aMesh->Nb0DElements();

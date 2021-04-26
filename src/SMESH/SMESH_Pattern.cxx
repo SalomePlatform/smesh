@@ -574,8 +574,8 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
   SMESH_MesherHelper helper( *theMesh );
   helper.SetSubShape( theFace );
 
-  int nbNodes = ( !fSubMesh ? 0 : fSubMesh->NbNodes() );
-  int nbElems = ( !fSubMesh ? 0 : fSubMesh->NbElements() );
+  smIdType nbNodes = ( !fSubMesh ? 0 : fSubMesh->NbNodes() );
+  smIdType nbElems = ( !fSubMesh ? 0 : fSubMesh->NbElements() );
   if ( nbElems == 0 && aMeshDS->NbFaces() == 0 )
   {
     MESSAGE( "No elements bound to the face");
@@ -3231,7 +3231,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
     return setErrorCode( ERR_LOADV_BAD_SHAPE );
 
   // count nodes
-  int nbNodes = 0, shapeID;
+  smIdType nbNodes = 0; int shapeID;
   for ( shapeID = 1; shapeID <= myShapeIDMap.Extent(); shapeID++ )
   {
     const TopoDS_Shape& S = myShapeIDMap( shapeID );
@@ -4366,7 +4366,7 @@ void SMESH_Pattern::createElements(SMESH_Mesh*                            theMes
       subMesh->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
   }
   if ( onMeshElements ) {
-    list< int > elemIDs;
+    list< smIdType > elemIDs;
     for ( size_t i = 0; i < theElements.size(); i++ )
     {
       subMesh = theMesh->GetSubMeshContaining( shapeIDs[ i ] );

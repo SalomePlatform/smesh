@@ -40,6 +40,8 @@
 
 #include <vtkType.h>
 
+#include <smIdType.hxx>
+
 class SMDS_ElementChunk;
 class SMDS_Mesh;
 class SMDS_MeshCell;
@@ -67,8 +69,8 @@ protected:
   TChunkVector             myChunks;           // array of chunks of elements
   TChunkPtrSet             myChunksWithUnused; // sorted chunks having unused elements
   std::vector< vtkIdType > myVtkIDs;           // myVtkIDs[ smdsID-1 ] == vtkID
-  std::vector< int >       mySmdsIDs;          // mySmdsIDs[ vtkID ] == smdsID - 1
-  int                      myNbUsedElements;   // counter of elements
+  std::vector< smIdType >  mySmdsIDs;          // mySmdsIDs[ vtkID ] == smdsID - 1
+  smIdType                 myNbUsedElements;   // counter of elements
 
   friend class SMDS_ElementChunk;
 
@@ -78,25 +80,25 @@ public:
   virtual ~SMDS_ElementFactory();
 
   //! Return minimal ID of a non-used element
-  int GetFreeID();
+  smIdType GetFreeID();
 
   //! Return maximal ID of an used element
-  int GetMaxID();
+  smIdType GetMaxID();
 
   //! Return minimal ID of an used element
-  int GetMinID();
+  smIdType GetMinID();
 
   //! Return an element by ID. NULL if the element with the given ID is already used
-  SMDS_MeshElement* NewElement( const int id );
+  SMDS_MeshElement* NewElement( const smIdType id );
 
   //! Return a SMDS_MeshCell by ID. NULL if the cell with the given ID is already used
-  SMDS_MeshCell* NewCell( const int id ) { return static_cast<SMDS_MeshCell*>( NewElement( id )); }
+  SMDS_MeshCell* NewCell( const smIdType id ) { return static_cast<SMDS_MeshCell*>( NewElement( id )); }
 
   //! Return an used element by ID. NULL if the element with the given ID is not yet used
-  const SMDS_MeshElement* FindElement( const int id ) const;
+  const SMDS_MeshElement* FindElement( const smIdType id ) const;
 
   //! Return a number of used elements
-  int NbUsedElements() const { return myNbUsedElements; }
+  smIdType NbUsedElements() const { return myNbUsedElements; }
 
   //! Return an iterator on all element filtered using a given filter.
   //  nbElemsToReturn is used to optimize by stopping the iteration as soon as
@@ -119,14 +121,14 @@ public:
   void Free( const SMDS_MeshElement* );
 
   //! Return an SMDS ID by a Vtk one
-  int FromVtkToSmds( vtkIdType vtkID );
+  smIdType FromVtkToSmds( vtkIdType vtkID );
 
   //! De-allocate all elements
   virtual void Clear();
 
   //! Remove unused elements located not at the end of the last chunk.
   //  Minimize allocated memory
-  virtual void Compact(std::vector<int>& idCellsOldToNew);
+  virtual void Compact(std::vector<smIdType>& idCellsOldToNew);
 
   //! Return true if Compact() will change IDs of elements
   virtual bool CompactChangePointers();
@@ -149,10 +151,10 @@ public:
   ~SMDS_NodeFactory();
 
   //! Return a SMDS_MeshNode by ID. NULL if the node with the given ID is already used
-  SMDS_MeshNode* NewNode( int id ) { return (SMDS_MeshNode*) NewElement(id); }
+  SMDS_MeshNode* NewNode( smIdType id ) { return (SMDS_MeshNode*) NewElement(id); }
 
   //! Return an used node by ID. NULL if the node with the given ID is not yet used
-  const SMDS_MeshNode* FindNode( int id ) { return (const SMDS_MeshNode*) FindElement(id); }
+  const SMDS_MeshNode* FindNode( smIdType id ) { return (const SMDS_MeshNode*) FindElement(id); }
 
   //! Set a total number of sub-shapes in the main shape
   void SetNbShapes( size_t nbShapes );
@@ -168,7 +170,7 @@ public:
 
   //! Remove unused nodes located not at the end of the last chunk.
   //  Minimize allocated memory
-  virtual void Compact(std::vector<int>& idNodesOldToNew);
+  virtual void Compact(std::vector<smIdType>& idNodesOldToNew);
 
   //! Return true if Compact() will change IDs of node
   virtual bool CompactChangePointers();
@@ -277,7 +279,7 @@ struct _RangeSet
       rNext = mySet.upper_bound( theIndex );
       r     = rNext - 1;
     }
-    int          rSize = Size( r ); // range size
+    int         rSize = Size( r ); // range size
     attr_t      rValue = r->myValue;
     if ( rValue == theValue )
       return rValue; // it happens while compacting
@@ -370,7 +372,7 @@ class SMDS_ElementChunk
 {
   SMDS_ElementFactory* myFactory;     // holder of this chunk
   SMDS_MeshElement*    myElements;    // array of elements
-  int                  my1stID;       // ID of myElements[0]
+  smIdType             my1stID;       // ID of myElements[0]
   TBitSet              myMarkedSet;   // mark some elements
   TUsedRangeSet        myUsedRanges;  // ranges of used/unused elements
   TSubIDRangeSet       mySubIDRanges; // ranges of elements on the same sub-shape
@@ -381,7 +383,7 @@ class SMDS_ElementChunk
 
 public:
 
-  SMDS_ElementChunk( SMDS_ElementFactory* factory = 0, int id0 = 0 );
+  SMDS_ElementChunk( SMDS_ElementFactory* factory = 0, smIdType id0 = 0 );
   ~SMDS_ElementChunk();
 
   //! Return an element by an index [0,ChunkSize()]
@@ -391,7 +393,7 @@ public:
   const SMDS_MeshElement* Element(int index) const { return & myElements[index]; }
 
   //! Return ID of the first non-used element
-  int  GetUnusedID() const;
+  smIdType  GetUnusedID() const;
 
   //! Mark an element as used
   void UseElement( const int index );
@@ -403,10 +405,10 @@ public:
   static bool IsUsed( const _UsedRange& r ) { return r.myValue; }
 
   //! Return index of an element in the chunk
-  int Index( const SMDS_MeshElement* e ) const { return e - myElements; }
+  int Index( const SMDS_MeshElement* e ) const { return (int)( e - myElements ); }
 
   //! Return ID of the 1st element in the chunk
-  int Get1stID() const { return my1stID; }
+  smIdType Get1stID() const { return my1stID; }
 
   //! Return pointer to on-shape-parameters of a node
   TParam* GetPositionPtr( const SMDS_MeshElement* node, bool allocate=false );
@@ -429,9 +431,9 @@ public:
 
   // Methods called by SMDS_MeshElement
 
-  int  GetID( const SMDS_MeshElement* e ) const;
+  smIdType  GetID( const SMDS_MeshElement* e ) const;
 
-  int  GetVtkID( const SMDS_MeshElement* e ) const;
+  vtkIdType  GetVtkID( const SMDS_MeshElement* e ) const;
   void SetVTKID( const SMDS_MeshElement* e, const vtkIdType id );
 
   int  GetShapeID( const SMDS_MeshElement* e ) const;
@@ -563,7 +565,7 @@ SMDS_ElementFactory::GetShapeIterator( int                     shapeID,
                                        size_t                  nbElemsToReturn,
                                        const SMDS_MeshElement* sm1stElem )
 {
-  int iChunk = sm1stElem ? (( sm1stElem->GetID() - 1 ) / ChunkSize()) : 0;
+  smIdType iChunk = sm1stElem ? (( sm1stElem->GetID() - 1 ) / ChunkSize()) : 0;
   typedef _ChunkIterator< ElemIterator, TSubIDRangeSet > TChuckIterator;
   return boost::make_shared< TChuckIterator >( myChunks,
                                                & SMDS_ElementChunk::GetSubIDRangesMinMax,

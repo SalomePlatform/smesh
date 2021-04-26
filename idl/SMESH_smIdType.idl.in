@@ -1,7 +1,4 @@
-// Copyright (C) 2007-2021  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2007-2020  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,29 +17,12 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef _INCLUDE_DRIVERUNV_W_SMDS_MESH
-#define _INCLUDE_DRIVERUNV_W_SMDS_MESH
+#ifndef __SMESH_SMIDTYPE_IDL__
+#define __SMESH_SMIDTYPE_IDL__
 
-#include "SMESH_DriverUNV.hxx"
-
-#include "Driver_SMDS_Mesh.h"
-#include "SMESHDS_GroupBase.hxx"
-#include <list>
-
-
-typedef std::list<SMESHDS_GroupBase*> TGroupList;
-
-class MESHDRIVERUNV_EXPORT DriverUNV_W_SMDS_Mesh: public Driver_SMDS_Mesh
+module SMESH
 {
- public:
-
-  virtual Status Perform() override;
-
-  void AddGroup(SMESHDS_GroupBase* theGroup) { myGroups.push_back(theGroup); }
-
- private:
-  TGroupList myGroups;
+  typedef @SMESH_ID_TYPE@ smIdType;
 };
-
 
 #endif

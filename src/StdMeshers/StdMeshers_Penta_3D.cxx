@@ -147,7 +147,8 @@ bool StdMeshers_Penta_3D::Compute(SMESH_Mesh& aMesh,
 void StdMeshers_Penta_3D::MakeNodes()
 {
   const int aNbSIDs=9;
-  int i, j, k, ij, iNbN, aNodeID, aSize, iErr;
+  int i, j, k, ij, aSize, iErr;
+  smIdType iNbN, aNodeID;
   double aX, aY, aZ;
   SMESH_Block::TShapeID aSID, aSIDs[aNbSIDs]={
     SMESH_Block::ID_V000, SMESH_Block::ID_V100, 
@@ -655,7 +656,8 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
   }
   //
   // 2. Make pentahedrons
-  int aID0, k , aJ[4];
+  smIdType aID0;
+  int k , aJ[4];
   vector<const SMDS_MeshNode*> aN;
   //
   SMDS_ElemIteratorPtr itf, aItNodes;
@@ -766,7 +768,8 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
 //=======================================================================
 void StdMeshers_Penta_3D::MakeMeshOnFxy1()
 {
-  int aID0, aJ, aLevel, ij, aNbNodes, k;
+  int aJ, aLevel, ij, k;
+  smIdType aID0, aNbNodes;
   //
   SMDS_NodeIteratorPtr itn;
   SMDS_ElemIteratorPtr itf, aItNodes;
@@ -1109,12 +1112,12 @@ void StdMeshers_Penta_3D::MakeBlock()
     int iNbF = aM.Extent();
     if (iNbF == 6) {
       //
-      int nb_f1 = pMesh->GetSubMeshContaining(aM(1))->GetSubMeshDS()->NbElements();
-      int nb_f2 = pMesh->GetSubMeshContaining(aM(2))->GetSubMeshDS()->NbElements();
-      int nb_f3 = pMesh->GetSubMeshContaining(aM(3))->GetSubMeshDS()->NbElements();
-      int nb_f4 = pMesh->GetSubMeshContaining(aM(4))->GetSubMeshDS()->NbElements();
-      int nb_f5 = pMesh->GetSubMeshContaining(aM(5))->GetSubMeshDS()->NbElements();
-      int nb_f6 = pMesh->GetSubMeshContaining(aM(6))->GetSubMeshDS()->NbElements();
+      smIdType nb_f1 = pMesh->GetSubMeshContaining(aM(1))->GetSubMeshDS()->NbElements();
+      smIdType nb_f2 = pMesh->GetSubMeshContaining(aM(2))->GetSubMeshDS()->NbElements();
+      smIdType nb_f3 = pMesh->GetSubMeshContaining(aM(3))->GetSubMeshDS()->NbElements();
+      smIdType nb_f4 = pMesh->GetSubMeshContaining(aM(4))->GetSubMeshDS()->NbElements();
+      smIdType nb_f5 = pMesh->GetSubMeshContaining(aM(5))->GetSubMeshDS()->NbElements();
+      smIdType nb_f6 = pMesh->GetSubMeshContaining(aM(6))->GetSubMeshDS()->NbElements();
       //
       int has_only_quad_f1 = 1;
       int has_only_quad_f2 = 1;
@@ -1153,18 +1156,18 @@ void StdMeshers_Penta_3D::MakeBlock()
       int iNbE = aE.Extent();
       if (iNbE == 12) {
         //
-        int nb_e01 = pMesh->GetSubMeshContaining(aE(1))->GetSubMeshDS()->NbElements();
-        int nb_e02 = pMesh->GetSubMeshContaining(aE(2))->GetSubMeshDS()->NbElements();
-        int nb_e03 = pMesh->GetSubMeshContaining(aE(3))->GetSubMeshDS()->NbElements();
-        int nb_e04 = pMesh->GetSubMeshContaining(aE(4))->GetSubMeshDS()->NbElements();
-        int nb_e05 = pMesh->GetSubMeshContaining(aE(5))->GetSubMeshDS()->NbElements();
-        int nb_e06 = pMesh->GetSubMeshContaining(aE(6))->GetSubMeshDS()->NbElements();
-        int nb_e07 = pMesh->GetSubMeshContaining(aE(7))->GetSubMeshDS()->NbElements();
-        int nb_e08 = pMesh->GetSubMeshContaining(aE(8))->GetSubMeshDS()->NbElements();
-        int nb_e09 = pMesh->GetSubMeshContaining(aE(9))->GetSubMeshDS()->NbElements();
-        int nb_e10 = pMesh->GetSubMeshContaining(aE(10))->GetSubMeshDS()->NbElements();
-        int nb_e11 = pMesh->GetSubMeshContaining(aE(11))->GetSubMeshDS()->NbElements();
-        int nb_e12 = pMesh->GetSubMeshContaining(aE(12))->GetSubMeshDS()->NbElements();
+        smIdType nb_e01 = pMesh->GetSubMeshContaining(aE(1))->GetSubMeshDS()->NbElements();
+        smIdType nb_e02 = pMesh->GetSubMeshContaining(aE(2))->GetSubMeshDS()->NbElements();
+        smIdType nb_e03 = pMesh->GetSubMeshContaining(aE(3))->GetSubMeshDS()->NbElements();
+        smIdType nb_e04 = pMesh->GetSubMeshContaining(aE(4))->GetSubMeshDS()->NbElements();
+        smIdType nb_e05 = pMesh->GetSubMeshContaining(aE(5))->GetSubMeshDS()->NbElements();
+        smIdType nb_e06 = pMesh->GetSubMeshContaining(aE(6))->GetSubMeshDS()->NbElements();
+        smIdType nb_e07 = pMesh->GetSubMeshContaining(aE(7))->GetSubMeshDS()->NbElements();
+        smIdType nb_e08 = pMesh->GetSubMeshContaining(aE(8))->GetSubMeshDS()->NbElements();
+        smIdType nb_e09 = pMesh->GetSubMeshContaining(aE(9))->GetSubMeshDS()->NbElements();
+        smIdType nb_e10 = pMesh->GetSubMeshContaining(aE(10))->GetSubMeshDS()->NbElements();
+        smIdType nb_e11 = pMesh->GetSubMeshContaining(aE(11))->GetSubMeshDS()->NbElements();
+        smIdType nb_e12 = pMesh->GetSubMeshContaining(aE(12))->GetSubMeshDS()->NbElements();
         //
         int nb_ok = 0 ;
         //
@@ -1417,11 +1420,11 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
   if ( sm1->NbNodes() * smb->NbNodes() != smFace->NbNodes() ) {
     // check quadratic case
     if ( myCreateQuadratic ) {
-      int n1 = sm1->NbNodes()/2;
-      int n2 = smb->NbNodes()/2;
-      int n3 = sm1->NbNodes() - n1;
-      int n4 = smb->NbNodes() - n2;
-      int nf = sm1->NbNodes()*smb->NbNodes() - n3*n4;
+      smIdType n1 = sm1->NbNodes()/2;
+      smIdType n2 = smb->NbNodes()/2;
+      smIdType n3 = sm1->NbNodes() - n1;
+      smIdType n4 = smb->NbNodes() - n2;
+      smIdType nf = sm1->NbNodes()*smb->NbNodes() - n3*n4;
       if( nf != smFace->NbNodes() ) {
         MESSAGE( "Wrong nb face nodes: " <<
                  sm1->NbNodes()<<" "<<smb->NbNodes()<<" "<<smFace->NbNodes());
@@ -1435,8 +1438,8 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
     }
   }
   // IJ size
-  int vsize = sm1->NbNodes() + 2;
-  int hsize = smb->NbNodes() + 2;
+  smIdType vsize = sm1->NbNodes() + 2;
+  smIdType hsize = smb->NbNodes() + 2;
   if(myCreateQuadratic) {
     vsize = vsize - sm1->NbNodes()/2 -1;
     hsize = hsize - smb->NbNodes()/2 -1;
@@ -1870,16 +1873,16 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
       NumBase = 0;
       break;
     }
-    std::vector<int> aVec = (*anIt).second;
-    int nbtri = Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
-    int nbqua = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+    std::vector<smIdType> aVec = (*anIt).second;
+    smIdType nbtri = std::max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
+    smIdType nbqua = std::max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
     if( nbtri>0 && nbqua==0 ) {
       NumBase = i;
     }
   }
 
   if(NumBase==0) {
-    std::vector<int> aResVec(SMDSEntity_Last);
+    std::vector<smIdType> aResVec(SMDSEntity_Last);
     for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
     aResMap.insert(std::make_pair(sm,aResVec));
@@ -1897,8 +1900,8 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
     if( sm ) {
       MapShapeNbElemsItr anIt = aResMap.find(sm);
       if( anIt == aResMap.end() ) continue;
-      std::vector<int> aVec = (*anIt).second;
-      nb1d += Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
+      std::vector<smIdType> aVec = (*anIt).second;
+      nb1d += std::max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
     }
   }
   // find face opposite to base face
@@ -1923,14 +1926,14 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
     if( i==OppNum || i==NumBase ) continue;
     MapShapeNbElemsItr anIt = aResMap.find( meshFaces[i-1] );
     if( anIt == aResMap.end() ) continue;
-    std::vector<int> aVec = (*anIt).second;
-    nb2d += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+    std::vector<smIdType> aVec = (*anIt).second;
+    nb2d += std::max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
   }
 
   MapShapeNbElemsItr anIt = aResMap.find( meshFaces[NumBase-1] );
-  std::vector<int> aVec = (*anIt).second;
-  int nb2d_face0 = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
-  int nb0d_face0 = aVec[SMDSEntity_Node];
+  std::vector<smIdType> aVec = (*anIt).second;
+  smIdType nb2d_face0 = std::max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
+  smIdType nb0d_face0 = aVec[SMDSEntity_Node];
 
   anIt = aResMap.find( meshFaces[OppNum-1] );
   for(i=SMDSEntity_Node; i<SMDSEntity_Last; i++)
@@ -1939,7 +1942,7 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
   SMESH_MesherHelper aTool (aMesh);
   bool _quadraticMesh = aTool.IsQuadraticSubMesh(aShape);
 
-  std::vector<int> aResVec(SMDSEntity_Last);
+  std::vector<smIdType> aResVec(SMDSEntity_Last);
   for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
   if(_quadraticMesh) {
     aResVec[SMDSEntity_Quad_Penta] = nb2d_face0 * ( nb2d/nb1d );
