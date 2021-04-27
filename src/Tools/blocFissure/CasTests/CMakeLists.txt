@@ -23,7 +23,7 @@
 SET(plugin_SCRIPTS
   __init__.py
   blocFissureTest.py
-  cubeAngle2.py
+  cubeAngle_2.py
   cubeAngle.py
   cubeCoin.py
   cubeMilieu.py

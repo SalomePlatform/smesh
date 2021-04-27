@@ -4,96 +4,102 @@
 Test cases
 #######################
 
-A base of 30 test cases guarantees the correct functioning of « Bloc Fissure ». 12 cases are dedicated to :ref:`cracked bended pipes <pipeTC>` and the others 13 are for other :ref:`generic geometries <genericTC>`. They are shown here in order to illustrate cases on which « Bloc Fissure » works.
+A base of 28 test cases guarantees the correct functioning of « Bloc Fissure ». 12 cases are dedicated to :ref:`cracked bended pipes <pipeTC>` and the others 16 are for other :ref:`generic geometries <genericTC>`. They are shown here in order to illustrate cases on which « Bloc Fissure » works.
 
 .. _genericTC:
 
 Generic cases
 ===============================
 
-All 13 cases are shown Table 2. Two views show the whole cracked structure and a zoom onto the crack with its tore.
+All 16 cases are shown Table 2. Two views show the whole cracked structure and a zoom onto the crack with its tore.
 
-+-------------------------------------------+----------------------------------------------+
-| CubeAngle                                                                                |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/01_CubeAngle.png         | .. image:: images/01_CubeAngle_2.png         |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| CubeAngle2                                                                               |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/02_CubeAngle2.png        | .. image:: images/02_CubeAngle2_2.png        |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| cylindre                                                                                 |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/03_cylindre.png          | .. image:: images/03_cylindre_2.png          |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| cylindre2                                                                                |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/04_cylindre2.png         | .. image:: images/04_cylindre2_2.png         |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| disque                                                                                   |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/05_disque.png            | .. image:: images/05_disque_2.png            |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| ellipse1                                                                                 |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/06_ellipse1.png          | .. image:: images/06_ellipse1_2.png          |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| ellipse2 (tilted crack)                                                                  |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/07_ellipse2.png          | .. image:: images/07_ellipse2_2.png          |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| eprouvetteCourbe                                                                         |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/08_eprouvetteCourbe.png  | .. image:: images/08_eprouvetteCourbe_2.png  |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| eprouvetteDroite                                                                         |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/09_eprouvetteDroite.png  | .. image:: images/09_eprouvetteDroite_2.png  |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| eprouvetteDroite2                                                                        |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/10_eprouvetteDroite2.png | .. image:: images/10_eprouvetteDroite2_2.png |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| faceGauche                                                                               |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/11_faceGauche.png        | .. image:: images/11_faceGauche_2.png        |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| faceGauche2                                                                              |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/12_faceGauche2.png       | .. image:: images/12_faceGauche2_2.png       |
-|   :height: 300                            |    :height: 300                              |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| vis (Crack is in the radius filet between the screw head and the screw shank)            |
-+-------------------------------------------+----------------------------------------------+
-|.. image:: images/13_vis_1.png             | .. image:: images/13_vis_1_2.png             |
-|   :width: 400                             |    :width: 400                               |
-|   :align: center                          |    :align: center                            |
-+-------------------------------------------+----------------------------------------------+
-| tube                                                                                     |
-+-------------------------------------------+----------------------------------------------+
++--------------------------------------------+-----------------------------------------------+
+| CubeAngle                                                                                  |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/01_CubeAngle.png          | .. image:: images/01_CubeAngle_a.png          |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| CubeAngle_2                                                                                |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/02_CubeAngle_2.png        | .. image:: images/02_CubeAngle_2_a.png        |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| cubeCoin                                                                                   |
++--------------------------------------------+-----------------------------------------------+
+| cubeMilieu                                                                                 |
++--------------------------------------------+-----------------------------------------------+
+| cubeTransverse                                                                             |
++--------------------------------------------+-----------------------------------------------+
+| cylindre                                                                                   |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/03_cylindre.png           | .. image:: images/03_cylindre_a.png           |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| cylindre_2                                                                                 |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/04_cylindre_2.png         | .. image:: images/04_cylindre_2_a.png         |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| disquePerce                                                                                |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/05_disque.png             | .. image:: images/05_disque_a.png             |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| ellipse_1                                                                                  |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/06_ellipse_1.png          | .. image:: images/06_ellipse_1_a.png          |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| ellipse_2 (tilted crack)                                                                   |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/07_ellipse_2.png          | .. image:: images/07_ellipse_2_a.png          |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| eprouvetteCourbe                                                                           |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/08_eprouvetteCourbe.png   | .. image:: images/08_eprouvetteCourbe_a.png   |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| eprouvetteDroite                                                                           |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/09_eprouvetteDroite.png   | .. image:: images/09_eprouvetteDroite_a.png   |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| eprouvetteDroite_2                                                                         |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/10_eprouvetteDroite_2.png | .. image:: images/10_eprouvetteDroite_2_a.png |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| faceGauche                                                                                 |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/11_faceGauche.png         | .. image:: images/11_faceGauche_2.png         |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| faceGauche_2                                                                               |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/12_faceGauche_2.png       | .. image:: images/12_faceGauche_2_a.png       |
+|   :height: 300                             |    :height: 300                               |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| vis (Crack is in the radius filet between the screw head and the screw shank)              |
++--------------------------------------------+-----------------------------------------------+
+|.. image:: images/13_vis_1.png              | .. image:: images/13_vis_1_2.png              |
+|   :width: 400                             |    :width: 400                                 |
+|   :align: center                           |    :align: center                             |
++--------------------------------------------+-----------------------------------------------+
+| tube                                                                                       |
++--------------------------------------------+-----------------------------------------------+
 
 .. _pipeTC:
 
@@ -123,16 +129,14 @@ coude_0 can be computed using this file for the data:
 
 « Bloc Fissure » is very efficient for the case of bended pipes. The generation of the geometry and the crack insertion takes only around 15s.
 
-Running test cases
+Data for the test cases
 =====================================
 
 All the files for these test cases are stored in the directory of the installation of SALOME:
 
 ``Salome-VXXXX_package-YY/modules/SMESH_VXXXX/lib/python3.6/site-packages/salome/blocFissure``
 
-The test cases can be runned either through the python window of the SALOME GUI or with a python script.
-
-0) **Generate med and breps files.**::
+The set of the med, xao and brep files can be created by the following importation:
 
     from blocFissure.materielCasTests import genereMateriel
 
@@ -142,48 +146,36 @@ Once the files are generated, they are saved into the directory of the installat
 
 There is no need to generate them again.
 
-1) **To execute all test cases**::
+To check the installation of salome, the test cases can be computed by the salome test process::
 
-    from blocFissure.CasTests import execution_Cas
+    salome -test blocFissure
 
-2) **To execute only selected test cases**:
+Running test cases
+=====================================
 
-modify the file ``CasTests/execution_Cas.py`` and change::
+The test cases can be runned by the following instructions::
 
-    runall = False. #old : True
+    from blocFissure.CasTests.blocFissureTest import blocFissureTest
+    BLOCFISSURE_TEST = blocFissureTest(list_of_cases)
+    MESSAGE_ERREUR = BLOCFISSURE_TEST.lancement()
+    sys.stdout.write(MESSAGE_ERREUR)
+    del BLOCFISSURE_TEST
 
-And change from 0 to 1 of the index of the test you want to launch::
+If ``list_of_cases`` is an empty list, all the cases are computed.
 
-    torun = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-then launch the test cases::
-
-    from blocFissure.CasTests import execution_Cas
-
-The index of each test is the position of the test in the following table, from 0 for cubeAngle, 1 for cubeAngle2,
-2 for cubeCoin... from top to bottom, then from left to right.
+If not, ``list_of_cases`` is made of the list of the numbers and/or the name of the requested case. The index of each test is the position of the test in the following table, from 0 for cubeAngle, 1 for cubeAngle_2, 2 for cubeCoin... from top to bottom, then from left to right.
 
 +--------------------+--------------------+--------------------+-----------------+-----------------+
 | cubeAngle          | cylindre_2         | eprouvetteDroite_2 | fissureCoude_3  | fissureCoude_9  |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cubeAngle2         | disquePerce        | faceGauche         | fissureCoude_4  | fissure_Coude   |
+| cubeAngle_2        | disquePerce        | faceGauche         | fissureCoude_4  | fissure_Coude   |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
 | cubeCoin           | ellipse_1          | faceGauche_2       | fissureCoude_5  | fissure_Coude_4 |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
 | cubeMilieu         | ellipse_2          | fissureCoude_1     | fissureCoude_6  | vis_1           |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-| cubeTransverse     | eprouvetteCourbe   | fissureCoude_10    | fissureCoude_7  | tube            |
+| cubeTransverse     | eprouvetteCourbe   | fissureCoude_10    | fissureCoude_7  |                 |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
 | cylindre           | eprouvetteDroite   | fissureCoude_2     | fissureCoude_8  |                 |
 +--------------------+--------------------+--------------------+-----------------+-----------------+
-
-3) **To execute only one test case**::
-
-    from blocFissure.CasTests.[TEST_CASE_NAME] import [TEST_CASE_NAME]
-
-    [TEST_CASE_NAME](0).executeProbleme()
-
-[TEST_CASE_NAME] is the name of the test case in the previous list. Note that the test cases fissureCoude_4 and fissure_Coude_4 are very similar.
-
-
 

@@ -17,17 +17,17 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-__revision__ = "V03.01"
+__revision__ = "V03.02"
 
 """Lancement des cas-tests de blocFissure
 
 Temps par type de matériel :
-. cubeAngle : 24s ["cubeAngle", "cubeAngle2"])
+. cubeAngle : 24s ["cubeAngle", "cubeAngle_2"])
 . cubeFin : 42s ["cubeCoin", "cubeMilieu", "cubeTransverse"]
 . decoupeCylindre : 8s ["cylindre", "cylindre_2"]
-. disque_perce (+ ellipse_disque) : 9s ["disque_perce"]
+. disquePerce (+ ellipse_disque) : 9s ["disquePerce"]
 . fissureGauche : 26s ["faceGauche"]
-. fissureGauche2 (+ ellipse + ellipse_probleme): 22s ["ellipse_1", "ellipse_2", "faceGauche_2"]
+. fissureGauche_2 (+ ellipse + ellipse_probleme): 22s ["ellipse_1", "ellipse_2", "faceGauche_2"]
 . eprouvetteCourbe : 22s ["eprouvetteCourbe"]
 . eprouvetteDroite : 31s ["eprouvetteDroite", "eprouvetteDroite_2"]
 . vis : 9s ["vis"]
@@ -66,7 +66,7 @@ print ("TORUN = {} # PB".format(TORUNPB))
 # Numéro de référence associé à chaque problème défini par le nom de son fichier dans le répertoire CasTests
 NREF_PB = dict()
 NREF_PB["cubeAngle"] = 0
-NREF_PB["cubeAngle2"] = 1
+NREF_PB["cubeAngle_2"] = 1
 NREF_PB["cubeCoin"] = 2
 NREF_PB["cubeMilieu"] = 3
 NREF_PB["cubeTransverse"] = 4
@@ -198,8 +198,8 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
 
     n_cas = 1
     if n_cas in self.l_cas:
-      from blocFissure.CasTests.cubeAngle2 import cubeAngle2
-      self.l_problemes.append(cubeAngle2(n_cas))
+      from blocFissure.CasTests.cubeAngle_2 import cubeAngle_2
+      self.l_problemes.append(cubeAngle_2(n_cas))
       self.l_materiels.append("cubeAngle")
 
     n_cas = 2
@@ -240,7 +240,7 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
       from blocFissure.CasTests import disquePerce
       self.l_problemes.append(casStandard(disquePerce.dicoParams, disquePerce.referencesMaillageFissure, n_cas))
       self.d_nom_probleme[n_cas] = "disquePerce"
-      self.l_materiels.append("disque_perce")
+      self.l_materiels.append("disquePerce")
       self.l_materiels.append("ellipse_disque")
 
     n_cas = 8
@@ -248,14 +248,14 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
       from blocFissure.CasTests.ellipse_1 import ellipse_1
       self.l_problemes.append(ellipse_1(n_cas))
       self.l_materiels.append("ellipse")
-      self.l_materiels.append("fissureGauche2")
+      self.l_materiels.append("fissureGauche_2")
 
     n_cas = 9
     if n_cas in self.l_cas:
       from blocFissure.CasTests.ellipse_2 import ellipse_2
       self.l_problemes.append(ellipse_2(n_cas))
       self.l_materiels.append("ellipse_probleme")
-      self.l_materiels.append("fissureGauche2")
+      self.l_materiels.append("fissureGauche_2")
 
     n_cas = 10
     if n_cas in self.l_cas:
@@ -285,7 +285,7 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
     if n_cas in self.l_cas:
       from blocFissure.CasTests.faceGauche_2 import faceGauche_2
       self.l_problemes.append(faceGauche_2(n_cas))
-      self.l_materiels.append("fissureGauche2")
+      self.l_materiels.append("fissureGauche_2")
 
     n_cas = 15
     if n_cas in self.l_cas:
@@ -385,8 +385,8 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
     if "decoupeCylindre" in self.l_materiels:
       from blocFissure.materielCasTests import decoupeCylindre
 
-    if "disque_perce" in self.l_materiels:
-      from blocFissure.materielCasTests import disque_perce
+    if "disquePerce" in self.l_materiels:
+      from blocFissure.materielCasTests import disquePerce
 
     if "ellipse_disque" in self.l_materiels:
       from blocFissure.materielCasTests import ellipse_disque
@@ -400,8 +400,8 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
     if "fissureGauche" in self.l_materiels:
       from blocFissure.materielCasTests import fissureGauche
 
-    if "fissureGauche2" in self.l_materiels:
-      from blocFissure.materielCasTests import fissureGauche2
+    if "fissureGauche_2" in self.l_materiels:
+      from blocFissure.materielCasTests import fissureGauche_2
 
     if "eprouvetteCourbe" in self.l_materiels:
       from blocFissure.materielCasTests import eprouvetteCourbe

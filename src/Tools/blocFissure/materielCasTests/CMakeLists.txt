@@ -25,13 +25,13 @@ SET(plugin_SCRIPTS
   cubeAngle.py
   cubeFin.py
   decoupeCylindre.py
-  disque_perce.py
+  disquePerce.py
   ellipse_disque.py
   ellipse_probleme.py
   ellipse.py
   eprouvetteCourbe.py
   eprouvetteDroite.py
-  fissureGauche2.py
+  fissureGauche_2.py
   fissureGauche.py
   genereMateriel.py
   tube.py

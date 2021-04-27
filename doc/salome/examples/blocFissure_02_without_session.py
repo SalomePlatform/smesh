@@ -6,7 +6,7 @@ Cas tests basés sur les matériels :
 . decoupeCylindre
 . disque_perce
 . fissureGauche
-. fissureGauche2
+. fissureGauche_2
 + ellipse, ellipse_disque, ellipse_probleme
 
 Copyright 2021 EDF
@@ -14,7 +14,7 @@ Gérald NICOLAS
 +33.1.78.19.43.52
 """
 
-__revision__ = "V02.03"
+__revision__ = "V02.04"
 
 import os
 import sys
@@ -25,10 +25,10 @@ salome.standalone()
 salome.salome_init()
 
 from blocFissure.CasTests.blocFissureTest import blocFissureTest
-BLOCFISSURE_TEST = blocFissureTest(["cylindre", "cylindre_2", "disquePerce", "faceGauche","ellipse_1", "ellipse_2", "faceGauche_2"])
-#BLOCFISSURE_TEST = blocFissureTest(["cylindre", "cylindre_2", "disquePerce", "faceGauche","ellipse_1", "ellipse_2"])
+BLOCFISSURE_TEST = blocFissureTest(["cylindre", "cylindre_2", "disquePerce", "faceGauche","ellipse_1", "ellipse_2"])
+#BLOCFISSURE_TEST = blocFissureTest(["cylindre", "cylindre_2", "disquePerce", "faceGauche","ellipse_1", "ellipse_2", "faceGauche_2"])
 MESSAGE_ERREUR = BLOCFISSURE_TEST.lancement()
-sys.stdout.write(MESSAGE_ERREUR)
+#sys.stdout.write(MESSAGE_ERREUR)
 del BLOCFISSURE_TEST
 
 # Diagnostic

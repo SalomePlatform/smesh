@@ -23,8 +23,8 @@
 import os
 from blocFissure import gmu
 
-dicoParams = dict(nomCas            = 'disque',
-                  nomProbleme       = "disque",
+dicoParams = dict(nomCas            = 'disquePerce',
+                  nomProbleme       = "disquePerce",
                   maillageSain      = os.path.join(gmu.pathBloc, "materielCasTests", "disque.med"),
                   CAOFaceFissure    = os.path.join(gmu.pathBloc, "materielCasTests", "ellipse_disque.brep"),
                   edgeFiss          = [3],

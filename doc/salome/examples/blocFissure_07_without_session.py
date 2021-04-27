@@ -11,7 +11,7 @@ Gérald NICOLAS
 +33.1.78.19.43.52
 """
 
-__revision__ = "V02.03"
+__revision__ = "V02.04"
 
 import os
 import sys
@@ -22,8 +22,8 @@ salome.standalone()
 salome.salome_init()
 
 from blocFissure.CasTests.blocFissureTest import blocFissureTest
-BLOCFISSURE_TEST = blocFissureTest(["vis"])
-#BLOCFISSURE_TEST = blocFissureTest(["vis", "tube"])
+BLOCFISSURE_TEST = blocFissureTest(["vis_1"])
+#BLOCFISSURE_TEST = blocFissureTest(["vis_1", "tube"])
 MESSAGE_ERREUR = BLOCFISSURE_TEST.lancement()
 #sys.stdout.write(MESSAGE_ERREUR)
 del BLOCFISSURE_TEST
