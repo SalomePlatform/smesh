@@ -19,7 +19,7 @@
 #
 """Géométries et maillages de base nécessaires aux cas-tests :
 . cubeAngle
-. cubeAngle2
+. cubeAngle_2
 """
 
 import os

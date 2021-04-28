@@ -34,7 +34,7 @@ from . import initLog
 from .putName import putName
 
 def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
-                    facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, \
+                    facesPeaux, edCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, \
                     bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives, \
                     edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad, \
                     mailleur="MeshGems", nro_cas=None):
@@ -91,13 +91,13 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
       # --- edges de bord de la face de filling
       filling = facesDefaut[ifil]
       edgesFilling = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], False)
-      groupEdgesBordPeau = geompy.CreateGroup(filling, geompy.ShapeType["EDGE"])
-      geompy.UnionList(groupEdgesBordPeau, edgesFilling)
-      geomPublishInFather(initLog.always, filling, groupEdgesBordPeau, "EdgesBords", nro_cas)
+      gpedgeBord[ifil] = geompy.CreateGroup(filling, geompy.ShapeType["EDGE"])
+      geompy.UnionList(gpedgeBord[ifil], edgesFilling)
+      geomPublishInFather(initLog.always, filling, gpedgeBord[ifil], "EdgesBords", nro_cas)
 
       logging.info("UseExisting1DElements sur la géométrie '%s' avec les mailles de '%s'", \
-                    groupEdgesBordPeau.GetName(), bordsLibres.GetName())
-      algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
+                    gpedgeBord[ifil].GetName(), bordsLibres.GetName())
+      algo1d = meshFacePeau.UseExisting1DElements(geom=gpedgeBord[ifil])
       putName(algo1d.GetSubMesh(), "bordsLibres", ifil, nro_cas)
       hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
       putName(hypo1d, "SourceEdges_{}".format(bordsLibres.GetName()), ifil, nro_cas)
@@ -105,21 +105,20 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
     else:
 
       logging.info("face de peau %d coupée par la fissure", ifil)
-      edgesCircPeau      = edCircPeau[ifil] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
-      _                  = ptCircPeau[ifil] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
-      groupEdgesBordPeau = gpedgeBord[ifil] # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
-      bordsVifs          = gpedgeVifs[ifil] # pour chaque face de peau : groupe subshape des edges aux bords correspondant à des arêtes vives
-      edgesFissurePeau   = edFissPeau[ifil] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
+      # edCircPeau[ifil] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
+      # gpedgeBord[ifil] : pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
+      # gpedgeVifs[ifil] : pour chaque face de peau : groupe subshape des edges aux bords correspondant à des arêtes vives
+      # edFissPeau[ifil] : pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
 
       logging.info("UseExisting1DElements sur la géométrie '%s' avec les mailles de '%s'", \
-                    groupEdgesBordPeau.GetName(), bordsLibres.GetName())
-      algo1d = meshFacePeau.UseExisting1DElements(geom=groupEdgesBordPeau)
+                    gpedgeBord[ifil].GetName(), bordsLibres.GetName())
+      algo1d = meshFacePeau.UseExisting1DElements(geom=gpedgeBord[ifil])
       putName(algo1d.GetSubMesh(), "bordsLibres", ifil, nro_cas)
       hypo1d = algo1d.SourceEdges([ bordsLibres ],0,0)
       putName(hypo1d, "SourceEdges_{}".format(bordsLibres.GetName()), i_pref=nro_cas)
 
-      objet = geompy.MakeCompound(edgesFissurePeau)
-      geomPublishInFather(initLog.always, facePeau, objet, "edgesFissurePeau")
+      objet = geompy.MakeCompound(edFissPeau[ifil])
+      geomPublishInFather(initLog.always, facePeau, objet, "edFissPeau_{}".format(ifil))
       logging.info("UseExisting1DElements sur la géométrie '%s' avec les mailles de '%s'", \
                     objet.GetName(), grpEdgesPeauFissureExterne.GetName())
       algo1d = meshFacePeau.UseExisting1DElements(geom=objet)
@@ -127,15 +126,15 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
       hypo1d = algo1d.SourceEdges([ grpEdgesPeauFissureExterne ],0,0)
       putName(hypo1d, "SourceEdges_{}".format(grpEdgesPeauFissureExterne.GetName()), i_pref=nro_cas)
 
-      if bordsVifs is not None:
+      if gpedgeVifs[ifil] is not None:
         logging.info("UseExisting1DElements sur la géométrie '%s' avec les mailles de '%s'", \
-                      bordsVifs.GetName(), grpAretesVives.GetName())
-        algo1d = meshFacePeau.UseExisting1DElements(geom=bordsVifs)
-        putName(algo1d.GetSubMesh(), "bordsVifs", ifil, nro_cas)
+                      gpedgeVifs[ifil].GetName(), grpAretesVives.GetName())
+        algo1d = meshFacePeau.UseExisting1DElements(geom=gpedgeVifs[ifil])
+        putName(algo1d.GetSubMesh(), "gpedgeVifs", ifil, nro_cas)
         hypo1d = algo1d.SourceEdges([ grpAretesVives ],0,0)
         putName(hypo1d, "SourceEdges_{}".format(grpAretesVives.GetName()), i_pref=nro_cas)
 
-      for i_aux, edgeCirc in enumerate(edgesCircPeau):
+      for i_aux, edgeCirc in enumerate(edCircPeau[ifil]):
         texte = "i_aux = {}".format(i_aux)
         logging.info(texte)
         if edgeCirc is not None:

@@ -132,8 +132,8 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
 
   # --- inventaire des faces de peau coupées par la fissure
 
-  ptEdgeFond, fsFissuExt, edFisExtPe, edFisExtPi, \
-    facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, ptFisExtPi, \
+  ptEdgeFond, fsFissuExt, edFisExtPe, edFisExtPi, facesPeaux, edCircPeau, \
+    gpedgeBord, gpedgeVifs, edFissPeau, ptFisExtPi, \
     edgeRadFacePipePeau, facesPipePeau = \
     construitFissureGenerale_b( partitionsPeauFissFond, \
                                 edgesPipeFiss, edgesFondFiss, wireFondFiss, aretesVivesC, \
@@ -201,7 +201,7 @@ def construitFissureGenerale(shapesFissure, shapeFissureParams, \
   # --- maillage faces de peau
 
   meshesFacesPeau = mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut, \
-                                    facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, \
+                                    facesPeaux, edCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, \
                                     bordsLibres, grpEdgesPeauFissureExterne, grpAretesVives, \
                                     edgesCircPipeGroup, dmoyen, rayonPipe, nbsegRad, \
                                     mailleur, nro_cas)

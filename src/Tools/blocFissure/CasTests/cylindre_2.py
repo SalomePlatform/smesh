@@ -33,7 +33,7 @@ from .cylindre import cylindre
 class cylindre_2(cylindre):
   """problème de fissure plane sur cylindre hexa, fond de fissure complexe : polyline"""
 
-  nomProbleme = "cylindre2"
+  nomProbleme = "cylindre_2"
 
   # ---------------------------------------------------------------------------
   def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
