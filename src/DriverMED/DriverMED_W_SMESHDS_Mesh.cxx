@@ -786,7 +786,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
       // iterator on elements of a current type
       SMDS_ElemIteratorPtr elemIterator;
-      int iElem = 0;
+      TInt iElem = 0;
 
       // Treat POLYGONs
       // ---------------
