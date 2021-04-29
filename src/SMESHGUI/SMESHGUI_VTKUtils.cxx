@@ -1226,8 +1226,8 @@ namespace SMESH
 
   int GetEdgeNodes(SVTK_Selector* theSelector,
                    const TVisualObjPtr& theVisualObject,
-                   smIdType& theId1,
-                   smIdType& theId2)
+                   ::smIdType& theId1,
+                   ::smIdType& theId2)
   {
     const SALOME_ListIO& selected = theSelector->StoredIObjects();
 
@@ -1243,9 +1243,9 @@ namespace SMESH
     if ( aMapIndex.Extent() != 2 )
       return -1;
 
-    smIdType anObjId = -1, anEdgeNum = -1;
-    for ( smIdType i = 1; i <= aMapIndex.Extent(); i++ ) {
-      smIdType aVal = aMapIndex( i );
+    ::smIdType anObjId = -1, anEdgeNum = -1;
+    for ( ::smIdType i = 1; i <= aMapIndex.Extent(); i++ ) {
+      ::smIdType aVal = aMapIndex( i );
       if ( aVal > 0 )
         anObjId = aVal;
       else
@@ -1343,7 +1343,7 @@ namespace SMESH
   }
 
 
-  int GetEdgeNodes( LightApp_SelectionMgr* theMgr, smIdType& theId1, smIdType& theId2 )
+  int GetEdgeNodes( LightApp_SelectionMgr* theMgr, ::smIdType& theId1, ::smIdType& theId2 )
   {
     SALOME_ListIO selected; theMgr->selectedObjects( selected );
 
@@ -1363,9 +1363,9 @@ namespace SMESH
     if ( aMapIndex.Extent() != 2 )
       return -1;
 
-    smIdType anObjId = -1, anEdgeNum = -1;
-    for ( smIdType i = 1; i <= aMapIndex.Extent(); i++ ) {
-      smIdType aVal = aMapIndex( i );
+    ::smIdType anObjId = -1, anEdgeNum = -1;
+    for ( ::smIdType i = 1; i <= aMapIndex.Extent(); i++ ) {
+      ::smIdType aVal = aMapIndex( i );
       if ( aVal > 0 )
         anObjId = aVal;
       else

@@ -22,10 +22,6 @@
 //  File   : SMESH_Measurements_i.cxx
 //  Author : Pavel TELKOV, Open CASCADE S.A.S. (pavel.telkov@opencascade.com)
 
-#ifdef WIN32
-#define NOMINMAX
-#endif
-
 #include "SMESH_Measurements_i.hxx"
 
 #include "SMDS_ElemIterator.hxx"
@@ -40,7 +36,7 @@
 
 #include <cmath>
 
-using namespace SMESH;
+//using namespace SMESH;
 
 /**
  * this local function to avoid uninitialized fields
@@ -80,7 +76,7 @@ SMESH::Measurements_ptr SMESH_Gen_i::CreateMeasurements()
 // name    : Measurements_i
 // Purpose : Constructor
 //=======================================================================
-Measurements_i::Measurements_i()
+SMESH::Measurements_i::Measurements_i()
 : SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
   //Base class Salome_GenericObject do it inmplicitly by overriding PortableServer::POA_ptr _default_POA() method
@@ -92,7 +88,7 @@ Measurements_i::Measurements_i()
 // name    : ~Measurements_i
 // Purpose : Destructor
 //=======================================================================
-Measurements_i::~Measurements_i()
+SMESH::Measurements_i::~Measurements_i()
 {
   //TPythonDump()<<this<<".UnRegister()";
 }
@@ -152,7 +148,7 @@ static SMESHDS_Mesh* getMesh(SMESH::SMESH_IDSource_ptr theSource)
   if (!CORBA::is_nil( theSource ))
   {
     SMESH::SMESH_Mesh_var mesh = theSource->GetMesh();
-    SMESH_Mesh_i* anImplPtr = DownCast<SMESH_Mesh_i*>( mesh );
+    SMESH_Mesh_i* anImplPtr = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
     if (anImplPtr)
       return anImplPtr->GetImpl().GetMeshDS();
   }
@@ -187,7 +183,7 @@ static double getNumericalValue(SMESH::SMESH_IDSource_ptr            theSource,
 // name    : MinDistance
 // Purpose : minimal distance between two given entities
 //=======================================================================
-SMESH::Measure Measurements_i::MinDistance
+SMESH::Measure SMESH::Measurements_i::MinDistance
  (SMESH::SMESH_IDSource_ptr theSource1,
   SMESH::SMESH_IDSource_ptr theSource2)
 {
@@ -289,7 +285,7 @@ static void enlargeBoundingBox(const SMESH::SMESH_IDSource_ptr theObject,
   if ( !aMesh )
     return;
 
-  if ( DownCast<SMESH_Mesh_i*>( theObject )) // theObject is mesh
+  if (SMESH::DownCast<SMESH_Mesh_i*>( theObject )) // theObject is mesh
   {
     for (SMDS_NodeIteratorPtr aNodeIter = aMesh->nodesIterator(); aNodeIter->more(); )
       enlargeBoundingBox( aNodeIter->next(), theMeasure);
@@ -318,7 +314,7 @@ static void enlargeBoundingBox(const SMESH::SMESH_IDSource_ptr theObject,
 // name    : BoundingBox
 // Purpose : compute common bounding box of entities
 //=======================================================================
-SMESH::Measure Measurements_i::BoundingBox (const SMESH::ListOfIDSources& theSources)
+SMESH::Measure SMESH::Measurements_i::BoundingBox (const SMESH::ListOfIDSources& theSources)
 {
   SMESH::Measure aMeasure;
   initMeasure(aMeasure);
@@ -334,7 +330,7 @@ SMESH::Measure Measurements_i::BoundingBox (const SMESH::ListOfIDSources& theSou
 // name    : Length
 // Purpose : sum of length of 1D elements of the source
 //=======================================================================
-double Measurements_i::Length(SMESH::SMESH_IDSource_ptr theSource)
+double SMESH::Measurements_i::Length(SMESH::SMESH_IDSource_ptr theSource)
 {
   return getNumericalValue( theSource, SMESH::Controls::NumericalFunctorPtr(new SMESH::Controls::Length()) );
 }
@@ -343,7 +339,7 @@ double Measurements_i::Length(SMESH::SMESH_IDSource_ptr theSource)
 // name    : Area
 // Purpose : sum of area of 2D elements of the source
 //=======================================================================
-double Measurements_i::Area(SMESH::SMESH_IDSource_ptr theSource)
+double SMESH::Measurements_i::Area(SMESH::SMESH_IDSource_ptr theSource)
 {
   return getNumericalValue( theSource, SMESH::Controls::NumericalFunctorPtr(new SMESH::Controls::Area()) );
 }
@@ -352,7 +348,7 @@ double Measurements_i::Area(SMESH::SMESH_IDSource_ptr theSource)
 // name    : Volume
 // Purpose : sum of volume of 3D elements of the source
 //=======================================================================
-double Measurements_i::Volume(SMESH::SMESH_IDSource_ptr theSource)
+double SMESH::Measurements_i::Volume(SMESH::SMESH_IDSource_ptr theSource)
 {
   return getNumericalValue( theSource, SMESH::Controls::NumericalFunctorPtr(new SMESH::Controls::Volume()) );
 }
@@ -362,7 +358,7 @@ double Measurements_i::Volume(SMESH::SMESH_IDSource_ptr theSource)
 //purpose  : return gravity center of the source: average coordinates of all nodes
 //=======================================================================
 
-SMESH::PointStruct Measurements_i::GravityCenter(SMESH::SMESH_IDSource_ptr theSource)
+SMESH::PointStruct SMESH::Measurements_i::GravityCenter(SMESH::SMESH_IDSource_ptr theSource)
 {
   SMESH::PointStruct grCenter = { 0.,0.,0. };
   const SMESHDS_Mesh* mesh = getMesh( theSource );
@@ -404,9 +400,9 @@ SMESH::PointStruct Measurements_i::GravityCenter(SMESH::SMESH_IDSource_ptr theSo
 //purpose  : Return angle in radians defined by 3 points <(p1,p2,p3)
 //=======================================================================
 
-CORBA::Double Measurements_i::Angle(const SMESH::PointStruct& p1,
-                                    const SMESH::PointStruct& p2,
-                                    const SMESH::PointStruct& p3 )
+CORBA::Double SMESH::Measurements_i::Angle(const SMESH::PointStruct& p1,
+                                           const SMESH::PointStruct& p2,
+                                           const SMESH::PointStruct& p3 )
 {
   gp_Vec v1( p1.x - p2.x, p1.y - p2.y, p1.z - p2.z );
   gp_Vec v2( p3.x - p2.x, p3.y - p2.y, p3.z - p2.z );

@@ -557,7 +557,7 @@ void SMESH_VisualObjDef::updateEntitiesFlags()
   unsigned int tmp = myEntitiesState;
   ClearEntitiesFlags();
 
-  map<SMDSAbs_ElementType,smIdType> entities = SMESH::GetEntitiesFromObject(this);
+  map<SMDSAbs_ElementType,::smIdType> entities = SMESH::GetEntitiesFromObject(this);
 
 
   if( myEntitiesCache[SMDSAbs_0DElement] != 0 ||

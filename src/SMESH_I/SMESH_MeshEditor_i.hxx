@@ -93,7 +93,7 @@ public:
   SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::smIdType_array& IDsOfElements,
                                          SMESH::ElementType           type);
   static bool               IsTemporaryIDSource( SMESH::SMESH_IDSource_ptr& idSource );
-  static SMESH::smIdType*       GetTemporaryIDs( SMESH::SMESH_IDSource_ptr& idSource, smIdType& nbIds );
+  static SMESH::smIdType*       GetTemporaryIDs( SMESH::SMESH_IDSource_ptr& idSource, SMESH::smIdType& nbIds );
 
   /*!
    * \brief Generates the unique group name
