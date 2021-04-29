@@ -157,17 +157,17 @@ namespace SMESH
     }
   }
 
-  std::map<SMDSAbs_ElementType,smIdType> GetEntitiesFromObject(SMESH_VisualObj *theObject) {
-    std::map<SMDSAbs_ElementType,smIdType> entities;
-    entities.insert(std::pair<SMDSAbs_ElementType,smIdType>(SMDSAbs_0DElement,
+  std::map<SMDSAbs_ElementType,::smIdType> GetEntitiesFromObject(SMESH_VisualObj *theObject) {
+    std::map<SMDSAbs_ElementType,::smIdType> entities;
+    entities.insert(std::pair<SMDSAbs_ElementType,::smIdType>(SMDSAbs_0DElement,
                 theObject ? theObject->GetNbEntities(SMDSAbs_0DElement) : 0));
-    entities.insert(std::pair<SMDSAbs_ElementType,smIdType>(SMDSAbs_Ball,
+    entities.insert(std::pair<SMDSAbs_ElementType,::smIdType>(SMDSAbs_Ball,
                 theObject ? theObject->GetNbEntities(SMDSAbs_Ball) : 0));
-    entities.insert(std::pair<SMDSAbs_ElementType,smIdType>(SMDSAbs_Edge,
+    entities.insert(std::pair<SMDSAbs_ElementType,::smIdType>(SMDSAbs_Edge,
                 theObject ? theObject->GetNbEntities(SMDSAbs_Edge) : 0));
-    entities.insert(std::pair<SMDSAbs_ElementType,smIdType>(SMDSAbs_Face,
+    entities.insert(std::pair<SMDSAbs_ElementType,::smIdType>(SMDSAbs_Face,
                 theObject ? theObject->GetNbEntities(SMDSAbs_Face) : 0));
-    entities.insert(std::pair<SMDSAbs_ElementType,smIdType>(SMDSAbs_Volume,
+    entities.insert(std::pair<SMDSAbs_ElementType,::smIdType>(SMDSAbs_Volume,
                 theObject ? theObject->GetNbEntities(SMDSAbs_Volume) : 0));
     return entities;
   }
