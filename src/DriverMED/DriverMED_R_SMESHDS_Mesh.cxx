@@ -503,7 +503,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
             default:;
             }
             vector<TInt> aNodeIds(aNbNodes);
-            for ( int iElem = 0; iElem < aNbElems; iElem++ )
+            for ( TInt iElem = 0; iElem < aNbElems; iElem++ )
             {
               bool anIsValidConnect = false;
               TCConnSlice aConnSlice = aCellInfo->GetConnSlice(iElem);
