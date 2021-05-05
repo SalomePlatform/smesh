@@ -72,8 +72,6 @@ class MESHDRIVER_EXPORT Driver_Mesh
 
   virtual SMESH_ComputeErrorPtr GetError();
 
-  //virtual bool CanExportMesh() const { return false; } //= 0;
-
   // check if a mesh is too large to export it using IDTYPE;
   // check either max ID or number of elements
   template< typename IDTYPE >
