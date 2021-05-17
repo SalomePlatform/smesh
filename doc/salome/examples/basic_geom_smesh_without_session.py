@@ -50,4 +50,13 @@ isDone = Mesh_1.Compute()
 smesh.SetName(NETGEN_1D_2D_3D.GetAlgorithm(), 'NETGEN 1D-2D-3D')
 smesh.SetName(Mesh_1.GetMesh(), 'Mesh_1')
 
-assert(Mesh_1.GetMesh().NbTetras()>=5)
+nbOfTetraExp = 5
+
+assert(Mesh_1.GetMesh().NbTetras()>=nbOfTetraExp)
+
+#Mesh_1.ExportMED("toto.med")
+
+import medcoupling as mc
+
+mv_mm = Mesh_1.ExportMEDCoupling()
+assert(mc.MEDCoupling1SGTUMesh(mv_mm[0]).getNumberOfCells()>=nbOfTetraExp)

@@ -356,10 +356,14 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh_Mem::Perform()
   std::size_t sz(0);
   Driver_Mesh::Status status = Driver_Mesh::DRS_OK;
   bool isClosed(false);
+  TMemFile *tfileInst = nullptr;
   {// let braces to flush (call of MED::PWrapper myMed destructor)
-    TMemFile *tfileInst = new TMemFile(&isClosed);
+    tfileInst = new TMemFile(&isClosed);
     MED::PWrapper myMed = CrWrapperW(myFile, -1, tfileInst);
     status = this->PerformInternal<MED::PWrapper>(myMed);
+  }
+  if(tfileInst)
+  {
     ptr = tfileInst->getData(); sz = tfileInst->getSize();
   }
   _data = MEDCoupling::DataArrayByte::New();
