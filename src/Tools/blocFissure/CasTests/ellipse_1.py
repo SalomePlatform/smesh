@@ -34,7 +34,7 @@ from blocFissure.gmu.putName import putName
 class ellipse_1(fissureGenerique):
   """problème de fissure non plane, débouchante non normale"""
 
-  nomProbleme = "ellipse1"
+  nomProbleme = "ellipse_1"
   shapeFissureParams = dict()
   maillageFissureParams = dict()
   referencesMaillageFissure = dict()
@@ -78,7 +78,7 @@ class ellipse_1(fissureGenerique):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "ellipse1.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "ellipse_1.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )

@@ -32,7 +32,9 @@ def identifieEdgesPeau_b(facePeau, edgesListees, \
   """edges de bord de la face de peau"""
   logging.info('start')
 
+  # Liste des arêtes de bord
   edgesFilling = geompy.ExtractShapes(fillingFaceExterne, geompy.ShapeType["EDGE"], False)
+  logging.info('Détermination des arêtes de bord à partir des %d arêtes de fillingFaceExterne', len(edgesFilling))
   edgesBords = list()
   for i_aux, edge in enumerate(edgesFilling):
     edgepeau = geompy.GetInPlace(facePeau, edge)
@@ -42,18 +44,19 @@ def identifieEdgesPeau_b(facePeau, edgesListees, \
     if geompy.ShapeInfo(edgepeau)['EDGE'] > 1:
       logging.debug("  EDGES multiples")
       l_edges = geompy.ExtractShapes(edgepeau, geompy.ShapeType["EDGE"], False)
-      edgesBords += l_edges
-      edgesListees += l_edges
+      edgesBords.extend(l_edges)
+      edgesListees.extend(l_edges)
     else:
       logging.debug("  EDGE")
       edgesBords.append(edgepeau)
       edgesListees.append(edgepeau)
+  logging.info('==> Nombre d arêtes de bord : len(edgesBords) = %d', len(edgesBords))
 
   groupEdgesBordPeau = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
   geompy.UnionList(groupEdgesBordPeau, edgesBords)
   bordsVifs = None
   if aretesVivesC is not None:
-    logging.debug("identification des bords vifs par GetInPlace")
+    logging.info("identification des bords vifs par GetInPlace")
     bordsVifs = geompy.GetInPlace(facePeau, aretesVivesC)
     if bordsVifs is None:
       logging.debug("pas d'identification des bords vifs par GetInPlace: test par distance")
@@ -69,7 +72,8 @@ def identifieEdgesPeau_b(facePeau, edgesListees, \
           if ( dist < 0.001 ):
             edvifs.append(edge)
             break
-      if len(edvifs) >0:
+      if edvifs:
+        logging.info('==> Nombre d arêtes de bord vif : len(edvifs) = %d', len(edvifs))
         bordsVifs = geompy.CreateGroup(facePeau,geompy.ShapeType["EDGE"])
         for edge in edvifs:
           geompy.AddObject(bordsVifs, geompy.GetSubShapeID(facePeau, edge))

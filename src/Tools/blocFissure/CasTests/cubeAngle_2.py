@@ -23,13 +23,13 @@ import os
 
 from .cubeAngle import cubeAngle
 
-class cubeAngle2(cubeAngle):
+class cubeAngle_2(cubeAngle):
   """problème de fissure plane coupant 2 faces (angle), débouches normaux, objet plan
 
   detection d'un probleme de tolerance sur les edges de jonction pipe et face fissure externe
   """
 
-  nomProbleme = "cubeAngle2"
+  nomProbleme = "cubeAngle_2"
 
   # ---------------------------------------------------------------------------
   def setParamShapeFissure(self):

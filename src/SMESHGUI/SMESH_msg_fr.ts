@@ -4795,7 +4795,7 @@ Il ne peut pas être supprimé.</translation>
     </message>
     <message>
         <source>Generate mesh from CAD model or import mesh</source>
-        <translation type="unfinished">Generate mesh from CAD model or import mesh</translation>
+        <translation type="unfinished">Créer un maillage à partir d'un modèle CAO ou par importation</translation>
     </message>
 </context>
 <context>
@@ -5151,7 +5151,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_SELECTION_INCREMENT</source>
-        <translation type="unfinished">Elements width increment</translation>
+        <translation type="unfinished">Incrément de largeur d'éléments</translation>
     </message>
     <message>
         <source>PREF_OBJECT_COLOR</source>
@@ -5247,59 +5247,59 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>INFO_WELCOME_TO_SMESH</source>
-        <translation type="unfinished">Welcome to Mesh</translation>
+        <translation type="unfinished">Bienvenue dans le module Mesh</translation>
     </message>
     <message>
         <source>INFO_GRP_CREATE_MESH</source>
-        <translation type="unfinished">Create mesh</translation>
+        <translation type="unfinished">Créer un maillage</translation>
     </message>
     <message>
         <source>INFO_DEFINE_ALGOS</source>
-        <translation type="unfinished">Choose algorithms</translation>
+        <translation type="unfinished">Choisir les algorithmes</translation>
     </message>
     <message>
         <source>INFO_DEFINE_HYPOS</source>
-        <translation type="unfinished">Define hypotheses</translation>
+        <translation type="unfinished">Définir des hypothèses</translation>
     </message>
     <message>
         <source>INFO_COMPUTE</source>
-        <translation type="unfinished">Compute</translation>
+        <translation type="unfinished">Calculer</translation>
     </message>
     <message>
         <source>INFO_REFINE</source>
-        <translation type="unfinished">Add refinements</translation>
+        <translation type="unfinished">Ajouter des raffinements</translation>
     </message>
     <message>
         <source>INFO_REFINE_LOCAL_SIZE</source>
-        <translation type="unfinished">via local sizes with some hypotheses</translation>
+        <translation type="unfinished">via des tailles locales dans certaines hypothèses</translation>
     </message>
     <message>
         <source>INFO_REFINE_SUBMESH</source>
-        <translation type="unfinished">via sub-meshes</translation>
+        <translation type="unfinished">via des sous-maillages</translation>
     </message>
     <message>
         <source>INFO_GRP_IMPORT_MESH</source>
-        <translation type="unfinished">Import mesh</translation>
+        <translation type="unfinished">Importer un maillage</translation>
     </message>
     <message>
         <source>INFO_AVAILABLE_FORMATS</source>
-        <translation type="unfinished">Available formats</translation>
+        <translation type="unfinished">Formats disponibles</translation>
     </message>
     <message>
         <source>INFO_GRP_CHECK_MESH</source>
-        <translation type="unfinished"> Check mesh quality</translation>
+        <translation type="unfinished">Contrôler la qualité du maillage</translation>
     </message>
     <message>
         <source>INFO_DISPLAY</source>
-        <translation type="unfinished">Display mesh</translation>
+        <translation type="unfinished">Afficher le maillage</translation>
     </message>
     <message>
         <source>INFO_QUALITY_INFO</source>
-        <translation type="unfinished">Display some quality criteria</translation>
+        <translation type="unfinished">Afficher des critères de qualité</translation>
     </message>
     <message>
         <source>INFO_QUALITY_AREA</source>
-        <translation type="unfinished">area</translation>
+        <translation type="unfinished">surface</translation>
     </message>
     <message>
         <source>INFO_QUALITY_VOLUME</source>
@@ -5307,11 +5307,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>INFO_QUALITY_ASPECT_RATION</source>
-        <translation type="unfinished">aspect ration</translation>
+        <translation type="unfinished">Facteur de forme</translation>
     </message>
     <message>
         <source>INFO_CLIPPING</source>
-        <translation type="unfinished">Add clipping planes</translation>
+        <translation type="unfinished">Insérer un plan de coupe</translation>
     </message>
 </context>
 <context>

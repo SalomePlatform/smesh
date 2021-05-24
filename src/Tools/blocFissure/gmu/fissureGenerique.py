@@ -34,6 +34,7 @@ class fissureGenerique(object):
   """
 
   nomProbleme = "fissureGenerique"
+  maillageFissure = None
   geomParams = dict()
   meshParams = dict()
   shapeFissureParams = dict()
@@ -132,10 +133,10 @@ class fissureGenerique(object):
     if step == 4:
       return
 
-    maillageFissure = self.genereMaillageFissure(geometriesSaines, maillagesSains, \
-                                                 shapesFissure, self.shapeFissureParams, self.maillageFissureParams, \
-                                                 elementsDefaut, step, mailleur)
+    self.maillageFissure = self.genereMaillageFissure(geometriesSaines, maillagesSains, \
+                                                      shapesFissure, self.shapeFissureParams, self.maillageFissureParams, \
+                                                      elementsDefaut, step, mailleur)
 
     self.setReferencesMaillageFissure()
-    ok_maillage = getStatsMaillageFissure(maillageFissure, self.referencesMaillageFissure, self.maillageFissureParams)
+    ok_maillage = getStatsMaillageFissure(self.maillageFissure, self.referencesMaillageFissure, self.maillageFissureParams)
     return ok_maillage

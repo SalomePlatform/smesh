@@ -57,6 +57,6 @@ def identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSo
   # ---  edges de la face de peau partagées avec la face de fissure
   edgesFissurePeau = identifieEdgesPeau_c(verticesPipePeau, facePeau, edgesListees, verticesCircPeau)
 
-  return (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau,
-          edgesCircPeau, verticesCircPeau, groupEdgesBordPeau,
+  return (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, \
+          edgesCircPeau, groupEdgesBordPeau, \
           bordsVifs, edgesFissurePeau, aretesVivesCoupees)

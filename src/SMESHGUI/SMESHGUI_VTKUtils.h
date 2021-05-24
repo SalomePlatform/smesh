@@ -169,7 +169,7 @@ SMESHGUI_EXPORT
                                  const Handle(SALOME_InteractiveObject)&,
                                  QString& );
 SMESHGUI_EXPORT
-  int GetEdgeNodes( SVTK_Selector*, const TVisualObjPtr&, smIdType&, smIdType& );
+  int GetEdgeNodes( SVTK_Selector*, const TVisualObjPtr&, ::smIdType&, ::smIdType& );
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  
@@ -189,7 +189,7 @@ SMESHGUI_EXPORT
                    const bool = true );
 
 SMESHGUI_EXPORT
-  int GetEdgeNodes( LightApp_SelectionMgr*, smIdType&, smIdType& );
+  int GetEdgeNodes( LightApp_SelectionMgr*, ::smIdType&, ::smIdType& );
 
 SMESHGUI_EXPORT
   void SetControlsPrecision( const long );

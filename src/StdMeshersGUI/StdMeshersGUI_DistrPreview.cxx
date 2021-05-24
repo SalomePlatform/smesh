@@ -320,13 +320,8 @@ void StdMeshersGUI_DistrPreview::update()
 
   setAxisScale( myDensity->xAxis(), min_x, max_x );
   setAxisScale( myDensity->yAxis(),
-#ifdef WIN32
-    min( 0.0, min_y ),
-    max( 0.0, max_y )
-#else
     std::min( 0.0, min_y ),
     std::max( 0.0, max_y )
-#endif
     );
   myDensity->setSamples( x, y, size );
   if( x )

@@ -51,21 +51,21 @@ Geometrical parameters of the tore are illustrated :
    :align: center
    :alt: Geometrical parameters of the tore
 
-Different levels of verbose are available. Use one of this 4 optional functions to set verbose type:
+Different levels of verbose are available. The prints are located in the file ''LOGFILE''. Use one of this 4 optional functions to set verbose type:
 
-- / **setDebug()**
+- / **setDebug(LOGFILE)**
 
-- / **setVerbose()**
+- / **setVerbose(LOGFILE)**
 
-- / **setRelease()**
+- / **setRelease(LOGFILE)**
 
-- / **setUnitTests()**
+- / **setUnitTests(LOGFILE)**
 
 **example to run in salome session**::
 
   from blocFissure import gmu
   from blocFissure.gmu import initLog
-  initLog.setDebug()
+  initLog.setDebug("/tmp/blocFissure.log")
 
   from blocFissure.casStandard import casStandard
 
@@ -82,6 +82,8 @@ Different levels of verbose are available. Use one of this 4 optional functions 
                     areteFaceFissure  = 5)
 
   execInstance = casStandard(dicoParams)
+
+  newmesh = execInstance.maillageFissure
 
 
 

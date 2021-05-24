@@ -279,13 +279,13 @@ namespace MeshEditor_I {
     SMDS_MeshElement::Filter & filter = *aFilter;
 
     if ( aType == SMDSAbs_Node )
-      for ( SMESH::smIdType i = 0; i < IDs.length(); i++ ) {
+      for ( CORBA::ULong i = 0; i < IDs.length(); i++ ) {
         const SMDS_MeshElement * elem = aMesh->FindNode( IDs[i] );
         if ( filter( elem ))
           aMap.insert( aMap.end(), elem );
       }
     else
-      for ( SMESH::smIdType i = 0; i<IDs.length(); i++) {
+      for ( CORBA::ULong i = 0; i<IDs.length(); i++) {
         const SMDS_MeshElement * elem = aMesh->FindElement( IDs[i] );
         if ( filter( elem ))
           aMap.insert( aMap.end(), elem );
@@ -789,7 +789,7 @@ SMESH_MeshEditor_i::RemoveElements(const SMESH::smIdType_array & IDsOfElements)
 
   list< smIdType > IdList;
 
-  for ( SMESH::smIdType i = 0; i < IDsOfElements.length(); i++ )
+  for ( CORBA::ULong i = 0; i < IDsOfElements.length(); i++ )
     IdList.push_back( IDsOfElements[i] );
 
   // Update Python script
@@ -817,7 +817,7 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::smIdType_array & IDs
   initData();
 
   list< smIdType > IdList;
-  for ( SMESH::smIdType i = 0; i < IDsOfNodes.length(); i++)
+  for ( CORBA::ULong i = 0; i < IDsOfNodes.length(); i++)
     IdList.push_back( IDsOfNodes[i] );
 
   // Update Python script
@@ -1578,7 +1578,7 @@ CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::smIdType_array & IDsOfE
   SMESH_TRY;
   initData();
 
-  for ( SMESH::smIdType i = 0; i < IDsOfElements.length(); i++ )
+  for ( CORBA::ULong i = 0; i < IDsOfElements.length(); i++ )
   {
     SMESH::smIdType index = IDsOfElements[i];
     const SMDS_MeshElement * elem = getMeshDS()->FindElement(index);
@@ -2252,7 +2252,7 @@ SMESH_MeshEditor_i::smooth(const SMESH::smIdType_array &          IDsOfElements,
   arrayToSet(IDsOfElements, aMesh, elements, SMDSAbs_Face);
 
   set<const SMDS_MeshNode*> fixedNodes;
-  for ( SMESH::smIdType i = 0; i < IDsOfFixedNodes.length(); i++) {
+  for ( CORBA::ULong i = 0; i < IDsOfFixedNodes.length(); i++) {
     SMESH::smIdType index = IDsOfFixedNodes[i];
     const SMDS_MeshNode * node = aMesh->FindNode(index);
     if ( node )
@@ -4342,7 +4342,7 @@ void SMESH_MeshEditor_i::MergeElements(const SMESH::array_of_long_array& theGrou
     if ( elemTypes->length() == 1 && elemTypes[0] == SMESH::NODE )
       continue;
     SMESH::smIdType_array_var elementsId = theElementsToKeep[i]->GetIDs();
-    for ( SMESH::smIdType j = 0; j < elementsId->length(); ++j )
+    for ( CORBA::ULong j = 0; j < elementsId->length(); ++j )
       idsToKeep.Add( elementsId[ j ]);
   }
 
@@ -4353,7 +4353,7 @@ void SMESH_MeshEditor_i::MergeElements(const SMESH::array_of_long_array& theGrou
     const SMESH::long_array& anElemsIDGroup = theGroupsOfElementsID[ i ];
     aListOfListOfElementsID.push_back( list< smIdType >() );
     list< smIdType >& aListOfElemsID = aListOfListOfElementsID.back();
-    for ( SMESH::smIdType j = 0; j < anElemsIDGroup.length(); j++ )
+    for ( CORBA::ULong j = 0; j < anElemsIDGroup.length(); j++ )
     {
       SMESH::smIdType id = anElemsIDGroup[ j ];
       if ( idsToKeep.Contains( id )) aListOfElemsID.push_front( id );
