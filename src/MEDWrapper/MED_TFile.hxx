@@ -20,6 +20,7 @@
 #pragma once
 
 #include "MED_Wrapper.hxx"
+#include "MED_WrapperDef.hxx"
 
 namespace MED
 {
@@ -32,7 +33,7 @@ namespace MED
     virtual const TIdt& Id() const = 0;
   };
 
-  class MEDIDTHoder : public TFileInternal
+  class MEDWRAPPER_EXPORT MEDIDTHoder : public TFileInternal
   {
   protected:
     MEDIDTHoder(bool *isClosedStatus = nullptr):_isClosedStatus(isClosedStatus) { }
@@ -57,7 +58,7 @@ namespace MED
     bool *_isClosedStatus = nullptr;
   };
 
-  class TFileDecorator : public TFileInternal
+  class MEDWRAPPER_EXPORT TFileDecorator : public TFileInternal
   {
   public:
     TFileDecorator(TFileInternal *effective):_effective(effective) { }
@@ -69,7 +70,7 @@ namespace MED
     TFileInternal *_effective = nullptr;
   };
 
-  class TMemFile : public MEDIDTHoder
+  class MEDWRAPPER_EXPORT TMemFile : public MEDIDTHoder
   {
   public:
     TMemFile(bool* isClosedStatus = nullptr):MEDIDTHoder(isClosedStatus) { }
@@ -80,7 +81,7 @@ namespace MED
     med_memfile memfile = MED_MEMFILE_INIT;
   };
 
-  class TFile : public MEDIDTHoder
+  class MEDWRAPPER_EXPORT TFile : public MEDIDTHoder
   {
   public:
     TFile(const std::string& theFileName, TInt theMajor=-1, TInt theMinor=-1);
