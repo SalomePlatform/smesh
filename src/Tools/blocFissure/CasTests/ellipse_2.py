@@ -32,7 +32,7 @@ from .ellipse_1 import ellipse_1
 class ellipse_2(ellipse_1):
   """problème de fissure non plane, débouchante non normale"""
 
-  nomProbleme = "ellipse2"
+  nomProbleme = "ellipse_2"
 
   # ---------------------------------------------------------------------------
   def genereShapeFissure( self, geometriesSaines, geomParams, shapeFissureParams, \
@@ -43,7 +43,7 @@ class ellipse_2(ellipse_1):
 
     lgInfluence = shapeFissureParams['lgInfluence']
 
-    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "ellipse1_pb.brep"))
+    shellFiss = geompy.ImportBREP(os.path.join(gmu.pathBloc, "materielCasTests", "ellipse_1_pb.brep"))
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
     geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )

@@ -104,6 +104,8 @@ public:
   static CORBA::ORB_var GetORB() { return myOrb;}
   // Get SMESH module's POA object
   static PortableServer::POA_var GetPOA() { return myPoa;}
+  // Set Naming Service object
+  static void SetNS(SALOME_NamingService_Abstract *ns);
   // Get Naming Service object
   static SALOME_NamingService_Abstract* GetNS();
   // Get SALOME_LifeCycleCORBA object

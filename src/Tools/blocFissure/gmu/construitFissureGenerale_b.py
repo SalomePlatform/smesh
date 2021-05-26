@@ -50,7 +50,6 @@ pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
   edFisExtPi = [ list() for _ in range(nbFacesFilling)] # pour chaque face [edge commun au pipe des faces de fissure externes]
   facesPeaux = [None for _ in range(nbFacesFilling)] # pour chaque face : la face de peau finale a mailler (percée des faces débouchantes)
   edCircPeau = [ list() for _ in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
-  ptCircPeau = [ list() for _ in range(nbFacesFilling)] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]
   gpedgeBord = [None for _ in range(nbFacesFilling)] # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
   gpedgeVifs = [None for _ in range(nbFacesFilling)] # pour chaque face de peau : groupes subshape des edges aux arêtes vives entre fillings
   edFissPeau = [ list() for _ in range(nbFacesFilling)] # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]
@@ -70,7 +69,6 @@ pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
       edFisExtPi[ifil] = dataPPFF['edgesFissExtPipe']
       facesPeaux[ifil] = dataPPFF['facePeau']
       edCircPeau[ifil] = dataPPFF['edgesCircPeau']
-      ptCircPeau[ifil] = dataPPFF['verticesCircPeau']
       gpedgeBord[ifil] = dataPPFF['groupEdgesBordPeau']
       gpedgeVifs[ifil] = dataPPFF['bordsVifs']
       edFissPeau[ifil] = dataPPFF['edgesFissurePeau']
@@ -87,5 +85,5 @@ pour chaque face de peau : 0, 1 ou 2 faces débouchante du fond de fissure
     geomPublish(initLog.debug, avc, name, nro_cas)
 
   return ptEdgeFond, fsFissuExt, edFisExtPe, edFisExtPi, facesPeaux, edCircPeau, \
-         ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau, ptFisExtPi, \
+         gpedgeBord, gpedgeVifs, edFissPeau, ptFisExtPi, \
          edgeRadFacePipePeau, facesPipePeau

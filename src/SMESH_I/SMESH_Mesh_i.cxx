@@ -3684,6 +3684,25 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
   }
 }
 
+/*!
+  Return a MeshName
+ */
+std::string SMESH_Mesh_i::generateMeshName()
+{
+  string aMeshName = "Mesh";
+  SALOMEDS::Study_var aStudy = SMESH_Gen_i::GetSMESHGen()->getStudyServant();
+  if ( !aStudy->_is_nil() )
+  {
+    SALOMEDS::SObject_wrap aMeshSO = _gen_i->ObjectToSObject(  _this() );
+    if ( !aMeshSO->_is_nil() )
+    {
+      CORBA::String_var name = aMeshSO->GetName();
+      aMeshName = name;
+    }
+  }
+  return aMeshName;
+}
+
 //================================================================================
 /*!
  * \brief Prepare a file for export and pass names of mesh groups from study to mesh DS
@@ -3698,13 +3717,11 @@ string SMESH_Mesh_i::prepareMeshNameAndGroups(const char*    file,
 {
   // Perform Export
   PrepareForWriting(file, overwrite);
-  string aMeshName = "Mesh";
+  string aMeshName(this->generateMeshName());
   SALOMEDS::Study_var aStudy = SMESH_Gen_i::GetSMESHGen()->getStudyServant();
   if ( !aStudy->_is_nil() ) {
     SALOMEDS::SObject_wrap aMeshSO = _gen_i->ObjectToSObject(  _this() );
     if ( !aMeshSO->_is_nil() ) {
-      CORBA::String_var name = aMeshSO->GetName();
-      aMeshName = name;
       // asv : 27.10.04 : fix of 6903: check for StudyLocked before adding attributes
       if ( !aStudy->GetProperties()->IsLocked() )
       {
@@ -3761,6 +3778,23 @@ void SMESH_Mesh_i::ExportMED(const char*    file,
                 << "autoDimension=" << autoDimension << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+CORBA::LongLong SMESH_Mesh_i::ExportMEDCoupling(CORBA::Boolean auto_groups, CORBA::Boolean autoDimension)
+{
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> data;
+  SMESH_TRY;
+  // TODO : Fix me ! 2 next lines are required
+  //if( !this->_gen_i->IsEmbeddedMode() )
+  //  SMESH::throwCorbaException("SMESH_Mesh_i::ExportMEDCoupling : only for embedded mode !");
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  string aMeshName = this->generateMeshName();
+  data = _impl->ExportMEDCoupling( aMeshName.c_str(), auto_groups, 0, autoDimension );
+  SMESH_CATCH( SMESH::throwCorbaException );
+  MEDCoupling::DataArrayByte *ret(data.retn());
+  return reinterpret_cast<CORBA::LongLong>(ret);
 }
 
 //================================================================================
@@ -3862,23 +3896,47 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   SMESH_CATCH( SMESH::throwCorbaException );
 }
 
-//================================================================================
-/*!
- * \brief Export a part of mesh to a med file
- */
-//================================================================================
-
-void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
-                                   const char*               file,
-                                   CORBA::Boolean            auto_groups,
-                                   CORBA::Long               version,
-                                   CORBA::Boolean            overwrite,
-                                   CORBA::Boolean            autoDimension,
-                                   const GEOM::ListOfFields& fields,
-                                   const char*               geomAssocFields,
-                                   CORBA::Double             ZTolerance)
+class MEDFileSpeCls
 {
-  MESSAGE("MED version: "<< version);
+public:
+  MEDFileSpeCls(const char *file, CORBA::Boolean overwrite, CORBA::Long version):_file(file),_overwrite(overwrite),_version(version) { }
+  std::string prepareMeshNameAndGroups(SMESH_Mesh_i& self) { return self.prepareMeshNameAndGroups(_file.c_str(),_overwrite); }
+  void exportTo(SMESH_Mesh *mesh, const std::string& aMeshName, CORBA::Boolean auto_groups,
+                SMESH_MeshPartDS* partDS,
+                CORBA::Boolean autoDimension, bool have0dField,
+                CORBA::Double ZTolerance)
+  {
+    mesh->ExportMED( _file.c_str(), aMeshName.c_str(), auto_groups, _version,
+                    partDS, autoDimension,have0dField,ZTolerance);
+
+  }
+
+  void exportField(SMESH_Mesh_i& self, const std::string& aMeshName, bool have0dField, SMESHDS_Mesh *meshDS, const GEOM::ListOfFields& fields, const char*geomAssocFields)
+  {
+    DriverMED_W_Field fieldWriter;
+    fieldWriter.SetFile( _file.c_str() );
+    fieldWriter.SetMeshName( aMeshName );
+    fieldWriter.AddODOnVertices( have0dField );
+    self.exportMEDFields( fieldWriter, meshDS, fields, geomAssocFields );
+  }
+
+  void prepareForWriting(SMESH_Mesh_i& self) { self.PrepareForWriting(_file.c_str(), _overwrite); }
+private:
+  std::string _file;
+  CORBA::Boolean _overwrite;
+  CORBA::Long  _version;
+};
+
+
+template<class SPECLS>
+void SMESH_Mesh_i::ExportPartToMEDCommon(SPECLS& speCls,
+      SMESH::SMESH_IDSource_ptr meshPart,
+      CORBA::Boolean            auto_groups,
+      CORBA::Boolean            autoDimension,
+      const GEOM::ListOfFields& fields,
+      const char*               geomAssocFields,
+      CORBA::Double             ZTolerance)
+{
   SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -3924,10 +3982,8 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
   if ( CORBA::is_nil( meshPart ) ||
        SMESH::DownCast< SMESH_Mesh_i* >( meshPart ))
   {
-    aMeshName = prepareMeshNameAndGroups(file, overwrite);
-    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version,
-                      0, autoDimension, /*addODOnVertices=*/have0dField,
-                      ZTolerance);
+    aMeshName = speCls.prepareMeshNameAndGroups(*this);
+    speCls.exportTo(_impl, aMeshName, auto_groups, nullptr, autoDimension, have0dField, ZTolerance);
     meshDS = _impl->GetMeshDS();
   }
   else
@@ -3935,7 +3991,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
     if ( _preMeshInfo )
       _preMeshInfo->FullLoadFromFile();
 
-    PrepareForWriting(file, overwrite);
+    speCls.prepareForWriting(*this);
 
     SALOMEDS::SObject_wrap SO = _gen_i->ObjectToSObject( meshPart );
     if ( !SO->_is_nil() ) {
@@ -3944,8 +4000,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
     }
 
     SMESH_MeshPartDS* partDS = new SMESH_MeshPartDS( meshPart );
-    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version,
-                      partDS, autoDimension, /*addODOnVertices=*/have0dField, ZTolerance);
+    speCls.exportTo(_impl, aMeshName, auto_groups, partDS, autoDimension, have0dField, ZTolerance);
     meshDS = tmpDSDeleter._obj = partDS;
   }
 
@@ -3953,15 +4008,32 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
 
   if ( _impl->HasShapeToMesh() )
   {
-    DriverMED_W_Field fieldWriter;
-    fieldWriter.SetFile( file );
-    fieldWriter.SetMeshName( aMeshName );
-    fieldWriter.AddODOnVertices( have0dField );
-
-    exportMEDFields( fieldWriter, meshDS, fields, geomAssocFields );
+    speCls.exportField(*this,aMeshName,have0dField,meshDS,fields,geomAssocFields);
   }
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
 
+//================================================================================
+/*!
+ * \brief Export a part of mesh to a med file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
+                                   const char*               file,
+                                   CORBA::Boolean            auto_groups,
+                                   CORBA::Long               version,
+                                   CORBA::Boolean            overwrite,
+                                   CORBA::Boolean            autoDimension,
+                                   const GEOM::ListOfFields& fields,
+                                   const char*               geomAssocFields,
+                                   CORBA::Double             ZTolerance)
+{
+  MESSAGE("MED version: "<< version);
+  MEDFileSpeCls spe(file,overwrite,version);
+  this->ExportPartToMEDCommon<MEDFileSpeCls>(spe,meshPart,auto_groups,autoDimension,fields,geomAssocFields,ZTolerance);
   // dump
+  SMESH_TRY;
   GEOM::ListOfGBO_var goList = new GEOM::ListOfGBO;
   goList->length( fields.length() );
   for ( size_t i = 0; i < fields.length(); ++i )
@@ -3980,8 +4052,43 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                 << ( geomAssocFields ? geomAssocFields : "" ) << "',"
                 << TVar( ZTolerance )
                 << " )";
-
   SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+class MEDFileMemSpeCls
+{
+public:
+  std::string prepareMeshNameAndGroups(SMESH_Mesh_i& self) { return self.generateMeshName(); }
+  void exportTo(SMESH_Mesh *mesh, const std::string& aMeshName, CORBA::Boolean auto_groups,
+                SMESH_MeshPartDS* partDS,
+                CORBA::Boolean autoDimension, bool have0dField,
+                CORBA::Double ZTolerance)
+  {
+    _res = mesh->ExportMEDCoupling(aMeshName.c_str(),auto_groups,partDS,autoDimension,have0dField,ZTolerance);
+  }
+  void prepareForWriting(SMESH_Mesh_i& self) { /* nothing here */ }
+  void exportField(SMESH_Mesh_i& self, const std::string& aMeshName, bool have0dField, SMESHDS_Mesh *meshDS, const GEOM::ListOfFields& fields, const char*geomAssocFields)
+  {
+    THROW_IK_EXCEPTION("exportField Not implemented yet for full memory !");
+  }
+public:
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> getData() { return _res; }
+private:
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> _res;
+};
+
+CORBA::LongLong SMESH_Mesh_i::ExportPartToMEDCoupling(SMESH::SMESH_IDSource_ptr meshPart,
+                                  CORBA::Boolean            auto_groups,
+                                  CORBA::Boolean            autoDimension,
+                                  const GEOM::ListOfFields& fields,
+                                  const char*               geomAssocFields,
+                                  CORBA::Double             ZTolerance)
+{
+  MEDFileMemSpeCls spe;
+  this->ExportPartToMEDCommon<MEDFileMemSpeCls>(spe,meshPart,auto_groups,autoDimension,fields,geomAssocFields,ZTolerance);
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> res( spe.getData() );
+  MEDCoupling::DataArrayByte *ret(res.retn());
+  return reinterpret_cast<CORBA::LongLong>(ret);
 }
 
 //================================================================================

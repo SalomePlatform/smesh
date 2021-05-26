@@ -41,6 +41,8 @@
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 
+#include "MEDCouplingMemArray.hxx"
+
 #include <map>
 #include <list>
 #include <vector>
@@ -61,6 +63,8 @@ class SMESH_Group;
 class SMESH_HypoFilter;
 class SMESH_subMesh;
 class TopoDS_Solid;
+
+class DriverMED_W_SMESHDS_Mesh;
 
 typedef std::list<int> TListOfInt;
 typedef std::list<TListOfInt> TListOfListOfInt;
@@ -261,6 +265,15 @@ class SMESH_EXPORT SMESH_Mesh
     TooLargeForExport(const char* format):runtime_error(format) {}
   };
 
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> ExportMEDCoupling(
+                 const char*         theMeshName = NULL,
+                 bool                theAutoGroups = true,
+                 const SMESHDS_Mesh* theMeshPart = 0,
+                 bool                theAutoDimension = false,
+                 bool                theAddODOnVertices = false,
+                 double              theZTolerance = -1.,
+                 bool                theAllElemsToGroup = false);
+
   void ExportMED(const char *        theFile,
                  const char*         theMeshName = NULL,
                  bool                theAutoGroups = true,
@@ -372,6 +385,16 @@ class SMESH_EXPORT SMESH_Mesh
   
 private:
 
+  void ExportMEDCommmon(DriverMED_W_SMESHDS_Mesh& myWriter,
+                           const char*         theMeshName,
+                           bool                theAutoGroups,
+                           const SMESHDS_Mesh* meshPart,
+                           bool                theAutoDimension,
+                           bool                theAddODOnVertices,
+                           double              theZTolerance,
+                           bool                theAllElemsToGroup);
+
+private:
   void fillAncestorsMap(const TopoDS_Shape& theShape);
   void getAncestorsSubMeshes(const TopoDS_Shape&            theSubShape,
                              std::vector< SMESH_subMesh* >& theSubMeshes) const;

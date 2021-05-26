@@ -60,7 +60,8 @@ def mailleFacesFissure(faceFissureExterne, \
     hypo2d.SetQuadAllowed( 0 )
   putName(hypo2d, "faceFiss", i_pref=nro_cas)
 
-  logging.info("UseExisting1DElements depuis '%s'", edgesPipeFissureExterneC.GetName())
+  logging.info("UseExisting1DElements sur la géométrie '%s' avec les mailles de '%s'", \
+                edgesPipeFissureExterneC.GetName(), edgeFaceFissGroup.GetName())
   algo1d = meshFaceFiss.UseExisting1DElements(geom=edgesPipeFissureExterneC)
   putName(algo1d.GetSubMesh(), "edgeFissPeau", i_pref=nro_cas)
   hypo1d = algo1d.SourceEdges([ edgeFaceFissGroup ],0,0)

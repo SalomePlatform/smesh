@@ -663,6 +663,10 @@ module SMESH
 		    in boolean     overwrite,
 		    in boolean     autoDimension) raises (SALOME::SALOME_Exception);
 
+    long long ExportMEDCoupling(in boolean     auto_groups,
+      in boolean     autoDimension
+    ) raises (SALOME::SALOME_Exception);
+
     /*!
      * Export a [part of] Mesh into a MED file
      * @params
@@ -696,6 +700,13 @@ module SMESH
                           in boolean            auto_groups,
                           in long               version,
                           in boolean            overwrite,
+                          in boolean            autoDimension,
+                          in GEOM::ListOfFields fields,
+                          in string             geomAssocFields,
+                          in double             ZTolerance) raises (SALOME::SALOME_Exception);
+
+    long long ExportPartToMEDCoupling( in SMESH_IDSource     meshPart,
+                          in boolean            auto_groups,
                           in boolean            autoDimension,
                           in GEOM::ListOfFields fields,
                           in string             geomAssocFields,

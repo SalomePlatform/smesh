@@ -27,10 +27,9 @@ from .trouveEdgesFissPeau import trouveEdgesFissPeau
 from .identifieFacesPeau import identifieFacesPeau
 from .identifieEdgesPeau import identifieEdgesPeau
 
-def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss, \
-                                      edgesFondFiss, wireFondFiss, aretesVivesC, \
-                                      facesDefaut, centreFondFiss, rayonPipe, \
-                                      aretesVivesCoupees, \
+def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, \
+                                      edgesPipeFiss, edgesFondFiss, wireFondFiss, aretesVivesC, \
+                                      facesDefaut, centreFondFiss, rayonPipe, aretesVivesCoupees, \
                                       nro_cas=None):
   """Identification des éléments géométriques de la face de peau"""
   logging.info('start')
@@ -69,7 +68,8 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
 
   # --- identification précise des edges et disques des faces de peau selon index extremité fissure
 
-  (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, edgesCircPeau, verticesCircPeau, groupEdgesBordPeau, \
+  (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau, \
+  edgesCircPeau, groupEdgesBordPeau, \
   bordsVifs, edgesFissurePeau, aretesVivesCoupees) = \
                                               identifieEdgesPeau(edgesFissExtPipe, verticesPipePeau, facePeau, facesPeauSorted, \
                                                                 edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees, \
@@ -83,7 +83,6 @@ def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss
                   edgesFissExtPipe    = edgesFissExtPipe,    # pour chaque face [edge commun au pipe des faces de fissure externes]
                   facePeau            = facePeau,            # pour chaque face : la face de peau finale a mailler (percee des faces débouchantes)
                   edgesCircPeau       = edgesCircPeau,       # pour chaque face de peau : [groupe subshapes edges circulaires aux débouchés du pipe]
-                  verticesCircPeau    = verticesCircPeau,    # pour chaque face de peau : [groupe subshapes points sur edges circulaires aux débouchés du pipe]
                   groupEdgesBordPeau  = groupEdgesBordPeau,  # pour chaque face de peau : groupe subshape des edges aux bords liés à la partie saine
                   bordsVifs           = bordsVifs,           # pour chaque face de peau : groupe subshape des edges aux bords correspondant à des arêtes vives
                   edgesFissurePeau    = edgesFissurePeau,    # pour chaque face de peau : [subshape edge en peau des faces de fissure externes]

@@ -33,38 +33,39 @@ def identifieEdgesPeau_c(verticesPipePeau, facePeau, edgesListees, verticesCircP
   logging.info('start')
   logging.info("Traitement des arêtes de '%s'", facePeau.GetName())
   logging.info('Nombre de sommets : len(verticesPipePeau) = %d', len(verticesPipePeau))
-  #logging.info('verticesPipePeau = %s', verticesPipePeau)
-  logging.info('Nombre de sommets : len(verticesCircPeau) = %d', len(verticesCircPeau))
-  #logging.info('verticesCircPeau = %s', verticesCircPeau)
 
   edgesPeau = geompy.ExtractShapes(facePeau, geompy.ShapeType["EDGE"], False)
   logging.info('Nombre total d arêtes de la peau : len(edgesPeau) = %d', len(edgesPeau))
 
   edges = substractSubShapes(facePeau, edgesPeau, edgesListees)
 
-  edgesFissurePeau = list()
-# --- au moins une extrémité du pipe sur cette face de peau
+  l_edge_cercle = list()
+# --- au moins une extrémité du pipe sur cette face de peau : arêtes sui les prenent toutes
   if verticesPipePeau:
-    # En premier, les edges associés aux extrémités du pipe
-    edgesFissurePeau = [None for _ in range(len(verticesCircPeau))]
+    i_aux = -1
     for edge in edges:
-      for i_aux, vertex in enumerate(verticesCircPeau):
-        logging.info(".. distance %s", geompy.MinDistance(vertex, edge))
-        if ( ( geompy.MinDistance(vertex, edge) < 1.e-3 ) and ( edge not in edgesFissurePeau ) ):
-          edgesFissurePeau[i_aux] = edge
-          name = "edgeFissurePeau_{}".format(i_aux)
-          logging.info("... entrée de %s à la place %d", edge, i_aux)
-          geomPublishInFather(initLog.debug, facePeau, edge, name)
-    # Ensuite, on ajoute les edges manquantes
-    for edge in edges:
-      if edge not in edgesFissurePeau:
-        logging.info("... ajout")
-        edgesFissurePeau.append(edge)
+      for groupe in verticesCircPeau:
+        cercle = True
+        for id_vertex in geompy.GetObjectIDs(groupe):
+          vertex = geompy.GetSubShape(facePeau, [id_vertex])
+          distance = geompy.MinDistance(vertex, edge)
+          logging.info(".. distance %s", distance)
+          if ( distance > 1.e-3 ):
+            cercle = False
+            break
+        if cercle:
+          logging.info("... entrée de %s dans l_edge_cercle", edge)
+          l_edge_cercle.append(edge)
+          i_aux += 1
+          name = "edgeFissurePeauCercle_{}".format(i_aux)
+          geomPublishInFather(initLog.info, facePeau, edge, name)
 
-  else:
-    for i_aux, edge in enumerate(edges):
+# --- Les arêtes n'appartenant pas aux cercles
+  edgesFissurePeau = list()
+  for i_aux, edge in enumerate(edges):
+    if edge not in l_edge_cercle:
       edgesFissurePeau.append(edge)
-      name = "edgeFissurePeau{}".format(i_aux)
+      name = "edgeFissurePeau_{}".format(i_aux)
       geomPublishInFather(initLog.debug, facePeau, edge, name)
 
   logging.info('==> Nombre d arêtes : len(edgesFissurePeau) = %d', len(edgesFissurePeau))
