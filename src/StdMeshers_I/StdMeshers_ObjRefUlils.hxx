@@ -29,6 +29,7 @@
 #define StdMeshers_ObjRefUlils_HeaderFile
 
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_StdMeshers_I.hxx"
 
 /*!
  * \brief Class encapsulates methods
@@ -70,7 +71,7 @@ public:
    *  \param theEntry - study entry
    *  \retval TopoDS_Shape - result TopoDS_Shape
    */
-  static TopoDS_Shape EntryToShape(const std::string theEntry);
+  STDMESHERS_I_EXPORT static TopoDS_Shape EntryToShape(const std::string theEntry);
 
   /*!
    * \brief Return study entry of GEOM Object

@@ -47,7 +47,7 @@ class vtkUnstructuredGrid;
 /*!
  * \brief To display in the viewer IDs of selected elements or nodes
  */
-class SMESHGUI_IdPreview
+class SMESHGUI_EXPORT SMESHGUI_IdPreview
 {
 public:
   SMESHGUI_IdPreview(SVTK_ViewWindow* theViewWindow);

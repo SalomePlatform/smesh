@@ -46,11 +46,11 @@ struct uvPtStruct;
 enum TSideID { QUAD_BOTTOM_SIDE=0, QUAD_RIGHT_SIDE, QUAD_TOP_SIDE, QUAD_LEFT_SIDE, NB_QUAD_SIDES };
 
 typedef uvPtStruct UVPtStruct;
-struct FaceQuadStruct
+struct STDMESHERS_EXPORT FaceQuadStruct
 {
-  struct Side // a side of FaceQuadStruct
+  struct STDMESHERS_EXPORT Side // a side of FaceQuadStruct
   {
-    struct Contact // contact of two sides
+    struct STDMESHERS_EXPORT Contact // contact of two sides
     {
       int   point; // index of a grid point of this side where two sides meat
       Side* other_side;
