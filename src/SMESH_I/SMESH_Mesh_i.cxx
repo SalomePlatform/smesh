@@ -3785,8 +3785,8 @@ CORBA::LongLong SMESH_Mesh_i::ExportMEDCoupling(CORBA::Boolean auto_groups, CORB
   MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> data;
   SMESH_TRY;
   // TODO : Fix me ! 2 next lines are required
-  //if( !this->_gen_i->IsEmbeddedMode() )
-  //  SMESH::throwCorbaException("SMESH_Mesh_i::ExportMEDCoupling : only for embedded mode !");
+  if( !this->_gen_i->isSSLMode() )
+    SMESH::throwCorbaException("SMESH_Mesh_i::ExportMEDCoupling : only for embedded mode !");
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
