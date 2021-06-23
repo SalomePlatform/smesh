@@ -90,10 +90,10 @@ namespace MED
     if (this->myCount++ == 0)
     {
       std::string dftFileName = MEDCoupling::MEDFileWritableStandAlone::GenerateUniqueDftFileNameInMem();
-      memfile = MED_MEMFILE_INIT;
-      memfile.app_image_ptr=0;
-      memfile.app_image_size=0;
-      myFid = MEDmemFileOpen(dftFileName.c_str(),&memfile,MED_FALSE,MED_ACC_CREAT);
+      med_access_mode modeTmp(MED_ACC_CREAT);
+      if(memfile.app_image_ptr)
+        modeTmp = med_access_mode(theMode);
+      myFid = MEDmemFileOpen(dftFileName.c_str(),&memfile,MED_FALSE,modeTmp);
     }
     if (theErr)
       *theErr = TErr(myFid);

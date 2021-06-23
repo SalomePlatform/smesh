@@ -31,6 +31,7 @@
 #include "Driver_SMESHDS_Mesh.h"
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_ElemIterator.hxx"
+#include "MED_Common.hxx"
 
 #include <string>
 #include <vector>
@@ -64,8 +65,12 @@ class MESHDRIVERMED_EXPORT DriverMED_W_Field: public Driver_SMESHDS_Mesh
   /*
    * Add one field to the file
    */
-  virtual Status Perform();
+  Status Perform() override;
 
+ protected:
+
+  Status PerformInternal(MED::PWrapper& medFile);
+  
  private:
 
   std::string                _fieldName;
@@ -78,6 +83,18 @@ class MESHDRIVERMED_EXPORT DriverMED_W_Field: public Driver_SMESHDS_Mesh
 
   std::vector< const SMDS_MeshElement* >              _elemsByGeom[SMDSEntity_Last];
   std::vector< std::pair< SMDSAbs_EntityType, int > > _nbElemsByGeom;
+};
+
+#include "MEDCouplingMemArray.hxx"
+
+class MESHDRIVERMED_EXPORT DriverMED_W_Field_Mem : public DriverMED_W_Field
+{
+public:
+  DriverMED_W_Field_Mem(MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> data):_data(data) { }
+  Status Perform() override;
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> getData() const { return _data; }
+private:
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> _data;
 };
 
 #endif

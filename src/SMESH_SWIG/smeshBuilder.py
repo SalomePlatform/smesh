@@ -2355,7 +2355,10 @@ class Mesh(metaclass = MeshMeta):
             z_tolerance,Parameters,hasVars = ParseParameters(z_tolerance)
             self.mesh.SetParameters(Parameters)
 
-            return self.mesh.ExportPartToMEDCoupling(meshPart, auto_groups, autoDimension, fields, geomAssocFields, z_tolerance)
+            intPtr = self.mesh.ExportPartToMEDCoupling(meshPart, auto_groups, autoDimension, fields, geomAssocFields, z_tolerance)
+            import medcoupling
+            dab = medcoupling.FromPyIntPtrToDataArrayByte(intPtr)
+            return medcoupling.MEDFileData.New(dab)
         else:
             intPtr = self.mesh.ExportMEDCoupling(auto_groups, autoDimension)
             import medcoupling

@@ -4069,7 +4069,11 @@ public:
   void prepareForWriting(SMESH_Mesh_i& self) { /* nothing here */ }
   void exportField(SMESH_Mesh_i& self, const std::string& aMeshName, bool have0dField, SMESHDS_Mesh *meshDS, const GEOM::ListOfFields& fields, const char*geomAssocFields)
   {
-    THROW_IK_EXCEPTION("exportField Not implemented yet for full memory !");
+    DriverMED_W_Field_Mem fieldWriter(_res);
+    fieldWriter.SetMeshName( aMeshName );
+    fieldWriter.AddODOnVertices( have0dField );
+    self.exportMEDFields( fieldWriter, meshDS, fields, geomAssocFields );
+    _res = fieldWriter.getData();
   }
 public:
   MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> getData() { return _res; }
@@ -4084,10 +4088,15 @@ CORBA::LongLong SMESH_Mesh_i::ExportPartToMEDCoupling(SMESH::SMESH_IDSource_ptr 
                                   const char*               geomAssocFields,
                                   CORBA::Double             ZTolerance)
 {
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> data;
+  SMESH_TRY;
+  if( !this->_gen_i->isSSLMode() )
+    SMESH::throwCorbaException("SMESH_Mesh_i::ExportPartToMEDCoupling : only for embedded mode !");
   MEDFileMemSpeCls spe;
   this->ExportPartToMEDCommon<MEDFileMemSpeCls>(spe,meshPart,auto_groups,autoDimension,fields,geomAssocFields,ZTolerance);
-  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> res( spe.getData() );
-  MEDCoupling::DataArrayByte *ret(res.retn());
+  data = spe.getData();
+  SMESH_CATCH( SMESH::throwCorbaException );
+  MEDCoupling::DataArrayByte *ret(data.retn());
   return reinterpret_cast<CORBA::LongLong>(ret);
 }
 

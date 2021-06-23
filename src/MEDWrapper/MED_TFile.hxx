@@ -73,7 +73,8 @@ namespace MED
   class MEDWRAPPER_EXPORT TMemFile : public MEDIDTHoder
   {
   public:
-    TMemFile(bool* isClosedStatus = nullptr):MEDIDTHoder(isClosedStatus) { }
+    TMemFile(bool* isClosedStatus = nullptr):MEDIDTHoder(isClosedStatus) { memfile.app_image_ptr=nullptr; memfile.app_image_size=0; }
+    TMemFile(void *data, std::size_t sz, bool* isClosedStatus):MEDIDTHoder(isClosedStatus) { memfile.app_image_ptr=data; memfile.app_image_size=sz; }
     void Open(EModeAcces theMode, TErr* theErr = nullptr) override;
     void *getData() const { return memfile.app_image_ptr; }
     std::size_t getSize() const { return memfile.app_image_size; }

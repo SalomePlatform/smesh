@@ -197,6 +197,7 @@ set(SESSION_FREE_TESTS
   basic_geom_smesh_without_session.py
   basic_shaper_smesh_without_session.py
   shaper_smesh_groups_without_session.py
+  basic_smesh_output_with_mc_field.py
 )
 
 SET(EXAMPLES_TESTS ${BAD_TESTS} ${GOOD_TESTS} ${SESSION_FREE_TESTS} testme.py)
