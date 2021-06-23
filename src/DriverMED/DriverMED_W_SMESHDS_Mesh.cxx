@@ -356,16 +356,13 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh_Mem::Perform()
   std::size_t sz(0);
   Driver_Mesh::Status status = Driver_Mesh::DRS_OK;
   bool isClosed(false);
-  TMemFile *tfileInst = nullptr;
   {// let braces to flush (call of MED::PWrapper myMed destructor)
-    tfileInst = new TMemFile(&isClosed);
+    TMemFile *tfileInst = new TMemFile(&ptr,&sz,&isClosed);// this new will be destroyed by destructor of myMed
     MED::PWrapper myMed = CrWrapperW(myFile, -1, tfileInst);
     status = this->PerformInternal<MED::PWrapper>(myMed);
   }
-  if(tfileInst)
-  {
-    ptr = tfileInst->getData(); sz = tfileInst->getSize();
-  }
+  if(!isClosed)
+    EXCEPTION(std::runtime_error, "TFTMemFile destructor : on destruction file has not been closed properly -> chunk of memory data may be invalid !");
   _data = MEDCoupling::DataArrayByte::New();
   _data->useArray(reinterpret_cast<char *>(ptr),true,MEDCoupling::DeallocType::C_DEALLOC,sz,1);
   if(!isClosed)

@@ -369,24 +369,19 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
  */
 Driver_Mesh::Status DriverMED_W_Field_Mem::Perform()
 {
-  void *ptr(nullptr);
-  std::size_t sz(0);
   Driver_Mesh::Status status = Driver_Mesh::DRS_OK;
   bool isClosed(false);
-  MED::TMemFile *tfileInst = nullptr;
-  char *initPtr(_data->getPointer());
-  mcIdType initSz(_data->getNumberOfTuples());
+  void *ptr(_data->getPointer());
+  std::size_t sz(_data->getNumberOfTuples());
   _data->accessToMemArray().setSpecificDeallocator(nullptr);
   _data->useArray(nullptr,false,MEDCoupling::DeallocType::C_DEALLOC,0,1);
   {// let braces to flush (call of MED::PWrapper myMed destructor)
-    tfileInst = new MED::TMemFile(initPtr,initSz,&isClosed);
+    MED::TMemFile *tfileInst = new MED::TMemFile(&ptr,&sz,&isClosed);
     MED::PWrapper myMed = MED::CrWrapperW(myFile, -1, tfileInst);
     status = this->PerformInternal(myMed);
   }
-  if(tfileInst)
-  {
-    ptr = tfileInst->getData(); sz = tfileInst->getSize();
-  }
+  if(!isClosed)
+    EXCEPTION(std::runtime_error, "TFTMemFile destructor : on destruction file has not been closed properly -> chunk of memory data may be invalid !");
   _data = MEDCoupling::DataArrayByte::New();
   _data->useArray(reinterpret_cast<char *>(ptr),true,MEDCoupling::DeallocType::C_DEALLOC,sz,1);
   return status;
