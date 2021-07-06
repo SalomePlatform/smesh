@@ -32,6 +32,7 @@
 
 #include <string>
 #include <vector>
+#include <smIdType.hxx>
 
 #ifdef WIN32
  #if defined MESHDRIVER_EXPORTS || defined MeshDriver_EXPORTS
@@ -79,7 +80,7 @@ class MESHDRIVER_EXPORT Driver_Mesh
   {
     if ( sizeof( IDTYPE ) < sizeof( smIdType ))
     {
-      const smIdType maxNB = std::numeric_limits< IDTYPE >::max();
+      const smIdType maxNB = ToSmIdType( std::numeric_limits< IDTYPE >::max() );
       return (( checkIDs ? mesh->MaxNodeID()    : mesh->NbNodes() )  > maxNB ||
               ( checkIDs ? mesh->MaxElementID() : mesh->NbElements() > maxNB ));
     }

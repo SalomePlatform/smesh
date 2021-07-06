@@ -664,8 +664,7 @@ module SMESH
 		    in boolean     autoDimension) raises (SALOME::SALOME_Exception);
 
     long long ExportMEDCoupling(in boolean     auto_groups,
-      in boolean     autoDimension
-    ) raises (SALOME::SALOME_Exception);
+                                in boolean     autoDimension) raises (SALOME::SALOME_Exception);
 
     /*!
      * Export a [part of] Mesh into a MED file
