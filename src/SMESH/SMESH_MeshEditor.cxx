@@ -11107,16 +11107,9 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   //     build the list of nodes shared by 2 or more domains, with their domain indexes
 
   std::map<DownIdType, std::map<int,int>, DownIdCompare> faceDomains; // face --> (id domain --> id volume)
-  std::map<int,int>celldom; // cell vtkId --> domain
+  std::map<int,int> celldom; // cell vtkId --> domain
   std::map<DownIdType, std::map<int,int>, DownIdCompare> cellDomains;  // oldNode --> (id domain --> id cell)
   std::map<int, std::map<int,int> > nodeDomains; // oldId -->  (domainId --> newId)
-  faceDomains.clear();
-  celldom.clear();
-  cellDomains.clear();
-  nodeDomains.clear();
-  std::map<int,int> emptyMap;
-  std::set<int> emptySet;
-  emptyMap.clear();
 
   //MESSAGE(".. Number of domains :"<<theElems.size());
 
@@ -11226,7 +11219,6 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
       DownIdType face = itface->first;
       //MESSAGE(" --- face " << face.cellId);
       std::set<int> oldNodes;
-      oldNodes.clear();
       grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
       std::set<int>::iterator itn = oldNodes.begin();
       for (; itn != oldNodes.end(); ++itn)
@@ -11281,7 +11273,6 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
       DownIdType face = itface->first;
       //MESSAGE(" --- face " << face.cellId);
       std::set<int> oldNodes;
-      oldNodes.clear();
       grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
       std::set<int>::iterator itn = oldNodes.begin();
       for (; itn != oldNodes.end(); ++itn)
@@ -11342,7 +11333,6 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
       DownIdType face = itface->first;
       //MESSAGE(" --- face " << face.cellId);
       std::set<int> oldNodes;
-      oldNodes.clear();
       grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
       int nbMultipleNodes = 0;
       std::set<int>::iterator itn = oldNodes.begin();
@@ -11467,7 +11457,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   std::map<std::string, SMESH_Group*> mapOfJunctionGroups;
 
   //MESSAGE(".. Creation of elements: simple junction");
-  if (createJointElems)
+  if ( createJointElems )
   {
     string joints2DName = "joints2D";
     mapOfJunctionGroups[joints2DName] = this->myMesh->AddGroup(SMDSAbs_Face, joints2DName.c_str());
@@ -11482,15 +11472,14 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
       DownIdType face = itface->first;
       std::set<int> oldNodes;
       std::set<int>::iterator itn;
-      oldNodes.clear();
       grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
 
-      std::map<int, int> domvol = itface->second;
+      std::map<int, int>          domvol = itface->second;
       std::map<int, int>::iterator itdom = domvol.begin();
-      int dom1 = itdom->first;
+      int     dom1 = itdom->first;
       int vtkVolId = itdom->second;
       itdom++;
-      int dom2 = itdom->first;
+      int           dom2 = itdom->first;
       SMDS_MeshCell *vol = grid->extrudeVolumeFromFace(vtkVolId, dom1, dom2, oldNodes, nodeDomains,
                                                        nodeQuadDomains);
       stringstream grpname;
@@ -11547,7 +11536,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
     std::map<std::vector<int>, std::vector<int> >::iterator ite = edgesMultiDomains.begin();
     for (; ite != edgesMultiDomains.end(); ++ite)
     {
-      vector<int> nodes = ite->first;
+      vector<int>    nodes = ite->first;
       vector<int> orderDom = ite->second;
       vector<vtkIdType> orderedNodes;
       if (nodes.size() == 2)
@@ -11584,10 +11573,9 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
 
   std::map<DownIdType, std::map<int,int>, DownIdCompare> faceOrEdgeDom; // cellToModify --> (id domain --> id cell)
   std::map<int,int> feDom; // vtk id of cell to modify --> id domain
-  faceOrEdgeDom.clear();
-  feDom.clear();
 
   //MESSAGE(".. Modification of elements");
+  SMDSAbs_ElementType domainType = (*theElems[0].begin())->GetType();
   for (int idomain = idom0; idomain < nbDomains; idomain++)
   {
     std::map<int, std::map<int, int> >::const_iterator itnod = nodeDomains.begin();
@@ -11605,13 +11593,29 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           continue; // new cells: not to be modified
         DownIdType aCell(downId, vtkType);
         int volParents[1000];
-        int nbvol = grid->GetParentVolumes(volParents, vtkId);
+        int nbvol = 0;
+        nbvol = grid->GetParentVolumes(volParents, vtkId);
+        if ( domainType == SMDSAbs_Volume )
+        {
+          nbvol = grid->GetParentVolumes(volParents, vtkId);
+        }
+        else // domainType == SMDSAbs_Face
+        {
+          const int            nbFaces = grid->getDownArray(vtkType)->getNumberOfUpCells(downId);
+          const int           *upCells = grid->getDownArray(vtkType)->getUpCells(downId);
+          const unsigned char* upTypes = grid->getDownArray(vtkType)->getUpTypes(downId);
+          for (int i=0; i< nbFaces; i++)
+          {
+            int vtkFaceId = grid->getDownArray( upTypes[i] )->getVtkCellId(upCells[i]);
+            if (vtkFaceId >= 0)
+              volParents[nbvol++] = vtkFaceId;
+          }
+        }
         for (int j = 0; j < nbvol; j++)
           if (celldom.count(volParents[j]) && (celldom[volParents[j]] == idomain))
             if (!feDom.count(vtkId))
             {
               feDom[vtkId] = idomain;
-              faceOrEdgeDom[aCell] = emptyMap;
               faceOrEdgeDom[aCell][idomain] = vtkId; // affect face or edge to the first domain only
               //MESSAGE("affect cell " << this->GetMeshDS()->FromVtkToSmds(vtkId) << " domain " << idomain
               //        << " type " << vtkType << " downId " << downId);
@@ -11634,7 +11638,6 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
       DownIdType face = itface->first;
       std::set<int> oldNodes;
       std::set<int>::iterator itn;
-      oldNodes.clear();
       grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
       //MESSAGE("examine cell, downId " << face.cellId << " type " << int(face.cellType));
       std::map<int, int> localClonedNodeIds;
@@ -11701,10 +11704,7 @@ bool SMESH_MeshEditor::CreateFlatElementsOnFacesGroups(const std::vector<TIDSort
 
   std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> clonedNodes;
   std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> intermediateNodes;
-  clonedNodes.clear();
-  intermediateNodes.clear();
   std::map<std::string, SMESH_Group*> mapOfJunctionGroups;
-  mapOfJunctionGroups.clear();
 
   for ( size_t idom = 0; idom < theElems.size(); idom++ )
   {
@@ -11951,7 +11951,6 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
   std::set<int> setOfVolToCheck;
 
   std::vector<gp_Pnt> gpnts;
-  gpnts.clear();
 
   if (isNodeGroup) // --- a group of nodes is provided : find all the volumes using one or more of this nodes
   {
@@ -12038,7 +12037,6 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
     //     Fill the group of inside volumes
 
     std::map<int, double> mapOfNodeDistance2;
-    mapOfNodeDistance2.clear();
     std::set<int> setOfOutsideVol;
     while (!setOfVolToCheck.empty())
     {
@@ -12215,9 +12213,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
   //     project polylines on subshapes, and partition, to get geom faces
 
   std::map<int, std::set<int> > shapeIdToVtkIdSet; // shapeId --> set of vtkId on skin
-  std::set<int> emptySet;
-  emptySet.clear();
-  std::set<int> shapeIds;
+  std::set<int>                 shapeIds;
 
   SMDS_ElemIteratorPtr itelem = sgrps->GetElements();
   while (itelem->more())
@@ -12227,7 +12223,6 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
     int   vtkId = elem->GetVtkID();
     if (!shapeIdToVtkIdSet.count(shapeId))
     {
-      shapeIdToVtkIdSet[shapeId] = emptySet;
       shapeIds.insert(shapeId);
     }
     shapeIdToVtkIdSet[shapeId].insert(vtkId);
@@ -12235,7 +12230,6 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
 
   std::map<int, std::set<DownIdType, DownIdCompare> > shapeIdToEdges; // shapeId --> set of downward edges
   std::set<DownIdType, DownIdCompare> emptyEdges;
-  emptyEdges.clear();
 
   std::map<int, std::set<int> >::iterator itShape =  shapeIdToVtkIdSet.begin();
   for (; itShape != shapeIdToVtkIdSet.end(); ++itShape)
@@ -12278,7 +12272,6 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
     }
 
     std::list<int> order;
-    order.clear();
     if (nodesEdges.size() > 0)
     {
       order.push_back(nodesEdges[0]); //MESSAGE("       --- back " << order.back()+1); // SMDS id = VTK id + 1;
