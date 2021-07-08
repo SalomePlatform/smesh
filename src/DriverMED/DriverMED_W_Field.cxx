@@ -26,16 +26,17 @@
 
 #include "DriverMED_W_Field.h"
 
-#include "MED_TFile.hxx"
 #include "DriverMED.hxx"
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "MED_Factory.hxx"
+#include "MED_TFile.hxx"
 #include "MED_Utilities.hxx"
 #include "MED_Wrapper.hxx"
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMESHDS_Mesh.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 //================================================================================
 /*!
@@ -98,10 +99,10 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
     _nbElemsByGeom.resize( 1, std::make_pair( SMDSEntity_Last, 0 ));
 
     // count nb of elems of each geometry
-    for ( int iG = 0; iG < SMDSEntity_Last; ++iG )
+    SMDSAbs_EntityType geom = SMDSEntity_0D;
+    for ( ; geom < SMDSEntity_Last; SMESHUtils::Increment( geom ))
     {
-      SMDSAbs_EntityType  geom = (SMDSAbs_EntityType) iG;
-      SMDSAbs_ElementType    t = SMDS_MeshCell::ElemType( geom );
+      SMDSAbs_ElementType t = SMDS_MeshCell::ElemType( geom );
       if ( t != _elemType ) continue;
 
       nbElems = mesh->GetMeshInfo().NbElements( geom );

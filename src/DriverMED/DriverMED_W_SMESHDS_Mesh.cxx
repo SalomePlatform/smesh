@@ -1000,9 +1000,11 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::PerformInternal(LowLevelWriter myM
                                                  theIsElemNames);
 
         TInt aNbNodes = MED::GetNbNodes(aElemTypeData->_geomType);
+
         elemIterator = myMesh->elementsIterator( aElemTypeData->_smdsType );
         if ( aElemTypeData->_smdsType == SMDSAbs_0DElement && ! nodesOf0D.empty() )
           elemIterator = iterVecIter;
+
         while ( elemIterator->more() )
         {
           const SMDS_MeshElement* anElem = elemIterator->next();
@@ -1029,6 +1031,15 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::PerformInternal(LowLevelWriter myM
           if ( ++iElem == aCellInfo->GetNbElem() )
             break;
         }
+        // fix numbers of added SMDSAbs_0DElement
+        if ( aElemTypeData->_smdsType == SMDSAbs_0DElement && ! nodesOf0D.empty() )
+        {
+          iElem = myMesh->Nb0DElements();
+          TInt elem0DNum = FromSmIdType<TInt>( myMesh->MaxElementID() + 1 );
+          for ( size_t i = 0; i < nodesOf0D.size(); ++i )
+            aCellInfo->SetElemNum( iElem++, elem0DNum++);
+        }
+
         // store data in a file
         myMed->SetCellInfo(aCellInfo);
       }
