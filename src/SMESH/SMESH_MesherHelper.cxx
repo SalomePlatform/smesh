@@ -658,10 +658,10 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     // corresponding EDGE from FACE, get pcurve for this
     // EDGE and retrieve value from this pcurve
     SMDS_EdgePositionPtr epos = pos;
-    const int              edgeID = n->getshapeId();
-    const TopoDS_Edge& E = TopoDS::Edge( GetMeshDS()->IndexToShape( edgeID ));
+    const int          edgeID = n->getshapeId();
+    const TopoDS_Edge&      E = TopoDS::Edge( GetMeshDS()->IndexToShape( edgeID ));
     double f, l, u = epos->GetUParameter();
-    Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface( E, F, f, l );
+    Handle(Geom2d_Curve)  C2d = BRep_Tool::CurveOnSurface( E, F, f, l );
     bool validU = ( !C2d.IsNull() && ( f < u ) && ( u < l ));
     if ( validU ) uv = C2d->Value( u );
     else          uv.SetCoord( Precision::Infinite(),0.);
@@ -768,6 +768,17 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
 
         if ( isSeam )
           uv = getUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
+      }
+      else if ( myParIndex && n2 )
+      {
+        gp_Pnt2d oldUV = uv;
+        gp_Pnt2d   uv2 = GetNodeUV( F, n2, 0 );
+        if ( myParIndex & 1 )
+          uv.SetX( uv.X() + ShapeAnalysis::AdjustToPeriod( uv.X(), myPar1[0], myPar2[0]));
+        if ( myParIndex & 2 )
+          uv.SetY( uv.Y() + ShapeAnalysis::AdjustToPeriod( uv.Y(), myPar1[1], myPar2[1]));
+        if ( uv.SquareDistance( uv2 ) > oldUV.SquareDistance( uv2 ))
+          uv = oldUV;
       }
     }
   }
@@ -2724,33 +2735,30 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
            theParam2ColumnMap.begin()->second.size() == prevNbRows + expectNbRows );
 }
 
-namespace
+//================================================================================
+/*!
+ * \brief Return true if a node is at a corner of a 2D structured mesh of FACE
+ */
+//================================================================================
+
+bool SMESH_MesherHelper::IsCornerOfStructure( const SMDS_MeshNode*   n,
+                                              const SMESHDS_SubMesh* faceSM,
+                                              SMESH_MesherHelper&    faceAnalyser )
 {
-  //================================================================================
-  /*!
-   * \brief Return true if a node is at a corner of a 2D structured mesh of FACE
-   */
-  //================================================================================
-
-  bool isCornerOfStructure( const SMDS_MeshNode*   n,
-                            const SMESHDS_SubMesh* faceSM,
-                            SMESH_MesherHelper&    faceAnalyser )
-  {
-    int nbFacesInSM = 0;
-    if ( n ) {
-      SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator( SMDSAbs_Face );
-      while ( fIt->more() )
-        nbFacesInSM += faceSM->Contains( fIt->next() );
-    }
-    if ( nbFacesInSM == 1 )
-      return true;
-
-    if ( nbFacesInSM == 2 && n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
-    {
-      return faceAnalyser.IsRealSeam( n->getshapeId() );
-    }
-    return false;
+  int nbFacesInSM = 0;
+  if ( n ) {
+    SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator( SMDSAbs_Face );
+    while ( fIt->more() )
+      nbFacesInSM += faceSM->Contains( fIt->next() );
   }
+  if ( nbFacesInSM == 1 )
+    return true;
+
+  if ( nbFacesInSM == 2 && n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+  {
+    return faceAnalyser.IsRealSeam( n->getshapeId() );
+  }
+  return false;
 }
 
 //=======================================================================
@@ -2785,7 +2793,7 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   int nbRemainEdges = nbEdgesInWires.front();
   do {
     TopoDS_Vertex V = IthVertex( 0, edges.front() );
-    isCorner = isCornerOfStructure( SMESH_Algo::VertexNode( V, meshDS ),
+    isCorner = IsCornerOfStructure( SMESH_Algo::VertexNode( V, meshDS ),
                                     fSM, faceAnalyser);
     if ( !isCorner ) {
       edges.splice( edges.end(), edges, edges.begin() );
@@ -2826,7 +2834,7 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
   for ( ; n != nodes.end(); ++n )
   {
     ++nbEdges;
-    if ( isCornerOfStructure( *n, fSM, faceAnalyser )) {
+    if ( IsCornerOfStructure( *n, fSM, faceAnalyser )) {
       nbEdgesInSide.push_back( nbEdges );
       nbEdges = 0;
     }

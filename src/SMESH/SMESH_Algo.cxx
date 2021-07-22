@@ -1068,6 +1068,7 @@ bool SMESH_2D_Algo::FixInternalNodes(const SMESH_ProxyMesh& mesh,
     return false;
 
   SMESH_MesherHelper helper( *mesh.GetMesh() );
+  helper.SetSubShape( face );
 
   // get all faces from a proxy sub-mesh
   typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TIterator;
@@ -1144,7 +1145,7 @@ bool SMESH_2D_Algo::FixInternalNodes(const SMESH_ProxyMesh& mesh,
   {
     ++iRow1, ++iRow2;
 
-    // get the first quad in the next face row 
+    // get the first quad in the next face row
     if (( quad = SMESH_MeshAlgos::FindFaceInSet( nodeRows[iRow1][0],
                                                  nodeRows[iRow1][1],
                                                  allFaces, /*avoid=*/firstRowQuads,
@@ -1184,17 +1185,28 @@ bool SMESH_2D_Algo::FixInternalNodes(const SMESH_ProxyMesh& mesh,
 
   // get params of the first (bottom) and last (top) node rows
   UVPtStructVec uvB( nodeRows[0].size() ), uvT( nodeRows[0].size() );
+  bool uvOk = false, *toCheck = helper.GetPeriodicIndex() ? &uvOk : nullptr;
+  const bool isFix3D = helper.HasDegeneratedEdges();
   for ( int isBot = 0; isBot < 2; ++isBot )
   {
+    iRow1 = isBot ? 0 : nodeRows.size()-1;
+    iRow2 = isBot ? 1 : nodeRows.size()-2;
     UVPtStructVec &                  uvps = isBot ? uvB : uvT;
-    vector< const SMDS_MeshNode* >& nodes = nodeRows[ isBot ? 0 : nodeRows.size()-1 ];
-    for ( size_t i = 0; i < nodes.size(); ++i )
+    vector< const SMDS_MeshNode* >& nodes = nodeRows[ iRow1 ];
+    const size_t rowLen = nodes.size();
+    for ( size_t i = 0; i < rowLen; ++i )
     {
       uvps[i].node = nodes[i];
-      gp_XY uv = helper.GetNodeUV( face, uvps[i].node );
-      uvps[i].u = uv.Coord(1);
-      uvps[i].v = uv.Coord(2);
       uvps[i].x = 0;
+      if ( !isFix3D )
+      {
+        size_t i2 = i;
+        if ( i == 0          ) i2 = 1;
+        if ( i == rowLen - 1 ) i2 = rowLen - 2;
+        gp_XY uv = helper.GetNodeUV( face, uvps[i].node, nodeRows[iRow2][i2], toCheck );
+        uvps[i].u = uv.Coord(1);
+        uvps[i].v = uv.Coord(2);
+      }
     }
     // calculate x (normalized param)
     for ( size_t i = 1; i < nodes.size(); ++i )
@@ -1207,15 +1219,23 @@ bool SMESH_2D_Algo::FixInternalNodes(const SMESH_ProxyMesh& mesh,
   UVPtStructVec uvL( nodeRows.size() ), uvR( nodeRows.size() );
   for ( int isLeft = 0; isLeft < 2; ++isLeft )
   {
-    UVPtStructVec & uvps = isLeft ? uvL : uvR;
-    const int       iCol = isLeft ? 0 : nodeRows[0].size() - 1;
-    for ( size_t i = 0; i < nodeRows.size(); ++i )
+    UVPtStructVec &  uvps = isLeft ? uvL : uvR;
+    const int       iCol1 = isLeft ? 0 : nodeRows[0].size() - 1;
+    const int       iCol2 = isLeft ? 1 : nodeRows[0].size() - 2;
+    const size_t   nbRows = nodeRows.size();
+    for ( size_t i = 0; i < nbRows; ++i )
     {
-      uvps[i].node = nodeRows[i][iCol];
-      gp_XY uv = helper.GetNodeUV( face, uvps[i].node );
-      uvps[i].u = uv.Coord(1);
-      uvps[i].v = uv.Coord(2);
+      uvps[i].node = nodeRows[i][iCol1];
       uvps[i].y = 0;
+      if ( !isFix3D )
+      {
+        size_t i2 = i;
+        if ( i == 0          ) i2 = 1;
+        if ( i == nbRows - 1 ) i2 = nbRows - 2;
+        gp_XY uv = helper.GetNodeUV( face, uvps[i].node, nodeRows[i2][iCol2], toCheck );
+        uvps[i].u = uv.Coord(1);
+        uvps[i].v = uv.Coord(2);
+      }
     }
     // calculate y (normalized param)
     for ( size_t i = 1; i < nodeRows.size(); ++i )
@@ -1226,31 +1246,65 @@ bool SMESH_2D_Algo::FixInternalNodes(const SMESH_ProxyMesh& mesh,
 
   // update node coordinates
   SMESHDS_Mesh*   meshDS = mesh.GetMeshDS();
-  Handle(Geom_Surface) S = BRep_Tool::Surface( face );
-  gp_XY a0 ( uvB.front().u, uvB.front().v );
-  gp_XY a1 ( uvB.back().u,  uvB.back().v );
-  gp_XY a2 ( uvT.back().u,  uvT.back().v );
-  gp_XY a3 ( uvT.front().u, uvT.front().v );
-  for ( size_t iRow = 1; iRow < nodeRows.size()-1; ++iRow )
+  if ( !isFix3D )
   {
-    gp_XY p1 ( uvR[ iRow ].u, uvR[ iRow ].v );
-    gp_XY p3 ( uvL[ iRow ].u, uvL[ iRow ].v );
-    const double y0 = uvL[ iRow ].y;
-    const double y1 = uvR[ iRow ].y;
-    for ( size_t iCol = 1; iCol < nodeRows[0].size()-1; ++iCol )
+    Handle(Geom_Surface) S = BRep_Tool::Surface( face );
+    gp_XY a0 ( uvB.front().u, uvB.front().v );
+    gp_XY a1 ( uvB.back().u,  uvB.back().v );
+    gp_XY a2 ( uvT.back().u,  uvT.back().v );
+    gp_XY a3 ( uvT.front().u, uvT.front().v );
+    for ( size_t iRow = 1; iRow < nodeRows.size()-1; ++iRow )
     {
-      gp_XY p0 ( uvB[ iCol ].u, uvB[ iCol ].v );
-      gp_XY p2 ( uvT[ iCol ].u, uvT[ iCol ].v );
-      const double x0 = uvB[ iCol ].x;
-      const double x1 = uvT[ iCol ].x;
-      double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
-      double y = y0 + x * (y1 - y0);
-      gp_XY uv = helper.calcTFI( x, y, a0,a1,a2,a3, p0,p1,p2,p3 );
-      gp_Pnt p = S->Value( uv.Coord(1), uv.Coord(2));
-      const SMDS_MeshNode* n = nodeRows[iRow][iCol];
-      meshDS->MoveNode( n, p.X(), p.Y(), p.Z() );
-      if ( SMDS_FacePositionPtr pos = n->GetPosition() )
-        pos->SetParameters( uv.Coord(1), uv.Coord(2) );
+      gp_XY p1 ( uvR[ iRow ].u, uvR[ iRow ].v );
+      gp_XY p3 ( uvL[ iRow ].u, uvL[ iRow ].v );
+      const double y0 = uvL[ iRow ].y;
+      const double y1 = uvR[ iRow ].y;
+      for ( size_t iCol = 1; iCol < nodeRows[0].size()-1; ++iCol )
+      {
+        gp_XY p0 ( uvB[ iCol ].u, uvB[ iCol ].v );
+        gp_XY p2 ( uvT[ iCol ].u, uvT[ iCol ].v );
+        const double x0 = uvB[ iCol ].x;
+        const double x1 = uvT[ iCol ].x;
+        double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
+        double y = y0 + x * (y1 - y0);
+        gp_XY uv = helper.calcTFI( x, y, a0,a1,a2,a3, p0,p1,p2,p3 );
+        gp_Pnt p = S->Value( uv.Coord(1), uv.Coord(2));
+        const SMDS_MeshNode* n = nodeRows[iRow][iCol];
+        meshDS->MoveNode( n, p.X(), p.Y(), p.Z() );
+        if ( SMDS_FacePositionPtr pos = n->GetPosition() )
+          pos->SetParameters( uv.Coord(1), uv.Coord(2) );
+      }
+    }
+  }
+  else
+  {
+    Handle(ShapeAnalysis_Surface) S = helper.GetSurface( face );
+    SMESH_NodeXYZ a0 ( uvB.front().node );
+    SMESH_NodeXYZ a1 ( uvB.back().node );
+    SMESH_NodeXYZ a2 ( uvT.back().node );
+    SMESH_NodeXYZ a3 ( uvT.front().node );
+    for ( size_t iRow = 1; iRow < nodeRows.size()-1; ++iRow )
+    {
+      SMESH_NodeXYZ p1 ( uvR[ iRow ].node );
+      SMESH_NodeXYZ p3 ( uvL[ iRow ].node );
+      const double y0 = uvL[ iRow ].y;
+      const double y1 = uvR[ iRow ].y;
+      for ( size_t iCol = 1; iCol < nodeRows[0].size()-1; ++iCol )
+      {
+        SMESH_NodeXYZ p0 ( uvB[ iCol ].node );
+        SMESH_NodeXYZ p2 ( uvT[ iCol ].node );
+        const double x0 = uvB[ iCol ].x;
+        const double x1 = uvT[ iCol ].x;
+        double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
+        double y = y0 + x * (y1 - y0);
+        gp_Pnt p = helper.calcTFI( x, y, a0,a1,a2,a3, p0,p1,p2,p3 );
+        gp_Pnt2d uv = S->ValueOfUV( p, Precision::Confusion() );
+        p = S->Value( uv );
+        const SMDS_MeshNode* n = nodeRows[iRow][iCol];
+        meshDS->MoveNode( n, p.X(), p.Y(), p.Z() );
+        if ( SMDS_FacePositionPtr pos = n->GetPosition() )
+          pos->SetParameters( uv.Coord(1), uv.Coord(2) );
+      }
     }
   }
   return true;

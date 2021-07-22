@@ -128,6 +128,13 @@ class SMESH_EXPORT SMESH_MesherHelper
   static bool IsStructured( SMESH_subMesh* faceSM );
 
   /*!
+   * \brief Return true if a node is at a corner of a 2D structured mesh of FACE
+   */
+  static bool IsCornerOfStructure( const SMDS_MeshNode*   n,
+                                   const SMESHDS_SubMesh* faceSM,
+                                   SMESH_MesherHelper&    faceAnalyser );
+
+  /*!
    * \brief Return true if 2D mesh on FACE is distored
    */
   static bool IsDistorted2D( SMESH_subMesh*      faceSM,
