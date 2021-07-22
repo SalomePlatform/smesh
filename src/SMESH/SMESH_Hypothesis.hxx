@@ -128,7 +128,7 @@ public:
   /*!
    * \brief Find a mesh with given persistent ID
    */
-  SMESH_Mesh* GetMeshByPersistentID(int id);
+  SMESH_Mesh* GetMeshByPersistentID(int id) const;
 
 protected:
   SMESH_Gen* _gen;

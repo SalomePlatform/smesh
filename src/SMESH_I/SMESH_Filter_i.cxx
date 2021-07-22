@@ -4185,11 +4185,9 @@ namespace SMESH {
       "FT_LogicalOR",
       "FT_Undefined"};
 
-  #ifdef _DEBUG_
     // check if functName is complete, compilation failure means that enum FunctorType changed
-    const int nbFunctors = sizeof(functName) / sizeof(const char*);
-    int _assert[( nbFunctors == SMESH::FT_Undefined + 1 ) ? 2 : -1 ]; _assert[0]=_assert[1]=0;
-  #endif
+    static_assert( sizeof(functName) / sizeof(const char*) == SMESH::FT_Undefined + 1,
+                   "Update names of FunctorType's!!!" );
 
     return functName;
   }

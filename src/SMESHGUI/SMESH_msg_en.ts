@@ -2841,6 +2841,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Renumbering</translation>
     </message>
     <message>
+        <source>SMESH_RENUMBER</source>
+        <translation>Renumber</translation>
+    </message>
+    <message>
         <source>SMESH_RENUMBERING_ELEMENTS_TITLE</source>
         <translation>Renumbering elements</translation>
     </message>
@@ -4884,6 +4888,10 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_SHOW_WARN</source>
         <translation>Show warning when exporting group</translation>
+    </message>
+    <message>
+        <source>PREF_MED_SAVE_NUMS</source>
+        <translation>Save cell/node numbers to MED file</translation>
     </message>
     <message>
         <source>PREF_ZTOLERANCE</source>

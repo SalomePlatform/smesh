@@ -439,7 +439,7 @@ SMESH::smIdType  SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
 
 //=============================================================================
 /*!
- *
+ * Return ID of theIndex-th group item
  */
 //=============================================================================
 

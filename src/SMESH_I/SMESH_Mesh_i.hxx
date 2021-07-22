@@ -212,14 +212,13 @@ public:
                   CORBA::Boolean     overwrite,
                   CORBA::Boolean     autoDimension = true);
 
-  CORBA::LongLong ExportMEDCoupling(CORBA::Boolean     auto_groups,
-  CORBA::Boolean     autoDimension = true
-  );
+  CORBA::LongLong ExportMEDCoupling(CORBA::Boolean auto_groups,
+                                    CORBA::Boolean autoDimension = true);
 
   void ExportSAUV( const char* file, CORBA::Boolean auto_groups );
 
-  void ExportDAT( const char* file );
-  void ExportUNV( const char* file );
+  void ExportDAT( const char* file, const CORBA::Boolean renumber );
+  void ExportUNV( const char* file, const CORBA::Boolean renumber  );
   void ExportSTL( const char* file, bool isascii );
   void ExportCGNS(SMESH::SMESH_IDSource_ptr meshPart,
                   const char*               file,
@@ -231,13 +230,14 @@ public:
 
     
   template<class SPECLS>
-  void ExportPartToMEDCommon(SPECLS& speCls,
-      SMESH::SMESH_IDSource_ptr meshPart,
-      CORBA::Boolean            auto_groups,
-      CORBA::Boolean            autoDim,
-      const GEOM::ListOfFields& fields,
-      const char*               geomAssocFields,
-      CORBA::Double             ZTolerance);
+    void ExportPartToMEDCommon(SPECLS&                   speCls,
+                               SMESH::SMESH_IDSource_ptr meshPart,
+                               CORBA::Boolean            auto_groups,
+                               CORBA::Boolean            autoDim,
+                               const GEOM::ListOfFields& fields,
+                               const char*               geomAssocFields,
+                               CORBA::Double             ZTolerance,
+                               CORBA::Boolean            saveNumbers );
 
   void ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,
@@ -247,19 +247,23 @@ public:
                        CORBA::Boolean            autoDim,
                        const GEOM::ListOfFields& fields,
                        const char*               geomAssocFields,
-                       CORBA::Double             ZTolerance);
+                       CORBA::Double             ZTolerance,
+                       CORBA::Boolean            saveNumbers );
 
   CORBA::LongLong ExportPartToMEDCoupling(SMESH::SMESH_IDSource_ptr meshPart,
-                       CORBA::Boolean            auto_groups,
-                       CORBA::Boolean            autoDim,
-                       const GEOM::ListOfFields& fields,
-                       const char*               geomAssocFields,
-                       CORBA::Double             ZTolerance);
+                                          CORBA::Boolean            auto_groups,
+                                          CORBA::Boolean            autoDim,
+                                          const GEOM::ListOfFields& fields,
+                                          const char*               geomAssocFields,
+                                          CORBA::Double             ZTolerance,
+                                          CORBA::Boolean            saveNumbers);
 
   void ExportPartToDAT(SMESH::SMESH_IDSource_ptr meshPart,
-                       const char*               file);
+                       const char*               file,
+                       CORBA::Boolean            renumber);
   void ExportPartToUNV(SMESH::SMESH_IDSource_ptr meshPart,
-                       const char*               file);
+                       const char*               file,
+                       CORBA::Boolean            renumber);
   void ExportPartToSTL(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,
                        CORBA::Boolean            isascii);

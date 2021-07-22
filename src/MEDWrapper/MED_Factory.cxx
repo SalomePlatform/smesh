@@ -197,12 +197,12 @@ namespace MED
     med_int wantedMajor = MED_MAJOR_NUM;
     med_int wantedMinor = MED_MINOR_NUM;
     // when non managed version of file is requested : ignore it and take the latest version
-    std::vector<int> versionsOK(GetMEDVersionsAppendCompatible());
-    bool isVersionRequestedOK(std::find(versionsOK.begin(),versionsOK.end(),theVersion)!=versionsOK.end());
+    std::vector<int> versionsOK = GetMEDVersionsAppendCompatible();
+    bool   isVersionRequestedOK = std::find(versionsOK.begin(),versionsOK.end(),theVersion)!=versionsOK.end();
     if (isCreated && isVersionRequestedOK)
     {
-      wantedMajor = theVersion/10;
-      wantedMinor = theVersion%10;
+      wantedMajor = theVersion / 10;
+      wantedMinor = theVersion % 10;
     }
     return new MED::TWrapper(fileName, true, tfileInst, wantedMajor, wantedMinor);
   }

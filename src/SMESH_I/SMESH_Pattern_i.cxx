@@ -286,7 +286,7 @@ SMESH::point_array*
 
   list<const gp_XYZ *> xyzList;
   set<const SMDS_MeshFace*> fset;
-  for ( SMESH::smIdType i = 0; i < theFacesIDs.length(); i++)
+  for ( CORBA::ULong i = 0; i < theFacesIDs.length(); i++)
   {
     SMESH::smIdType index = theFacesIDs[i];
     const SMDS_MeshElement * elem = aMesh->GetMeshDS()->FindElement(index);
@@ -345,7 +345,7 @@ SMESH::point_array*
 
   list<const gp_XYZ *> xyzList;
   set<const SMDS_MeshVolume*> vset;
-  for ( SMESH::smIdType i = 0; i < theVolumesIDs.length(); i++)
+  for ( CORBA::ULong i = 0; i < theVolumesIDs.length(); i++)
   {
     SMESH::smIdType index = theVolumesIDs[i];
     const SMDS_MeshElement * elem = aMesh->GetMeshDS()->FindElement(index);

@@ -54,6 +54,10 @@ General Preferences
 
   * **Show warning when exporting group** - if activated, a warning is displayed when exporting a group.
 
+.. _med_export_numbers_pref:
+
+  * **Save cell/node numbers to MED file** - if activated, optional node and cell numbers are saved to MED file.
+
 .. _medexport_z_tolerance_pref:
 
   * **Z tolerance for MED export** - defines Z tolerance in :ref:`MED Export <export_auto_groups>` dialog.

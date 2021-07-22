@@ -32,6 +32,14 @@
 
 using namespace std;
 
+//================================================================================
+/*!
+ * \brief Write mesh data to a file
+ *  \param [in] renumber - if true, renumber nodes and cell starting from 1
+ *  \return Driver_Mesh::Status - Ok or not
+ */
+//================================================================================
+
 Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
 {
   Kernel_Utils::Localizer loc;
@@ -70,21 +78,24 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   SCRUTE(nb_of_volumes);
 
   //fprintf(stdout, "%d %d\n", nbNodes, nbCells);
-  fprintf(aFileId, "%ld %ld\n", nbNodes, static_cast< long >( nbCells ));
+  fprintf(aFileId, "%ld %ld\n", static_cast< long >( nbNodes ), static_cast< long >( nbCells ));
 
   /****************************************************************************
    *                       ECRITURE DES NOEUDS                                 *
    ****************************************************************************/
 
   std::vector< size_t > nodeNumByID;
-  if ( myMesh->HasNumerationHoles() )
+  if ( myRenumber && myMesh->HasNumerationHoles() )
     nodeNumByID.resize( myMesh->MaxNodeID() + 1 );
 
-  int num;
+  smIdType num;
   SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
   for ( num = 1; itNodes->more(); ++num )
   {
     const SMDS_MeshNode * node = itNodes->next();
+    if ( !myRenumber )
+      num = node->GetID();
+
     fprintf(aFileId, "%d %.14e %.14e %.14e\n", num, node->X(), node->Y(), node->Z());
 
     if ( !nodeNumByID.empty() )
@@ -100,6 +111,9 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   for ( SMDS_EdgeIteratorPtr itEdges = myMesh->edgesIterator(); itEdges->more(); ++num )
   {
     const SMDS_MeshElement * elem = itEdges->next();
+    if ( !myRenumber )
+      num = elem->GetID();
+
     fprintf(aFileId, "%d %d ", num, 100 + elem->NbNodes());
 
     for ( SMDS_ElemIteratorPtr it = elem->nodesIterator(); it->more(); )
@@ -115,6 +129,8 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   for ( SMDS_FaceIteratorPtr itFaces = myMesh->facesIterator(); itFaces->more(); ++num )
   {
     const SMDS_MeshElement * elem = itFaces->next();
+    if ( !myRenumber )
+      num = elem->GetID();
 
     fprintf(aFileId, "%d %d ", num, (elem->IsPoly() ? 400 : 200 ) + elem->NbNodes() );
 
@@ -133,6 +149,9 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   for ( SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator(); itVolumes->more(); ++num )
   {
     const SMDS_MeshElement * elem = itVolumes->next();
+    if ( !myRenumber )
+      num = elem->GetID();
+
     if ( elem->IsPoly() )
     {
       fprintf(aFileId, "%d %d ", num, 500 + elem->NbNodes());

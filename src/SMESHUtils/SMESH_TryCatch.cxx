@@ -39,6 +39,15 @@ const char* SMESH::returnError(const char* txt)
   return txt;
 }
 
+void SMESH::printErrorInDebugMode(const char* txt)
+{
+#ifdef _DEBUG_
+  std::cerr <<  txt << " " << __FILE__ << ": " << __LINE__ << std::endl;
+#else
+  (void)txt; // unused in release mode
+#endif
+}
+
 // ------------------------------------------------------------------
 
 #include "SMESH_ComputeError.hxx"

@@ -1533,18 +1533,18 @@ void MgAdapt::buildBackGroundMeshAndSolFiles(const std::vector<std::string>& fie
 }
 
 MgAdapt::Status MgAdapt::addMessage(const std::string& msg,
-                                  const bool         isFatal/*=false*/)
+                                    const bool         isFatal/*=false*/)
 {
   if ( isFatal )
-    _myErrorMessages.clear(); // warnings are useless if a fatal error encounters
+    _errorMessages.clear(); // warnings are useless if a fatal error encounters
 
-  _myErrorMessages.push_back( msg );
+  _errorMessages.push_back( msg );
 
-//~MESSAGE(msg);
+  //~MESSAGE(msg);
 #ifdef _DEBUG_
   std::cout << msg << std::endl;
 #endif
-  return ( _myStatus = isFatal ? MgAdapt::DRS_FAIL : MgAdapt::DRS_WARN_SKIP_ELEM );
+  return ( _status = isFatal ? MgAdapt::DRS_FAIL : MgAdapt::DRS_WARN_SKIP_ELEM );
 }
 
 void MgAdapt::updateTimeStepRank()

@@ -460,6 +460,7 @@ namespace
     bool aCheckWarn = true;
     if ( resMgr )
       aCheckWarn = resMgr->booleanValue( "SMESH", "show_warning", false );
+
     // get mesh object from selection and check duplication of their names
     bool hasDuplicatedMeshNames = false;
     QList< QPair< SMESH::SMESH_IDSource_var, QString > >           aMeshList;
@@ -628,8 +629,8 @@ namespace
         "SMESH_OCTAHEDRA","SMESH_POLYEDRONS","SMESH_QUADRATIC_POLYEDRONS","SMESH_BALLS"
       };
       // is typeMsg complete? (compilation failure mains that enum SMDSAbs_EntityType changed)
-      const int nbTypes = sizeof( typeMsg ) / sizeof( const char* );
-      int _assert[( nbTypes == SMESH::Entity_Last ) ? 2 : -1 ]; _assert[0]=_assert[1]=0;
+      static_assert( sizeof(typeMsg) / sizeof(const char*) == SMESH::Entity_Last,
+                     "Update names of EntityType's!!!" );
 
       QString andStr = " " + QObject::tr("SMESH_AND") + " ", comma(", ");
       for ( size_t iType = 0; iType < presentNotSupported.size(); ++iType ) {
@@ -655,12 +656,11 @@ namespace
 
     // Init the parameters with the default values
     bool aIsASCII_STL   = true;
-    bool toCreateGroups = false;
-    if ( resMgr )
-      toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
-    bool toOverwrite  = true;
-    bool toFindOutDim = true;
-    double       zTol = resMgr ? resMgr->doubleValue( "SMESH", "med_ztolerance", 0. ) : 0.;
+    bool toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
+    bool   toOverwrite  = true;
+    bool   toFindOutDim = true;
+    bool     toRenumber = true;
+    double         zTol = resMgr->doubleValue( "SMESH", "med_ztolerance", 0. );
 
     QString aFilter, aTitle = QObject::tr("SMESH_EXPORT_MESH");
     QString anInitialPath = "";
@@ -670,44 +670,46 @@ namespace
     QList< QPair< GEOM::ListOfFields_var, QString > > aFieldList;
 
     // Get a file name to write in and additional options
-    if ( isUNV || isDAT || isGMF ) // Export w/o options
+    if ( isGMF ) // Export w/o options
     {
-      if ( isUNV )
-        aFilter = QObject::tr( "IDEAS_FILES_FILTER" ) + " (*.unv)";
-      else if ( isDAT )
-        aFilter = QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)";
-      else if ( isGMF )
-        aFilter = QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)" +
-          ";;" +  QObject::tr( "GMF_BINARY_FILES_FILTER" )  + " (*.meshb)";
-     if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
+      aFilter = QObject::tr( "GMF_ASCII_FILES_FILTER"  ) + " (*.mesh)" +
+        ";;" +  QObject::tr( "GMF_BINARY_FILES_FILTER" ) + " (*.meshb)";
+      if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
+
       aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
                                             anInitialPath + QString("/") + aMeshName,
                                             aFilter, aTitle, false);
     }
-    else if ( isCGNS )// Export to CGNS
+    else if ( isCGNS || isUNV || isDAT ) // Export to [ CGNS | UNV | DAT ] - one option
     {
-      const char* theByTypeResource = "cgns_group_elems_by_type";
-      toCreateGroups = SMESHGUI::resourceMgr()->booleanValue( "SMESH", theByTypeResource, false );
+      const char* theOptionResource = isCGNS ? "cgns_group_elems_by_type" : "export_renumber";
+      bool option = resMgr->booleanValue( "SMESH", theOptionResource, false );
 
       QStringList checkBoxes;
-      checkBoxes << QObject::tr("CGNS_EXPORT_ELEMS_BY_TYPE");
+      checkBoxes << QObject::tr( isCGNS ? "CGNS_EXPORT_ELEMS_BY_TYPE" : "SMESH_RENUMBER" );
 
       SalomeApp_CheckFileDlg* fd =
         new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
       fd->setWindowTitle( aTitle );
-      fd->setNameFilter( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
+      if ( isCGNS )
+        fd->setNameFilter( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
+      else if ( isUNV )
+        fd->setNameFilter( QObject::tr( "IDEAS_FILES_FILTER" ) + " (*.unv)" );
+      else if ( isDAT )
+        fd->setNameFilter( QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)" );
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
-      fd->selectFile(aMeshName);
+      fd->selectFile( aMeshName );
       SMESHGUI_FileValidator* fv = new SMESHGUI_FileValidator( fd );
       fd->setValidator( fv );
-      fd->SetChecked( toCreateGroups, 0 );
+      fd->SetChecked( option, 0 );
 
       if ( fd->exec() )
         aFilename = fd->selectedFile();
-      toOverwrite    = fv->isOverwrite(aFilename);
-      toCreateGroups = fd->IsChecked(0);
-      SMESHGUI::resourceMgr()->setValue("SMESH", theByTypeResource, toCreateGroups );
+      toOverwrite    = fv->isOverwrite( aFilename );
+      option = fd->IsChecked( 0 );
+      SMESHGUI::resourceMgr()->setValue("SMESH", theOptionResource, option );
+      ( isCGNS ? toCreateGroups : toRenumber ) = option;
 
       delete fd;
     }
@@ -751,7 +753,6 @@ namespace
         for ( CORBA::ULong i = 0; i < mvok->length(); ++i )
         {
           QString vs = (char*)( SMESH_Comment( mvok[i]/10 ) << "." << mvok[i]%10 );
-          MESSAGE("MED version: " << vs.toStdString());
           aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  mvok[i]);
         }
       }
@@ -924,9 +925,9 @@ namespace
 //           if ( SMESHGUI::automaticUpdate() )
 //             SMESH::UpdateView();
 //         }
-        if ( isMED && isOkToWrite)
+        if ( isMED && isOkToWrite )
         {
-          MESSAGE("OK to write MED file "<< aFilename.toUtf8().constData());
+          const bool saveNumbers = resMgr->booleanValue( "SMESH", "med_save_numbers", true );
           aMeshIter = aMeshList.begin();
           for( int aMeshIndex = 0; aMeshIter != aMeshList.end(); aMeshIter++, aMeshIndex++ )
           {
@@ -934,15 +935,11 @@ namespace
             SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
             const GEOM::ListOfFields&       fields = aFieldList[ aMeshIndex ].first.in();
             const QString&            geoAssFields = aFieldList[ aMeshIndex ].second;
-            const bool                   hasFields = ( fields.length() || !geoAssFields.isEmpty() );
-            if ( !hasFields && aMeshOrGroup->_is_equivalent( aMeshItem ) && zTol < 0 )
-              aMeshItem->ExportMED( aFilename.toUtf8().data(), toCreateGroups, aFormat,
-                                    toOverwrite && aMeshIndex == 0, toFindOutDim );
-            else
-              aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(),
-                                          toCreateGroups, aFormat,
-                                          toOverwrite && aMeshIndex == 0, toFindOutDim,
-                                          fields, geoAssFields.toLatin1().data(), zTol );
+
+            aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(),
+                                        toCreateGroups, aFormat,
+                                        toOverwrite && aMeshIndex == 0, toFindOutDim,
+                                        fields, geoAssFields.toLatin1().data(), zTol, saveNumbers );
           }
         }
         else if ( isSAUV )
@@ -957,16 +954,16 @@ namespace
         else if ( isDAT )
         {
           if ( aMeshOrGroup->_is_equivalent( aMesh ))
-            aMesh->ExportDAT( aFilename.toUtf8().data() );
+            aMesh->ExportDAT( aFilename.toUtf8().data(), toRenumber );
           else
-            aMesh->ExportPartToDAT( aMeshOrGroup, aFilename.toUtf8().data() );
+            aMesh->ExportPartToDAT( aMeshOrGroup, aFilename.toUtf8().data(), toRenumber );
         }
         else if ( isUNV )
         {
           if ( aMeshOrGroup->_is_equivalent( aMesh ))
-            aMesh->ExportUNV( aFilename.toUtf8().data() );
+            aMesh->ExportUNV( aFilename.toUtf8().data(), toRenumber );
           else
-            aMesh->ExportPartToUNV( aMeshOrGroup, aFilename.toUtf8().data() );
+            aMesh->ExportPartToUNV( aMeshOrGroup, aFilename.toUtf8().data(), toRenumber );
         }
         else if ( isSTL )
         {
@@ -5479,6 +5476,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( exportgroup, "columns", 2 );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
   addPreference( tr( "PREF_SHOW_WARN" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "show_warning" );
+  addPreference( tr( "PREF_MED_SAVE_NUMS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "med_save_numbers" );
   int zTol = addPreference( tr( "PREF_ZTOLERANCE" ), exportgroup, LightApp_Preferences::DblSpin, "SMESH", "med_ztolerance" );
   setPreferenceProperty( zTol, "precision", 10 );
   setPreferenceProperty( zTol, "min", 0.0000000001 );

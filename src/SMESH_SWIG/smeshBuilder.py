@@ -2305,38 +2305,41 @@ class Mesh(metaclass = MeshMeta):
         Export the mesh in a memory representation.
 
         Parameters:
-        auto_groups (boolean): parameter for creating/not creating
-                the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
-                the typical use is auto_groups=False.
-        overwrite (boolean): parameter for overwriting/not overwriting the file
-        meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
-        autoDimension: if *True* (default), a space dimension of a MED mesh can be either
-
-                - 1D if all mesh nodes lie on OX coordinate axis, or
-                - 2D if all mesh nodes lie on XOY coordinate plane, or
-                - 3D in the rest cases.
-
-                If *autoDimension* is *False*, the space dimension is always 3.
-        fields: list of GEOM fields defined on the shape to mesh.
-        geomAssocFields: each character of this string means a need to export a 
-                corresponding field; correspondence between fields and characters 
-                is following:
-
-                - 'v' stands for "_vertices_" field;
-                - 'e' stands for "_edges_" field;
-                - 'f' stands for "_faces_" field;
-                - 's' stands for "_solids_" field.
-
-        zTolerance (float): tolerance in Z direction. If Z coordinate of a node is 
-                        close to zero within a given tolerance, the coordinate is set to zero.
-                        If *ZTolerance* is negative (default), the node coordinates are kept as is.
-        """
+            auto_groups (boolean): parameter for creating/not creating
+                    the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
+                    the typical use is auto_groups=False.
+            overwrite (boolean): parameter for overwriting/not overwriting the file
+            meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`)
+                    to export instead of the mesh
+            autoDimension: if *True* (default), a space dimension of a MED mesh can be either
+    
+                    - 1D if all mesh nodes lie on OX coordinate axis, or
+                    - 2D if all mesh nodes lie on XOY coordinate plane, or
+                    - 3D in the rest cases.
+    
+                    If *autoDimension* is *False*, the space dimension is always 3.
+            fields: list of GEOM fields defined on the shape to mesh.
+            geomAssocFields: each character of this string means a need to export a 
+                    corresponding field; correspondence between fields and characters 
+                    is following:
+    
+                    - 'v' stands for "_vertices_" field;
+                    - 'e' stands for "_edges_" field;
+                    - 'f' stands for "_faces_" field;
+                    - 's' stands for "_solids_" field.
+    
+            zTolerance (float): tolerance in Z direction. If Z coordinate of a node is 
+                            close to zero within a given tolerance, the coordinate is set to zero.
+                            If *ZTolerance* is negative (default), the node coordinates are kept as is.
+            saveNumbers(boolean) : enable saving numbers of nodes and cells.
+            """
         auto_groups     = args[0] if len(args) > 0 else False
         meshPart        = args[1] if len(args) > 1 else None
         autoDimension   = args[2] if len(args) > 2 else True
         fields          = args[3] if len(args) > 3 else []
         geomAssocFields = args[4] if len(args) > 4 else ''
         z_tolerance     = args[5] if len(args) > 5 else -1.
+        saveNumbers     = args[6] if len(args) > 6 else True
         # process keywords arguments
         auto_groups     = kwargs.get("auto_groups", auto_groups)
         meshPart        = kwargs.get("meshPart", meshPart)
@@ -2344,9 +2347,10 @@ class Mesh(metaclass = MeshMeta):
         fields          = kwargs.get("fields", fields)
         geomAssocFields = kwargs.get("geomAssocFields", geomAssocFields)
         z_tolerance     = kwargs.get("zTolerance", z_tolerance)
+        saveNumbers     = kwargs.get("saveNumbers", saveNumbers)
 
         # invoke engine's function
-        if meshPart or fields or geomAssocFields or z_tolerance > 0:
+        if meshPart or fields or geomAssocFields or z_tolerance > 0 or not saveNumbers:
             unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
@@ -2355,7 +2359,9 @@ class Mesh(metaclass = MeshMeta):
             z_tolerance,Parameters,hasVars = ParseParameters(z_tolerance)
             self.mesh.SetParameters(Parameters)
 
-            intPtr = self.mesh.ExportPartToMEDCoupling(meshPart, auto_groups, autoDimension, fields, geomAssocFields, z_tolerance)
+            intPtr = self.mesh.ExportPartToMEDCoupling(meshPart, auto_groups, autoDimension,
+                                                       fields, geomAssocFields, z_tolerance,
+                                                       saveNumbers )
             import medcoupling
             dab = medcoupling.FromPyIntPtrToDataArrayByte(intPtr)
             return medcoupling.MEDFileData.New(dab)
@@ -2383,7 +2389,8 @@ class Mesh(metaclass = MeshMeta):
                         or 3.2.1 or 3.3.1 formats.
                         If the version is equal to -1, the version is not changed (default).
                 overwrite (boolean): parameter for overwriting/not overwriting the file
-                meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
+                meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`)
+                        to export instead of the mesh
                 autoDimension: if *True* (default), a space dimension of a MED mesh can be either
 
                         - 1D if all mesh nodes lie on OX coordinate axis, or
@@ -2404,6 +2411,7 @@ class Mesh(metaclass = MeshMeta):
                 zTolerance (float): tolerance in Z direction. If Z coordinate of a node is 
                              close to zero within a given tolerance, the coordinate is set to zero.
                              If *ZTolerance* is negative (default), the node coordinates are kept as is.
+                saveNumbers (boolean) : enable saving numbers of nodes and cells.
         """
         # process positional arguments
         #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
@@ -2416,6 +2424,7 @@ class Mesh(metaclass = MeshMeta):
         fields          = args[6] if len(args) > 6 else []
         geomAssocFields = args[7] if len(args) > 7 else ''
         z_tolerance     = args[8] if len(args) > 8 else -1.
+        saveNumbers     = args[9] if len(args) > 9 else True
         # process keywords arguments
         auto_groups     = kwargs.get("auto_groups", auto_groups)
         version         = kwargs.get("version", version)
@@ -2426,9 +2435,13 @@ class Mesh(metaclass = MeshMeta):
         fields          = kwargs.get("fields", fields)
         geomAssocFields = kwargs.get("geomAssocFields", geomAssocFields)
         z_tolerance     = kwargs.get("zTolerance", z_tolerance)
+        saveNumbers     = kwargs.get("saveNumbers", saveNumbers)
+
+        if isinstance( meshPart, Mesh):
+            meshPart = meshPart.GetMesh()
 
         # invoke engine's function
-        if meshPart or fields or geomAssocFields or z_tolerance > 0:
+        if meshPart or fields or geomAssocFields or z_tolerance > 0 or not saveNumbers:
             unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
@@ -2439,7 +2452,7 @@ class Mesh(metaclass = MeshMeta):
 
             self.mesh.ExportPartToMED( meshPart, fileName, auto_groups,
                                        version, overwrite, autoDimension,
-                                       fields, geomAssocFields, z_tolerance)
+                                       fields, geomAssocFields, z_tolerance, saveNumbers )
         else:
             self.mesh.ExportMED(fileName, auto_groups, version, overwrite, autoDimension)
 
@@ -2457,41 +2470,43 @@ class Mesh(metaclass = MeshMeta):
 
         self.mesh.ExportSAUV(f, auto_groups)
 
-    def ExportDAT(self, f, meshPart=None):
+    def ExportDAT(self, f, meshPart=None, renumber=True):
         """
         Export the mesh in a file in DAT format
 
         Parameters:
                 f: the file name
                 meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
+                renumber(boolean): enable renumbering nodes and cells in order to eliminate holes in numbering
         """
 
-        if meshPart:
+        if meshPart or not renumber:
             unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
                 unRegister.set( meshPart )
-            self.mesh.ExportPartToDAT( meshPart, f )
+            self.mesh.ExportPartToDAT( meshPart, f, renumber )
         else:
-            self.mesh.ExportDAT(f)
+            self.mesh.ExportDAT( f, renumber )
 
-    def ExportUNV(self, f, meshPart=None):
+    def ExportUNV(self, f, meshPart=None, renumber=True):
         """
         Export the mesh in a file in UNV format
 
         Parameters:
                 f: the file name
                 meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
+                renumber(boolean): enable renumbering nodes and cells in order to eliminate holes in numbering
         """
 
-        if meshPart:
+        if meshPart or not renumber:
             unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
                 unRegister.set( meshPart )
-            self.mesh.ExportPartToUNV( meshPart, f )
+            self.mesh.ExportPartToUNV( meshPart, f, renumber )
         else:
-            self.mesh.ExportUNV(f)
+            self.mesh.ExportUNV( f, renumber )
 
     def ExportSTL(self, f, ascii=1, meshPart=None):
         """
@@ -7454,6 +7469,14 @@ class meshProxy(SMESH._objref_SMESH_Mesh):
         while len(args2) < 5:  # !!!! nb of parameters for ExportToMED IDL's method
             args2.append(True)
         SMESH._objref_SMESH_Mesh.ExportMED(self, *args2)
+    def ExportUNV(self, *args): # renumber arg added
+        if len( args ) == 1:
+            args += True,
+        return SMESH._objref_SMESH_Mesh.ExportUNV(self, *args)
+    def ExportDAT(self, *args): # renumber arg added
+        if len( args ) == 1:
+            args += True,
+        return SMESH._objref_SMESH_Mesh.ExportDAT(self, *args)
     pass
 omniORB.registerObjref(SMESH._objref_SMESH_Mesh._NP_RepositoryId, meshProxy)
 

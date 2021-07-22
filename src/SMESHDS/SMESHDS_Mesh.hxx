@@ -595,8 +595,8 @@ class SMESHDS_EXPORT SMESHDS_Mesh : public SMDS_Mesh
   bool ChangeElementNodes(const SMDS_MeshElement * elem,
                           const SMDS_MeshNode    * nodes[],
                           const int                nbnodes);
-  bool ChangePolygonNodes(const SMDS_MeshElement * elem,
-                          std::vector<const SMDS_MeshNode*> nodes);
+  bool ChangePolygonNodes(const SMDS_MeshElement *           elem,
+                          std::vector<const SMDS_MeshNode*>& nodes);
   bool ChangePolyhedronNodes(const SMDS_MeshElement *                 elem,
                              const std::vector<const SMDS_MeshNode*>& nodes,
                              const std::vector<int>&                  quantities);
@@ -656,7 +656,7 @@ class SMESHDS_EXPORT SMESHDS_Mesh : public SMDS_Mesh
 
   ShapeToHypothesis          myShapeToHypothesis;
 
-  int                        myMeshID, myPersistentID;
+  int                        myPersistentID;
   TopoDS_Shape               myShape;
 
   class SubMeshHolder;

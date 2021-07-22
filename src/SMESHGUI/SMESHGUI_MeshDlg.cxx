@@ -891,6 +891,7 @@ void SMESHGUI_MeshDlg::setAvailableMeshType( const QStringList& theTypeMesh )
 {
   myMeshType->clear();
   myMeshType->addItems(theTypeMesh);
+  myMeshType->setEnabled( theTypeMesh.size() > 1 );
 }
 //================================================================================
 /*!

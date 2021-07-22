@@ -146,7 +146,7 @@ void SMESH_Hypothesis::SetLibName(const char* theLibName)
 //purpose  : Find a mesh with given persistent ID
 //=======================================================================
 
-SMESH_Mesh* SMESH_Hypothesis::GetMeshByPersistentID(int id)
+SMESH_Mesh* SMESH_Hypothesis::GetMeshByPersistentID(int id) const
 {
   StudyContextStruct* myStudyContext = _gen->GetStudyContext();
   map<int, SMESH_Mesh*>::iterator itm = myStudyContext->mapMesh.begin();

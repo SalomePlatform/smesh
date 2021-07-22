@@ -66,6 +66,7 @@
     <parameter name="auto_groups"                  value="false"/>
     <parameter name="med_ztolerance"               value="0.0"/>
     <parameter name="show_warning"                 value="true"/>
+    <parameter name="med_save_numbers"             value="true"/>
     <parameter name="show_result_notification"     value="2"/>
     <parameter name="mesh_elem_info"               value="1"/>
     <parameter name="elem_info_grp_details"        value="false"/>

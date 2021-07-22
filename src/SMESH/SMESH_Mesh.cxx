@@ -103,7 +103,7 @@ class SMESH_Mesh::SubMeshHolder : public SMESHDS_TSubMeshHolder< SMESH_subMesh >
  */
 //=============================================================================
 
-SMESH_Mesh::SMESH_Mesh(int               theLocalId, 
+SMESH_Mesh::SMESH_Mesh(int               theLocalId,
                        SMESH_Gen*        theGen,
                        bool              theIsEmbeddedMode,
                        SMESHDS_Document* theDocument):
@@ -112,15 +112,33 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   if(MYDEBUG) MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
   _id            = theLocalId;
   _gen           = theGen;
-  _myDocument    = theDocument;
-  _myMeshDS      = theDocument->NewMesh(theIsEmbeddedMode,theLocalId);
+  _document    = theDocument;
+  _meshDS      = theDocument->NewMesh(theIsEmbeddedMode,theLocalId);
   _isShapeToMesh = false;
   _isAutoColor   = false;
   _isModified    = false;
   _shapeDiagonal = 0.0;
   _callUp        = NULL;
-  _myMeshDS->ShapeToMesh( PseudoShape() );
+  _meshDS->ShapeToMesh( PseudoShape() );
   _subMeshHolder = new SubMeshHolder;
+
+  // assure unique persistent ID
+  if ( _document->NbMeshes() > 1 )
+  {
+    std::set< int > ids;
+    for ( _document->InitMeshesIterator(); _document->MoreMesh(); )
+    {
+      SMESHDS_Mesh * meshDS =_document->NextMesh();
+      if ( meshDS != _meshDS )
+        ids.insert( meshDS->GetPersistentId() );
+    }
+
+    if ( ids.count( _meshDS->GetPersistentId() ))
+    {
+      int uniqueID = *ids.rbegin() + 1;
+      _meshDS->SetPersistentId( uniqueID );
+    }
+  }
 }
 
 //================================================================================
@@ -134,8 +152,8 @@ SMESH_Mesh::SMESH_Mesh():
   _groupId( 0 ),
   _nbSubShapes( 0 ),
   _isShapeToMesh( false ),
-  _myDocument( 0 ),
-  _myMeshDS( 0 ),
+  _document( 0 ),
+  _meshDS( 0 ),
   _gen( 0 ),
   _isAutoColor( false ),
   _isModified( false ),
@@ -176,9 +194,9 @@ SMESH_Mesh::~SMESH_Mesh()
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::~SMESH_Mesh");
 
-  if ( _myDocument ) // avoid destructing _myMeshDS from ~SMESH_Gen()
-    _myDocument->RemoveMesh( _id );
-  _myDocument = 0;
+  if ( _document ) // avoid destructing _meshDS from ~SMESH_Gen()
+    _document->RemoveMesh( _id );
+  _document = 0;
 
   // remove self from studyContext
   if ( _gen )
@@ -187,7 +205,7 @@ SMESH_Mesh::~SMESH_Mesh()
     studyContext->mapMesh.erase( _id );
   }
 
-  _myMeshDS->ClearMesh();
+  _meshDS->ClearMesh();
 
   // issue 0020340: EDF 1022 SMESH : Crash with FindNodeClosestTo in a second new study
   //   Notify event listeners at least that something happens
@@ -208,13 +226,13 @@ SMESH_Mesh::~SMESH_Mesh()
   if ( _callUp) delete _callUp;
   _callUp = 0;
 
-  if ( _myMeshDS ) {
-    // delete _myMeshDS, in a thread in order not to block closing a study with large meshes
+  if ( _meshDS ) {
+    // delete _meshDS, in a thread in order not to block closing a study with large meshes
 #ifndef WIN32
-    boost::thread aThread(boost::bind( & deleteMeshDS, _myMeshDS ));
+    boost::thread aThread(boost::bind( & deleteMeshDS, _meshDS ));
 #else
     pthread_t thread;
-    int result=pthread_create(&thread, NULL, deleteMeshDS, (void*)_myMeshDS);
+    int result=pthread_create(&thread, NULL, deleteMeshDS, (void*)_meshDS);
 #endif
   }
 }
@@ -227,7 +245,7 @@ SMESH_Mesh::~SMESH_Mesh()
 
 bool SMESH_Mesh::MeshExists( int meshId ) const
 {
-  return _myDocument ? bool( _myDocument->GetMesh( meshId )) : false;
+  return _document ? bool( _document->GetMesh( meshId )) : false;
 }
 
 //================================================================================
@@ -262,11 +280,11 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
 
   if ( !aShape.IsNull() && _isShapeToMesh ) {
     if ( aShape.ShapeType() != TopAbs_COMPOUND && // group contents is allowed to change
-         _myMeshDS->ShapeToMesh().ShapeType() != TopAbs_COMPOUND )
+         _meshDS->ShapeToMesh().ShapeType() != TopAbs_COMPOUND )
       throw SALOME_Exception(LOCALIZED ("a shape to mesh has already been defined"));
   }
   // clear current data
-  if ( !_myMeshDS->ShapeToMesh().IsNull() )
+  if ( !_meshDS->ShapeToMesh().IsNull() )
   {
     // removal of a shape to mesh, delete objects referring to sub-shapes:
     // - sub-meshes
@@ -275,7 +293,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
     std::map <int, SMESH_Group *>::iterator i_gr = _mapGroup.begin();
     while ( i_gr != _mapGroup.end() ) {
       if ( dynamic_cast<SMESHDS_GroupOnGeom*>( i_gr->second->GetGroupDS() )) {
-        _myMeshDS->RemoveGroup( i_gr->second->GetGroupDS() );
+        _meshDS->RemoveGroup( i_gr->second->GetGroupDS() );
         delete i_gr->second;
         _mapGroup.erase( i_gr++ );
       }
@@ -286,7 +304,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
 
     // clear SMESHDS
     TopoDS_Shape aNullShape;
-    _myMeshDS->ShapeToMesh( aNullShape );
+    _meshDS->ShapeToMesh( aNullShape );
 
     _shapeDiagonal = 0.0;
   }
@@ -294,9 +312,9 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
   // set a new geometry
   if ( !aShape.IsNull() )
   {
-    _myMeshDS->ShapeToMesh(aShape);
+    _meshDS->ShapeToMesh(aShape);
     _isShapeToMesh = true;
-    _nbSubShapes = _myMeshDS->MaxShapeIndex();
+    _nbSubShapes = _meshDS->MaxShapeIndex();
 
     // fill map of ancestors
     fillAncestorsMap(aShape);
@@ -305,7 +323,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
   {
     _isShapeToMesh = false;
     _shapeDiagonal = 0.0;
-    _myMeshDS->ShapeToMesh( PseudoShape() );
+    _meshDS->ShapeToMesh( PseudoShape() );
   }
   _isModified = false;
 }
@@ -318,7 +336,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
 
 TopoDS_Shape SMESH_Mesh::GetShapeToMesh() const
 {
-  return _myMeshDS->ShapeToMesh();
+  return _meshDS->ShapeToMesh();
 }
 
 //=======================================================================
@@ -411,7 +429,7 @@ void SMESH_Mesh::Clear()
   if ( HasShapeToMesh() ) // remove all nodes and elements
   {
     // clear mesh data
-    _myMeshDS->ClearMesh();
+    _meshDS->ClearMesh();
 
     // update compute state of submeshes
     if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
@@ -474,7 +492,7 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
   _isShapeToMesh = false;
 
   DriverUNV_R_SMDS_Mesh myReader;
-  myReader.SetMesh(_myMeshDS);
+  myReader.SetMesh(_meshDS);
   myReader.SetFile(theFileName);
   myReader.SetMeshId(-1);
   myReader.Perform();
@@ -486,7 +504,7 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
   {
     SMDS_MeshGroup*   aGroup = gr2names->first;
     const std::string& aName = gr2names->second;
-    SMESHDS_Group* aGroupDS = new SMESHDS_Group( anId++, _myMeshDS, aGroup->GetType() );
+    SMESHDS_Group* aGroupDS = new SMESHDS_Group( anId++, _meshDS, aGroup->GetType() );
     aGroupDS->SMDSGroup() = std::move( *aGroup );
     aGroupDS->SetStoreName( aName.c_str() );
     AddGroup( aGroupDS );
@@ -507,7 +525,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
   _isShapeToMesh = false;
 
   DriverMED_R_SMESHDS_Mesh myReader;
-  myReader.SetMesh(_myMeshDS);
+  myReader.SetMesh(_meshDS);
   myReader.SetMeshId(-1);
   myReader.SetFile(theFileName);
   myReader.SetMeshName(theMeshName);
@@ -532,8 +550,8 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
     }
   }
 
-  _myMeshDS->Modified();
-  _myMeshDS->CompactMesh();
+  _meshDS->Modified();
+  _meshDS->CompactMesh();
 
   return (int) status;
 }
@@ -550,7 +568,7 @@ std::string SMESH_Mesh::STLToMesh(const char* theFileName)
   _isShapeToMesh = false;
 
   DriverSTL_R_SMDS_Mesh myReader;
-  myReader.SetMesh(_myMeshDS);
+  myReader.SetMesh(_meshDS);
   myReader.SetFile(theFileName);
   myReader.SetMeshId(-1);
   myReader.Perform();
@@ -574,7 +592,7 @@ int SMESH_Mesh::CGNSToMesh(const char*  theFileName,
 #ifdef WITH_CGNS
 
   DriverCGNS_Read myReader;
-  myReader.SetMesh(_myMeshDS);
+  myReader.SetMesh(_meshDS);
   myReader.SetFile(theFileName);
   myReader.SetMeshId(theMeshIndex);
   res = myReader.Perform();
@@ -597,7 +615,7 @@ SMESH_ComputeErrorPtr SMESH_Mesh::GMFToMesh(const char* theFileName,
                                             bool        theMakeRequiredGroups)
 {
   DriverGMF_Read myReader;
-  myReader.SetMesh(_myMeshDS);
+  myReader.SetMesh(_meshDS);
   myReader.SetFile(theFileName);
   myReader.SetMakeRequiredGroups( theMakeRequiredGroups );
   myReader.Perform();
@@ -620,7 +638,6 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
                           int                  anHypId,
                           std::string*         anError  )
 {
-  Unexpect aCatch(SalomeException);
   if(MYDEBUG) MESSAGE("SMESH_Mesh::AddHypothesis");
 
   if ( anError )
@@ -715,7 +732,6 @@ SMESH_Hypothesis::Hypothesis_Status
 SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
                              int                    anHypId)
 {
-  Unexpect aCatch(SalomeException);
   if(MYDEBUG) MESSAGE("SMESH_Mesh::RemoveHypothesis");
 
   StudyContextStruct *sc = _gen->GetStudyContext();
@@ -785,7 +801,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
 const std::list<const SMESHDS_Hypothesis*>&
 SMESH_Mesh::GetHypothesisList(const TopoDS_Shape & aSubShape) const
 {
-  return _myMeshDS->GetHypothesis(aSubShape);
+  return _meshDS->GetHypothesis(aSubShape);
 }
 
 //=======================================================================
@@ -828,7 +844,7 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const SMESH_subMesh *   aSubM
 
   {
     const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
-    const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
+    const std::list<const SMESHDS_Hypothesis*>& hypList = _meshDS->GetHypothesis(aSubShape);
     std::list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
     for ( ; hyp != hypList.end(); hyp++ ) {
       const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
@@ -849,7 +865,7 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const SMESH_subMesh *   aSubM
     for ( ; smIt != ancestors.end(); smIt++ )
     {
       const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
-      const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
+      const std::list<const SMESHDS_Hypothesis*>& hypList = _meshDS->GetHypothesis(curSh);
       std::list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
       for ( ; hyp != hypList.end(); hyp++ ) {
         const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
@@ -921,7 +937,7 @@ int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *                    aSubMesh,
   // get hypos from aSubShape
   {
     const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
-    const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
+    const std::list<const SMESHDS_Hypothesis*>& hypList = _meshDS->GetHypothesis(aSubShape);
     for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
     {
       const SMESH_Hypothesis* h = cSMESH_Hyp( *hyp );
@@ -950,7 +966,7 @@ int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *                    aSubMesh,
     for ( ; smIt != ancestors.end(); smIt++ )
     {
       const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
-      const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
+      const std::list<const SMESHDS_Hypothesis*>& hypList = _meshDS->GetHypothesis(curSh);
       for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
       {
         const SMESH_Hypothesis* h = cSMESH_Hyp( *hyp );
@@ -994,8 +1010,7 @@ SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
 
 const std::list<SMESHDS_Command*> & SMESH_Mesh::GetLog()
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetScript()->GetCommands();
+  return _meshDS->GetScript()->GetCommands();
 }
 
 //=============================================================================
@@ -1005,8 +1020,7 @@ const std::list<SMESHDS_Command*> & SMESH_Mesh::GetLog()
 //=============================================================================
 void SMESH_Mesh::ClearLog()
 {
-  Unexpect aCatch(SalomeException);
-  _myMeshDS->GetScript()->Clear();
+  _meshDS->GetScript()->Clear();
 }
 
 //=============================================================================
@@ -1017,7 +1031,7 @@ void SMESH_Mesh::ClearLog()
 
 SMESH_subMesh * SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
 {
-  int index = _myMeshDS->ShapeToIndex(aSubShape);
+  int index = _meshDS->ShapeToIndex(aSubShape);
   if ( !index && aSubShape.IsNull() )
     return 0;
 
@@ -1027,10 +1041,10 @@ SMESH_subMesh * SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
     TopoDS_Iterator it( aSubShape );
     if ( it.More() )
     {
-      index = _myMeshDS->AddCompoundSubmesh( aSubShape, it.Value().ShapeType() );
+      index = _meshDS->AddCompoundSubmesh( aSubShape, it.Value().ShapeType() );
       // fill map of Ancestors
       while ( _nbSubShapes < index )
-        fillAncestorsMap( _myMeshDS->IndexToShape( ++_nbSubShapes ));
+        fillAncestorsMap( _meshDS->IndexToShape( ++_nbSubShapes ));
     }
   }
   // if ( !index )
@@ -1039,7 +1053,7 @@ SMESH_subMesh * SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
   SMESH_subMesh* aSubMesh = _subMeshHolder->Get( index );
   if ( !aSubMesh )
   {
-    aSubMesh = new SMESH_subMesh(index, this, _myMeshDS, aSubShape);
+    aSubMesh = new SMESH_subMesh(index, this, _meshDS, aSubShape);
     _subMeshHolder->Add( index, aSubMesh );
 
     // include non-computable sub-meshes in SMESH_subMesh::_ancestors of sub-submeshes
@@ -1069,7 +1083,7 @@ SMESH_subMesh * SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
 
 SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape) const
 {
-  int index = _myMeshDS->ShapeToIndex(aSubShape);
+  int index = _meshDS->ShapeToIndex(aSubShape);
   return GetSubMeshContaining( index );
 }
 
@@ -1178,16 +1192,15 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
 
 void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* hyp)
 {
-  Unexpect aCatch(SalomeException);
 
   if ( !GetMeshDS()->IsUsedHypothesis( hyp ))
     return;
 
-  smIdType nbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() );
+  smIdType nbEntities = ( _meshDS->NbNodes() + _meshDS->NbElements() );
   if ( hyp && _callUp && !_callUp->IsLoaded() ) // for not loaded mesh (#16648)
   {
     _callUp->HypothesisModified( hyp->GetID(), /*updateIcons=*/true );
-    nbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() ); // after loading mesh
+    nbEntities = ( _meshDS->NbNodes() + _meshDS->NbElements() ); // after loading mesh
   }
 
   SMESH_Algo *algo;
@@ -1257,7 +1270,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
   GetMeshDS()->Modified();
 
-  smIdType newNbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() );
+  smIdType newNbEntities = ( _meshDS->NbNodes() + _meshDS->NbElements() );
   if ( hyp && _callUp )
     _callUp->HypothesisModified( hyp->GetID(), newNbEntities != nbEntities );
 }
@@ -1269,13 +1282,11 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
 //=============================================================================
 void SMESH_Mesh::SetAutoColor(bool theAutoColor)
 {
-  Unexpect aCatch(SalomeException);
   _isAutoColor = theAutoColor;
 }
 
 bool SMESH_Mesh::GetAutoColor()
 {
-  Unexpect aCatch(SalomeException);
   return _isAutoColor;
 }
 
@@ -1392,42 +1403,52 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
   return false;
 }
 
-void SMESH_Mesh::ExportMEDCommmon(DriverMED_W_SMESHDS_Mesh& myWriter,
-                           const char*         theMeshName,
-                           bool                theAutoGroups,
-                           const SMESHDS_Mesh* meshPart,
-                           bool                theAutoDimension,
-                           bool                theAddODOnVertices,
-                           double              theZTolerance,
-                           bool                theAllElemsToGroup)
+//================================================================================
+/*!
+ * \brief Export the mesh to a writer
+ */
+//================================================================================
+
+void SMESH_Mesh::exportMEDCommmon(DriverMED_W_SMESHDS_Mesh& theWriter,
+                                  const char*               theMeshName,
+                                  bool                      theAutoGroups,
+                                  const SMESHDS_Mesh*       theMeshPart,
+                                  bool                      theAutoDimension,
+                                  bool                      theAddODOnVertices,
+                                  double                    theZTolerance,
+                                  bool                      theSaveNumbers,
+                                  bool                      theAllElemsToGroup)
 {
   Driver_Mesh::Status status = Driver_Mesh::DRS_OK;
+
   SMESH_TRY;
-  myWriter.SetMesh         ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
-  myWriter.SetAutoDimension( theAutoDimension );
-  myWriter.AddODOnVertices ( theAddODOnVertices );
-  myWriter.SetZTolerance   ( theZTolerance );
+
+  theWriter.SetMesh         ( theMeshPart ? (SMESHDS_Mesh*) theMeshPart : _meshDS   );
+  theWriter.SetAutoDimension( theAutoDimension );
+  theWriter.AddODOnVertices ( theAddODOnVertices );
+  theWriter.SetZTolerance   ( theZTolerance );
+  theWriter.SetSaveNumbers  ( theSaveNumbers );
   if ( !theMeshName )
-    myWriter.SetMeshId     ( _id         );
+    theWriter.SetMeshId     ( _id         );
   else {
-    myWriter.SetMeshId     ( -1          );
-    myWriter.SetMeshName   ( theMeshName );
+    theWriter.SetMeshId     ( -1          );
+    theWriter.SetMeshName   ( theMeshName );
   }
 
   if ( theAutoGroups ) {
-    myWriter.AddGroupOfNodes();
-    myWriter.AddGroupOfEdges();
-    myWriter.AddGroupOfFaces();
-    myWriter.AddGroupOfVolumes();
-    myWriter.AddGroupOf0DElems();
-    myWriter.AddGroupOfBalls();
+    theWriter.AddGroupOfNodes();
+    theWriter.AddGroupOfEdges();
+    theWriter.AddGroupOfFaces();
+    theWriter.AddGroupOfVolumes();
+    theWriter.AddGroupOf0DElems();
+    theWriter.AddGroupOfBalls();
   }
   if ( theAllElemsToGroup )
-    myWriter.AddAllToGroup();
+    theWriter.AddAllToGroup();
 
   // Pass groups to writer. Provide unique group names.
   //set<string> aGroupNames; // Corrected for Mantis issue 0020028
-  if ( !meshPart )
+  if ( !theMeshPart )
   {
     std::map< SMDSAbs_ElementType, std::set<std::string> > aGroupNames;
     char aString [256];
@@ -1448,12 +1469,12 @@ void SMESH_Mesh::ExportMEDCommmon(DriverMED_W_SMESHDS_Mesh& myWriter,
           aGroupName.resize(MAX_MED_GROUP_NAME_LENGTH);
         }
         aGroupDS->SetStoreName( aGroupName.c_str() );
-        myWriter.AddGroup( aGroupDS );
+        theWriter.AddGroup( aGroupDS );
       }
     }
   }
   // Perform export
-  status = myWriter.Perform();
+  status = theWriter.Perform();
 
   SMESH_CATCH( SMESH::throwSalomeEx );
 
@@ -1461,62 +1482,70 @@ void SMESH_Mesh::ExportMEDCommmon(DriverMED_W_SMESHDS_Mesh& myWriter,
     throw TooLargeForExport("MED");
 }
 
+//================================================================================
 /*!
  * Same as SMESH_Mesh::ExportMED except for \a file and \a theVersion
  */
-MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> SMESH_Mesh::ExportMEDCoupling(
-                           const char*         theMeshName,
-                           bool                theAutoGroups,
-                           const SMESHDS_Mesh* meshPart,
-                           bool                theAutoDimension,
-                           bool                theAddODOnVertices,
-                           double              theZTolerance,
-                           bool                theAllElemsToGroup)
+//================================================================================
+
+MEDCoupling::MCAuto<MEDCoupling::DataArrayByte>
+SMESH_Mesh::ExportMEDCoupling(const char*         theMeshName,
+                              bool                theAutoGroups,
+                              const SMESHDS_Mesh* theMeshPart,
+                              bool                theAutoDimension,
+                              bool                theAddODOnVertices,
+                              double              theZTolerance,
+                              bool                theSaveNumbers)
 {
-  DriverMED_W_SMESHDS_Mesh_Mem myWriter;
-  this->ExportMEDCommmon(myWriter,theMeshName,theAutoGroups,meshPart,theAutoDimension,theAddODOnVertices,theZTolerance,theAllElemsToGroup);
-  return myWriter.getData();
+  DriverMED_W_SMESHDS_Mesh_Mem writer;
+  this->exportMEDCommmon( writer, theMeshName, theAutoGroups, theMeshPart, theAutoDimension,
+                          theAddODOnVertices, theZTolerance, theSaveNumbers,
+                          /*AllElemsToGroup(for ExportSAUV())=*/false);
+  return writer.getData();
 }
 
 //================================================================================
 /*!
  * \brief Export the mesh to a med file
- *  \param [in] file - name of the MED file
+ *  \param [in] theFile - name of the MED file
  *  \param [in] theMeshName - name of this mesh
  *  \param [in] theAutoGroups - boolean parameter for creating/not creating
  *              the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
  *              the typical use is auto_groups=false.
  *  \param [in] theVersion - define the minor (xy, where version is x.y.z) of MED file format.
  *              If theVersion is equal to -1, the minor version is not changed (default).
- *  \param [in] meshPart - mesh data to export
+ *  \param [in] theMeshPart - mesh data to export
  *  \param [in] theAutoDimension - if \c true, a space dimension of a MED mesh can be either
  *              - 1D if all mesh nodes lie on OX coordinate axis, or
  *              - 2D if all mesh nodes lie on XOY coordinate plane, or
  *              - 3D in the rest cases.
  *              If \a theAutoDimension is \c false, the space dimension is always 3.
  *  \param [in] theAddODOnVertices - to create 0D elements on all vertices
- *  \param [in] theAllElemsToGroup - to make every element to belong to any group (PAL23413)
- *  \param [in] ZTolerance - tolerance in Z direction. If Z coordinate of a node is close to zero
+ *  \param [in] theZTolerance - tolerance in Z direction. If Z coordinate of a node is close to zero
  *              within a given tolerance, the coordinate is set to zero.
  *              If \a ZTolerance is negative, the node coordinates are kept as is.
+ *  \param [in] theSaveNumbers : enable saving numbers of nodes and cells.
+ *  \param [in] theAllElemsToGroup - to make every element to belong to any group (PAL23413).
+ *              It is used by ExportSAUV() only
  *  \return int - mesh index in the file
  */
 //================================================================================
 
-void SMESH_Mesh::ExportMED(const char *        file,
+void SMESH_Mesh::ExportMED(const char *        theFile,
                            const char*         theMeshName,
                            bool                theAutoGroups,
                            int                 theVersion,
-                           const SMESHDS_Mesh* meshPart,
+                           const SMESHDS_Mesh* theMeshPart,
                            bool                theAutoDimension,
                            bool                theAddODOnVertices,
                            double              theZTolerance,
+                           bool                theSaveNumbers,
                            bool                theAllElemsToGroup)
 {
   MESSAGE("MED_VERSION:"<< theVersion);
-  DriverMED_W_SMESHDS_Mesh myWriter;
-  myWriter.SetFile( file , theVersion );
-  this->ExportMEDCommmon(myWriter,theMeshName,theAutoGroups,meshPart,theAutoDimension,theAddODOnVertices,theZTolerance,theAllElemsToGroup);
+  DriverMED_W_SMESHDS_Mesh writer;
+  writer.SetFile( theFile, theVersion );
+  this->exportMEDCommmon( writer, theMeshName, theAutoGroups, theMeshPart, theAutoDimension, theAddODOnVertices, theZTolerance, theSaveNumbers, theAllElemsToGroup );
 }
 
 //================================================================================
@@ -1525,11 +1554,11 @@ void SMESH_Mesh::ExportMED(const char *        file,
  */
 //================================================================================
 
-void SMESH_Mesh::ExportSAUV(const char *file, 
-                            const char* theMeshName, 
-                            bool theAutoGroups)
+void SMESH_Mesh::ExportSAUV(const char *theFile,
+                            const char* theMeshName,
+                            bool        theAutoGroups)
 {
-  std::string medfilename(file);
+  std::string medfilename( theFile );
   medfilename += ".med";
   std::string cmd;
 #ifdef WIN32
@@ -1542,9 +1571,10 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   cmd += "\"";
   system(cmd.c_str());
   try {
-    ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, /*minor=*/-1,
-              /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
-              /*zTol=*/-1, /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
+    ExportMED( medfilename.c_str(), theMeshName, theAutoGroups, /*minor=*/-1,
+               /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
+               /*zTol=*/-1, /*theSaveNumbers=*/false,
+               /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
   }
   catch ( TooLargeForExport )
   {
@@ -1556,7 +1586,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   cmd = "python3 ";
 #endif
   cmd += "-c \"";
-  cmd += "from medutilities import convert ; convert(r'" + medfilename + "', 'MED', 'GIBI', 1, r'" + file + "')";
+  cmd += "from medutilities import convert ; convert(r'" + medfilename + "', 'MED', 'GIBI', 1, r'" + theFile + "')";
   cmd += "\"";
   system(cmd.c_str());
 #ifdef WIN32
@@ -1577,16 +1607,18 @@ void SMESH_Mesh::ExportSAUV(const char *file,
 //================================================================================
 
 void SMESH_Mesh::ExportDAT(const char *        file,
-                           const SMESHDS_Mesh* meshPart)
+                           const SMESHDS_Mesh* meshPart,
+                           const bool          renumber)
 {
   Driver_Mesh::Status status;
   SMESH_TRY;
 
-  DriverDAT_W_SMDS_Mesh myWriter;
-  myWriter.SetFile( file );
-  myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS );
-  myWriter.SetMeshId(_id);
-  status = myWriter.Perform();
+  DriverDAT_W_SMDS_Mesh writer;
+  writer.SetFile( file );
+  writer.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _meshDS );
+  writer.SetMeshId(_id);
+  writer.SetRenumber( renumber );
+  status = writer.Perform();
 
   SMESH_CATCH( SMESH::throwSalomeEx );
 
@@ -1601,16 +1633,17 @@ void SMESH_Mesh::ExportDAT(const char *        file,
 //================================================================================
 
 void SMESH_Mesh::ExportUNV(const char *        file,
-                           const SMESHDS_Mesh* meshPart)
+                           const SMESHDS_Mesh* meshPart,
+                           const bool          renumber)
 {
   Driver_Mesh::Status status;
 
   SMESH_TRY;
-  DriverUNV_W_SMDS_Mesh myWriter;
-  myWriter.SetFile( file );
-  myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS );
-  myWriter.SetMeshId(_id);
-  //  myWriter.SetGroups(_mapGroup);
+  DriverUNV_W_SMDS_Mesh writer;
+  writer.SetFile( file );
+  writer.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _meshDS );
+  writer.SetMeshId(_id);
+  writer.SetRenumber( renumber );
 
   // pass group names to SMESHDS
   if ( !meshPart )
@@ -1622,11 +1655,11 @@ void SMESH_Mesh::ExportUNV(const char *        file,
       if ( aGroupDS ) {
         std::string aGroupName = aGroup->GetName();
         aGroupDS->SetStoreName( aGroupName.c_str() );
-        myWriter.AddGroup( aGroupDS );
+        writer.AddGroup( aGroupDS );
       }
     }
   }
-  status = myWriter.Perform();
+  status = writer.Perform();
 
   SMESH_CATCH( SMESH::throwSalomeEx );
 
@@ -1648,13 +1681,13 @@ void SMESH_Mesh::ExportSTL(const char *        file,
   Driver_Mesh::Status status;
   SMESH_TRY;
 
-  DriverSTL_W_SMDS_Mesh myWriter;
-  myWriter.SetFile( file );
-  myWriter.SetIsAscii( isascii );
-  myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS);
-  myWriter.SetMeshId(_id);
-  if ( name ) myWriter.SetName( name );
-  status = myWriter.Perform();
+  DriverSTL_W_SMDS_Mesh writer;
+  writer.SetFile( file );
+  writer.SetIsAscii( isascii );
+  writer.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _meshDS);
+  writer.SetMeshId(_id);
+  if ( name ) writer.SetName( name );
+  status = writer.Perform();
 
   SMESH_CATCH( SMESH::throwSalomeEx );
 
@@ -1689,17 +1722,17 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
   }
 #ifdef WITH_CGNS
 
-  DriverCGNS_Write myWriter;
-  myWriter.SetFile( file );
-  myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
-  myWriter.SetMeshName( SMESH_Comment("Mesh_") << meshDS->GetPersistentId());
+  DriverCGNS_Write writer;
+  writer.SetFile( file );
+  writer.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
+  writer.SetMeshName( SMESH_Comment("Mesh_") << meshDS->GetPersistentId());
   if ( meshName && meshName[0] )
-    myWriter.SetMeshName( meshName );
-  myWriter.SetElementsByType( groupElemsByType );
-  res = myWriter.Perform();
+    writer.SetMeshName( meshName );
+  writer.SetElementsByType( groupElemsByType );
+  res = writer.Perform();
   if ( res != Driver_Mesh::DRS_OK )
   {
-    SMESH_ComputeErrorPtr err = myWriter.GetError();
+    SMESH_ComputeErrorPtr err = writer.GetError();
     if ( err && !err->IsOK() && !err->myComment.empty() )
       throw SALOME_Exception(("Export failed: " + err->myComment ).c_str() );
   }
@@ -1727,12 +1760,12 @@ void SMESH_Mesh::ExportGMF(const char *        file,
   Driver_Mesh::Status status;
   SMESH_TRY;
 
-  DriverGMF_Write myWriter;
-  myWriter.SetFile( file );
-  myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
-  myWriter.SetExportRequiredGroups( withRequiredGroups );
+  DriverGMF_Write writer;
+  writer.SetFile( file );
+  writer.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
+  writer.SetExportRequiredGroups( withRequiredGroups );
 
-  status = myWriter.Perform();
+  status = writer.Perform();
 
   SMESH_CATCH( SMESH::throwSalomeEx );
 
@@ -1822,8 +1855,7 @@ double SMESH_Mesh::GetComputeProgress() const
 
 smIdType SMESH_Mesh::NbNodes() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->NbNodes();
+  return _meshDS->NbNodes();
 }
 
 //================================================================================
@@ -1834,8 +1866,7 @@ smIdType SMESH_Mesh::NbNodes() const
 
 smIdType SMESH_Mesh::Nb0DElements() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().Nb0DElements();
+  return _meshDS->GetMeshInfo().Nb0DElements();
 }
 
 //================================================================================
@@ -1846,8 +1877,7 @@ smIdType SMESH_Mesh::Nb0DElements() const
 
 smIdType SMESH_Mesh::NbEdges(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbEdges(order);
+  return _meshDS->GetMeshInfo().NbEdges(order);
 }
 
 //================================================================================
@@ -1858,8 +1888,7 @@ smIdType SMESH_Mesh::NbEdges(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbFaces(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbFaces(order);
+  return _meshDS->GetMeshInfo().NbFaces(order);
 }
 
 //================================================================================
@@ -1870,8 +1899,7 @@ smIdType SMESH_Mesh::NbFaces(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbTriangles(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbTriangles(order);
+  return _meshDS->GetMeshInfo().NbTriangles(order);
 }
 
 //================================================================================
@@ -1882,8 +1910,7 @@ smIdType SMESH_Mesh::NbTriangles(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbBiQuadTriangles() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbBiQuadTriangles();
+  return _meshDS->GetMeshInfo().NbBiQuadTriangles();
 }
 
 //================================================================================
@@ -1894,8 +1921,7 @@ smIdType SMESH_Mesh::NbBiQuadTriangles() const
 
 smIdType SMESH_Mesh::NbQuadrangles(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbQuadrangles(order);
+  return _meshDS->GetMeshInfo().NbQuadrangles(order);
 }
 
 //================================================================================
@@ -1906,8 +1932,7 @@ smIdType SMESH_Mesh::NbQuadrangles(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbBiQuadQuadrangles() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbBiQuadQuadrangles();
+  return _meshDS->GetMeshInfo().NbBiQuadQuadrangles();
 }
 
 //================================================================================
@@ -1918,8 +1943,7 @@ smIdType SMESH_Mesh::NbBiQuadQuadrangles() const
 
 smIdType SMESH_Mesh::NbPolygons(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbPolygons(order);
+  return _meshDS->GetMeshInfo().NbPolygons(order);
 }
 
 //================================================================================
@@ -1930,8 +1954,7 @@ smIdType SMESH_Mesh::NbPolygons(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbVolumes(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbVolumes(order);
+  return _meshDS->GetMeshInfo().NbVolumes(order);
 }
 
 //================================================================================
@@ -1942,8 +1965,7 @@ smIdType SMESH_Mesh::NbVolumes(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbTetras(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbTetras(order);
+  return _meshDS->GetMeshInfo().NbTetras(order);
 }
 
 //================================================================================
@@ -1954,8 +1976,7 @@ smIdType SMESH_Mesh::NbTetras(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbHexas(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbHexas(order);
+  return _meshDS->GetMeshInfo().NbHexas(order);
 }
 
 //================================================================================
@@ -1966,8 +1987,7 @@ smIdType SMESH_Mesh::NbHexas(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbTriQuadraticHexas() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbTriQuadHexas();
+  return _meshDS->GetMeshInfo().NbTriQuadHexas();
 }
 
 //================================================================================
@@ -1978,8 +1998,7 @@ smIdType SMESH_Mesh::NbTriQuadraticHexas() const
 
 smIdType SMESH_Mesh::NbPyramids(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbPyramids(order);
+  return _meshDS->GetMeshInfo().NbPyramids(order);
 }
 
 //================================================================================
@@ -1990,20 +2009,17 @@ smIdType SMESH_Mesh::NbPyramids(SMDSAbs_ElementOrder order) const
 
 smIdType SMESH_Mesh::NbPrisms(SMDSAbs_ElementOrder order) const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbPrisms(order);
+  return _meshDS->GetMeshInfo().NbPrisms(order);
 }
 
 smIdType SMESH_Mesh::NbQuadPrisms() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbQuadPrisms();
+  return _meshDS->GetMeshInfo().NbQuadPrisms();
 }
 
 smIdType SMESH_Mesh::NbBiQuadPrisms() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbBiQuadPrisms();
+  return _meshDS->GetMeshInfo().NbBiQuadPrisms();
 }
 
 
@@ -2015,8 +2031,7 @@ smIdType SMESH_Mesh::NbBiQuadPrisms() const
 
 smIdType SMESH_Mesh::NbHexagonalPrisms() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbHexPrisms();
+  return _meshDS->GetMeshInfo().NbHexPrisms();
 }
 
 //================================================================================
@@ -2027,8 +2042,7 @@ smIdType SMESH_Mesh::NbHexagonalPrisms() const
 
 smIdType SMESH_Mesh::NbPolyhedrons() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbPolyhedrons();
+  return _meshDS->GetMeshInfo().NbPolyhedrons();
 }
 
 //================================================================================
@@ -2039,8 +2053,7 @@ smIdType SMESH_Mesh::NbPolyhedrons() const
 
 smIdType SMESH_Mesh::NbBalls() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbBalls();
+  return _meshDS->GetMeshInfo().NbBalls();
 }
 
 //================================================================================
@@ -2051,8 +2064,7 @@ smIdType SMESH_Mesh::NbBalls() const
 
 smIdType SMESH_Mesh::NbSubMesh() const
 {
-  Unexpect aCatch(SalomeException);
-  return _myMeshDS->NbSubMesh();
+  return _meshDS->NbSubMesh();
 }
 
 //================================================================================
@@ -2064,7 +2076,7 @@ smIdType SMESH_Mesh::NbSubMesh() const
 
 int SMESH_Mesh::NbMeshes() const // nb meshes in the Study
 {
-  return _myDocument->NbMeshes();
+  return _document->NbMeshes();
 }
 
 //=======================================================================
@@ -2077,7 +2089,7 @@ bool SMESH_Mesh::IsNotConformAllowed() const
   if(MYDEBUG) MESSAGE("SMESH_Mesh::IsNotConformAllowed");
 
   static SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( "NotConformAllowed" ));
-  return GetHypothesis( _myMeshDS->ShapeToMesh(), filter, false );
+  return GetHypothesis( _meshDS->ShapeToMesh(), filter, false );
 }
 
 //=======================================================================
@@ -2087,7 +2099,7 @@ bool SMESH_Mesh::IsNotConformAllowed() const
 
 bool SMESH_Mesh::IsMainShape(const TopoDS_Shape& theShape) const
 {
-  return theShape.IsSame(_myMeshDS->ShapeToMesh() );
+  return theShape.IsSame(_meshDS->ShapeToMesh() );
 }
 
 //=======================================================================
@@ -2162,7 +2174,7 @@ SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS)
 bool SMESH_Mesh::SynchronizeGroups()
 {
   const size_t                            nbGroups = _mapGroup.size();
-  const std::set<SMESHDS_GroupBase*>&       groups = _myMeshDS->GetGroups();
+  const std::set<SMESHDS_GroupBase*>&       groups = _meshDS->GetGroups();
   std::set<SMESHDS_GroupBase*>::const_iterator gIt = groups.begin();
   for ( ; gIt != groups.end(); ++gIt )
   {
@@ -2295,7 +2307,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
       save << clause << ".2) Number of " << orderStr << " quadrangles:\t" << nb4 << endl;
       if ( nb3 + nb4 !=  NbFaces(order) ) {
         std::map<int,int> myFaceMap;
-        SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
+        SMDS_FaceIteratorPtr itFaces=_meshDS->facesIterator();
         while( itFaces->more( ) ) {
           int nbNodes = itFaces->next()->NbNodes();
           if ( myFaceMap.find( nbNodes ) == myFaceMap.end() )
@@ -2320,7 +2332,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
       save << clause << ".4) Number of " << orderStr << " pyramids:    \t" << nb5 << endl;
       if ( nb8 + nb4 + nb5 + nb6 != NbVolumes(order) ) {
         std::map<int,int> myVolumesMap;
-        SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
+        SMDS_VolumeIteratorPtr itVolumes=_meshDS->volumesIterator();
         while( itVolumes->more( ) ) {
           int nbNodes = itVolumes->next()->NbNodes();
           if ( myVolumesMap.find( nbNodes ) == myVolumesMap.end() )
@@ -2346,7 +2358,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
 
 SMDSAbs_ElementType SMESH_Mesh::GetElementType( const smIdType id, const bool iselem )
 {
-  return _myMeshDS->GetElementType( id, iselem );
+  return _meshDS->GetElementType( id, iselem );
 }
 
 //=============================================================================
@@ -2397,7 +2409,7 @@ SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
 
 void SMESH_Mesh::ClearMeshOrder()
 {
-  _mySubMeshOrder.clear();
+  _subMeshOrder.clear();
 }
 
 //=============================================================================
@@ -2408,7 +2420,7 @@ void SMESH_Mesh::ClearMeshOrder()
 
 void SMESH_Mesh::SetMeshOrder(const TListOfListOfInt& theOrder )
 {
-  _mySubMeshOrder = theOrder;
+  _subMeshOrder = theOrder;
 }
 
 //=============================================================================
@@ -2419,7 +2431,7 @@ void SMESH_Mesh::SetMeshOrder(const TListOfListOfInt& theOrder )
 
 const TListOfListOfInt& SMESH_Mesh::GetMeshOrder() const
 {
-  return _mySubMeshOrder;
+  return _subMeshOrder;
 }
 
 //=============================================================================
@@ -2480,7 +2492,7 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
 
 bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) const
 {
-  if ( _mySubMeshOrder.empty() || theListToSort.size() < 2 )
+  if ( _subMeshOrder.empty() || theListToSort.size() < 2 )
     return true;
 
 
@@ -2491,9 +2503,9 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
   typedef std::vector<SMESH_subMesh*>::iterator TPosInList;
   std::map< size_t, size_t > sortedPos; // index in theListToSort to order
   TPosInList smBeg = theListToSort.begin(), smEnd = theListToSort.end();
-  TListOfListOfInt::const_iterator      listIdsIt = _mySubMeshOrder.begin();
+  TListOfListOfInt::const_iterator      listIdsIt = _subMeshOrder.begin();
   bool needSort = false;
-  for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++)
+  for( ; listIdsIt != _subMeshOrder.end(); listIdsIt++)
   {
     const TListOfInt& listOfId = *listIdsIt;
     // convert sm ids to sm's
@@ -2571,8 +2583,8 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
 bool SMESH_Mesh::IsOrderOK( const SMESH_subMesh* smBefore,
                             const SMESH_subMesh* smAfter ) const
 {
-  TListOfListOfInt::const_iterator listIdsIt = _mySubMeshOrder.begin();
-  for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++)
+  TListOfListOfInt::const_iterator listIdsIt = _subMeshOrder.begin();
+  for( ; listIdsIt != _subMeshOrder.end(); listIdsIt++)
   {
     const TListOfInt& listOfId = *listIdsIt;
     int iB = -1, iA = -1, i = 0;

@@ -2707,10 +2707,10 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
     {
       // type names
       const char* typeNames[] = { "All","Nodes","Edges","Faces","Volumes","0DElems","Balls" };
-      { // check of typeNames: compilation failure mains that NB_ELEMENT_TYPES changed:
-        const int nbNames = sizeof(typeNames) / sizeof(const char*);
-        int _assert[( nbNames == SMESH::NB_ELEMENT_TYPES ) ? 2 : -1 ]; _assert[0]=_assert[1]=0;
-      }
+
+      // check of typeNames: compilation failure mains that NB_ELEMENT_TYPES changed:
+      static_assert( sizeof(typeNames) / sizeof(const char*) ==SMESH::NB_ELEMENT_TYPES,
+                     "Update names of ElementType's!!!" );
 
       SMESH::smIdType_array_var curState = newMesh->GetNbElementsByType();
 
@@ -4206,8 +4206,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   system(cmd.ToCString());
 
   // MED writer to be used by storage process
-  DriverMED_W_SMESHDS_Mesh myWriter;
-  myWriter.SetFile( meshfile.ToCString() );
+  DriverMED_W_SMESHDS_Mesh writer;
+  writer.SetFile( meshfile.ToCString() );
+  writer.SetSaveNumbers( false ); // bos #24400
 
   // IMP issue 20918
   // SetStoreName() to groups before storing hypotheses to let them refer to
@@ -4414,8 +4415,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             // check if the mesh is not empty
             if ( mySMESHDSMesh->NbNodes() > 0 ) {
               // write mesh data to med file
-              myWriter.SetMesh( mySMESHDSMesh );
-              myWriter.SetMeshId( id );
+              writer.SetMesh( mySMESHDSMesh );
+              writer.SetMeshId( id );
               strHasData = "1";
             }
             aSize[ 0 ] = strHasData.length() + 1;
@@ -4889,7 +4890,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                     // Pass SMESHDS_Group to MED writer
                     SMESHDS_Group* aGrpDS = dynamic_cast<SMESHDS_Group*>( aGrpBaseDS );
                     if ( aGrpDS )
-                      myWriter.AddGroup( aGrpDS );
+                      writer.AddGroup( aGrpDS );
 
                     // write reference on a shape if exists
                     SMESHDS_GroupOnGeom* aGeomGrp =
@@ -4914,7 +4915,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       else // shape ref is invalid:
                       {
                         // save a group on geometry as ordinary group
-                        myWriter.AddGroup( aGeomGrp );
+                        writer.AddGroup( aGeomGrp );
                       }
                     }
                     else if ( SMESH_GroupOnFilter_i* aFilterGrp_i =
@@ -4937,7 +4938,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             if ( strcmp( strHasData.c_str(), "1" ) == 0 )
             {
               // Flush current mesh information into MED file
-              myWriter.Perform();
+              writer.Perform();
 
               // save info on nb of elements
               SMESH_PreMeshInfo::SaveToFile( myImpl, id, aFile );
@@ -5547,7 +5548,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
     } // reading MESHes
 
-    // As all object that can be referred by hypothesis are created,
+    // As all objects that can be referred by hypothesis are created,
     // we can restore hypothesis data
 
     list< pair< SMESH_Hypothesis_i*, string > >::iterator hyp_data;

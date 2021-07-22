@@ -141,7 +141,8 @@ namespace MED
   TElemInfo
   ::SetElemNum(TInt theId, TInt theVal)
   {
-    (*myElemNum)[theId] = theVal;
+    if ( IsElemNum() )
+      (*myElemNum)[theId] = theVal;
   }
 
   //---------------------------------------------------------------

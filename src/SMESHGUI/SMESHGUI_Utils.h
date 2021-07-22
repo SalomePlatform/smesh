@@ -106,12 +106,12 @@ SMESHGUI_EXPORT
   _PTR(SObject) FindSObject( CORBA::Object_ptr );
 
 SMESHGUI_EXPORT
-  void SetName( _PTR(SObject), const QString& );
+  void SetName( _PTR(SObject), const QString& name );
 
 SMESHGUI_EXPORT
-  void SetValue( _PTR(SObject), const QString& );
-  void setFileType( _PTR(SObject), const QString& );
-  void setFileName( _PTR(SObject), const QString& );
+  void SetValue   ( _PTR(SObject), const QString& value );
+  void setFileType( _PTR(SObject), const QString& fileType );
+  void setFileName( _PTR(SObject), const QString& fileName );
 
 SMESHGUI_EXPORT
   CORBA::Object_var SObjectToObject( _PTR(SObject) );
@@ -141,7 +141,7 @@ SMESHGUI_EXPORT
     }
 
 SMESHGUI_EXPORT
-  CORBA::Object_var IORToObject( const QString& );
+  CORBA::Object_var IORToObject( const QString& ior );
 
   template<class TInterface> typename TInterface::_var_type
     IORToInterface( const QString& theIOR )
@@ -153,7 +153,7 @@ SMESHGUI_EXPORT
     }
 
 SMESHGUI_EXPORT
-  CORBA::Object_var EntryToObject( const QString& );
+  CORBA::Object_var EntryToObject( const QString& entry );
 
   template<class TInterface> typename TInterface::_var_type
     EntryToInterface( const QString& theEntry )
@@ -165,7 +165,7 @@ SMESHGUI_EXPORT
     }
 
 SMESHGUI_EXPORT
-  int GetNameOfSelectedIObjects( LightApp_SelectionMgr*, QString& );
+  int GetNameOfSelectedIObjects( LightApp_SelectionMgr*, QString& name );
 
 SMESHGUI_EXPORT
   QString GetName( const Handle(SALOME_InteractiveObject)& theIO );
@@ -174,7 +174,7 @@ SMESHGUI_EXPORT
   _PTR(SObject) GetMeshOrSubmesh( _PTR(SObject) );
 
 SMESHGUI_EXPORT
-  void ShowHelpFile( const QString& );
+  void ShowHelpFile( const QString& helpFileName);
 
   /*!
    * \brief Return the normal to a face

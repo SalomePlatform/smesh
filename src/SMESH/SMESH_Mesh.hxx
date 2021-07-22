@@ -178,9 +178,9 @@ class SMESH_EXPORT SMESH_Mesh
   
   SMESH_Mesh* FindMesh( int meshId ) const;
 
-  SMESHDS_Mesh * GetMeshDS() { return _myMeshDS; }
+  SMESHDS_Mesh * GetMeshDS() { return _meshDS; }
 
-  const SMESHDS_Mesh * GetMeshDS() const { return _myMeshDS; }
+  const SMESHDS_Mesh * GetMeshDS() const { return _meshDS; }
   
   SMESH_Gen *GetGen()        { return _gen; }
 
@@ -265,14 +265,14 @@ class SMESH_EXPORT SMESH_Mesh
     TooLargeForExport(const char* format):runtime_error(format) {}
   };
 
-  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte> ExportMEDCoupling(
-                 const char*         theMeshName = NULL,
-                 bool                theAutoGroups = true,
-                 const SMESHDS_Mesh* theMeshPart = 0,
-                 bool                theAutoDimension = false,
-                 bool                theAddODOnVertices = false,
-                 double              theZTolerance = -1.,
-                 bool                theAllElemsToGroup = false);
+  MEDCoupling::MCAuto<MEDCoupling::DataArrayByte>
+    ExportMEDCoupling(const char*         theMeshName = NULL,
+                      bool                theAutoGroups = true,
+                      const SMESHDS_Mesh* theMeshPart = 0,
+                      bool                theAutoDimension = false,
+                      bool                theAddODOnVertices = false,
+                      double              theZTolerance = -1.,
+                      bool                theSaveNumbers = true);
 
   void ExportMED(const char *        theFile,
                  const char*         theMeshName = NULL,
@@ -282,12 +282,15 @@ class SMESH_EXPORT SMESH_Mesh
                  bool                theAutoDimension = false,
                  bool                theAddODOnVertices = false,
                  double              theZTolerance = -1.,
+                 bool                theSaveNumbers = true,
                  bool                theAllElemsToGroup = false);
 
   void ExportDAT(const char *        file,
-                 const SMESHDS_Mesh* meshPart = 0);
+                 const SMESHDS_Mesh* meshPart = 0,
+                 const bool          renumber = true);
   void ExportUNV(const char *        file,
-                 const SMESHDS_Mesh* meshPart = 0);
+                 const SMESHDS_Mesh* meshPart = 0,
+                 const bool          renumber = true);
   void ExportSTL(const char *        file,
                  const bool          isascii,
                  const char *        name = 0,
@@ -385,16 +388,17 @@ class SMESH_EXPORT SMESH_Mesh
   
 private:
 
-  void ExportMEDCommmon(DriverMED_W_SMESHDS_Mesh& myWriter,
-                           const char*         theMeshName,
-                           bool                theAutoGroups,
-                           const SMESHDS_Mesh* meshPart,
-                           bool                theAutoDimension,
-                           bool                theAddODOnVertices,
-                           double              theZTolerance,
-                           bool                theAllElemsToGroup);
+  void exportMEDCommmon(DriverMED_W_SMESHDS_Mesh& myWriter,
+                        const char*               theMeshName,
+                        bool                      theAutoGroups,
+                        const SMESHDS_Mesh*       meshPart,
+                        bool                      theAutoDimension,
+                        bool                      theAddODOnVertices,
+                        double                    theZTolerance,
+                        bool                      theSaveNumbers,
+                        bool                      theAllElemsToGroup);
 
-private:
+ private:
   void fillAncestorsMap(const TopoDS_Shape& theShape);
   void getAncestorsSubMeshes(const TopoDS_Shape&            theSubShape,
                              std::vector< SMESH_subMesh* >& theSubMeshes) const;
@@ -404,8 +408,8 @@ protected:
   int                        _groupId;      // id generator for group objects
   int                        _nbSubShapes;  // initial nb of subshapes in the shape to mesh
   bool                       _isShapeToMesh;// set to true when a shape is given (only once)
-  SMESHDS_Document *         _myDocument;
-  SMESHDS_Mesh *             _myMeshDS;
+  SMESHDS_Document *         _document;
+  SMESHDS_Mesh *             _meshDS;
   SMESH_Gen *                _gen;
   std::map <int, SMESH_Group*> _mapGroup;
 
@@ -421,7 +425,7 @@ protected:
 
   mutable std::vector<SMESH_subMesh*> _ancestorSubMeshes; // to speed up GetHypothes[ei]s()
 
-  TListOfListOfInt           _mySubMeshOrder;
+  TListOfListOfInt           _subMeshOrder;
 
   // Struct calling methods at CORBA API implementation level, used to
   // 1) make an upper level (SMESH_I) be consistent with a lower one (SMESH)

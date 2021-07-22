@@ -240,7 +240,7 @@ namespace
   {
     TmpMesh()
     {
-      _myMeshDS = new SMESHDS_Mesh(/*id=*/0, /*isEmbeddedMode=*/true);
+      _meshDS = new SMESHDS_Mesh(/*id=*/0, /*isEmbeddedMode=*/true);
     }
   };
 

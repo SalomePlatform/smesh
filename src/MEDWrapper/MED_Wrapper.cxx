@@ -147,9 +147,9 @@ namespace MED
 
   public:
     TFileWrapper(const PFileInternal& theFile,
-                 EModeAcces theMode,
-                 TErr* theErr = NULL,
-                 TInt theMinor=-1):
+                 EModeAcces           theMode,
+                 TErr*                theErr = NULL,
+                 TInt                 theMinor=-1):
       myFile(theFile),
       myMinor(theMinor)
     {
@@ -242,9 +242,9 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::GetMeshInfo(TInt theMeshId,
+  ::GetMeshInfo(TInt            theMeshId,
                 MED::TMeshInfo& theInfo,
-                TErr* theErr)
+                TErr*           theErr)
   {
     TFileWrapper aFileWrapper(myFile, eLECTURE, theErr, myMinor);
 
@@ -285,7 +285,7 @@ namespace MED
   void
   TWrapper
   ::SetMeshInfo(const MED::TMeshInfo& theInfo,
-                TErr* theErr)
+                TErr*                 theErr)
   {
     TErr aRet;
     SetMeshInfo(theInfo, eLECTURE_ECRITURE, &aRet);
@@ -304,8 +304,8 @@ namespace MED
   void
   TWrapper
   ::SetMeshInfo(const MED::TMeshInfo& theInfo,
-                EModeAcces theMode,
-                TErr* theErr)
+                EModeAcces            theMode,
+                TErr*                 theErr)
   {
     TFileWrapper aFileWrapper(myFile, theMode, theErr, myMinor);
 
@@ -352,10 +352,10 @@ namespace MED
   //----------------------------------------------------------------------------
   PMeshInfo
   TWrapper
-  ::CrMeshInfo(TInt theDim,
-               TInt theSpaceDim,
+  ::CrMeshInfo(TInt               theDim,
+               TInt               theSpaceDim,
                const std::string& theValue,
-               EMaillage theType,
+               EMaillage          theType,
                const std::string& theDesc)
   {
     return PMeshInfo(new TTMeshInfo
@@ -377,7 +377,7 @@ namespace MED
   //----------------------------------------------------------------------------
   PMeshInfo
   TWrapper
-  ::GetPMeshInfo(TInt theId,
+  ::GetPMeshInfo(TInt  theId,
                  TErr* theErr)
   {
     PMeshInfo anInfo = CrMeshInfo();
@@ -389,7 +389,7 @@ namespace MED
   TInt
   TWrapper
   ::GetNbFamilies(const MED::TMeshInfo& theInfo,
-                  TErr* theErr)
+                  TErr*                 theErr)
   {
     TFileWrapper aFileWrapper(myFile, eLECTURE, theErr, myMinor);
 
@@ -404,9 +404,9 @@ namespace MED
   //----------------------------------------------------------------------------
   TInt
   TWrapper
-  ::GetNbFamAttr(TInt theFamId,
+  ::GetNbFamAttr(TInt                  theFamId,
                  const MED::TMeshInfo& theInfo,
-                 TErr* theErr)
+                 TErr*                 theErr)
   {
     TFileWrapper aFileWrapper(myFile, eLECTURE, theErr, myMinor);
 
@@ -423,9 +423,9 @@ namespace MED
   //----------------------------------------------------------------------------
   TInt
   TWrapper
-  ::GetNbFamGroup(TInt theFamId,
+  ::GetNbFamGroup(TInt                  theFamId,
                   const MED::TMeshInfo& theInfo,
-                  TErr* theErr)
+                  TErr*                 theErr)
   {
     TFileWrapper aFileWrapper(myFile, eLECTURE, theErr, myMinor);
 
@@ -442,9 +442,9 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::GetFamilyInfo(TInt theFamId,
+  ::GetFamilyInfo(TInt              theFamId,
                   MED::TFamilyInfo& theInfo,
-                  TErr* theErr)
+                  TErr*             theErr)
   {
     TFileWrapper aFileWrapper(myFile, eLECTURE, theErr, myMinor);
 
@@ -485,7 +485,7 @@ namespace MED
   void
   TWrapper
   ::SetFamilyInfo(const MED::TFamilyInfo& theInfo,
-                  TErr* theErr)
+                  TErr*                   theErr)
   {
     TErr aRet;
     SetFamilyInfo(theInfo, eLECTURE_ECRITURE, &aRet);
@@ -501,8 +501,8 @@ namespace MED
   void
   TWrapper
   ::SetFamilyInfo(const MED::TFamilyInfo& theInfo,
-                  EModeAcces theMode,
-                  TErr* theErr)
+                  EModeAcces              theMode,
+                  TErr*                   theErr)
   {
     TFileWrapper aFileWrapper(myFile, theMode, theErr, myMinor);
 
@@ -540,10 +540,10 @@ namespace MED
   //----------------------------------------------------------------------------
   PFamilyInfo
   TWrapper
-  ::CrFamilyInfo(const PMeshInfo& theMeshInfo,
-                 TInt theNbGroup,
-                 TInt theNbAttr,
-                 TInt theId,
+  ::CrFamilyInfo(const PMeshInfo&   theMeshInfo,
+                 TInt               theNbGroup,
+                 TInt               theNbAttr,
+                 TInt               theId,
                  const std::string& theValue)
   {
     return PFamilyInfo(new TTFamilyInfo
@@ -557,13 +557,13 @@ namespace MED
   //----------------------------------------------------------------------------
   PFamilyInfo
   TWrapper
-  ::CrFamilyInfo(const PMeshInfo& theMeshInfo,
-                 const std::string& theValue,
-                 TInt theId,
-                 const MED::TStringSet& theGroupNames,
+  ::CrFamilyInfo(const PMeshInfo&          theMeshInfo,
+                 const std::string&        theValue,
+                 TInt                      theId,
+                 const MED::TStringSet&    theGroupNames,
                  const MED::TStringVector& theAttrDescs,
-                 const MED::TIntVector& theAttrIds,
-                 const MED::TIntVector& theAttrVals)
+                 const MED::TIntVector&    theAttrIds,
+                 const MED::TIntVector&    theAttrVals)
   {
     return PFamilyInfo(new TTFamilyInfo
                        (theMeshInfo,
@@ -578,7 +578,7 @@ namespace MED
   //----------------------------------------------------------------------------
   PFamilyInfo
   TWrapper
-  ::CrFamilyInfo(const PMeshInfo& theMeshInfo,
+  ::CrFamilyInfo(const PMeshInfo&   theMeshInfo,
                  const PFamilyInfo& theInfo)
   {
     return PFamilyInfo(new TTFamilyInfo
@@ -590,8 +590,8 @@ namespace MED
   PFamilyInfo
   TWrapper
   ::GetPFamilyInfo(const PMeshInfo& theMeshInfo,
-                   TInt theId,
-                   TErr* theErr)
+                   TInt             theId,
+                   TErr*            theErr)
   {
     // must be reimplemented in connection with mesh type eSTRUCTURE
     //     if (theMeshInfo->GetType() != eNON_STRUCTURE)
@@ -620,11 +620,11 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::GetNames(TElemInfo& theInfo,
-             TInt /*theNb*/,
-             EEntiteMaillage theEntity,
+  ::GetNames(TElemInfo&        theInfo,
+             TInt            /*theNb*/,
+             EEntiteMaillage   theEntity,
              EGeometrieElement theGeom,
-             TErr* theErr)
+             TErr*             theErr)
   {
     TFileWrapper aFileWrapper(myFile, eLECTURE, theErr, myMinor);
 
@@ -658,10 +658,10 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::SetNames(const TElemInfo& theInfo,
-             EEntiteMaillage theEntity,
+  ::SetNames(const TElemInfo&  theInfo,
+             EEntiteMaillage   theEntity,
              EGeometrieElement theGeom,
-             TErr* theErr)
+             TErr*             theErr)
   {
     SetNames(theInfo, eLECTURE_ECRITURE, theEntity, theGeom, theErr);
   }
@@ -669,11 +669,11 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::SetNames(const TElemInfo& theInfo,
-             EModeAcces theMode,
-             EEntiteMaillage theEntity,
+  ::SetNames(const TElemInfo&  theInfo,
+             EModeAcces        theMode,
+             EEntiteMaillage   theEntity,
              EGeometrieElement theGeom,
-             TErr* theErr)
+             TErr*             theErr)
   {
     TFileWrapper aFileWrapper(myFile, theMode, theErr, myMinor);
 
@@ -698,7 +698,7 @@ namespace MED
                                  MED_NO_DT,
                                  MED_NO_IT,
                                  anEntity,
-                                  aGeom,
+                                 aGeom,
                                  (TInt)anInfo.myElemNames->size(),
                                  &anElemNames);
       if (theErr)
@@ -711,11 +711,11 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::GetNumeration(TElemInfo& theInfo,
-                  TInt /*theNb*/,
-                  EEntiteMaillage theEntity,
+  ::GetNumeration(TElemInfo&        theInfo,
+                  TInt            /*theNb*/,
+                  EEntiteMaillage   theEntity,
                   EGeometrieElement theGeom,
-                  TErr* theErr)
+                  TErr*             theErr)
   {
     TFileWrapper aFileWrapper(myFile, eLECTURE, theErr, myMinor);
 
@@ -749,10 +749,10 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::SetNumeration(const TElemInfo& theInfo,
-                  EEntiteMaillage theEntity,
+  ::SetNumeration(const TElemInfo&  theInfo,
+                  EEntiteMaillage   theEntity,
                   EGeometrieElement theGeom,
-                  TErr* theErr)
+                  TErr*             theErr)
   {
     SetNumeration(theInfo, eLECTURE_ECRITURE, theEntity, theGeom, theErr);
   }
@@ -760,11 +760,11 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::SetNumeration(const TElemInfo& theInfo,
-                  EModeAcces theMode,
-                  EEntiteMaillage theEntity,
+  ::SetNumeration(const TElemInfo&  theInfo,
+                  EModeAcces        theMode,
+                  EEntiteMaillage   theEntity,
                   EGeometrieElement theGeom,
-                  TErr* theErr)
+                  TErr*             theErr)
   {
     TFileWrapper aFileWrapper(myFile, theMode, theErr, myMinor);
 
@@ -802,11 +802,11 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::GetFamilies(TElemInfo& theInfo,
-                TInt /*theNb*/,
-                EEntiteMaillage theEntity,
+  ::GetFamilies(TElemInfo&        theInfo,
+                TInt            /*theNb*/,
+                EEntiteMaillage   theEntity,
                 EGeometrieElement theGeom,
-                TErr* theErr)
+                TErr*             theErr)
   {
     TFileWrapper aFileWrapper(myFile, eLECTURE, theErr, myMinor);
 
@@ -849,10 +849,10 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::SetFamilies(const TElemInfo& theInfo,
-                EEntiteMaillage theEntity,
+  ::SetFamilies(const TElemInfo&  theInfo,
+                EEntiteMaillage   theEntity,
                 EGeometrieElement theGeom,
-                TErr* theErr)
+                TErr*             theErr)
   {
     SetFamilies(theInfo, eLECTURE_ECRITURE, theEntity, theGeom, theErr);
   }
@@ -860,11 +860,11 @@ namespace MED
   //----------------------------------------------------------------------------
   void
   TWrapper
-  ::SetFamilies(const TElemInfo& theInfo,
-                EModeAcces theMode,
-                EEntiteMaillage theEntity,
+  ::SetFamilies(const TElemInfo&  theInfo,
+                EModeAcces        theMode,
+                EEntiteMaillage   theEntity,
                 EGeometrieElement theGeom,
-                TErr* theErr)
+                TErr*             theErr)
   {
     TFileWrapper aFileWrapper(myFile, theMode, theErr, myMinor);
 
@@ -901,7 +901,7 @@ namespace MED
   TInt
   TWrapper
   ::GetNbNodes(const MED::TMeshInfo& theMeshInfo,
-               TErr* theErr)
+               TErr*                 theErr)
   {
     return GetNbNodes(theMeshInfo, eCOOR, theErr);
   }
@@ -2208,14 +2208,14 @@ namespace MED
   //----------------------------------------------------------------------------
   PCellInfo
   TWrapper
-  ::CrCellInfo(const PMeshInfo& theMeshInfo,
-               EEntiteMaillage theEntity,
+  ::CrCellInfo(const PMeshInfo&  theMeshInfo,
+               EEntiteMaillage   theEntity,
                EGeometrieElement theGeom,
-               TInt theNbElem,
-               EConnectivite theConnMode,
-               EBooleen theIsElemNum,
-               EBooleen theIsElemNames,
-               EModeSwitch theMode)
+               TInt              theNbElem,
+               EConnectivite     theConnMode,
+               EBooleen          theIsElemNum,
+               EBooleen          theIsElemNames,
+               EModeSwitch       theMode)
   {
     return PCellInfo(new TTCellInfo
                      (theMeshInfo,

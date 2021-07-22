@@ -55,13 +55,13 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 #else
   std::ofstream out_stream(myFile.c_str());
 #endif
-  try{
-
+  try
+  {
     UNV164::Write( out_stream ); // unit system
     UNV2420::Write( out_stream, myMeshName ); // Coordinate system
 
     std::vector< size_t > nodeLabelByID;
-    if ( myMesh->HasNumerationHoles() )
+    if ( myMesh->HasNumerationHoles() && myRenumber )
       nodeLabelByID.resize( myMesh->MaxNodeID() + 1 );
 
     {
@@ -75,7 +75,8 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       for ( aRec.label = 1; aNodesIter->more(); ++aRec.label )
       {
         const SMDS_MeshNode* aNode = aNodesIter->next();
-        // aRec.label    = aNode->GetID(); -- IPAL54452
+        if ( !myRenumber )
+          aRec.label  = aNode->GetID(); //-- IPAL54452
         if ( !nodeLabelByID.empty() )
           nodeLabelByID[ aNode->GetID() ] = aRec.label;
         aRec.coord[0] = aNode->X();
@@ -105,8 +106,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
         while ( anIter->more() )
         {
           const SMDS_MeshEdge* anElem = anIter->next();
-          // aRec.label = anElem->GetID();  -- IPAL54452
-          ++aRec.label;
+          if ( myRenumber ) // -- IPAL54452
+            ++aRec.label;
+          else
+            aRec.label = anElem->GetID();
           if ( !elemLabelByID.empty() )
             elemLabelByID[ anElem->GetID() ] = aRec.label;
 
@@ -138,7 +141,8 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           if ( anElem->IsPoly() ) continue;
 
           SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
-          for ( aRec.node_labels.clear(); aNodesIter->more();  ) {
+          for ( aRec.node_labels.clear(); aNodesIter->more();  )
+          {
             const SMDS_MeshNode* aNode = aNodesIter->next();
             if ( nodeLabelByID.empty() )
               aRec.node_labels.push_back( FromSmIdType<int>(aNode->GetID()) );
@@ -155,8 +159,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           default:
             continue;
           }
-          // aRec.label = anElem->GetID(); -- IPAL54452
-          ++aRec.label;
+          if ( myRenumber )
+            ++aRec.label;
+          else
+            aRec.label = anElem->GetID(); // -- IPAL54452
           if ( !elemLabelByID.empty() )
             elemLabelByID[ anElem->GetID() ] = aRec.label;
 
@@ -188,8 +194,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           default:
             continue;
           }
-          // aRec.label = anElem->GetID(); -- IPAL54452
-          ++aRec.label;
+          if ( myRenumber )
+            ++aRec.label; // -- IPAL54452
+          else
+            aRec.label = anElem->GetID();
           if ( !elemLabelByID.empty() )
             elemLabelByID[  anElem->GetID() ] = aRec.label;
 
@@ -214,7 +222,8 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
     // --------------------
     {
       using namespace UNV2417;
-      if ( myGroups.size() > 0 ) {
+      if ( myGroups.size() > 0 )
+      {
         TRecord aRec;
         TDataSet aDataSet2417;
         TGroupList::const_iterator aIter = myGroups.begin();
@@ -230,7 +239,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
             while ( aIter->more() ) {
               const SMDS_MeshElement* aNode = aIter->next();
               if ( nodeLabelByID.empty() )
-                aRec.NodeList.push_back( FromSmIdType<int>(aNode->GetID()) );
+                aRec.NodeList.push_back( FromSmIdType<int>( aNode->GetID()) );
               else
                 aRec.NodeList.push_back( nodeLabelByID[ aNode->GetID() ]);
             }

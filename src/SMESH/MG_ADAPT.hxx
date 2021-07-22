@@ -243,8 +243,8 @@ private :
   TOptionValues _defaultOptionValues;                       // default values
   TOptionNames  _doubleOptions, _charOptions, _boolOptions; // to find a type of option
 
-  std::vector <std::string> _myErrorMessages;
-  Status _myStatus;
+  std::vector <std::string> _errorMessages;
+  Status _status;
   std::string meshFormatOutputMesh;
   std::vector< std::string> solFormatOutput;
   std::vector <group> groupVec;

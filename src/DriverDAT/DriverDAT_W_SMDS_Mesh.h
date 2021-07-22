@@ -34,7 +34,12 @@
 class MESHDRIVERDAT_EXPORT DriverDAT_W_SMDS_Mesh: public Driver_SMDS_Mesh
 {
  public:
-  virtual Status Perform();
+  virtual Status Perform() override;
+  void           SetRenumber(  bool renumber ) { myRenumber = renumber; }
+
+ private:
+
+  bool myRenumber;
 };
 
 #endif

@@ -47,7 +47,8 @@
 #include <iostream>
 #include <fstream>
 
-#include <boost/make_shared.hpp>
+//#include <boost/make_shared.hpp>
+#include <boost/container/flat_set.hpp>
 
 #if !defined WIN32 && !defined __APPLE__
 #include <sys/sysinfo.h>
@@ -1063,16 +1064,27 @@ bool SMDS_Mesh::ChangePolyhedronNodes(const SMDS_MeshElement *                 e
   // keep current nodes of element
   std::set<const SMDS_MeshNode*> oldNodes( element->begin_nodes(), element->end_nodes() );
 
-  // change nodes
   bool Ok = false;
+
+  // change vtkUnstructuredGrid::Faces
   if ( const SMDS_MeshVolume* vol = DownCast<SMDS_MeshVolume>( element ))
     Ok = vol->ChangeNodes( nodes, quantities );
 
+  // change vtkUnstructuredGrid::Connectivity and inverse connectivity
   if ( Ok )
-  {
-    setMyModified();
-    updateInverseElements( element, &nodes[0], nodes.size(), oldNodes );
-  }
+    if ( SMDS_MeshCell* cell = dynamic_cast<SMDS_MeshCell*>((SMDS_MeshElement*) element))
+    {
+      boost::container::flat_set< const SMDS_MeshNode* > uniqueNodes( nodes.begin(), nodes.end() );
+      const SMDS_MeshNode** nodesPtr = &( *uniqueNodes.begin());
+      const int              nbNodes = (int) uniqueNodes.size();
+      Ok = cell->ChangeNodes( nodesPtr, nbNodes );
+      if ( Ok )
+      {
+        updateInverseElements( element, nodesPtr, nbNodes, oldNodes );
+        setMyModified();
+      }
+    }
+
   return Ok;
 }
 

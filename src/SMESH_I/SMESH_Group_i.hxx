@@ -109,7 +109,7 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
 
 
   // Internal C++ interface
-  int GetLocalID() const { return myLocalID; }
+  int GetLocalID() const { return myLocalID; } // return group persistent ID
   SMESH_Mesh_i* GetMeshServant() const { return myMeshServant; }
   SMESH_Group* GetSmeshGroup() const;
   SMESHDS_GroupBase* GetGroupDS() const;

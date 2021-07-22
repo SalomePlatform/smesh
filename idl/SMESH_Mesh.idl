@@ -657,14 +657,14 @@ module SMESH
      *         - 3D in the rest cases.
      *         If @a autoDimension is @c false, the space dimension is always 3.
      */
-    void ExportMED( in string      fileName, 
-		    in boolean     auto_groups, 
-		    in long        version,
-		    in boolean     overwrite,
-		    in boolean     autoDimension) raises (SALOME::SALOME_Exception);
+    void ExportMED( in string  fileName,
+		    in boolean auto_groups,
+		    in long    version,
+		    in boolean overwrite,
+		    in boolean autoDimension) raises (SALOME::SALOME_Exception);
 
-    long long ExportMEDCoupling(in boolean     auto_groups,
-                                in boolean     autoDimension) raises (SALOME::SALOME_Exception);
+    long long ExportMEDCoupling(in boolean auto_groups,
+                                in boolean autoDimension) raises (SALOME::SALOME_Exception);
 
     /*!
      * Export a [part of] Mesh into a MED file
@@ -693,6 +693,7 @@ module SMESH
      * - ZTolerance : tolerance in Z direction. If Z coordinate of a node is close to zero
      *                within a given tolerance, the coordinate is set to zero.
      *                If @a ZTolerance is negative, the node coordinates are kept as is.
+     * - saveNumbers : enable saving numbers of nodes and cells.
      */
     void ExportPartToMED( in SMESH_IDSource     meshPart,
                           in string             fileName,
@@ -702,14 +703,16 @@ module SMESH
                           in boolean            autoDimension,
                           in GEOM::ListOfFields fields,
                           in string             geomAssocFields,
-                          in double             ZTolerance) raises (SALOME::SALOME_Exception);
+                          in double             ZTolerance,
+                          in boolean            saveNumbers) raises (SALOME::SALOME_Exception);
 
     long long ExportPartToMEDCoupling( in SMESH_IDSource     meshPart,
-                          in boolean            auto_groups,
-                          in boolean            autoDimension,
-                          in GEOM::ListOfFields fields,
-                          in string             geomAssocFields,
-                          in double             ZTolerance) raises (SALOME::SALOME_Exception);
+                                       in boolean            auto_groups,
+                                       in boolean            autoDimension,
+                                       in GEOM::ListOfFields fields,
+                                       in string             geomAssocFields,
+                                       in double             ZTolerance,
+                                       in boolean            saveNumbers) raises (SALOME::SALOME_Exception);
 
     /*!
      * Export Mesh to SAUV formatted file
@@ -733,8 +736,10 @@ module SMESH
      * Export Mesh to different Formats
      * (UNV supported version is I-DEAS 10)
      */
-    void ExportDAT( in string file ) raises (SALOME::SALOME_Exception);
-    void ExportUNV( in string file ) raises (SALOME::SALOME_Exception);
+    void ExportDAT( in string  file,
+                    in boolean renumer) raises (SALOME::SALOME_Exception);
+    void ExportUNV( in string  file,
+                    in boolean renumer ) raises (SALOME::SALOME_Exception);
     void ExportSTL( in string  file,
                     in boolean isascii ) raises (SALOME::SALOME_Exception);
     void ExportCGNS( in SMESH_IDSource meshPart, 
@@ -745,9 +750,11 @@ module SMESH
                     in string          file,
                     in boolean         withRequiredGroups) raises (SALOME::SALOME_Exception);
     void ExportPartToDAT( in SMESH_IDSource meshPart, 
-                          in string         file ) raises (SALOME::SALOME_Exception);
+                          in string         file,
+                          in boolean        renumer ) raises (SALOME::SALOME_Exception);
     void ExportPartToUNV( in SMESH_IDSource meshPart, 
-                          in string         file ) raises (SALOME::SALOME_Exception);
+                          in string         file,
+                          in boolean        renumer ) raises (SALOME::SALOME_Exception);
     void ExportPartToSTL( in SMESH_IDSource meshPart,
                           in string         file,
                           in boolean        isascii ) raises (SALOME::SALOME_Exception);
@@ -1098,7 +1105,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Get the internal Id
+     * Get the internal persisten Id
      */
     long GetId();
   };

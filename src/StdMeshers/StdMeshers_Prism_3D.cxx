@@ -99,7 +99,7 @@ namespace
   {
     TmpMesh() {
       _isShapeToMesh = (_id = 0);
-      _myMeshDS  = new SMESHDS_Mesh( _id, true );
+      _meshDS  = new SMESHDS_Mesh( _id, true );
     }
   };
   //=======================================================================

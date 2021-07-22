@@ -102,7 +102,7 @@ namespace MeshEditor_I {
     //!< Constructor
     TPreviewMesh(SMDSAbs_ElementType previewElements = SMDSAbs_All) {
       _isShapeToMesh = (_id = 0);
-      _myMeshDS  = new SMESHDS_Mesh( _id, true );
+      _meshDS  = new SMESHDS_Mesh( _id, true );
       myPreviewType = previewElements;
     }
     //!< Copy a set of elements
@@ -155,8 +155,8 @@ namespace MeshEditor_I {
     //!< Copy a node
     SMDS_MeshNode* Copy( const SMDS_MeshNode* anElemNode )
     {
-      return _myMeshDS->AddNodeWithID(anElemNode->X(), anElemNode->Y(), anElemNode->Z(),
-                                      anElemNode->GetID());
+      return _meshDS->AddNodeWithID(anElemNode->X(), anElemNode->Y(), anElemNode->Z(),
+                                    anElemNode->GetID());
     }
     void RemoveAll()
     {

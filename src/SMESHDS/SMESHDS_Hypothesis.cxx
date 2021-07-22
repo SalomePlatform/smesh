@@ -114,3 +114,33 @@ bool SMESHDS_Hypothesis::IsSameName( const SMESHDS_Hypothesis& other) const
 {
   return _name == other._name;
 }
+
+//================================================================================
+/*!
+ * \brief Save a string to a stream
+ */
+//================================================================================
+
+void SMESHDS_Hypothesis::SaveString(std::ostream & save, const std::string& txt )
+{
+  save << " " << txt.size() << " " << txt;
+}
+
+//================================================================================
+/*!
+ * \brief Load a string from a stream
+ */
+//================================================================================
+
+bool SMESHDS_Hypothesis::LoadString(std::istream & load, std::string& txt )
+{
+  txt.clear();
+  int size = -1;
+  if ( static_cast<bool>( load >> size ) && size > 0 )
+  {
+    txt.resize( size, '\0' );
+    load.get( txt[0] ); // remove a white-space
+    load.get( & txt[0], size + 1 );
+  }
+  return (int)txt.size() == size;
+}

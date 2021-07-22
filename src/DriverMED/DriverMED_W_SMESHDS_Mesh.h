@@ -42,6 +42,9 @@ class SMESHDS_GroupBase;
 class SMESHDS_SubMesh;
 class SMDS_MeshElement;
 
+/*!
+ * \brief Write a mesh to a MED file
+ */
 class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {
   public:
@@ -51,6 +54,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   void SetFile(const std::string& theFileName, int theVersion=-1);
   void SetAutoDimension(bool toFindOutDimension) { myAutoDimension = toFindOutDimension; }
   void SetZTolerance(double tol) { myZTolerance = tol; }
+  void SetSaveNumbers(bool toSave) { mySaveNumbers = toSave; }
 
   static std::string GetVersionString(int theMinor, int theNbDigits=2);
 
@@ -82,23 +86,27 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
  private:
 
   std::list<SMESHDS_GroupBase*> myGroups;
-  bool myAllSubMeshes;
+  bool                          myAllSubMeshes;
   std::vector<SMESHDS_SubMesh*> mySubMeshes;
-  bool myDoGroupOfNodes;
-  bool myDoGroupOfEdges;
-  bool myDoGroupOfFaces;
-  bool myDoGroupOfVolumes;
-  bool myDoGroupOf0DElems;
-  bool myDoGroupOfBalls;
-  bool myAutoDimension;
-  bool myAddODOnVertices;
-  bool myDoAllInGroups;
-  int  myVersion;
-  double myZTolerance;
+  bool                          myDoGroupOfNodes;
+  bool                          myDoGroupOfEdges;
+  bool                          myDoGroupOfFaces;
+  bool                          myDoGroupOfVolumes;
+  bool                          myDoGroupOf0DElems;
+  bool                          myDoGroupOfBalls;
+  bool                          myAutoDimension;
+  bool                          myAddODOnVertices;
+  bool                          myDoAllInGroups;
+  int                           myVersion;
+  double                        myZTolerance;
+  bool                          mySaveNumbers;
 };
 
 #include "MEDCouplingMemArray.hxx"
 
+/*!
+ * \brief Write a mesh to a MEDCoupling DS
+ */
 class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh_Mem : public DriverMED_W_SMESHDS_Mesh
 {
 public:

@@ -56,14 +56,14 @@ class SMESHDS_Mesh::SubMeshHolder : public SMESHDS_TSubMeshHolder< const SMESHDS
 
 //=======================================================================
 //function : Create
-//purpose  : 
+//purpose  :
 //=======================================================================
 SMESHDS_Mesh::SMESHDS_Mesh(int theMeshID, bool theIsEmbeddedMode):
-  myMeshID(theMeshID),
   mySubMeshHolder( new SubMeshHolder ),
   myIsEmbeddedMode(theIsEmbeddedMode)
 {
   myScript = new SMESHDS_Script(theIsEmbeddedMode);
+
   SetPersistentId(theMeshID);
 }
 
@@ -188,13 +188,15 @@ bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape &       S,
 //function : AddNode
 //purpose  : 
 //=======================================================================
-SMDS_MeshNode* SMESHDS_Mesh::AddNode(double x, double y, double z){
+SMDS_MeshNode* SMESHDS_Mesh::AddNode(double x, double y, double z)
+{
   SMDS_MeshNode* node = SMDS_Mesh::AddNode(x, y, z);
   if(node!=NULL) myScript->AddNode(node->GetID(), x, y, z);
   return node;
 }
 
-SMDS_MeshNode* SMESHDS_Mesh::AddNodeWithID(double x, double y, double z, smIdType ID){
+SMDS_MeshNode* SMESHDS_Mesh::AddNodeWithID(double x, double y, double z, smIdType ID)
+{
   SMDS_MeshNode* node = SMDS_Mesh::AddNodeWithID(x,y,z,ID);
   if(node!=NULL) myScript->AddNode(node->GetID(), x, y, z);
   return node;
@@ -235,9 +237,8 @@ bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
 //function : ChangePolygonNodes
 //purpose  : 
 //=======================================================================
-bool SMESHDS_Mesh::ChangePolygonNodes
-(const SMDS_MeshElement *     elem,
- std::vector<const SMDS_MeshNode*> nodes)
+bool SMESHDS_Mesh::ChangePolygonNodes (const SMDS_MeshElement *           elem,
+                                       std::vector<const SMDS_MeshNode*>& nodes)
 {
   ASSERT(nodes.size() > 3);
 

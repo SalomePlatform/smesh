@@ -53,8 +53,8 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_ObjectReferenceParamWdg : public QWidge
 {
   Q_OBJECT
 
-public:
-  StdMeshersGUI_ObjectReferenceParamWdg( SUIT_SelectionFilter* filter, 
+ public:
+  StdMeshersGUI_ObjectReferenceParamWdg( SUIT_SelectionFilter* filter,
                                          QWidget*              parent,
                                          bool                  multiSelection=false
                                          /* ,bool                  stretch=true*/);
@@ -67,7 +67,7 @@ public:
 
   void SetObjects(SMESH::string_array_var& objEntries);
 
-  template<class TInterface> 
+  template<class TInterface>
     typename TInterface::_var_type GetObject(size_t i=0) const {
     if ( IsObjectSelected(i) ) return TInterface::_narrow(myObjects[i]);
     return TInterface::_nil();
@@ -75,6 +75,7 @@ public:
 
   size_t NbObjects() const { return myObjects.size(); }
 
+  // Return object entries
   QString GetValue() const { return myParamValue; }
 
   bool IsObjectSelected(size_t i=0) const
@@ -82,60 +83,60 @@ public:
 
   /*!
    * \brief Get the selection status
-    *
-    * Useful to know which Object Reference param widget is activated
-    * to be able to activate the next one when the content of this
-    * one has been modified
+   *
+   * Useful to know which Object Reference param widget is activated
+   * to be able to activate the next one when the content of this
+   * one has been modified
    */
   bool IsSelectionActivated() const { return mySelectionActivated; }
 
   void AvoidSimultaneousSelection( StdMeshersGUI_ObjectReferenceParamWdg* other);
-  
+
   void SetDefaultText(QString defaultText="", QString styleSheet="");
 
-public slots:
+ public slots:
   /*!
    * \brief Activates selection (if not yet done), emits selectionActivated()
-    *
-    * Useful to deactivate one Object Reference param widget when an other
-    * one is activated
+   *
+   * Useful to deactivate one Object Reference param widget when an other
+   * one is activated
    */
   void activateSelection();
   void deactivateSelection();
 
-signals:
+ signals:
   /*!
    * \brief Emitted when selection is activated
-    *
-    * Useful to deactivate one Object Reference param widget when an other
-    * one is activated
+   *
+   * Useful to deactivate one Object Reference param widget when an other
+   * one is activated
    */
   void selectionActivated();
   void contentModified();
-  
-private slots:
-  void onSelectionDone(); 
 
-private:
+ private slots:
+  void onSelectionDone();
+
+ private:
   void init();
-  
-private:
+
+ private:
 
   bool                                myMultiSelection;
   std::vector<CORBA::Object_var>      myObjects;
 
- SUIT_SelectionFilter*  myFilter;
- bool                   mySelectionActivated;
- bool                   myStretchActivated;
+  SUIT_SelectionFilter*  myFilter;
+  bool                   mySelectionActivated;
+  bool                   myStretchActivated;
 
- SMESHGUI*              mySMESHGUI;
- LightApp_SelectionMgr* mySelectionMgr;
+  SMESHGUI*              mySMESHGUI;
+  LightApp_SelectionMgr* mySelectionMgr;
 
- QLineEdit*             myObjNameLineEdit;
- QPushButton*           mySelButton;
- QString                myParamValue;
- QString                myEmptyText;
- QString                myEmptyStyleSheet;
+  QLineEdit*             myObjNameLineEdit;
+  QPushButton*           mySelButton;
+  QString                myParamValue;
+  QString                myEmptyText;
+  QString                myEmptyStyleSheet;
 };
 
 #endif // STDMESHERSGUI_OBJECTREFERENCEPARAMWDG_H

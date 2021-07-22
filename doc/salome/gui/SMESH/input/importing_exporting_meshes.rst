@@ -56,6 +56,8 @@ There are additional parameters available at export to MED and SAUV format files
   * **1D**: if all mesh nodes lie on OX coordinate axis. 
   * **2D**: if all mesh nodes lie in XOY coordinate plane. 
 
+* :ref:`Save cell/node numbers to MED file <med_export_numbers_pref>` preference controls whether node and cell numbers are saved.
+
 **See Also** a sample TUI Script of an :ref:`Export Mesh <tui_export_mesh>` operation.
 
 
