@@ -4208,7 +4208,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   // MED writer to be used by storage process
   DriverMED_W_SMESHDS_Mesh writer;
   writer.SetFile( meshfile.ToCString() );
-  writer.SetSaveNumbers( false ); // bos #24400
+  //writer.SetSaveNumbers( false ); // bos #24400 -- it leads to change of element IDs
 
   // IMP issue 20918
   // SetStoreName() to groups before storing hypotheses to let them refer to

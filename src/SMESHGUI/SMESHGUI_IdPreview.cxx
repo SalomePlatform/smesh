@@ -22,8 +22,11 @@
 
 #include "SMESHGUI_IdPreview.h"
 
-#include <SALOME_Actor.h>
 #include <SMDS_Mesh.hxx>
+
+#include <SALOME_Actor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <SVTK_ViewWindow.h>
 
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
@@ -71,21 +74,27 @@ SMESHGUI_IdPreview::SMESHGUI_IdPreview(SVTK_ViewWindow* theViewWindow):
   myPtsSelectVisiblePoints->SetInputConnection(myPtsMaskPoints->GetOutputPort());
   myPtsSelectVisiblePoints->SelectInvisibleOff();
   myPtsSelectVisiblePoints->SetTolerance(0.1);
-    
+
   myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
   myPtsLabeledDataMapper->SetInputConnection(myPtsSelectVisiblePoints->GetOutputPort());
   myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
-    
+
   vtkTextProperty* aPtsTextProp = vtkTextProperty::New();
   aPtsTextProp->SetFontFamilyToTimes();
-  static int aPointsFontSize = 12;
+  int aPointsFontSize = 12;
+  if ( SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr() )
+    if ( mgr->hasValue( "SMESH", "numbering_node_font" ) )
+    {
+      QFont f = mgr->fontValue( "SMESH", "numbering_node_font" );
+      aPointsFontSize = f.pointSize();
+    }
   aPtsTextProp->SetFontSize(aPointsFontSize);
   aPtsTextProp->SetBold(1);
   aPtsTextProp->SetItalic(0);
   aPtsTextProp->SetShadow(0);
   myPtsLabeledDataMapper->SetLabelTextProperty(aPtsTextProp);
   aPtsTextProp->Delete();
-  
+
   myIsPointsLabeled = false;
 
   myPointLabels = vtkActor2D::New();
