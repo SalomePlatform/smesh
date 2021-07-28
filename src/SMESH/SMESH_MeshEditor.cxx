@@ -6959,9 +6959,19 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
 
     for ( size_t i = 0; i < newElemDefs.size(); ++i )
     {
-      if ( i > 0 || !mesh->ChangeElementNodes( elem,
-                                               & newElemDefs[i].myNodes[0],
-                                               newElemDefs[i].myNodes.size() ))
+      bool elemChanged = false;
+      if ( i == 0 )
+      {
+        if ( elem->GetGeomType() == SMDSGeom_POLYHEDRA )
+          elemChanged = mesh->ChangePolyhedronNodes( elem,
+                                                     newElemDefs[i].myNodes,
+                                                     newElemDefs[i].myPolyhedQuantities );
+        else
+          elemChanged = mesh->ChangeElementNodes( elem,
+                                                  & newElemDefs[i].myNodes[0],
+                                                  newElemDefs[i].myNodes.size() );
+      }
+      if ( i > 0 || !elemChanged )
       {
         if ( i == 0 )
         {
@@ -7128,6 +7138,7 @@ bool SMESH_MeshEditor::applyMerge( const SMDS_MeshElement* elem,
         // each face has to be analyzed in order to check volume validity
         if ( const SMDS_MeshVolume* aPolyedre = SMDS_Mesh::DownCast< SMDS_MeshVolume >( elem ))
         {
+          toRemove = false;
           int nbFaces = aPolyedre->NbFaces();
 
           vector<const SMDS_MeshNode *>& poly_nodes = newElemDefs[0].myNodes;

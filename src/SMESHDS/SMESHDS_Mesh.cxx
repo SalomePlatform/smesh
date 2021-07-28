@@ -256,14 +256,14 @@ bool SMESHDS_Mesh
 {
   ASSERT(nodes.size() > 3);
 
+  size_t i, len = nodes.size();
+  std::vector<smIdType> nodes_ids( len );
+  for ( i = 0; i < len; i++ )
+    nodes_ids[i] = nodes[i]->GetID();
+
   if ( !SMDS_Mesh::ChangePolyhedronNodes( elem, nodes, quantities ))
     return false;
 
-  smIdType i, len = nodes.size();
-  std::vector<smIdType> nodes_ids (len);
-  for (i = 0; i < len; i++) {
-    nodes_ids[i] = nodes[i]->GetID();
-  }
   myScript->ChangePolyhedronNodes(elem->GetID(), nodes_ids, quantities);
 
   return true;
