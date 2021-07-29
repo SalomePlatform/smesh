@@ -121,7 +121,7 @@ bool SMESHDS_Hypothesis::IsSameName( const SMESHDS_Hypothesis& other) const
  */
 //================================================================================
 
-void SMESHDS_Hypothesis::SaveString(std::ostream & save, const std::string& txt )
+void SMESHDS_Hypothesis::SaveStringToStream(std::ostream & save, const std::string& txt )
 {
   save << " " << txt.size() << " " << txt;
 }
@@ -132,7 +132,7 @@ void SMESHDS_Hypothesis::SaveString(std::ostream & save, const std::string& txt 
  */
 //================================================================================
 
-bool SMESHDS_Hypothesis::LoadString(std::istream & load, std::string& txt )
+bool SMESHDS_Hypothesis::LoadStringFromStream(std::istream & load, std::string& txt )
 {
   txt.clear();
   int size = -1;
