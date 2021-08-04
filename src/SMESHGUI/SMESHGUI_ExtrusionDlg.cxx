@@ -766,38 +766,53 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   AnglesGrpLayout->setRowMinimumHeight(1, 10);
   AnglesGrpLayout->setRowStretch(3, 10);
 
+  // Controls for advanced parameters
+  QGridLayout* AdvancedGrpLayout = new QGridLayout();
+  AdvancedGrpLayout->setSpacing(SPACING);
+
   // layouting
-  GroupArgumentsLayout->addWidget(SelectorWdg,            0, 0, 1, 9);
-  GroupArgumentsLayout->addWidget(ExtrMethod_RBut0,       1, 0, 1, 3);
-  GroupArgumentsLayout->addWidget(ExtrMethod_RBut1,       1, 3, 1, 3);
-  GroupArgumentsLayout->addWidget(ExtrMethod_RBut2,       1, 6, 1, 3);
-  GroupArgumentsLayout->addWidget(TextLabelDistance,      2, 0);
-  GroupArgumentsLayout->addWidget(TextLabelDx,            2, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Dx,             2, 3);
-  GroupArgumentsLayout->addWidget(TextLabelDy,            2, 4);
-  GroupArgumentsLayout->addWidget(SpinBox_Dy,             2, 5);
-  GroupArgumentsLayout->addWidget(TextLabelDz,            2, 6);
-  GroupArgumentsLayout->addWidget(SpinBox_Dz,             2, 7);
-  GroupArgumentsLayout->addWidget(TextLabelVector,        3, 0);
-  GroupArgumentsLayout->addWidget(SelectVectorButton,     3, 1);
-  GroupArgumentsLayout->addWidget(TextLabelVx,            3, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Vx,             3, 3);
-  GroupArgumentsLayout->addWidget(TextLabelVy,            3, 4);
-  GroupArgumentsLayout->addWidget(SpinBox_Vy,             3, 5);
-  GroupArgumentsLayout->addWidget(TextLabelVz,            3, 6);
-  GroupArgumentsLayout->addWidget(SpinBox_Vz,             3, 7);
-  GroupArgumentsLayout->addWidget(TextLabelDist,          4, 0);
-  GroupArgumentsLayout->addWidget(SpinBox_VDist,          4, 3);
-  GroupArgumentsLayout->addWidget(TextLabelNbSteps,       5, 0, 1, 3);
-  GroupArgumentsLayout->addWidget(SpinBox_NbSteps,        5, 3);
-  GroupArgumentsLayout->addWidget(ByAverageNormalCheck,   6, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(UseInputElemsOnlyCheck, 6, 4, 1, 4);
-  GroupArgumentsLayout->addWidget(BasePointGrp,           7, 0, 1, 9);
-  GroupArgumentsLayout->addWidget(ScalesGrp,              8, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(AnglesGrp,              8, 5, 1, 4);
-  GroupArgumentsLayout->addWidget(myPreviewCheckBox,      9, 0, 1, 8);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,        10,0, 1, 8);
-  GroupArgumentsLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 10, 0);
+  AdvancedGrpLayout->addWidget(TextLabelDistance,      0, 0);
+  AdvancedGrpLayout->addWidget(TextLabelDx,            0, 2);
+  AdvancedGrpLayout->addWidget(SpinBox_Dx,             0, 3);
+  AdvancedGrpLayout->addWidget(TextLabelDy,            0, 4);
+  AdvancedGrpLayout->addWidget(SpinBox_Dy,             0, 5);
+  AdvancedGrpLayout->addWidget(TextLabelDz,            0, 6);
+  AdvancedGrpLayout->addWidget(SpinBox_Dz,             0, 7);
+  AdvancedGrpLayout->addWidget(TextLabelVector,        1, 0);
+  AdvancedGrpLayout->addWidget(SelectVectorButton,     1, 1);
+  AdvancedGrpLayout->addWidget(TextLabelVx,            1, 2);
+  AdvancedGrpLayout->addWidget(SpinBox_Vx,             1, 3);
+  AdvancedGrpLayout->addWidget(TextLabelVy,            1, 4);
+  AdvancedGrpLayout->addWidget(SpinBox_Vy,             1, 5);
+  AdvancedGrpLayout->addWidget(TextLabelVz,            1, 6);
+  AdvancedGrpLayout->addWidget(SpinBox_Vz,             1, 7);
+  AdvancedGrpLayout->addWidget(TextLabelDist,          2, 0);
+  AdvancedGrpLayout->addWidget(SpinBox_VDist,          2, 3);
+  AdvancedGrpLayout->addWidget(TextLabelNbSteps,       3, 0, 1, 3);
+  AdvancedGrpLayout->addWidget(SpinBox_NbSteps,        3, 3);
+  AdvancedGrpLayout->addWidget(ByAverageNormalCheck,   4, 0, 1, 4);
+  AdvancedGrpLayout->addWidget(UseInputElemsOnlyCheck, 4, 4, 1, 4);
+
+  // Controls for advanced parameters
+  QGroupBox* RbGrp = new QGroupBox();
+  QHBoxLayout* RBLayout = new QHBoxLayout(RbGrp);
+  RBLayout->setSpacing(SPACING); RBLayout->setMargin(MARGIN);
+  RBLayout->addWidget(ExtrMethod_RBut0);
+  RBLayout->addWidget(ExtrMethod_RBut1);
+  RBLayout->addWidget(ExtrMethod_RBut2);
+
+  // layouting
+  GroupArgumentsLayout->addWidget(RbGrp,                  0, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(SelectorWdg,            1, 0, 3, 2);
+  GroupArgumentsLayout->addLayout(AdvancedGrpLayout,      1, 2, 1, 2);
+  GroupArgumentsLayout->addWidget(BasePointGrp,           2, 2, 1, 2);
+  GroupArgumentsLayout->addWidget(ScalesGrp,              3, 2, 1, 1);
+  GroupArgumentsLayout->addWidget(AnglesGrp,              3, 3, 1, 1);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,      4, 0);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,        4, 1);
+  GroupArgumentsLayout->setRowStretch(5, 10);
+  SelectorWdg->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+  SelectorWdg->setMinimumWidth(320);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);

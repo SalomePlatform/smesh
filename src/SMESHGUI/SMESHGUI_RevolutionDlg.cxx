@@ -202,13 +202,15 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
   MakeGroupsCheck->setChecked(true);
 
-  GroupArgumentsLayout->addWidget(SelectorWdg,          0, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(GroupAxis,            1, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(GroupAngleBox,        2, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(TextLabelTolerance,   3, 0, 1, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Tolerance,    3, 2, 1, 2);
-  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    4, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(SelectorWdg,          0, 0, 3, 4);
+  GroupArgumentsLayout->addWidget(GroupAxis,            0, 4, 1, 4);
+  GroupArgumentsLayout->addWidget(GroupAngleBox,        1, 4, 1, 4);
+  GroupArgumentsLayout->addWidget(TextLabelTolerance,   2, 4, 1, 2);
+  GroupArgumentsLayout->addWidget(SpinBox_Tolerance,    2, 6, 1, 2);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    3, 0, 1, 2);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      3, 2, 1, 2);
+  SelectorWdg->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+  SelectorWdg->setMinimumWidth(320);
 
   SelectorWdg->GetButtonGroup()->addButton( SelectVectorButton );
   SelectorWdg->GetButtonGroup()->addButton( SelectPointButton );

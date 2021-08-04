@@ -36,6 +36,7 @@
 #include <QList>
 #include <QMap>
 #include <QSet>
+#include <QToolBox>
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Filter)
@@ -345,6 +346,7 @@ private:
   ObjectType myObjectType;
   SMESHGUI_SpinBox* myToleranceWidget;
   QList<QLabel*> myWidgets;
+  QToolBox* myMeshTB;
   QwtPlot* myPlot;
   QwtPlot* myPlot3D;
   QList<QAbstractButton*> myButtons;

@@ -3432,6 +3432,9 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent ): SMESHGUI_Info( parent )
   QIcon aComputeIcon( SUIT_Session::session()->resourceMgr()->loadPixmap( "SMESH", tr( "ICON_COMPUTE" ) ) );
   SMESH::FilterManager_var aFilterMgr = SMESH::GetFilterManager();
 
+  // QToolBox with MeshInfo
+  myMeshTB = new QToolBox(this);
+
   // name
   QLabel* aNameLab = createLabel( tr( "NAME_LAB" ), this, Bold );
   QLabel* aName = createField( this, "ctrlName" );
@@ -3547,50 +3550,82 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent ): SMESHGUI_Info( parent )
   connect( aOverContVolumesBtn,SIGNAL( clicked() ), this, SLOT( computeOverConstrainedVolumesInfo() ) );
   connect( myToleranceWidget, SIGNAL( valueChanged( double ) ), this, SLOT( setTolerance( double ) ) );
 
-  l->addWidget( aNameLab,           0, 0 );       //0
-  l->addWidget( aName,              0, 1, 1, 2 ); //1
-  l->addWidget( aNodesLab,          1, 0, 1, 3 ); //2
-  l->addWidget( aNodesFreeLab,      2, 0 );       //3
-  l->addWidget( aNodesFree,         2, 1 );       //4
-  l->addWidget( aFreeNodesBtn,      2, 2 );       //5
-  l->addWidget( aNodesNbConnLab,    3, 0 );       //6
-  l->addWidget( aNodesNbConn,       3, 1 );       //7
-  l->addWidget( aNodesNbConnBtn,    3, 2 );       //8
-  l->addWidget( aNodesDoubleLab,    4, 0 );       //9
-  l->addWidget( aNodesDouble,       4, 1 );       //10
-  l->addWidget( aDoubleNodesBtn,    4, 2 );       //11
-  l->addWidget( aToleranceLab,      5, 0 );       //12
-  l->addWidget( myToleranceWidget,  5, 1 );       //13
-  l->addWidget( anEdgesLab,         6, 0, 1, 3 ); //14
-  l->addWidget( anEdgesDoubleLab,   7, 0 );       //15
-  l->addWidget( anEdgesDouble,      7, 1 );       //16
-  l->addWidget( aDoubleEdgesBtn,    7, 2 );       //17
-  l->addWidget( aFacesLab,          8, 0, 1, 3 ); //18
-  l->addWidget( aFacesDoubleLab,    9, 0 );       //19
-  l->addWidget( aFacesDouble,       9, 1 );       //20
-  l->addWidget( aDoubleFacesBtn,    9, 2 );       //21
-  l->addWidget( aFacesOverLab,      10, 0 );      //22
-  l->addWidget( aFacesOver,         10, 1 );      //23
-  l->addWidget( aOverContFacesBtn,  10, 2 );      //24
-  l->addWidget( anAspectRatioLab,   11, 0 );      //25
-  l->addWidget( aComputeFaceBtn,    11, 2 );      //26
-  l->addWidget( myPlot,             12, 0, 1, 3 );//27
-  l->addWidget( aVolumesLab,        13, 0, 1, 3 );//28
-  l->addWidget( aVolumesDoubleLab,  14, 0 );      //29
-  l->addWidget( aVolumesDouble,     14, 1 );      //30
-  l->addWidget( aDoubleVolumesBtn,  14, 2 );      //31
-  l->addWidget( aVolumesOverLab,    15, 0 );      //32
-  l->addWidget( aVolumesOver,       15, 1 );      //33
-  l->addWidget( aOverContVolumesBtn,15, 2 );      //34
-  l->addWidget( anAspectRatio3DLab, 16, 0 );      //35
-  l->addWidget( aComputeVolumeBtn,  16, 2 );      //36
-  l->addWidget( myPlot3D,           17, 0, 1, 3 );//37
- 
-  l->setColumnStretch(  0,  0 );
-  l->setColumnStretch(  1,  5 );
-  l->setRowStretch   ( 12,  5 );
-  l->setRowStretch   ( 17,  5 );
-  l->setRowStretch   ( 18,  1 );
+  l->addWidget( aNameLab,           0, 0 ); //0
+  l->addWidget( aName,              0, 1 ); //1
+  
+  // Node group
+  QWidget* NodeGrp = new QWidget();
+  QGridLayout* NodeLayout = new QGridLayout(NodeGrp);
+  NodeLayout->setSpacing(SPACING); NodeLayout->setMargin(MARGIN);
+
+  NodeLayout->addWidget( aNodesFreeLab,      0, 0 );
+  NodeLayout->addWidget( aNodesFree,         0, 1 );
+  NodeLayout->addWidget( aFreeNodesBtn,      0, 2 );
+  NodeLayout->addWidget( aNodesNbConnLab,    1, 0 );
+  NodeLayout->addWidget( aNodesNbConn,       1, 1 );
+  NodeLayout->addWidget( aNodesNbConnBtn,    1, 2 );
+  NodeLayout->addWidget( aNodesDoubleLab,    2, 0 );
+  NodeLayout->addWidget( aNodesDouble,       2, 1 );
+  NodeLayout->addWidget( aDoubleNodesBtn,    2, 2 );
+  NodeLayout->addWidget( aToleranceLab,      3, 0 );
+  NodeLayout->addWidget( myToleranceWidget,  3, 1 );
+  NodeLayout->addWidget( myToleranceWidget,  3, 1 );
+  NodeLayout->setRowStretch(4, 5);
+
+  myMeshTB->addItem(NodeGrp, aNodesLab->text());
+  aNodesLab->setVisible(false);
+
+  // Edge group
+  QWidget* EdgeGrp = new QWidget();
+  QGridLayout* EdgeLayout = new QGridLayout(EdgeGrp);
+  EdgeLayout->setSpacing(SPACING); EdgeLayout->setMargin(MARGIN);
+
+  EdgeLayout->addWidget( anEdgesDoubleLab,   0, 0 );
+  EdgeLayout->addWidget( anEdgesDouble,      0, 1 );
+  EdgeLayout->addWidget( aDoubleEdgesBtn,    0, 2 );
+  EdgeLayout->setRowStretch(1, 5);
+
+  myMeshTB->addItem(EdgeGrp, anEdgesLab->text());
+  anEdgesLab->setVisible(false);
+
+  // Face group
+  QWidget* FaceGrp = new QWidget();
+  QGridLayout* FaceLayout = new QGridLayout(FaceGrp);
+  FaceLayout->setSpacing(SPACING); FaceLayout->setMargin(MARGIN);
+
+  FaceLayout->addWidget( aFacesDoubleLab,    0, 0 );
+  FaceLayout->addWidget( aFacesDouble,       0, 1 );
+  FaceLayout->addWidget( aDoubleFacesBtn,    0, 2 );
+  FaceLayout->addWidget( aFacesOverLab,      1, 0 );
+  FaceLayout->addWidget( aFacesOver,         1, 1 );
+  FaceLayout->addWidget( aOverContFacesBtn,  1, 2 );
+  FaceLayout->addWidget( anAspectRatioLab,   2, 0 );
+  FaceLayout->addWidget( aComputeFaceBtn,    2, 2 );
+  FaceLayout->addWidget( myPlot,             3, 0, 1, 3 );
+
+  myMeshTB->addItem(FaceGrp, aFacesLab->text());
+  aFacesLab->setVisible(false);
+
+  // Volume group
+  QWidget* VolumeGrp = new QWidget();
+  QGridLayout* VolumeLayout = new QGridLayout(VolumeGrp);
+  VolumeLayout->setSpacing(SPACING); VolumeLayout->setMargin(MARGIN);
+
+  VolumeLayout->addWidget( aVolumesDoubleLab,  0, 0 );
+  VolumeLayout->addWidget( aVolumesDouble,     0, 1 );
+  VolumeLayout->addWidget( aDoubleVolumesBtn,  0, 2 );
+  VolumeLayout->addWidget( aVolumesOverLab,    1, 0 );
+  VolumeLayout->addWidget( aVolumesOver,       1, 1 );
+  VolumeLayout->addWidget( aOverContVolumesBtn,1, 2 );
+  VolumeLayout->addWidget( anAspectRatio3DLab, 2, 0 );
+  VolumeLayout->addWidget( aComputeVolumeBtn,  2, 2 );
+  VolumeLayout->addWidget( myPlot3D,           3, 0, 1, 3 );
+
+  myMeshTB->addItem(VolumeGrp, aVolumesLab->text());
+  aVolumesLab->setVisible(false);
+
+  l->addWidget( myMeshTB,                1, 0, 1, 2 ); //2
+  l->setRowStretch( 2,  5 );
 
   clearInternal();
 }
@@ -3673,8 +3708,8 @@ void SMESHGUI_CtrlInfo::showInfo( const SMESH::SelectionProxy& proxy )
     }
   }
   else {
-    for( int i=2; i<=13; i++)
-      dynamic_cast<QGridLayout*>(layout())->itemAt(i)->widget()->setVisible( false );
+    myMeshTB->setItemEnabled(0, false );
+    myMeshTB->widget(0)->setVisible( false );
   }
 
   // edges info
@@ -3686,8 +3721,8 @@ void SMESHGUI_CtrlInfo::showInfo( const SMESH::SelectionProxy& proxy )
       myButtons[3]->setEnabled( true );
   }
   else {
-    for( int i=14; i<=17; i++)
-      dynamic_cast<QGridLayout*>(layout())->itemAt(i)->widget()->setVisible( false );
+    myMeshTB->setItemEnabled(1, false );
+    myMeshTB->widget(1)->setVisible( false );
   }
 
   // faces info
@@ -3705,14 +3740,10 @@ void SMESHGUI_CtrlInfo::showInfo( const SMESH::SelectionProxy& proxy )
       myButtons[5]->setEnabled( true );
       myButtons[6]->setEnabled( true );
     }
-#ifdef DISABLE_PLOT2DVIEWER
-    for( int i=25; i<=27; i++)
-      dynamic_cast<QGridLayout*>(layout())->itemAt(i)->widget()->setVisible( false );
-#endif
   }
   else {
-    for( int i=18; i<=27; i++)
-      dynamic_cast<QGridLayout*>(layout())->itemAt(i)->widget()->setVisible( false );
+    myMeshTB->setItemEnabled(2, false );
+    myMeshTB->widget(2)->setVisible( false );
   }
 
   // volumes info
@@ -3730,15 +3761,15 @@ void SMESHGUI_CtrlInfo::showInfo( const SMESH::SelectionProxy& proxy )
       myButtons[8]->setEnabled( true );
       myButtons[9]->setEnabled( true );
     }
-#ifdef DISABLE_PLOT2DVIEWER
-    for( int i=35; i<=37; i++)
-      dynamic_cast<QGridLayout*>(layout())->itemAt(i)->widget()->setVisible( false );
-#endif
   }
   else {
-    for( int i=28; i<=37; i++)
-      dynamic_cast<QGridLayout*>(layout())->itemAt(i)->widget()->setVisible( false );
+    myMeshTB->setItemEnabled(3, false );
+    myMeshTB->widget(3)->setVisible( false );
   }
+  myMeshTB->setCurrentIndex(0);
+  myMeshTB->setVisible( (nbNodes + nbElemsByType[ SMESH::EDGE ] + 
+                                   nbElemsByType[ SMESH::FACE ] + 
+                                   nbElemsByType[ SMESH::VOLUME ]) > 0 );
 }
 
 //================================================================================
@@ -3892,8 +3923,10 @@ void SMESHGUI_CtrlInfo::computeAspectRatio3D()
 */
 void SMESHGUI_CtrlInfo::clearInternal()
 {
-  for( int i=0; i<=37; i++)
-    dynamic_cast<QGridLayout*>(layout())->itemAt(i)->widget()->setVisible( true );
+  for (int i=0; i<=3;i++) {
+    myMeshTB->setItemEnabled(i, true );
+    myMeshTB->widget(i)->setVisible( true );
+  }
   for( int i=0; i<=9; i++)
     myButtons[i]->setEnabled( false );
   myPlot->detachItems();

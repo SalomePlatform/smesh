@@ -264,13 +264,15 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
 
   // layouting
-  GroupArgumentsLayout->addWidget(SelectorWdg,          0, 0, 1, 2);
-  GroupArgumentsLayout->addWidget(PathGrp,              1, 0, 1, 2);
-  GroupArgumentsLayout->addWidget(BasePointGrp,         2, 0, 1, 2);
-  GroupArgumentsLayout->addWidget(AnglesGrp,            3, 0);
-  GroupArgumentsLayout->addWidget(ScalesGrp,            3, 1);
-  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    4, 0);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 0);
+  GroupArgumentsLayout->addWidget(SelectorWdg,          0, 0, 3, 2);
+  GroupArgumentsLayout->addWidget(PathGrp,              0, 2, 1, 2);
+  GroupArgumentsLayout->addWidget(BasePointGrp,         1, 2, 1, 2);
+  GroupArgumentsLayout->addWidget(AnglesGrp,            2, 2);
+  GroupArgumentsLayout->addWidget(ScalesGrp,            2, 3);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    3, 0);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      3, 1);
+  SelectorWdg->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+  SelectorWdg->setMinimumWidth(320);
 
   /***************************************************************/
   // common buttons group box
