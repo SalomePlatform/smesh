@@ -66,7 +66,7 @@
 //-------------------------------------------------------------------------------------
 // A macro makes description of a caught exception and calls onExceptionFun(const char*).
 // Several onExceptionFun() are defined here: throwSalomeEx(), doNothing() and returnError().
-// To add your own catch close, define SMY_OWN_CATCH macro before including this file.
+// To add your own catch clause, define SMY_OWN_CATCH macro before including this file.
 
 #define SMESH_CATCH( onExceptionFun )                                   \
   }                                                                     \

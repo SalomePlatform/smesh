@@ -273,7 +273,7 @@ const BRepMesh_Triangle* SMESH_Delaunay::GetTriangleNear( int iBndNode )
   if ( iBndNode >= _triaDS->NbNodes() )
     return 0;
   int nodeIDs[3];
-  int nbNbNodes = _bndNodes.size();
+  int nbBndNodes = _bndNodes.size();
 #if OCC_VERSION_LARGE <= 0x07030000
   typedef BRepMesh::ListOfInteger TLinkList;
 #else
@@ -289,9 +289,9 @@ const BRepMesh_Triangle* SMESH_Delaunay::GetTriangleNear( int iBndNode )
       if ( tria.Movability() != BRepMesh_Deleted )
       {
         _triaDS->ElementNodes( tria, nodeIDs );
-        if ( nodeIDs[0]-1 < nbNbNodes &&
-             nodeIDs[1]-1 < nbNbNodes &&
-             nodeIDs[2]-1 < nbNbNodes )
+        if ( nodeIDs[0]-1 < nbBndNodes &&
+             nodeIDs[1]-1 < nbBndNodes &&
+             nodeIDs[2]-1 < nbBndNodes )
           return &tria;
       }
     }
@@ -301,9 +301,9 @@ const BRepMesh_Triangle* SMESH_Delaunay::GetTriangleNear( int iBndNode )
       if ( tria.Movability() != BRepMesh_Deleted )
       {
         _triaDS->ElementNodes( tria, nodeIDs );
-        if ( nodeIDs[0]-1 < nbNbNodes &&
-             nodeIDs[1]-1 < nbNbNodes &&
-             nodeIDs[2]-1 < nbNbNodes )
+        if ( nodeIDs[0]-1 < nbBndNodes &&
+             nodeIDs[1]-1 < nbBndNodes &&
+             nodeIDs[2]-1 < nbBndNodes )
           return &tria;
       }
     }
@@ -373,14 +373,29 @@ void SMESH_Delaunay::ToPython() const
   }
 
   int nodeIDs[3];
+  const char* dofName[] = { "Free",
+                            "InVolume",
+                            "OnSurface",
+                            "OnCurve",
+                            "Fixed",
+                            "Frontier",
+                            "Deleted" };
+  text << "# nb elements = " << _triaDS->NbElements() << endl;
+  std::vector< int > deletedElems;
   for ( int i = 0; i < _triaDS->NbElements(); ++i )
   {
     const BRepMesh_Triangle& t = _triaDS->GetElement( i+1 );
     if ( t.Movability() == BRepMesh_Deleted )
-      continue;
+      deletedElems.push_back( i+1 );
+    //   continue;
     _triaDS->ElementNodes( t, nodeIDs );
-    text << "mesh.AddFace([ " << nodeIDs[0] << ", " << nodeIDs[1] << ", " << nodeIDs[2] << " ])" << endl;
+    text << "mesh.AddFace([ " << nodeIDs[0] << ", " << nodeIDs[1] << ", " << nodeIDs[2] << " ]) # "
+         <<  dofName[ t.Movability() ] << endl;
   }
+  text << "mesh.MakeGroupByIds( 'deleted elements', SMESH.FACE, [";
+  for ( int id : deletedElems )
+    text << id << ",";
+  text << "])" << endl;
 
   const char* fileName = "/tmp/Delaunay.py";
   SMESH_File file( fileName, false );

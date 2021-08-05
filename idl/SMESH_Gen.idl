@@ -114,7 +114,7 @@ module SMESH
     short   code;       // ComputeErrorName or, if negative, algo specific code
     string  comment;    // textual problem description
     string  algoName;
-    short   subShapeID; // id of sub-shape of a shape to mesh
+    long    subShapeID; // id of sub-shape of a shape to mesh
     boolean hasBadMesh; // there are elements preventing computation available for visualization
   };
   typedef sequence<ComputeError> compute_error_array;
