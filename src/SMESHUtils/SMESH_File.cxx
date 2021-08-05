@@ -81,12 +81,12 @@ bool SMESH_File::open()
   if ( !_map && length > 0 )
   {
 #ifdef WIN32
-#ifdef UNICODE
+#  ifdef UNICODE
     std::wstring  aName = Kernel_Utils::utf8_decode_s(_name);
     const wchar_t* name = aName.c_str();
-#else
+#  else
     char* name = _name.data();
-#endif
+#  endif
     _file = CreateFile(name, GENERIC_READ, FILE_SHARE_READ,
                        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     bool ok = ( _file != INVALID_HANDLE_VALUE );

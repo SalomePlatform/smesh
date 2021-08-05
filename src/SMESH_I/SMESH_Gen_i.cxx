@@ -460,18 +460,17 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
       // load plugin library
       if(MYDEBUG) MESSAGE("Loading server meshers plugin library ...");
 #ifdef WIN32
-#ifdef UNICODE
+#  ifdef UNICODE
       const wchar_t* path = Kernel_Utils::decode_s(aPlatformLibName);
-#else
+      SMESHUtils::ArrayDeleter<const wchar_t> deleter( path );
+#  else
       const char* path = aPlatformLibName.c_str();
-#endif
+#  endif
 #else
       const char* path = aPlatformLibName.c_str();
 #endif
       LibHandle libHandle = LoadLib( path );
-#if defined(WIN32) && defined(UNICODE)
-      delete path;
-#endif
+
       if (!libHandle)
       {
         // report any error, if occurred
@@ -5194,7 +5193,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   TCollection_AsciiString aStudyName( "" );
   if ( isMultiFile ) {
     CORBA::WString_var url = aStudy->URL();
-    aStudyName = (char*)SALOMEDS_Tool::GetNameFromPath( Kernel_Utils::encode(url.in()) ).c_str();
+    SMESHUtils::ArrayDeleter<const char> urlMulibyte( Kernel_Utils::encode( url.in()) );
+    aStudyName = (char*)SALOMEDS_Tool::GetNameFromPath( urlMulibyte.get() ).c_str();
   }
   // Set names of temporary files
   TCollection_AsciiString filename = tmpDir + aStudyName + "_SMESH.hdf";

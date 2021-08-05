@@ -104,6 +104,8 @@ namespace SMESHUtils
     TOBJ* _obj;
     ArrayDeleter( TOBJ* obj ): _obj( obj ) {}
     ~ArrayDeleter() { delete [] _obj; _obj = 0; }
+    operator TOBJ*() { return _obj; }
+    TOBJ* get() { return _obj; }
   private:
     ArrayDeleter( const ArrayDeleter& );
   };

@@ -41,9 +41,6 @@ class LightApp_SelectionMgr;
 /*!
  * The GeomSelectionTools class gives high level tools to select Geom (and other objects)
  * A specific attention has been given to analyze selected GEOM objects.
- *
- * @param myStudy This class is specific to the study !
- *
  */
 
 class PLUGINUTILS_EXPORT GeomSelectionTools
