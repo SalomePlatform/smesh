@@ -26,14 +26,15 @@
 
 #include "StdMeshers_BlockRenumber.hxx"
 
-#include "SMDS_EdgePosition.hxx"
-#include "SMDS_FacePosition.hxx"
-#include "SMESHDS_Mesh.hxx"
-#include "SMESHDS_SubMesh.hxx"
-#include "SMESH_Algo.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_MesherHelper.hxx"
-#include "SMESH_TryCatch.hxx"
+#include <SMDS_EdgePosition.hxx>
+#include <SMDS_FacePosition.hxx>
+#include <SMESHDS_Mesh.hxx>
+#include <SMESHDS_SubMesh.hxx>
+#include <SMESH_Algo.hxx>
+#include <SMESH_Mesh.hxx>
+#include <SMESH_MesherHelper.hxx>
+#include <SMESH_TryCatch.hxx>
+#include <SMESH_BoostTxtArchive.hxx>
 
 #include <BRep_Tool.hxx>
 #include <TopExp_Explorer.hxx>
@@ -41,7 +42,6 @@
 #include <TopoDS.hxx>
 
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 //=============================================================================
 /*!
@@ -203,11 +203,11 @@ TopoDS_Vertex StdMeshers_RenumberHelper::GetVertex000( const TopTools_MapOfShape
 }
 
 //=======================================================================
-//function : GetVertex000
-//purpose  : Find default vertex at (0,0,0) local position
+//function : GetVertexAtPoint
+//purpose  : Return the VERTEX of solid at given point
 //=======================================================================
 
-TopoDS_Vertex StdMeshers_RenumberHelper::GetVertexAtPoint( const TopoDS_Shape&  solid,
+TopoDS_Vertex StdMeshers_RenumberHelper::GetVertexAtPoint( const TopoDS_Shape& solid,
                                                            const TopoDS_Shape& point )
 {
   if ( !solid.IsNull() && !point.IsNull() && point.ShapeType() == TopAbs_VERTEX )
@@ -296,8 +296,7 @@ istream & StdMeshers_BlockRenumber::LoadFrom(istream & load)
 {
   SMESH_TRY;
 
-  boost::archive::text_iarchive archive( load );
-  archive >> *this;
+  SMESHUtils::BoostTxtArchive( load ) >> *this;
 
   SMESH_CATCH( SMESH::doNothing );
 

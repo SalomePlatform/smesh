@@ -61,6 +61,7 @@ SET(SMESHUtils_HEADERS
   SMESH_ControlPnt.hxx
   SMESH_Delaunay.hxx
   SMESH_Indexer.hxx
+  SMESH_BoostTxtArchive.hxx
   )
 
 # --- sources ---
@@ -84,6 +85,7 @@ SET(SMESHUtils_SOURCES
   SMESH_Offset.cxx
   SMESH_Slot.cxx
   SMESH_PolyLine.cxx
+  SMESH_BoostTxtArchive.cxx
   )
 
 # --- rules ---

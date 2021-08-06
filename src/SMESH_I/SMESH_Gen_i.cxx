@@ -102,6 +102,7 @@
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_ControlsDef.hxx"
+#include <SMESH_BoostTxtArchive.hxx>
 
 // to pass CORBA exception through SMESH_TRY
 #define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
@@ -5995,13 +5996,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
         aDataset->ReadFromDisk((char*) dataString.data() );
         aDataset->CloseOnDisk();
 
-        std::istringstream istream( dataString.data() );
-        boost::archive::text_iarchive archive( istream );
         std::list< std::list< std::string > > orderEntryLists;
-        try {
-          archive >> orderEntryLists;
-        }
-        catch (...) {}
+        SMESHUtils::BoostTxtArchive( dataString ) >> orderEntryLists;
 
         TListOfListOfInt anOrderIds;
         for ( const std::list< std::string >& entryList : orderEntryLists )
