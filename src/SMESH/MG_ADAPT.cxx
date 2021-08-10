@@ -19,8 +19,11 @@
 
 #include "MG_ADAPT.hxx"
 
-#include "SMESH_File.hxx"
-#include "SMESH_Comment.hxx"
+#include <DriverGMF_Read.hxx>
+#include <SMESH_Comment.hxx>
+#include <SMESH_File.hxx>
+#include <SMESH_MGLicenseKeyGen.hxx>
+#include <SMESH_TypeDefs.hxx>
 
 #include <MEDFileData.hxx>
 #include <MEDFileField.hxx>
@@ -1005,7 +1008,7 @@ std::string MgAdapt::getCommandToRun()
         cmd += " --";
       else
         cmd += " ";
-//       std::cout << "--- option: '" << option << ", value: '" << value <<"'"<< std::endl;
+      //       std::cout << "--- option: '" << option << ", value: '" << value <<"'"<< std::endl;
       cmd += option + " " + value;
     }
   }
@@ -1015,13 +1018,31 @@ std::string MgAdapt::getCommandToRun()
   {
     cmd+= " --verbose "+ ToComment(verbosityLevel);
   }
-    //~}
-//~cmd+= " >"
+  // get license key
+  {
+    smIdType nbVertex, nbEdge, nbFace, nbVol;
+    DriverGMF_Read gmfReader;
+    gmfReader.SetFile( meshIn );
+    gmfReader.GetMeshInfo( nbVertex, nbEdge, nbFace, nbVol );
+
+    std::string errorTxt;
+    std::string key = SMESHUtils_MGLicenseKeyGen::GetKey( meshIn,
+                                                          FromSmIdType<int>( nbVertex ),
+                                                          FromSmIdType<int>( nbEdge ),
+                                                          FromSmIdType<int>( nbFace ),
+                                                          FromSmIdType<int>( nbVol ),
+                                                          errorTxt );
+    if ( key.empty() )
+      return ToComment( "Problem with library SalomeMeshGemsKeyGenerator: " + errorTxt );
+
+    cmd += " --key " + key;
+  }
+
 #ifdef WIN32
-    cmd += " < NUL";
+  cmd += " < NUL";
 #endif
-//   std::cout << "--- cmd :"<< std::endl;
-//   std::cout << cmd << std::endl;
+  //   std::cout << "--- cmd :"<< std::endl;
+  //   std::cout << cmd << std::endl;
 
   return cmd;
 }

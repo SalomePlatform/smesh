@@ -62,6 +62,7 @@ SET(SMESHUtils_HEADERS
   SMESH_Delaunay.hxx
   SMESH_Indexer.hxx
   SMESH_BoostTxtArchive.hxx
+  SMESH_MGLicenseKeyGen.hxx
   )
 
 # --- sources ---
@@ -86,6 +87,7 @@ SET(SMESHUtils_SOURCES
   SMESH_Slot.cxx
   SMESH_PolyLine.cxx
   SMESH_BoostTxtArchive.cxx
+  SMESH_MGLicenseKeyGen.cxx
   )
 
 # --- rules ---

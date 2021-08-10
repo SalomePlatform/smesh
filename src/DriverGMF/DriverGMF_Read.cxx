@@ -537,3 +537,37 @@ Driver_Mesh::Status DriverGMF_Read::storeBadNodeIds(const char* gmfKwd, int elem
   }
   return DRS_OK;
 }
+
+//================================================================================
+/*!
+ * \brief Return number of mesh entities in a file
+ */
+//================================================================================
+
+bool DriverGMF_Read::GetMeshInfo(smIdType & nbNodes,
+                                 smIdType & nbEdges,
+                                 smIdType & nbFaces,
+                                 smIdType & nbVols)
+{
+  nbNodes = nbEdges = nbFaces = nbVols = 0;
+
+  Kernel_Utils::Localizer loc;
+
+  int dim, version;
+  int meshID = GmfOpenMesh( myFile.c_str(), GmfRead, &version, &dim );
+  if ( !meshID )
+    return false;
+
+  DriverGMF::MeshCloser aMeshCloser( meshID ); // An object closing GMF mesh at destruction
+
+  nbNodes =   GmfStatKwd(meshID, GmfVertices       );
+  nbEdges =   GmfStatKwd(meshID, GmfEdges          );
+  nbFaces = ( GmfStatKwd(meshID, GmfTriangles      ) +
+              GmfStatKwd(meshID, GmfQuadrilaterals ));
+  nbVols  = ( GmfStatKwd(meshID, GmfTetrahedra     ) +
+              GmfStatKwd(meshID, GmfPyramids       ) +
+              GmfStatKwd(meshID, GmfHexahedra      ) +
+              GmfStatKwd(meshID, GmfPrisms         ));
+
+  return true;
+}

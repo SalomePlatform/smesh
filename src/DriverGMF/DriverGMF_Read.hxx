@@ -57,6 +57,11 @@ public:
 
   virtual Status Perform();
 
+  bool GetMeshInfo(smIdType & nbVertex,
+                   smIdType & nbEdge,
+                   smIdType & nbFace,
+                   smIdType & nbVol);
+
  private:
 
   Status storeBadNodeIds(const char* gmfKwd, int elemNb, int nb, ...);
