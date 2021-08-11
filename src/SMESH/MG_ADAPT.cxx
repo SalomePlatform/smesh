@@ -322,7 +322,7 @@ MgAdaptHypothesisData* MgAdapt::getData() const
 }
 void MgAdapt::setMedFileIn(std::string fileName)
 {
-  if ( isFileExist(fileName) )
+  if ( isFileExist( fileName ))
   {
     medFileIn = fileName;
 
@@ -1094,7 +1094,9 @@ std::string MgAdapt::defaultWorkingDirectory()
   {
     aTmpDir = Tmp_dir;
   }
-  else {
+
+  if ( ! isFileExist( aTmpDir ))
+  {
 #ifdef WIN32
     aTmpDir = "C:\\";
 #else
