@@ -1,7 +1,7 @@
 # Quadrangle Parameters example 1 (meshing a face with 3 edges)
 
 import salome
-salome.salome_init()
+salome.salome_init_without_session()
 
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()

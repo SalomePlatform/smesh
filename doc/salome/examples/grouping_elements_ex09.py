@@ -1,7 +1,7 @@
 # Creating groups of faces separated by sharp edges
 
 import salome
-salome.salome_init()
+salome.salome_init_without_session()
 from salome.geom import geomBuilder
 from salome.smesh import smeshBuilder
 geompy = geomBuilder.New()

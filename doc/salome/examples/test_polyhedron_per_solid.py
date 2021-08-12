@@ -3,7 +3,7 @@
 import sys
 import salome
 
-salome.salome_init()
+salome.salome_init_without_session()
 
 ###
 ### GEOM component

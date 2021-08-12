@@ -3,7 +3,7 @@
 # Project prisms from one meshed box to another mesh on the same box
 
 import salome
-salome.salome_init()
+salome.salome_init_without_session()
 import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()

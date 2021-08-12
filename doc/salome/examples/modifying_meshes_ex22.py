@@ -4,7 +4,7 @@
 # a fully functional method is ExtrusionSweepObjects()
 
 import salome, math
-salome.salome_init()
+salome.salome_init_without_session()
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()
 

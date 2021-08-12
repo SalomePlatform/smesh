@@ -19,7 +19,7 @@ import sys
 # Lancement des cas-tests
 import salome
 salome.standalone()
-salome.salome_init()
+salome.salome_init_without_session()
 
 from blocFissure.CasTests.blocFissureTest import blocFissureTest
 BLOCFISSURE_TEST = blocFissureTest(["eprouvetteCourbe", "eprouvetteDroite", "eprouvetteDroite_2"])

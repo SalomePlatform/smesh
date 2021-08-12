@@ -1,7 +1,7 @@
 # Add 0D Element
 
 import salome
-salome.salome_init()
+salome.salome_init_without_session()
 
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()

@@ -16,7 +16,7 @@ import os
 import salome
 
 salome.standalone()
-salome.salome_init()
+salome.salome_init_without_session()
 
 import SMESH
 from salome.smesh import smeshBuilder

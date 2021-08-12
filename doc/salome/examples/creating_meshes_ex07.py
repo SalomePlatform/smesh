@@ -1,7 +1,7 @@
 # Building a compound of meshes
 
 import salome
-salome.salome_init()
+salome.salome_init_without_session()
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()
 from salome.smesh import smeshBuilder
