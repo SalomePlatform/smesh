@@ -561,7 +561,8 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
     SALOMEDS::SComponent_wrap f_i = citer->Value();
     CORBA::String_var ior_i;
     bool ok = f_i->ComponentIOR(ior_i.out());
-    if ( ok && compDataType == f_i->ComponentDataType() && ior == ior_i.in()) {
+    CORBA::String_var cdt(f_i->ComponentDataType());
+    if ( ok && compDataType == cdt.in() && ior == ior_i.in()) {
       father = f_i;
       break;
     }
