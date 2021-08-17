@@ -548,8 +548,11 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
   SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = getStudyServant()->GetUseCaseBuilder();
 
   std::string compDataType = ComponentDataType(); // SMESH module's data type
-  std::string ior = SMESH_Gen_i::GetORB()->object_to_string( SMESH_Gen::_this() ); // IOR of this SMESH engine
-
+  std::string ior;
+  {
+    CORBA::String_var iorString = GetORB()->object_to_string( SMESH_Gen::_this() );
+    ior = std::string( iorString.in() ); // IOR of this SMESH engine
+  }
   // Find study component which corresponds to this SMESH engine
 
   SALOMEDS::SComponent_wrap father;

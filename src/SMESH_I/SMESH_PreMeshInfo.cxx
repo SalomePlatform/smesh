@@ -272,6 +272,7 @@ namespace
       dataset->WriteOnDisk( & data[0]  );
       dataset->CloseOnDisk();
       anArray->CloseOnDisk();
+      delete anArray;
     }
   }
 }

@@ -5917,7 +5917,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               if ( aNewGroup->_is_nil() )
                 continue;
 
-              string iorSubString = GetORB()->object_to_string( aNewGroup );
+              CORBA::String_var iorSubStringVar = GetORB()->object_to_string( aNewGroup );
+              string iorSubString(iorSubStringVar.in());
               int        newSubId = myStudyContext->findId( iorSubString );
               myStudyContext->mapOldToNew( subid, newSubId );
 
@@ -6240,8 +6241,9 @@ int SMESH_Gen_i::RegisterObject(CORBA::Object_ptr theObject)
 CORBA::Long  SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
 {
   if ( myStudyContext && !CORBA::is_nil( theObject )) {
-    string iorString = GetORB()->object_to_string( theObject );
-    return myStudyContext->findId( iorString );
+    CORBA::String_var iorString = GetORB()->object_to_string( theObject );
+    string iorStringCpp(iorString.in()); 
+    return myStudyContext->findId( iorStringCpp );
   }
   return 0;
 }
