@@ -49,13 +49,13 @@
 #include "SMESH_subMeshEventListener.hxx"
 #include "StdMeshers_FaceSide.hxx"
 #include "StdMeshers_ProjectionUtils.hxx"
+#include "StdMeshers_Quadrangle_2D.hxx"
 #include "StdMeshers_ViscousLayers2D.hxx"
 
 #include <Adaptor3d_HSurface.hxx>
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Curve2d.hxx>
 #include <BRepAdaptor_Surface.hxx>
-//#include <BRepLProp_CLProps.hxx>
 #include <BRepLProp_SLProps.hxx>
 #include <BRepOffsetAPI_MakeOffsetShape.hxx>
 #include <BRep_Tool.hxx>
@@ -101,7 +101,7 @@
 #include <unordered_map>
 
 #ifdef _DEBUG_
-//#define __myDEBUG
+#define __myDEBUG
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 //#define __NODES_AT_POS
 #endif
@@ -385,6 +385,7 @@ namespace VISCOUS_3D
   struct _LayerEdge;
   struct _EdgesOnShape;
   struct _Smoother1D;
+  struct _Mapper2D;
   typedef map< const SMDS_MeshNode*, _LayerEdge*, TIDCompare > TNode2Edge;
 
   //--------------------------------------------------------------------------------
@@ -444,6 +445,10 @@ namespace VISCOUS_3D
                          const TopoDS_Face&    F,
                          _EdgesOnShape&        eos,
                          SMESH_MesherHelper&   helper );
+    bool UpdatePositionOnSWOL( SMDS_MeshNode*      n,
+                               double              tol,
+                               _EdgesOnShape&      eos,
+                               SMESH_MesherHelper& helper );
     void SetDataByNeighbors( const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
                              const _EdgesOnShape& eos,
@@ -494,7 +499,7 @@ namespace VISCOUS_3D
     bool   IsOnFace() const { return ( _nodes[0]->GetPosition()->GetDim() == 2 ); }
     int    BaseShapeDim() const { return _nodes[0]->GetPosition()->GetDim(); }
     gp_XYZ Copy( _LayerEdge& other, _EdgesOnShape& eos, SMESH_MesherHelper& helper );
-    void   SetCosin( double cosin );
+    double SetCosin( double cosin );
     void   SetNormal( const gp_XYZ& n ) { _normal = n; }
     void   SetMaxLen( double l ) { _maxLen = l; }
     int    NbSteps() const { return _pos.size() - 1; } // nb inlation steps
@@ -623,6 +628,20 @@ namespace VISCOUS_3D
     bool   ToCreateGroup()     const { return !_groupName.empty(); }
     const std::string& GetGroupName() const { return _groupName; }
 
+    double Get1stLayerThickness( double realThickness = 0.) const
+    {
+      const double T = ( realThickness > 0 ) ? realThickness : GetTotalThickness();
+      const double f = GetStretchFactor();
+      const int    N = GetNumberLayers();
+      const double fPowN = pow( f, N );
+      double h0;
+      if ( fPowN - 1 <= numeric_limits<double>::min() )
+        h0 = T / N;
+      else
+        h0 = T * ( f - 1 )/( fPowN - 1 );
+      return h0;
+    }
+
     bool   UseSurfaceNormal()  const
     { return _method == StdMeshers_ViscousLayers::SURF_OFFSET_SMOOTH; }
     bool   ToSmooth()          const
@@ -672,6 +691,8 @@ namespace VISCOUS_3D
 
     Handle(ShapeAnalysis_Surface) _offsetSurf;
     _LayerEdge*                   _edgeForOffset;
+    double                        _offsetValue;
+    _Mapper2D*                    _mapper2D;
 
     _SolidData*            _data; // parent SOLID
 
@@ -685,8 +706,11 @@ namespace VISCOUS_3D
     { return std::find( _eosC1.begin(), _eosC1.end(), other ) != _eosC1.end(); }
     bool             GetNormal( const SMDS_MeshElement* face, gp_Vec& norm );
     _SolidData&      GetData() const { return *_data; }
+    char             ShapeTypeLetter() const
+    { switch ( ShapeType() ) { case TopAbs_FACE: return 'F'; case TopAbs_EDGE: return 'E';
+      case TopAbs_VERTEX: return 'V'; default: return 'S'; }}
 
-    _EdgesOnShape(): _shapeID(-1), _subMesh(0), _toSmooth(false), _edgeSmoother(0) {}
+    _EdgesOnShape(): _shapeID(-1), _subMesh(0), _toSmooth(false), _edgeSmoother(0), _mapper2D(0) {}
     ~_EdgesOnShape();
   };
 
@@ -925,7 +949,7 @@ namespace VISCOUS_3D
                         const StdMeshers_ViscousLayers* hyp,
                         const TopoDS_Shape&             hypShape,
                         set<TGeomID>&                   ignoreFaces);
-    void makeEdgesOnShape();
+    int makeEdgesOnShape();
     bool makeLayer(_SolidData& data);
     void setShapeData( _EdgesOnShape& eos, SMESH_subMesh* sm, _SolidData& data );
     bool setEdgeData( _LayerEdge& edge, _EdgesOnShape& eos,
@@ -1105,6 +1129,22 @@ namespace VISCOUS_3D
 
     void offPointsToPython() const; // debug
   };
+
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Compute positions of nodes of 2D structured mesh using TFI
+   */
+  class _Mapper2D
+  {
+    FaceQuadStruct _quadPoints;
+
+    UVPtStruct& uvPnt( size_t i, size_t j ) { return _quadPoints.UVPt( i, j ); }
+
+  public:
+    _Mapper2D( const TParam2ColumnMap & param2ColumnMap, const TNode2Edge& n2eMap );
+    bool ComputeNodePositions();
+  };
+
   //--------------------------------------------------------------------------------
   /*!
    * \brief Class of temporary mesh face.
@@ -1438,17 +1478,42 @@ SMDS_MeshGroup* StdMeshers_ViscousLayers::CreateGroup( const std::string&  theNa
 
 namespace VISCOUS_3D
 {
-  gp_XYZ getEdgeDir( const TopoDS_Edge& E, const TopoDS_Vertex& fromV )
+  gp_XYZ getEdgeDir( const TopoDS_Edge& E, const TopoDS_Vertex& fromV,
+                     const double h0, bool* isRegularEdge = nullptr )
   {
     gp_Vec dir;
     double f,l;
     Handle(Geom_Curve) c = BRep_Tool::Curve( E, f, l );
     if ( c.IsNull() ) return gp_XYZ( Precision::Infinite(), 1e100, 1e100 );
-    gp_Pnt p = BRep_Tool::Pnt( fromV );
-    double distF = p.SquareDistance( c->Value( f ));
-    double distL = p.SquareDistance( c->Value( l ));
+    gp_Pnt  p = BRep_Tool::Pnt( fromV );
+    gp_Pnt pf = c->Value( f ), pl = c->Value( l );
+    double distF = p.SquareDistance( pf );
+    double distL = p.SquareDistance( pl );
     c->D1(( distF < distL ? f : l), p, dir );
     if ( distL < distF ) dir.Reverse();
+    bool isDifficult = false;
+    if ( dir.SquareMagnitude() < h0 * h0 ) // check dir orientation
+    {
+      gp_Pnt& pClose = distF < distL ? pf : pl;
+      gp_Pnt&   pFar = distF < distL ? pl : pf;
+      gp_Pnt    pMid = 0.9 * pClose.XYZ() + 0.1 * pFar.XYZ();
+      gp_Vec vMid( p, pMid );
+      double     dot = vMid * dir;
+      double    cos2 = dot * dot / dir.SquareMagnitude() / vMid.SquareMagnitude();
+      if ( cos2 < 0.7 * 0.7 || dot < 0 ) // large angle between dir and vMid
+      {
+        double uClose = distF < distL ? f : l;
+        double   uFar = distF < distL ? l : f;
+        double      r = h0 / SMESH_Algo::EdgeLength( E );
+        double   uMid = ( 1 - r ) * uClose + r * uFar;
+        pMid = c->Value( uMid );
+        dir = gp_Vec( p, pMid );
+        isDifficult = true;
+      }
+    }
+    if ( isRegularEdge )
+      *isRegularEdge = !isDifficult;
+
     return dir.XYZ();
   }
   //--------------------------------------------------------------------------------
@@ -1465,8 +1530,8 @@ namespace VISCOUS_3D
   }
   //--------------------------------------------------------------------------------
   gp_XYZ getFaceDir( const TopoDS_Face& F, const TopoDS_Vertex& fromV,
-                     const SMDS_MeshNode* node, SMESH_MesherHelper& helper, bool& ok,
-                     double* cosin=0);
+                     const SMDS_MeshNode* node, SMESH_MesherHelper& helper, bool& ok/*,
+                     double* cosin=0*/);
   //--------------------------------------------------------------------------------
   gp_XYZ getFaceDir( const TopoDS_Face& F, const TopoDS_Edge& fromE,
                      const SMDS_MeshNode* node, SMESH_MesherHelper& helper, bool& ok)
@@ -1507,7 +1572,7 @@ namespace VISCOUS_3D
   //--------------------------------------------------------------------------------
   gp_XYZ getFaceDir( const TopoDS_Face& F, const TopoDS_Vertex& fromV,
                      const SMDS_MeshNode* node, SMESH_MesherHelper& helper,
-                     bool& ok, double* cosin)
+                     bool& ok/*, double* cosin*/)
   {
     TopoDS_Face faceFrw = F;
     faceFrw.Orientation( TopAbs_FORWARD );
@@ -1539,7 +1604,7 @@ namespace VISCOUS_3D
       ok = true;
       for ( size_t i = 0; i < nbEdges && ok; ++i )
       {
-        edgeDir[i] = getEdgeDir( edges[i], fromV );
+        edgeDir[i] = getEdgeDir( edges[i], fromV, 0.1 * SMESH_Algo::EdgeLength( edges[i] ));
         double size2 = edgeDir[i].SquareModulus();
         if (( ok = size2 > numeric_limits<double>::min() ))
           edgeDir[i] /= sqrt( size2 );
@@ -1559,15 +1624,15 @@ namespace VISCOUS_3D
         if ( angle < 0 )
           dir.Reverse();
       }
-      if ( cosin ) {
-        double angle = gp_Vec( edgeDir[0] ).Angle( dir );
-        *cosin = Cos( angle );
-      }
+      // if ( cosin ) {
+      //   double angle = faceNormal.Angle( dir );
+      //   *cosin = Cos( angle );
+      // }
     }
     else if ( nbEdges == 1 )
     {
       dir = getFaceDir( faceFrw, edges[ edges[0].IsNull() ], node, helper, ok );
-      if ( cosin ) *cosin = 1.;
+      //if ( cosin ) *cosin = 1.;
     }
     else
     {
@@ -1761,8 +1826,8 @@ namespace VISCOUS_3D
 
   //--------------------------------------------------------------------------------
   // DEBUG. Dump intermediate node positions into a python script
-  // HOWTO use: run python commands written in a console to see
-  //  construction steps of viscous layers
+  // HOWTO use: run python commands written in a console and defined in /tmp/viscous.py
+  // to see construction steps of viscous layers
 #ifdef __myDEBUG
   ostream* py;
   int      theNbPyFunc;
@@ -1963,9 +2028,6 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
   if ( _ViscousListener::GetSolidMesh( _mesh, exp.Current(), /*toCreate=*/false))
     return SMESH_ComputeErrorPtr(); // everything already computed
 
-  PyDump debugDump( theMesh );
-  _pyDump = &debugDump;
-
   // TODO: ignore already computed SOLIDs
   if ( !findSolidsWithLayers())
     return _error;
@@ -1973,15 +2035,14 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
   if ( !findFacesWithLayers() )
     return _error;
 
-  // for ( size_t i = 0; i < _sdVec.size(); ++i )
-  // {
-  //   if ( ! makeLayer( _sdVec[ i ]))   // create _LayerEdge's
-  //     return _error;
-  // }
-
-  makeEdgesOnShape();
+  if ( !makeEdgesOnShape() )
+    return _error;
 
   findPeriodicFaces();
+
+  PyDump debugDump( theMesh );
+  _pyDump = &debugDump;
+
 
   for ( size_t i = 0; i < _sdVec.size(); ++i )
   {
@@ -1991,6 +2052,8 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
            !_sdVec[iSD]._solid.IsNull() &&
            !_sdVec[iSD]._done )
         break;
+    if ( iSD == _sdVec.size() )
+      break; // all done
 
     if ( ! makeLayer(_sdVec[iSD]) )   // create _LayerEdge's
       return _error;
@@ -2617,6 +2680,7 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
 
   // Create temporary faces and _LayerEdge's
 
+  debugMsg( "######################" );
   dumpFunction(SMESH_Comment("makeLayers_")<<data._index);
 
   vector< _EdgesOnShape >& edgesByGeom = data._edgesOnShape;
@@ -2677,7 +2741,7 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
             nbDegenNodes++;
           }
         }
-        TNode2Edge::iterator n2e = data._n2eMap.insert( make_pair( n, (_LayerEdge*)0 )).first;
+        TNode2Edge::iterator n2e = data._n2eMap.insert({ n, nullptr }).first;
         if ( !(*n2e).second )
         {
           // add a _LayerEdge
@@ -2766,6 +2830,42 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
       for ( ; node != nearNodes.end(); ++node )
         if (( n2e = data._n2eMap.find( *node )) != data._n2eMap.end() )
           edge->_neibors.push_back( n2e->second );
+    }
+
+    // Fix uv of nodes on periodic FACEs (bos #20643)
+
+    if ( eos.ShapeType() != TopAbs_EDGE ||
+         eos.SWOLType()  != TopAbs_FACE ||
+         eos.size() == 0 )
+      continue;
+
+    const TopoDS_Face& F = TopoDS::Face( eos._sWOL );
+    SMESH_MesherHelper faceHelper( *_mesh );
+    faceHelper.SetSubShape( F );
+    faceHelper.ToFixNodeParameters( true );
+    if ( faceHelper.GetPeriodicIndex() == 0 )
+      continue;
+
+    SMESHDS_SubMesh* smDS = getMeshDS()->MeshElements( F );
+    if ( !smDS || smDS->GetNodes() == 0 )
+      continue;
+
+    bool toCheck = true;
+    const double tol = 2 * helper.MaxTolerance( F );
+    for ( SMDS_NodeIteratorPtr nIt = smDS->GetNodes(); nIt->more(); )
+    {
+      const SMDS_MeshNode* node = nIt->next();
+      gp_XY uvNew( Precision::Infinite(), 0 );
+      if ( toCheck )
+      {
+        toCheck = false;
+        gp_XY uv = faceHelper.GetNodeUV( F, node );
+        if ( ! faceHelper.CheckNodeUV( F, node, uvNew, tol, /*force=*/true ))
+          break; // projection on F failed
+        if (( uv - uvNew ).Modulus() < Precision::Confusion() )
+          break; // current uv is OK
+      }
+      faceHelper.CheckNodeUV( F, node, uvNew, tol, /*force=*/true );
     }
   }
 
@@ -3120,13 +3220,13 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
     if ( SMESH_Algo::isDegenerated( E ) || !edgesOfSmooFaces.Contains( E ))
       continue;
 
-    double tgtThick = eos._hyp.GetTotalThickness();
+    double tgtThick = eos._hyp.GetTotalThickness(), h0 = eos._hyp.Get1stLayerThickness();
     for ( TopoDS_Iterator vIt( E ); vIt.More() && !eos._toSmooth; vIt.Next() )
     {
       TGeomID iV = getMeshDS()->ShapeToIndex( vIt.Value() );
       vector<_LayerEdge*>& eV = edgesByGeom[ iV ]._edges;
       if ( eV.empty() || eV[0]->Is( _LayerEdge::MULTI_NORMAL )) continue;
-      gp_Vec  eDir    = getEdgeDir( E, TopoDS::Vertex( vIt.Value() ));
+      gp_Vec  eDir    = getEdgeDir( E, TopoDS::Vertex( vIt.Value() ), h0 );
       double angle    = eDir.Angle( eV[0]->_normal );
       double cosin    = Cos( angle );
       double cosinAbs = Abs( cosin );
@@ -3304,7 +3404,7 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
     {
       _EdgesOnShape* eoe = data.GetShapeEdges( *e );
       if ( !eoe ) continue; // other solid
-      gp_XYZ eDir = getEdgeDir( TopoDS::Edge( *e ), V );
+      gp_XYZ eDir = getEdgeDir( TopoDS::Edge( *e ), V, eoe->_hyp.Get1stLayerThickness() );
       if ( !Precision::IsInfinite( eDir.X() ))
         dirOfEdges.push_back( make_pair( eoe, eDir.Normalized() ));
     }
@@ -3350,9 +3450,10 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
  */
 //================================================================================
 
-void _ViscousBuilder::makeEdgesOnShape()
+int _ViscousBuilder::makeEdgesOnShape()
 {
   const int nbShapes = getMeshDS()->MaxShapeIndex();
+  int nbSolidsWL = 0;
 
   for ( size_t i = 0; i < _sdVec.size(); ++i )
   {
@@ -3361,6 +3462,7 @@ void _ViscousBuilder::makeEdgesOnShape()
     edgesByGeom.resize( nbShapes+1 );
 
     // set data of _EdgesOnShape's
+    int nbShapesWL = 0;
     if ( SMESH_subMesh* sm = _mesh->GetSubMesh( data._solid ))
     {
       SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/false);
@@ -3372,9 +3474,21 @@ void _ViscousBuilder::makeEdgesOnShape()
           continue;
 
         setShapeData( edgesByGeom[ sm->GetId() ], sm, data );
+
+        nbShapesWL += ( sm->GetSubShape().ShapeType() == TopAbs_FACE );
       }
     }
+    if ( nbShapesWL == 0 ) // no shapes with layers in a SOLID
+    {
+      data._done = true;
+      SMESHUtils::FreeVector( edgesByGeom );
+    }
+    else
+    {
+      ++nbSolidsWL;
+    }
   }
+  return nbSolidsWL;
 }
 
 //================================================================================
@@ -3400,6 +3514,7 @@ void _ViscousBuilder::setShapeData( _EdgesOnShape& eos,
     eos._shape.Orientation( helper.GetSubShapeOri( data._solid, eos._shape ));
   eos._toSmooth = false;
   eos._data = &data;
+  eos._mapper2D = nullptr;
 
   // set _SWOL
   map< TGeomID, TopoDS_Shape >::const_iterator s2s =
@@ -3520,6 +3635,7 @@ bool _EdgesOnShape::GetNormal( const SMDS_MeshElement* face, gp_Vec& norm )
 _EdgesOnShape::~_EdgesOnShape()
 {
   delete _edgeSmoother;
+  delete _mapper2D;
 }
 
 //================================================================================
@@ -3601,13 +3717,14 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
       if ( eos.SWOLType() == TopAbs_EDGE )
       {
         // inflate from VERTEX along EDGE
-        edge._normal = getEdgeDir( TopoDS::Edge( eos._sWOL ), TopoDS::Vertex( eos._shape ));
+        edge._normal = getEdgeDir( TopoDS::Edge( eos._sWOL ), TopoDS::Vertex( eos._shape ),
+                                   eos._hyp.Get1stLayerThickness(), &eos._isRegularSWOL );
       }
       else if ( eos.ShapeType() == TopAbs_VERTEX )
       {
         // inflate from VERTEX along FACE
         edge._normal = getFaceDir( TopoDS::Face( eos._sWOL ), TopoDS::Vertex( eos._shape ),
-                                   node, helper, normOK, &edge._cosin);
+                                   node, helper, normOK/*, &edge._cosin*/);
       }
       else
       {
@@ -3696,30 +3813,37 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
       break;
     }
     case TopAbs_VERTEX: {
+      TopoDS_Vertex V  = TopoDS::Vertex( eos._shape );
+      gp_Vec inFaceDir = getFaceDir( face2Norm[0].first , V, node, helper, normOK );
+      double angle     = inFaceDir.Angle( edge._normal ); // [0,PI]
+      edge._cosin      = Cos( angle );
       if ( fromVonF )
-      {
-        getFaceDir( TopoDS::Face( eos._sWOL ), TopoDS::Vertex( eos._shape ),
-                    node, helper, normOK, &edge._cosin );
-      }
-      else if ( eos.SWOLType() != TopAbs_FACE ) // else _cosin is set by getFaceDir()
-      {
-        TopoDS_Vertex V  = TopoDS::Vertex( eos._shape );
-        gp_Vec inFaceDir = getFaceDir( F, V, node, helper, normOK );
-        double angle     = inFaceDir.Angle( edge._normal ); // [0,PI]
-        edge._cosin      = Cos( angle );
-        if ( totalNbFaces > 2 || helper.IsSeamShape( node->getshapeId() ))
-          for ( int iF = 1; iF < totalNbFaces; ++iF )
-          {
-            F = face2Norm[ iF ].first;
-            inFaceDir = getFaceDir( F, V, node, helper, normOK=true );
-            if ( normOK ) {
-              double angle = inFaceDir.Angle( edge._normal );
-              double cosin = Cos( angle );
-              if ( Abs( cosin ) > Abs( edge._cosin ))
-                edge._cosin = cosin;
+        totalNbFaces--;
+      if ( totalNbFaces > 1 || helper.IsSeamShape( node->getshapeId() ))
+        for ( int iF = 1; iF < totalNbFaces; ++iF )
+        {
+          F = face2Norm[ iF ].first;
+          inFaceDir = getFaceDir( F, V, node, helper, normOK=true );
+          if ( normOK ) {
+            if ( onShrinkShape )
+            {
+              gp_Vec faceNorm = getFaceNormal( node, F, helper, normOK );
+              if ( !normOK ) continue;
+              if ( helper.GetSubShapeOri( data._solid, F ) != TopAbs_REVERSED )
+                faceNorm.Reverse();
+              angle = 0.5 * M_PI - faceNorm.Angle( edge._normal );
+              if ( inFaceDir * edge._normal < 0 )
+                angle = M_PI - angle;
             }
+            else
+            {
+              angle = inFaceDir.Angle( edge._normal );
+            }
+            double cosin = Cos( angle );
+            if ( Abs( cosin ) > Abs( edge._cosin ))
+              edge._cosin = cosin;
           }
-      }
+        }
       break;
     }
     default:
@@ -3744,7 +3868,20 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
   // Set the rest data
   // --------------------
 
-  edge.SetCosin( edge._cosin ); // to update edge._lenFactor
+  double realLenFactor = edge.SetCosin( edge._cosin ); // to update edge._lenFactor
+  // if ( realLenFactor > 3 )
+  // {
+  //   edge._cosin = 1;
+  //   if ( onShrinkShape )
+  //   {
+  //     edge.Set( _LayerEdge::RISKY_SWOL );
+  //     edge._lenFactor = 2;
+  //   }
+  //   else
+  //   {
+  //     edge._lenFactor = 1;
+  //   }
+  // }
 
   if ( onShrinkShape )
   {
@@ -3786,7 +3923,8 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
           getMeshDS()->RemoveFreeNode( tgtNode, 0, /*fromGroups=*/false );
           edge._nodes.resize( 1 );
         }
-        else if ( edge._lenFactor > 3 )
+        else if ( realLenFactor > 3 ) ///  -- moved to SetCosin()
+          //else if ( edge._lenFactor > 3 )
         {
           edge._lenFactor = 2;
           edge.Set( _LayerEdge::RISKY_SWOL );
@@ -4153,7 +4291,7 @@ void _OffsetPlane::ComputeIntersectionLine( _OffsetPlane&        pln,
     // parallel planes - intersection is an offset of the common EDGE
     gp_Pnt p = BRep_Tool::Pnt( V );
     linePos  = 0.5 * (( p.XYZ() + n1 ) + ( p.XYZ() + n2 ));
-    lineDir  = getEdgeDir( E, V );
+    lineDir  = getEdgeDir( E, V, 0.1 * SMESH_Algo::EdgeLength( E ));
   }
   else
   {
@@ -4404,12 +4542,23 @@ gp_XYZ _LayerEdge::Copy( _LayerEdge&         other,
  */
 //================================================================================
 
-void _LayerEdge::SetCosin( double cosin )
+double _LayerEdge::SetCosin( double cosin )
 {
   _cosin = cosin;
   cosin = Abs( _cosin );
-  //_lenFactor = ( cosin < 1.-1e-12 ) ?  Min( 2., 1./sqrt(1-cosin*cosin )) : 1.0;
-  _lenFactor = ( cosin < 1.-1e-12 ) ?  1./sqrt(1-cosin*cosin ) : 1.0;
+  //_lenFactor = ( cosin < 1.-1e-12 ) ?  1./sqrt(1-cosin*cosin ) : 1.0;
+  double realLenFactor;
+  if ( cosin < 1.-1e-12 )
+  {
+    _lenFactor = realLenFactor = 1./sqrt(1-cosin*cosin );
+  }
+  else
+  {
+    _lenFactor = 1;
+    realLenFactor = Precision::Infinite();
+  }
+
+  return realLenFactor;
 }
 
 //================================================================================
@@ -4962,24 +5111,41 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
         for ( size_t iEOS = 0; iEOS < eosC1.size(); ++iEOS )
         {
           isConcaveFace[ iEOS ] = data._concaveFaces.count( eosC1[ iEOS ]->_shapeID  );
-          vector< _LayerEdge* > & edges = eosC1[ iEOS ]->_edges;
-          for ( size_t i = 0; i < edges.size(); ++i )
-            if ( edges[i]->Is( _LayerEdge::MOVED ) ||
-                 edges[i]->Is( _LayerEdge::NEAR_BOUNDARY ))
-              movedEdges.push_back( edges[i] );
 
+          if ( eosC1[ iEOS ]->_mapper2D )
+          {
+            // compute node position by boundary node position in structured mesh
+            dumpFunction(SMESH_Comment("map2dS")<<data._index<<"_Fa"<<eos._shapeID
+                         <<"_InfStep"<<infStep);
+
+            eosC1[ iEOS ]->_mapper2D->ComputeNodePositions();
+
+            for ( _LayerEdge* le : eosC1[ iEOS ]->_edges )
+              le->_pos.back() = SMESH_NodeXYZ( le->_nodes.back() );
+
+            dumpFunctionEnd();
+          }
+          else
+          {
+            for ( _LayerEdge* le : eosC1[ iEOS ]->_edges )
+              if ( le->Is( _LayerEdge::MOVED ) ||
+                   le->Is( _LayerEdge::NEAR_BOUNDARY ))
+                movedEdges.push_back( le );
+          }
           makeOffsetSurface( *eosC1[ iEOS ], helper );
         }
 
         int step = 0, stepLimit = 5, nbBad = 0;
         while (( ++step <= stepLimit ) || improved )
         {
-          dumpFunction(SMESH_Comment("smooth")<<data._index<<"_Fa"<<sInd
-                       <<"_InfStep"<<infStep<<"_"<<step); // debug
           int oldBadNb = nbBad;
           badEdges.clear();
 
 #ifdef INCREMENTAL_SMOOTH
+          // smooth moved only
+          if ( !movedEdges.empty() )
+            dumpFunction(SMESH_Comment("smooth")<<data._index<<"_Fa"<<sInd
+                         <<"_InfStep"<<infStep<<"_"<<step); // debug
           bool findBest = false; // ( step == stepLimit );
           for ( size_t i = 0; i < movedEdges.size(); ++i )
           {
@@ -4988,9 +5154,14 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
               badEdges.push_back( movedEdges[i] );
           }
 #else
+          // smooth all
+          dumpFunction(SMESH_Comment("smooth")<<data._index<<"_Fa"<<sInd
+                       <<"_InfStep"<<infStep<<"_"<<step); // debug
           bool findBest = ( step == stepLimit || isConcaveFace[ iEOS ]);
           for ( size_t iEOS = 0; iEOS < eosC1.size(); ++iEOS )
           {
+            if ( eosC1[ iEOS ]->_mapper2D )
+              continue;
             vector< _LayerEdge* > & edges = eosC1[ iEOS ]->_edges;
             for ( size_t i = 0; i < edges.size(); ++i )
             {
@@ -5061,11 +5232,11 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
 
         } // smoothing steps
 
-        // project -- to prevent intersections or fix bad simplices
+        // project -- to prevent intersections or to fix bad simplices
         for ( size_t iEOS = 0; iEOS < eosC1.size(); ++iEOS )
         {
           if ( ! eosC1[ iEOS ]->_eosConcaVer.empty() || nbBad > 0 )
-            putOnOffsetSurface( *eosC1[ iEOS ], infStep, eosC1 );
+            putOnOffsetSurface( *eosC1[ iEOS ], -infStep, eosC1 );
         }
 
         //if ( !badEdges.empty() )
@@ -5237,7 +5408,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
           continue;
 
         // ignore intersection with intFace of an adjacent FACE
-        if ( dist > 0.1 * eos._edges[i]->_len )
+        if ( dist > 0.01 * eos._edges[i]->_len )
         {
           bool toIgnore = false;
           if (  eos._toSmooth )
@@ -5508,14 +5679,14 @@ void _ViscousBuilder::makeOffsetSurface( _EdgesOnShape& eos, SMESH_MesherHelper&
   // find offset
   gp_Pnt   tgtP = SMESH_TNodeXYZ( eos._edgeForOffset->_nodes.back() );
   /*gp_Pnt2d uv=*/baseSurface->ValueOfUV( tgtP, Precision::Confusion() );
-  double offset = baseSurface->Gap();
+  eos._offsetValue = baseSurface->Gap();
 
   eos._offsetSurf.Nullify();
 
   try
   {
     BRepOffsetAPI_MakeOffsetShape offsetMaker;
-    offsetMaker.PerformByJoin( eos._shape, -offset, Precision::Confusion() );
+    offsetMaker.PerformByJoin( eos._shape, -eos._offsetValue, Precision::Confusion() );
     if ( !offsetMaker.IsDone() ) return;
 
     TopExp_Explorer fExp( offsetMaker.Shape(), TopAbs_FACE );
@@ -5567,6 +5738,7 @@ void _ViscousBuilder::putOnOffsetSurface( _EdgesOnShape&            eos,
     return;
 
   double preci = BRep_Tool::Tolerance( TopoDS::Face( eof->_shape )), vol;
+  bool neighborHasRiskySWOL = false;
   for ( size_t i = 0; i < eos._edges.size(); ++i )
   {
     _LayerEdge* edge = eos._edges[i];
@@ -5578,12 +5750,23 @@ void _ViscousBuilder::putOnOffsetSurface( _EdgesOnShape&            eos,
       if ( !edge->Is( _LayerEdge::UPD_NORMAL_CONV ))
         continue;
     }
+    else if ( moveAll == _LayerEdge::RISKY_SWOL )
+    {
+      if ( !edge->Is( _LayerEdge::RISKY_SWOL ) ||
+           edge->_cosin < 0 )
+        continue;
+    }
     else if ( !moveAll && !edge->Is( _LayerEdge::MOVED ))
       continue;
 
     int nbBlockedAround = 0;
     for ( size_t iN = 0; iN < edge->_neibors.size(); ++iN )
+    {
       nbBlockedAround += edge->_neibors[iN]->Is( _LayerEdge::BLOCKED );
+      if ( edge->_neibors[iN]->Is( _LayerEdge::RISKY_SWOL ) &&
+           edge->_neibors[iN]->_cosin > 0 )
+        neighborHasRiskySWOL = true;
+    }
     if ( nbBlockedAround > 1 )
       continue;
 
@@ -5612,6 +5795,35 @@ void _ViscousBuilder::putOnOffsetSurface( _EdgesOnShape&            eos,
       {
         edge->_normal = ( newP - prevP ).Normalized();
       }
+      // if ( edge->_len < eof->_offsetValue )
+      //   edge->_len = eof->_offsetValue;
+
+      if ( !eos._sWOL.IsNull() ) // RISKY_SWOL
+      {
+        double change = eof->_offsetSurf->Gap() / eof->_offsetValue;
+        if (( newP - tgtP.XYZ() ) * edge->_normal < 0 )
+          change = 1 - change;
+        else
+          change = 1 + change;
+        gp_XYZ shitfVec    = tgtP.XYZ() - SMESH_NodeXYZ( edge->_nodes[0] );
+        gp_XYZ newShiftVec = shitfVec * change;
+        double shift       = edge->_normal * shitfVec;
+        double newShift    = edge->_normal * newShiftVec;
+        newP = tgtP.XYZ() + edge->_normal * ( newShift - shift );
+
+        uv = eof->_offsetSurf->NextValueOfUV( edge->_curvature->_uv, newP, preci );
+        if ( eof->_offsetSurf->Gap() < edge->_len )
+        {
+          edge->_curvature->_uv = uv;
+          newP = eof->_offsetSurf->Value( uv ).XYZ();
+        }
+        n->setXYZ( newP.X(), newP.Y(), newP.Z());
+        if ( !edge->UpdatePositionOnSWOL( n, /*tol=*/10 * edge->_len / ( edge->NbSteps() + 1 ),
+                                          eos, eos.GetData().GetHelper() ))
+        {
+          debugMsg("UpdatePositionOnSWOL fails in putOnOffsetSurface()" );
+        }
+      }
     }
   }
 
@@ -5625,8 +5837,8 @@ void _ViscousBuilder::putOnOffsetSurface( _EdgesOnShape&            eos,
       break;
   if ( i < eos._edges.size() )
   {
-    dumpFunction(SMESH_Comment("putOnOffsetSurface_S") << eos._shapeID
-                 << "_InfStep" << infStep << "_" << smooStep );
+    dumpFunction(SMESH_Comment("putOnOffsetSurface_") << eos.ShapeTypeLetter() << eos._shapeID
+                 << "_InfStep" << infStep << "_" << Abs( smooStep ));
     for ( ; i < eos._edges.size(); ++i )
     {
       if ( eos._edges[i]->Is( _LayerEdge::MARKED )) {
@@ -5647,7 +5859,7 @@ void _ViscousBuilder::putOnOffsetSurface( _EdgesOnShape&            eos,
     SMESH_subMeshIteratorPtr smIt = eos._subMesh->getDependsOnIterator(/*includeSelf=*/false);
     while ( smIt->more() )
     {
-      SMESH_subMesh* sm = smIt->next();
+      SMESH_subMesh*     sm = smIt->next();
       _EdgesOnShape* subEOS = eos.GetData().GetShapeEdges( sm->GetId() );
       if ( !subEOS->_sWOL.IsNull() ) continue;
       if ( std::find( eosC1.begin(), eosC1.end(), subEOS ) != eosC1.end() ) continue;
@@ -5655,6 +5867,28 @@ void _ViscousBuilder::putOnOffsetSurface( _EdgesOnShape&            eos,
       putOnOffsetSurface( *subEOS, infStep, eosC1, smooStep, _LayerEdge::UPD_NORMAL_CONV );
     }
     cnvFace->_normalsFixedOnBorders = true;
+  }
+
+
+  // bos #20643
+  // negative smooStep means "final step", where we don't treat RISKY_SWOL edges
+  // as edges based on FACE are a bit late comparing with them
+  if ( smooStep >= 0 &&
+       neighborHasRiskySWOL &&
+       moveAll != _LayerEdge::RISKY_SWOL &&
+       eos.ShapeType() == TopAbs_FACE )
+  {
+    // put on the surface nodes built on FACE boundaries
+    SMESH_subMeshIteratorPtr smIt = eos._subMesh->getDependsOnIterator(/*includeSelf=*/false);
+    while ( smIt->more() )
+    {
+      SMESH_subMesh*     sm = smIt->next();
+      _EdgesOnShape* subEOS = eos.GetData().GetShapeEdges( sm->GetId() );
+      if ( subEOS->_sWOL.IsNull() ) continue;
+      if ( std::find( eosC1.begin(), eosC1.end(), subEOS ) != eosC1.end() ) continue;
+
+      putOnOffsetSurface( *subEOS, infStep, eosC1, smooStep, _LayerEdge::RISKY_SWOL );
+    }
   }
 }
 
@@ -6330,7 +6564,7 @@ void _Smoother1D::prepare(_SolidData& data)
 
   // divide E to have offset segments with low deflection
   BRepAdaptor_Curve c3dAdaptor( E );
-  const double curDeflect = 0.1; //0.01; // Curvature deflection == |p1p2]*sin(p1p2,p1pM)
+  const double curDeflect = 0.1; //0.01; // Curvature deflection == |p1p2|*sin(p1p2,p1pM)
   const double angDeflect = 0.1; //0.09; // Angular deflection == sin(p1pM,pMp2)
   GCPnts_TangentialDeflection discret(c3dAdaptor, angDeflect, curDeflect);
   if ( discret.NbPoints() <= 2 )
@@ -6467,6 +6701,16 @@ gp_XYZ _Smoother1D::getNormalNormal( const gp_XYZ & normal,
 
   // if ( size == 0 ) // MULTI_NORMAL _LayerEdge
   //   return gp_XYZ( 1e-100, 1e-100, 1e-100 );
+
+  if ( size < 1e-5 ) // normal || edgeDir (almost) at inflation along EDGE (bos #20643)
+  {
+    const _LayerEdge* le = _eos._edges[ _eos._edges.size() / 2 ];
+    const gp_XYZ& leNorm = le->_normal;
+
+    cross = leNorm ^ edgeDir;
+    norm = edgeDir ^ cross;
+    size = norm.Modulus();
+  }
 
   return norm / size;
 }
@@ -6695,20 +6939,98 @@ void _SolidData::PrepareEdgesToSmoothOnFace( _EdgesOnShape* eos, bool substitute
     eos->_edgeForOffset = 0;
 
     double maxCosin = -1;
+    bool hasNoShrink = false;
     for ( TopExp_Explorer eExp( eos->_shape, TopAbs_EDGE ); eExp.More(); eExp.Next() )
     {
       _EdgesOnShape* eoe = GetShapeEdges( eExp.Current() );
       if ( !eoe || eoe->_edges.empty() ) continue;
 
+      if ( eos->GetData()._noShrinkShapes.count( eoe->_shapeID ))
+        hasNoShrink = true;
+
       vector<_LayerEdge*>& eE = eoe->_edges;
       _LayerEdge* e = eE[ eE.size() / 2 ];
-      if ( e->_cosin > maxCosin )
+      if ( !e->Is( _LayerEdge::RISKY_SWOL ) && e->_cosin > maxCosin )
       {
         eos->_edgeForOffset = e;
         maxCosin = e->_cosin;
       }
+
+      if ( !eoe->_sWOL.IsNull() )
+        for ( _LayerEdge* le : eoe->_edges )
+          if ( le->Is( _LayerEdge::RISKY_SWOL ) && e->_cosin > 0 )
+          {
+            // make _neibors on FACE be smoothed after le->Is( BLOCKED )
+            for ( _LayerEdge* neibor : le->_neibors )
+            {
+              int shapeDim =  neibor->BaseShapeDim();
+              if ( shapeDim == 2 )
+                neibor->Set( _LayerEdge::NEAR_BOUNDARY ); // on FACE
+              else if ( shapeDim == 0 )
+                neibor->Set( _LayerEdge::RISKY_SWOL );    // on VERTEX
+
+              if ( !neibor->_curvature )
+              {
+                gp_XY uv = helper.GetNodeUV( F, neibor->_nodes[0] );
+                neibor->_curvature = _Factory::NewCurvature();
+                neibor->_curvature->_r = 0;
+                neibor->_curvature->_k = 0;
+                neibor->_curvature->_h2lenRatio = 0;
+                neibor->_curvature->_uv = uv;
+              }
+            }
+          }
+    } // loop on EDGEs
+
+    // Try to initialize _Mapper2D
+
+    if ( hasNoShrink )
+      return;
+
+    SMDS_ElemIteratorPtr fIt = eos->_subMesh->GetSubMeshDS()->GetElements();
+    if ( !fIt->more() || fIt->next()->NbCornerNodes() != 4 )
+      return;
+
+    // get EDGEs of quadrangle bottom
+    std::list< TopoDS_Edge > edges;
+    std::list< int > nbEdgesInWire;
+    int nbWire = SMESH_Block::GetOrderedEdges( F, edges, nbEdgesInWire );
+    if ( nbWire != 1 || nbEdgesInWire.front() < 4 )
+      return;
+    const SMDS_MeshNode* node;
+    while ( true ) // make edges start at a corner VERTEX
+    {
+      node = SMESH_Algo::VertexNode( helper.IthVertex( 0, edges.front() ), helper.GetMeshDS() );
+      if ( node && helper.IsCornerOfStructure( node, eos->_subMesh->GetSubMeshDS(), helper ))
+        break;
+      edges.pop_front();
+      if ( edges.empty() )
+        return;
     }
-  }
+    std::list< TopoDS_Edge >::iterator edgeIt = edges.begin();
+    while ( true ) // make edges finish at a corner VERTEX
+    {
+      node = SMESH_Algo::VertexNode( helper.IthVertex( 1, *edgeIt ), helper.GetMeshDS() );
+      ++edgeIt;
+      if ( node && helper.IsCornerOfStructure( node, eos->_subMesh->GetSubMeshDS(), helper ))
+      {
+        edges.erase( edgeIt, edges.end() );
+        break;
+      }
+      if ( edgeIt == edges.end() )
+        return;
+    }
+
+    // get structure of nodes
+    TParam2ColumnMap param2ColumnMap;
+    if ( !helper.LoadNodeColumns( param2ColumnMap, F, edges, helper.GetMeshDS() ))
+      return;
+
+    eos->_mapper2D = new _Mapper2D( param2ColumnMap, eos->GetData()._n2eMap );
+
+  } // if eos is of curved FACE
+
+  return;
 }
 
 //================================================================================
@@ -7320,7 +7642,8 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
           PShapeIteratorPtr eIt = helper.GetAncestors( V, *_mesh, TopAbs_EDGE, &eos->_sWOL );
           while ( const TopoDS_Shape* E = eIt->next() )
           {
-            gp_Vec edgeDir = getEdgeDir( TopoDS::Edge( *E ), TopoDS::Vertex( V ));
+            gp_Vec edgeDir = getEdgeDir( TopoDS::Edge( *E ), TopoDS::Vertex( V ),
+                                         eos->_hyp.Get1stLayerThickness() );
             double   angle = edgeDir.Angle( newEdge._normal ); // [0,PI]
             if ( angle < M_PI / 2 )
               shapesToSmooth.insert( data.GetShapeEdges( *E ));
@@ -9606,6 +9929,8 @@ void _LayerEdge::SetNewLength( double len, _EdgesOnShape& eos, SMESH_MesherHelpe
     Block( eos.GetData() );
   }
   const double lenDelta = len - _len;
+  // if ( lenDelta < 0 )
+  //   return;
   if ( lenDelta < len * 1e-3  )
   {
     Block( eos.GetData() );
@@ -9649,46 +9974,13 @@ void _LayerEdge::SetNewLength( double len, _EdgesOnShape& eos, SMESH_MesherHelpe
   _pos.push_back( newXYZ );
 
   if ( !eos._sWOL.IsNull() )
-  {
-    double distXYZ[4];
-    bool uvOK = false;
-    if ( eos.SWOLType() == TopAbs_EDGE )
-    {
-      double u = Precision::Infinite(); // to force projection w/o distance check
-      uvOK = helper.CheckNodeU( TopoDS::Edge( eos._sWOL ), n, u,
-                                /*tol=*/2*lenDelta, /*force=*/true, distXYZ );
-      _pos.back().SetCoord( u, 0, 0 );
-      if ( _nodes.size() > 1 && uvOK )
-      {
-        SMDS_EdgePositionPtr pos = n->GetPosition();
-        pos->SetUParameter( u );
-      }
-    }
-    else //  TopAbs_FACE
-    {
-      gp_XY uv( Precision::Infinite(), 0 );
-      uvOK = helper.CheckNodeUV( TopoDS::Face( eos._sWOL ), n, uv,
-                                 /*tol=*/2*lenDelta, /*force=*/true, distXYZ );
-      _pos.back().SetCoord( uv.X(), uv.Y(), 0 );
-      if ( _nodes.size() > 1 && uvOK )
-      {
-        SMDS_FacePositionPtr pos = n->GetPosition();
-        pos->SetUParameter( uv.X() );
-        pos->SetVParameter( uv.Y() );
-      }
-    }
-    if ( uvOK )
-    {
-      n->setXYZ( distXYZ[1], distXYZ[2], distXYZ[3]);
-    }
-    else
+    if ( !UpdatePositionOnSWOL( n, 2*lenDelta, eos, helper ))
     {
       n->setXYZ( oldXYZ.X(), oldXYZ.Y(), oldXYZ.Z() );
       _pos.pop_back();
       Block( eos.GetData() );
       return;
     }
-  }
 
   _len = len;
 
@@ -9697,11 +9989,55 @@ void _LayerEdge::SetNewLength( double len, _EdgesOnShape& eos, SMESH_MesherHelpe
   {
     for ( size_t i = 0; i < _neibors.size(); ++i )
       //if (  _len > _neibors[i]->GetSmooLen() )
-        _neibors[i]->Set( MOVED );
+      _neibors[i]->Set( MOVED );
 
     Set( MOVED );
   }
   dumpMove( n ); //debug
+}
+
+
+//================================================================================
+/*!
+ * \brief Update last position on SWOL by projecting node on SWOL
+*/
+//================================================================================
+
+bool _LayerEdge::UpdatePositionOnSWOL( SMDS_MeshNode*      n,
+                                       double              tol,
+                                       _EdgesOnShape&      eos,
+                                       SMESH_MesherHelper& helper )
+{
+  double distXYZ[4];
+  bool uvOK = false;
+  if ( eos.SWOLType() == TopAbs_EDGE )
+  {
+    double u = Precision::Infinite(); // to force projection w/o distance check
+    uvOK = helper.CheckNodeU( TopoDS::Edge( eos._sWOL ), n, u, tol, /*force=*/true, distXYZ );
+    _pos.back().SetCoord( u, 0, 0 );
+    if ( _nodes.size() > 1 && uvOK )
+    {
+      SMDS_EdgePositionPtr pos = n->GetPosition();
+      pos->SetUParameter( u );
+    }
+  }
+  else //  TopAbs_FACE
+  {
+    gp_XY uv( Precision::Infinite(), 0 );
+    uvOK = helper.CheckNodeUV( TopoDS::Face( eos._sWOL ), n, uv, tol, /*force=*/true, distXYZ );
+    _pos.back().SetCoord( uv.X(), uv.Y(), 0 );
+    if ( _nodes.size() > 1 && uvOK )
+    {
+      SMDS_FacePositionPtr pos = n->GetPosition();
+      pos->SetUParameter( uv.X() );
+      pos->SetVParameter( uv.Y() );
+    }
+  }
+  if ( uvOK )
+  {
+    n->setXYZ( distXYZ[1], distXYZ[2], distXYZ[3]);
+  }
+  return uvOK;
 }
 
 //================================================================================
@@ -10120,11 +10456,16 @@ bool _ViscousBuilder::refine(_SolidData& data)
             segLen[j] = segLen[j-1] + (edge._pos[j-1] - edge._pos[j] ).Modulus();
         }
       }
-      else if ( !surface.IsNull() ) // SWOL surface with singularities
+      else // SWOL is surface with singularities or irregularly parametrized curve
       {
         pos3D.resize( edge._pos.size() );
-        for ( size_t j = 0; j < edge._pos.size(); ++j )
-          pos3D[j] = surface->Value( edge._pos[j].X(), edge._pos[j].Y() ).XYZ();
+
+        if ( !surface.IsNull() )
+          for ( size_t j = 0; j < edge._pos.size(); ++j )
+            pos3D[j] = surface->Value( edge._pos[j].X(), edge._pos[j].Y() ).XYZ();
+        else if ( !curve.IsNull() )
+          for ( size_t j = 0; j < edge._pos.size(); ++j )
+            pos3D[j] = curve->Value( edge._pos[j].X() ).XYZ();
 
         for ( size_t j = 1; j < edge._pos.size(); ++j )
           segLen[j] = segLen[j-1] + ( pos3D[j-1] - pos3D[j] ).Modulus();
@@ -10171,26 +10512,16 @@ bool _ViscousBuilder::refine(_SolidData& data)
           fpos->SetVParameter( otherTgtPos.Y() );
         }
       }
-      // calculate height of the first layer
-      double h0;
-      const double T = segLen.back(); //data._hyp.GetTotalThickness();
-      const double f = eos._hyp.GetStretchFactor();
-      const int    N = eos._hyp.GetNumberLayers();
-      const double fPowN = pow( f, N );
-      if ( fPowN - 1 <= numeric_limits<double>::min() )
-        h0 = T / N;
-      else
-        h0 = T * ( f - 1 )/( fPowN - 1 );
-
-      const double zeroLen = std::numeric_limits<double>::min();
 
       // create intermediate nodes
-      double hSum = 0, hi = h0/f;
+      const double      h0 = eos._hyp.Get1stLayerThickness( segLen.back() );
+      const double zeroLen = std::numeric_limits<double>::min();
+      double hSum = 0, hi = h0/eos._hyp.GetStretchFactor();
       size_t iSeg = 1;
       for ( size_t iStep = 1; iStep < edge._nodes.size(); ++iStep )
       {
         // compute an intermediate position
-        hi *= f;
+        hi *= eos._hyp.GetStretchFactor();
         hSum += hi;
         while ( hSum > segLen[iSeg] && iSeg < segLen.size()-1 )
           ++iSeg;
@@ -10561,14 +10892,13 @@ namespace VISCOUS_3D
     SMESH_subMesh*       _subMesh;
     _SolidData*          _data1;
     _SolidData*          _data2;
-    //bool                 _isPeriodic;
 
     std::list< BndPart > _boundary;
     int                  _boundarySize, _nbBoundaryParts;
 
     void Init( SMESH_subMesh* sm, _SolidData* sd1, _SolidData* sd2 )
     {
-      _subMesh = sm; _data1 = sd1; _data2 = sd2; //_isPeriodic = false;
+      _subMesh = sm; _data1 = sd1; _data2 = sd2;
     }
     bool IsSame( const TopoDS_Face& face ) const
     {
@@ -10631,11 +10961,15 @@ namespace VISCOUS_3D
         if ( !periodic._trsf.Solve( srcPnts, tgtPnts )) {
           continue;
         }
-        double tol = std::numeric_limits<double>::max();
+        double tol = std::numeric_limits<double>::max(); // tolerance by segment size
         for ( size_t i = 1; i < srcPnts.size(); ++i ) {
           tol = Min( tol, ( srcPnts[i-1] - srcPnts[i] ).SquareModulus() );
         }
         tol = 0.01 * Sqrt( tol );
+        for ( BndPart& boundary : _boundary ) { // tolerance by VL thickness
+          if ( boundary._isShrink )
+            tol = Min( tol, boundary._hyp->Get1stLayerThickness() / 50. );
+        }
         bool nodeCoincide = true;
         TNodeNodeMap::iterator n2n = periodic._nnMap.begin();
         for ( ; n2n != periodic._nnMap.end() &&  nodeCoincide; ++n2n )
@@ -10643,7 +10977,7 @@ namespace VISCOUS_3D
           SMESH_NodeXYZ nSrc = n2n->first;
           SMESH_NodeXYZ nTgt = n2n->second;
           gp_XYZ pTgt = periodic._trsf.Transform( nSrc );
-          nodeCoincide = (( pTgt - nTgt ).SquareModulus() < tol );
+          nodeCoincide = (( pTgt - nTgt ).SquareModulus() < tol * tol );
         }
         if ( nodeCoincide )
           return true;
@@ -11422,6 +11756,8 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
           uvPtVec[ i ].param = helper.GetNodeU( E, edges[i]->_nodes[0] );
           uvPtVec[ i ].SetUV( helper.GetNodeUV( F, edges[i]->_nodes.back() ));
         }
+        if ( edges.empty() )
+          continue;
         BRep_Tool::Range( E, uvPtVec[0].param, uvPtVec.back().param );
         StdMeshers_FaceSide fSide( uvPtVec, F, E, _mesh );
         StdMeshers_ViscousLayers2D::SetProxyMeshOfEdge( fSide );
@@ -11569,7 +11905,8 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     if ( !n2 )
       return error(SMESH_Comment("Wrongly meshed EDGE ") << getMeshDS()->ShapeToIndex( E ));
 
-    if ( n2 == tgtNode ) // for 3D_mesh_GHS3D_01/B1
+    if ( n2 == tgtNode       || // for 3D_mesh_GHS3D_01/B1
+         n2 == edge._nodes[1] ) // bos #20643
     {
       // shrunk by other SOLID
       edge.Set( _LayerEdge::SHRUNK ); // ???
@@ -11804,7 +12141,7 @@ void _ViscousBuilder::fixBadFaces(const TopoDS_Face&          F,
  */
 //================================================================================
 
-bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& /*surface*/,
+bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& surface,
                                  const TopoDS_Face&    F,
                                  _EdgesOnShape&        eos,
                                  SMESH_MesherHelper&   helper )
@@ -11831,8 +12168,8 @@ bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& /*surface*/,
         continue; // simplex of quadrangle created by addBoundaryElements()
 
       // find intersection of 2 lines: curUV-tgtUV and that connecting simplex nodes
-      gp_XY uvN1 = helper.GetNodeUV( F, _simplices[i]._nPrev );
-      gp_XY uvN2 = helper.GetNodeUV( F, _simplices[i]._nNext );
+      gp_XY uvN1 = helper.GetNodeUV( F, _simplices[i]._nPrev, tgtNode );
+      gp_XY uvN2 = helper.GetNodeUV( F, _simplices[i]._nNext, tgtNode );
       gp_XY dirN = uvN2 - uvN1;
       double det = uvDir.Crossed( dirN );
       if ( Abs( det )  < std::numeric_limits<double>::min() ) continue;
@@ -11864,6 +12201,8 @@ bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& /*surface*/,
     gp_Pnt p = surface->Value( newUV.X(), newUV.Y() );
     tgtNode->setXYZ( p.X(), p.Y(), p.Z() );
     dumpMove( tgtNode );
+#else
+    if ( surface.IsNull() ) {}
 #endif
   }
   else // _sWOL is TopAbs_EDGE
@@ -12099,10 +12438,17 @@ void _Shrinker1D::AddEdge( const _LayerEdge*   e,
   double u = helper.GetNodeU( _geomEdge, e->_nodes[0], e->_nodes.back());
   _edges[ u < 0.5*(f+l) ? 0 : 1 ] = e;
 
-  // Update _nodes
+  // Check if the nodes are already shrunk by another SOLID
 
   const SMDS_MeshNode* tgtNode0 = TgtNode( 0 );
   const SMDS_MeshNode* tgtNode1 = TgtNode( 1 );
+
+  _done = (( tgtNode0 && tgtNode0->NbInverseElements( SMDSAbs_Edge ) == 2 ) ||
+           ( tgtNode1 && tgtNode1->NbInverseElements( SMDSAbs_Edge ) == 2 ));
+  if ( _done )
+    _nodes.resize( 1, nullptr );
+
+  // Update _nodes
 
   if ( _nodes.empty() )
   {
@@ -12172,6 +12518,8 @@ void _Shrinker1D::Compute(bool set3D, SMESH_MesherHelper& helper)
   double f,l;
   if ( set3D || _done )
   {
+    dumpFunction(SMESH_Comment("shrink1D_E") << helper.GetMeshDS()->ShapeToIndex( _geomEdge )<<
+                 "_F" << helper.GetSubShapeID() );
     Handle(Geom_Curve) C = BRep_Tool::Curve(_geomEdge, f,l);
     GeomAdaptor_Curve aCurve(C, f,l);
 
@@ -12193,7 +12541,9 @@ void _Shrinker1D::Compute(bool set3D, SMESH_MesherHelper& helper)
       pos->SetUParameter( u );
       gp_Pnt p = C->Value( u );
       const_cast< SMDS_MeshNode*>( _nodes[i] )->setXYZ( p.X(), p.Y(), p.Z() );
+      dumpMove( _nodes[i] );
     }
+    dumpFunctionEnd();
   }
   else
   {
@@ -12264,6 +12614,140 @@ void _Shrinker1D::SwapSrcTgtNodes( SMESHDS_Mesh* mesh )
       mesh->ChangeElementNodes( e, nodes, e->NbNodes() );
     }
   }
+}
+
+//================================================================================
+/*!
+ * \brief Setup quadPoints
+ */
+//================================================================================
+
+_Mapper2D::_Mapper2D( const TParam2ColumnMap & param2ColumnMap, const TNode2Edge& n2eMap )
+{
+  size_t i, iSize = _quadPoints.iSize = param2ColumnMap.size();
+  size_t j, jSize = _quadPoints.jSize = param2ColumnMap.begin()->second.size();
+  if ( _quadPoints.iSize < 3 ||
+       _quadPoints.jSize < 3 )
+    return;
+  _quadPoints.uv_grid.resize( iSize * jSize );
+
+  // set nodes
+  i = 0;
+  for ( auto & u_columnNodes : param2ColumnMap )
+  {
+    for ( j = 0; j < u_columnNodes.second.size(); ++j )
+      _quadPoints.UVPt( i, j ).node = u_columnNodes.second[ j ];
+    ++i;
+  }
+
+  // compute x parameter on borders
+  uvPnt( 0, 0       ).x = 0;
+  uvPnt( 0, jSize-1 ).x = 0;
+  gp_Pnt p0, pPrev0 = SMESH_NodeXYZ( uvPnt( 0, 0       ).node );
+  gp_Pnt p1, pPrev1 = SMESH_NodeXYZ( uvPnt( 0, jSize-1 ).node );
+  for ( i = 1; i < iSize; ++i )
+  {
+    p0 = SMESH_NodeXYZ( uvPnt( i, 0       ).node );
+    p1 = SMESH_NodeXYZ( uvPnt( i, jSize-1 ).node );
+    uvPnt( i, 0       ).x = uvPnt( i-1, 0       ).x + p0.Distance( pPrev0 );
+    uvPnt( i, jSize-1 ).x = uvPnt( i-1, jSize-1 ).x + p1.Distance( pPrev1 );
+    pPrev0 = p0;
+    pPrev1 = p1;
+  }
+  for ( i = 1; i < iSize-1; ++i )
+  {
+    uvPnt( i, 0       ).x /= uvPnt( iSize-1, 0       ).x;
+    uvPnt( i, jSize-1 ).x /= uvPnt( iSize-1, jSize-1 ).x;
+    uvPnt( i, 0       ).y = 0;
+    uvPnt( i, jSize-1 ).y = 1;
+  }
+
+  // compute y parameter on borders
+  uvPnt( 0,       0 ).y = 0;
+  uvPnt( iSize-1, 0 ).y = 0;
+  pPrev0 = SMESH_NodeXYZ( uvPnt( 0,       0 ).node );
+  pPrev1 = SMESH_NodeXYZ( uvPnt( iSize-1, 0 ).node );
+  for ( j = 1; j < jSize; ++j )
+  {
+    p0 = SMESH_NodeXYZ( uvPnt( 0,       j ).node );
+    p1 = SMESH_NodeXYZ( uvPnt( iSize-1, j ).node );
+    uvPnt( 0,       j ).y = uvPnt( 0,       j-1 ).y + p0.Distance( pPrev0 );
+    uvPnt( iSize-1, j ).y = uvPnt( iSize-1, j-1 ).y + p1.Distance( pPrev1 );
+    pPrev0 = p0;
+    pPrev1 = p1;
+  }
+  for ( j = 1; j < jSize-1; ++j )
+  {
+    uvPnt( 0,       j ).y /= uvPnt( 0,       jSize-1 ).y;
+    uvPnt( iSize-1, j ).y /= uvPnt( iSize-1, jSize-1 ).y;
+    uvPnt( 0,       j ).x = 0;
+    uvPnt( iSize-1, j ).x = 1;
+  }
+
+  // compute xy of internal nodes
+  for ( i = 1; i < iSize-1; ++i )
+  {
+    const double x0 = uvPnt( i, 0       ).x;
+    const double x1 = uvPnt( i, jSize-1 ).x;
+    for ( j = 1; j < jSize-1; ++j )
+    {
+      const double y0 = uvPnt( 0,       j ).y;
+      const double y1 = uvPnt( iSize-1, j ).y;
+      double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
+      double y = y0 + x * (y1 - y0);
+      uvPnt( i, j ).x = x;
+      uvPnt( i, j ).y = y;
+    }
+  }
+
+  // replace base nodes with target ones
+  for ( i = 0; i < iSize; ++i )
+    for ( j = 0; j < jSize; ++j )
+    {
+      auto n2e = n2eMap.find( uvPnt( i, j ).node );
+      uvPnt( i, j ).node = n2e->second->_nodes.back();
+    }
+
+  return;
+}
+
+//================================================================================
+/*!
+ * \brief Compute positions of nodes of 2D structured mesh using TFI
+ */
+//================================================================================
+
+bool _Mapper2D::ComputeNodePositions()
+{
+  if ( _quadPoints.uv_grid.empty() )
+    return true;
+
+  size_t i, iSize = _quadPoints.iSize;
+  size_t j, jSize = _quadPoints.jSize;
+
+  SMESH_NodeXYZ a0 ( uvPnt( 0,       0       ).node );
+  SMESH_NodeXYZ a1 ( uvPnt( iSize-1, 0       ).node );
+  SMESH_NodeXYZ a2 ( uvPnt( iSize-1, jSize-1 ).node );
+  SMESH_NodeXYZ a3 ( uvPnt( 0,       jSize-1 ).node );
+
+  for ( i = 1; i < iSize-1; ++i )
+  {
+    SMESH_NodeXYZ p0 ( uvPnt( i, 0       ).node );
+    SMESH_NodeXYZ p2 ( uvPnt( i, jSize-1 ).node );
+    for ( j = 1; j < jSize-1; ++j )
+    {
+      SMESH_NodeXYZ p1 ( uvPnt( iSize-1, j ).node );
+      SMESH_NodeXYZ p3 ( uvPnt( 0,       j ).node );
+      double x = uvPnt( i, j ).x;
+      double y = uvPnt( i, j ).y;
+
+      gp_XYZ p = SMESH_MesherHelper::calcTFI( x, y, a0,a1,a2,a3, p0,p1,p2,p3 );
+      const_cast< SMDS_MeshNode* >( uvPnt( i, j ).node )->setXYZ( p.X(), p.Y(), p.Z() );
+
+      dumpMove( uvPnt( i, j ).node );
+    }
+  }
+  return true;
 }
 
 //================================================================================
