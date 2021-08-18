@@ -2781,7 +2781,7 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
           }
           dumpMove(edge->_nodes.back());
 
-          if ( edge->_cosin > faceMaxCosin )
+          if ( edge->_cosin > faceMaxCosin && !edge->Is( _LayerEdge::BLOCKED ))
           {
             faceMaxCosin = edge->_cosin;
             maxCosinEdge = edge;
@@ -10497,7 +10497,8 @@ bool _ViscousBuilder::refine(_SolidData& data)
       if ( n2eMap && (( n2e = n2eMap->find( edge._nodes[0] )) != n2eMap->end() ))
       {
         edgeOnSameNode = n2e->second;
-        useExistingPos = ( edgeOnSameNode->_len < edge._len );
+        useExistingPos = ( edgeOnSameNode->_len < edge._len ||
+                           segLen[0] == segLen.back() ); // too short inflation step (bos #20643)
         const gp_XYZ& otherTgtPos = edgeOnSameNode->_pos.back();
         SMDS_PositionPtr  lastPos = tgtNode->GetPosition();
         if ( isOnEdge )
