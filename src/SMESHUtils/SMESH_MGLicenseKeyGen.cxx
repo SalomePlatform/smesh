@@ -153,11 +153,11 @@ namespace
                                  NULL
                                  );
     if ( msgLen > 0 ) {
-#if defined( WIN32 ) && defined( UNICODE )
-      error = Kernel_Utils::encode((wchar_t*)cstr);
-#else
+#  if defined( UNICODE )
+      error = Kernel_Utils::encode_s((wchar_t*)cstr);
+#  else
       error = (char*)cstr;
-#endif
+#  endif
       LocalFree(cstr);
     }
 
@@ -277,7 +277,7 @@ namespace
     SMESH_File resultFile( outFile, /*open=*/false );
     bool ok = ( resultFile.exists() && resultFile.size() > 0 );
 
-    if (ok)
+    if ( ok )
       libraryFile._name = outFile;
     else
       error = "Can't download file " + url;
@@ -365,13 +365,13 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
 
     bool ok = false;
     typedef bool (*SignFun)(void* );
-    SignFun signFun = (SignFun) GetProc( theLibraryHandle, "SignCAD" ); 
+    SignFun signFun = (SignFun) GetProc( theLibraryHandle, "SignCAD" );
     if ( !signFun )
     {
       if ( ! getLastError( error ))
         error = SMESH_Comment( "Can't find symbol 'SignCAD' in '") << getenv( theEnvVar ) << "'";
     }
-    else 
+    else
     {
 
       SMESH_TRY;
