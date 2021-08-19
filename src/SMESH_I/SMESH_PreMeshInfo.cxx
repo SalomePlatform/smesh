@@ -53,6 +53,8 @@
 
 #include "SMESH_TryCatch.hxx"
 
+#include <memory>
+
 #include CORBA_SERVER_HEADER(SALOME_Session)
 
 using namespace std;
@@ -262,8 +264,8 @@ namespace
 
     if ( !data.empty() )
     {
-      hdf_size datasetSize[] = { data.size() };
-      HDFarray* anArray = new HDFarray(0, HDF_INT32, 1, datasetSize);
+      hdf_size *datasetSize = new hdf_size[1]; datasetSize[0] = data.size();
+      std::unique_ptr<HDFarray> anArray( new HDFarray(0, HDF_INT32, 1, datasetSize) );
       anArray->CreateOnDisk();
       datasetSize[0] = 1;
       HDFdataset* dataset = new HDFdataset( name.c_str(), hdfGroup, HDF_ARRAY, datasetSize, 1 );
@@ -272,7 +274,6 @@ namespace
       dataset->WriteOnDisk( & data[0]  );
       dataset->CloseOnDisk();
       anArray->CloseOnDisk();
-      delete anArray;
     }
   }
 }
