@@ -152,12 +152,16 @@ namespace
                                  0,
                                  NULL
                                  );
-    if ( msgLen > 0 )
-      error = (char*) cstr;
+    if ( msgLen > 0 ) {
+#if defined( WIN32 ) && defined( UNICODE )
+      error = Kernel_Utils::encode((wchar_t*)cstr);
+#else
+      error = (char*)cstr;
+#endif
+      LocalFree(cstr);
+    }
 
-    LocalFree(cstr);
-
-    return msgLen;
+    return (bool)msgLen;
 
 #endif
   }
@@ -244,11 +248,11 @@ namespace
 
 #ifdef WIN32
 
-    std::string outFile = tmpDir + "libMeshGemsKeyGenerator.dll";
+    std::string outFile = tmpDir + "MeshGemsKeyGenerator.dll";
 
     // use wget (== Invoke-WebRequest) PowerShell command available since Windows 7
     std::string psCmd = "wget -Uri " + url + " -OutFile " + outFile;
-    std::string   cmd = "start powershell.exe " + psCmd;
+    std::string   cmd = "powershell.exe " + psCmd;
 
 #else
 
@@ -273,8 +277,10 @@ namespace
     SMESH_File resultFile( outFile, /*open=*/false );
     bool ok = ( resultFile.exists() && resultFile.size() > 0 );
 
-    if ( ok )
+    if (ok)
       libraryFile._name = outFile;
+    else
+      error = "Can't download file " + url;
 
     return ok;
   }
@@ -357,6 +363,7 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     if ( !loadLibrary( error, libraryFile ))
       return false;
 
+    bool ok = false;
     typedef bool (*SignFun)(void* );
     SignFun signFun = (SignFun) GetProc( theLibraryHandle, "SignCAD" ); 
     if ( !signFun )
@@ -364,20 +371,20 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
       if ( ! getLastError( error ))
         error = SMESH_Comment( "Can't find symbol 'SignCAD' in '") << getenv( theEnvVar ) << "'";
     }
+    else 
+    {
 
-    bool ok;
+      SMESH_TRY;
 
-    SMESH_TRY;
+      ok = signFun( meshgems_cad );
 
-    ok = signFun( meshgems_cad );
+      SMESH_CATCH( SMESH::returnError );
 
-    SMESH_CATCH( SMESH::returnError );
-
-    if ( !error.empty() )
-      ok = false;
-    else if ( !ok )
-      error = "SignCAD() failed (located in '" + libraryFile._name + "')";
-
+      if ( !error.empty() )
+        ok = false;
+      else if ( !ok )
+        error = "SignCAD() failed (located in '" + libraryFile._name + "')";
+    }
     return ok;
   }
 
