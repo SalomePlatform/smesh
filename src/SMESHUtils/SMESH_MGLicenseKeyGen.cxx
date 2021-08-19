@@ -373,7 +373,6 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     }
     else
     {
-
       SMESH_TRY;
 
       ok = signFun( meshgems_cad );
@@ -403,6 +402,7 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     if ( !loadLibrary( error, libraryFile ))
       return false;
 
+    bool ok = false;
     typedef bool (*SignFun)(void* );
     SignFun signFun = (SignFun) GetProc( theLibraryHandle, "SignMesh" );
     if ( !signFun )
@@ -410,19 +410,19 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
       if ( ! getLastError( error ))
         error = SMESH_Comment( "Can't find symbol 'SignMesh' in '") << getenv( theEnvVar ) << "'";
     }
-    bool ok;
+    else
+    {
+      SMESH_TRY;
 
-    SMESH_TRY;
+      ok = signFun( meshgems_mesh );
 
-    ok = signFun( meshgems_mesh );
+      SMESH_CATCH( SMESH::returnError );
 
-    SMESH_CATCH( SMESH::returnError );
-
-    if ( !error.empty() )
-      ok = false;
-    else if ( !ok )
-      error = "SignMesh() failed (located in '" + libraryFile._name + "')";
-
+      if ( !error.empty() )
+        ok = false;
+      else if ( !ok )
+        error = "SignMesh() failed (located in '" + libraryFile._name + "')";
+    }
     return ok;
   }
 
@@ -455,8 +455,10 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
       if ( ! getLastError( error ))
         error = SMESH_Comment( "Can't find symbol 'GetKey' in '") << getenv( theEnvVar ) << "'";
     }
-    key = keyFun( gmfFile, nbVertex, nbEdge, nbFace, nbVol );
-
+    else
+    {
+      key = keyFun( gmfFile, nbVertex, nbEdge, nbFace, nbVol );
+    }
     if ( key.empty() )
       error = "GetKey() failed (located in '" + libraryFile._name + "')";
 
