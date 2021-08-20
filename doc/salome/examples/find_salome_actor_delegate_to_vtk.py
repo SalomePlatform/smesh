@@ -5,5 +5,5 @@
 import os
 import sys
 
-result = 'SALOME_ACTOR_DELEGATE_TO_VTK' in os.environ
-sys.exit(int(not result))
+if 'SALOME_ACTOR_DELEGATE_TO_VTK' not in os.environ:
+    raise RuntimeError('SALOME_ACTOR_DELEGATE_TO_VTK is not set!')
