@@ -101,7 +101,9 @@
 #include <unordered_map>
 
 #ifdef _DEBUG_
+#ifndef WIN32
 #define __myDEBUG
+#endif
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 //#define __NODES_AT_POS
 #endif

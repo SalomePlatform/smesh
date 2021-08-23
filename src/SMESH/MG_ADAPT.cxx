@@ -30,6 +30,7 @@
 
 #include <Utils_SALOME_Exception.hxx>
 #include <Basics_Utils.hxx>
+#include "SMESH_TypeDefs.hxx"
 
 #ifndef WIN32
 #include <unistd.h> // getpid()
