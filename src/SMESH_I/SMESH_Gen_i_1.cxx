@@ -535,7 +535,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr /*theSOb
 
 //=======================================================================
 //function : PublishComponent
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
@@ -547,7 +547,7 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
   SALOMEDS::StudyBuilder_var    aStudyBuilder  = getStudyServant()->NewBuilder();
   SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = getStudyServant()->GetUseCaseBuilder();
 
-  std::string compDataType = ComponentDataType(); // SMESH module's data type
+  CORBA::String_var compDataType = ComponentDataType(); // SMESH module's data type
   std::string ior;
   {
     CORBA::String_var iorString = GetORB()->object_to_string( SMESH_Gen::_this() );
@@ -562,12 +562,13 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
     CORBA::String_var ior_i;
     bool ok = f_i->ComponentIOR(ior_i.out());
     CORBA::String_var cdt(f_i->ComponentDataType());
-    if ( ok && compDataType == cdt.in() && ior == ior_i.in()) {
+    if ( ok && strcmp( compDataType.in(), cdt.in() ) == 0 && ior == ior_i.in())
+    {
       father = f_i;
       break;
     }
   }
-  
+
   if ( !CORBA::is_nil( father ) ) {
     // check that the component is added to the use case browser
     if ( !useCaseBuilder->IsUseCaseNode( father ) ) {
@@ -583,14 +584,14 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
   if ( CORBA::is_nil( aCat ) )
     return father._retn();
 
-  SALOME_ModuleCatalog::Acomponent_var aComp = aCat->GetComponent( compDataType.c_str() );
+  SALOME_ModuleCatalog::Acomponent_var aComp = aCat->GetComponent( compDataType.in() );
   if ( CORBA::is_nil( aComp ) )
     return father._retn();
 
   SALOMEDS::GenericAttribute_wrap anAttr;
   SALOMEDS::AttributePixMap_wrap  aPixmap;
 
-  father  = aStudyBuilder->NewComponent( compDataType.c_str() );
+  father  = aStudyBuilder->NewComponent( compDataType.in() );
   aStudyBuilder->DefineComponentInstance( father, SMESH_Gen::_this() );
   anAttr  = aStudyBuilder->FindOrCreateAttribute( father, "AttributePixMap" );
   aPixmap = anAttr;

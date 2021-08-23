@@ -1118,7 +1118,7 @@ bool StdMeshers_Hexa_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheck
     if ( nbFoundShells != 1 ) {
       if ( toCheckAll ) return false;
       continue;
-    }   
+    }
     exp1.Init( exp0.Current(), TopAbs_FACE );
     int nbEdges = SMESH_MesherHelper::Count( exp1.Current(), TopAbs_EDGE, /*ignoreSame=*/true );
     bool ok = ( nbEdges > 3 );
@@ -1130,7 +1130,7 @@ bool StdMeshers_Hexa_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheck
 
 //=======================================================================
 //function : ComputePentahedralMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &          aMesh,
@@ -1138,12 +1138,7 @@ SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &          aMesh,
                                              SMESH_ProxyMesh*      proxyMesh)
 {
   SMESH_ComputeErrorPtr err = SMESH_ComputeError::New();
-  if ( proxyMesh )
-  {
-    err->myName = COMPERR_BAD_INPUT_MESH;
-    err->myComment = "Can't build pentahedral mesh on viscous layers";
-    return err;
-  }
+
   bool bOK;
   StdMeshers_Penta_3D anAlgo;
   //
@@ -1165,13 +1160,31 @@ SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &          aMesh,
       err = aPrism3D->GetComputeError();
     }
   }
+  if ( !bOK && proxyMesh )
+  {
+    // check if VL elements are present on block FACEs
+    bool hasVLonFace = false;
+    for ( TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next() )
+    {
+       const SMESHDS_SubMesh* sm1 = aMesh.GetSubMesh( exp.Current() )->GetSubMeshDS();
+       const SMESHDS_SubMesh* sm2 = proxyMesh->GetSubMesh( exp.Current() );
+      if (( hasVLonFace = ( sm2 && sm1->NbElements() != sm2->NbElements() )))
+        break;
+    }
+    if ( hasVLonFace )
+    {
+      err->myName = COMPERR_BAD_INPUT_MESH;
+      err->myComment = "Can't build pentahedral mesh on viscous layers";
+    }
+  }
+
   return err;
 }
 
 
 //=======================================================================
 //function : EvaluatePentahedralMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool EvaluatePentahedralMesh(SMESH_Mesh & aMesh,

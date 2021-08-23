@@ -2775,13 +2775,12 @@ bool _ViscousBuilder::makeLayer(_SolidData& data)
             if ( !setEdgeData( *edge, edgesByGeom[ shapeID ], helper, data ))
               return false;
 
-            if ( edge->_nodes.size() < 2 )
-              edge->Block( data );
-              //data._noShrinkShapes.insert( shapeID );
+            if ( edge->_nodes.size() < 2 && !noShrink )
+              edge->Block( data ); // a sole node is moved only if noShrink
           }
           dumpMove(edge->_nodes.back());
 
-          if ( edge->_cosin > faceMaxCosin && !edge->Is( _LayerEdge::BLOCKED ))
+          if ( edge->_cosin > faceMaxCosin && edge->_nodes.size() > 1 )
           {
             faceMaxCosin = edge->_cosin;
             maxCosinEdge = edge;
@@ -3905,7 +3904,7 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
         getMeshDS()->SetNodeOnFace( tgtNode, TopoDS::Face( eos._sWOL ), uv.X(), uv.Y() );
     }
 
-    if ( edge._nodes.size() > 1 )
+    //if ( edge._nodes.size() > 1 ) -- allow RISKY_SWOL on noShrink shape
     {
       // check if an angle between a FACE with layers and SWOL is sharp,
       // else the edge should not inflate
@@ -3920,8 +3919,11 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
           geomNorm.Reverse(); // inside the SOLID
         if ( geomNorm * edge._normal < -0.001 )
         {
-          getMeshDS()->RemoveFreeNode( tgtNode, 0, /*fromGroups=*/false );
-          edge._nodes.resize( 1 );
+          if ( edge._nodes.size() > 1 )
+          {
+            getMeshDS()->RemoveFreeNode( tgtNode, 0, /*fromGroups=*/false );
+            edge._nodes.resize( 1 );
+          }
         }
         else if ( realLenFactor > 3 ) ///  -- moved to SetCosin()
           //else if ( edge._lenFactor > 3 )
@@ -4739,7 +4741,7 @@ void _ViscousBuilder::computeGeomSize( _SolidData& data )
     double thinkness = eos._hyp.GetTotalThickness();
     for ( size_t i = 0; i < eos._edges.size(); ++i )
     {
-      if ( eos._edges[i]->Is( _LayerEdge::BLOCKED )) continue;
+      if ( eos._edges[i]->_nodes.size() < 2 ) continue;
       eos._edges[i]->SetMaxLen( thinkness );
       eos._edges[i]->FindIntersection( *searcher, intersecDist, data._epsilon, eos, &face );
       if ( intersecDist > 0 && face )
@@ -6192,9 +6194,11 @@ bool _Smoother1D::smoothAnalyticEdge( _SolidData&                    data,
           tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
           dumpMove( tgtNode );
 
-          SMDS_FacePositionPtr pos = tgtNode->GetPosition();
-          pos->SetUParameter( newUV.X() );
-          pos->SetVParameter( newUV.Y() );
+          if ( SMDS_FacePositionPtr pos = tgtNode->GetPosition() ) // NULL if F is noShrink
+          {
+            pos->SetUParameter( newUV.X() );
+            pos->SetVParameter( newUV.Y() );
+          }
 
           gp_XYZ newUV0( newUV.X(), newUV.Y(), 0 );
 
@@ -6304,10 +6308,11 @@ bool _Smoother1D::smoothAnalyticEdge( _SolidData&                    data,
         tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
         dumpMove( tgtNode );
 
-        SMDS_FacePositionPtr pos = tgtNode->GetPosition();
-        pos->SetUParameter( newUV.X() );
-        pos->SetVParameter( newUV.Y() );
-
+        if ( SMDS_FacePositionPtr pos = tgtNode->GetPosition() ) // NULL if F is noShrink
+        {
+          pos->SetUParameter( newUV.X() );
+          pos->SetVParameter( newUV.Y() );
+        }
         _eos[i]->Set( _LayerEdge::SMOOTHED ); // to check in refine() (IPAL54237)
       }
     }
@@ -6939,14 +6944,14 @@ void _SolidData::PrepareEdgesToSmoothOnFace( _EdgesOnShape* eos, bool substitute
     eos->_edgeForOffset = 0;
 
     double maxCosin = -1;
-    bool hasNoShrink = false;
+    //bool hasNoShrink = false;
     for ( TopExp_Explorer eExp( eos->_shape, TopAbs_EDGE ); eExp.More(); eExp.Next() )
     {
       _EdgesOnShape* eoe = GetShapeEdges( eExp.Current() );
       if ( !eoe || eoe->_edges.empty() ) continue;
 
-      if ( eos->GetData()._noShrinkShapes.count( eoe->_shapeID ))
-        hasNoShrink = true;
+      // if ( eos->GetData()._noShrinkShapes.count( eoe->_shapeID ))
+      //   hasNoShrink = true;
 
       vector<_LayerEdge*>& eE = eoe->_edges;
       _LayerEdge* e = eE[ eE.size() / 2 ];
@@ -6984,8 +6989,8 @@ void _SolidData::PrepareEdgesToSmoothOnFace( _EdgesOnShape* eos, bool substitute
 
     // Try to initialize _Mapper2D
 
-    if ( hasNoShrink )
-      return;
+    // if ( hasNoShrink )
+    //   return;
 
     SMDS_ElemIteratorPtr fIt = eos->_subMesh->GetSubMeshDS()->GetElements();
     if ( !fIt->more() || fIt->next()->NbCornerNodes() != 4 )
@@ -10841,11 +10846,19 @@ namespace VISCOUS_3D
       std::vector< SMESH_NodeXYZ > _nodes;
       TopAbs_ShapeEnum             _vertSWOLType[2]; // shrink part includes VERTEXes
       AverageHyp*                  _vertHyp[2];
+      double                       _edgeWOLLen[2]; // length of wol EDGE
+      double                       _tol; // to compare _edgeWOLLen's
 
       BndPart():
         _isShrink(0), _isReverse(0), _nbSegments(0), _hyp(0),
-        _vertSWOLType{ TopAbs_WIRE, TopAbs_WIRE }, _vertHyp{ 0, 0 }
+        _vertSWOLType{ TopAbs_WIRE, TopAbs_WIRE }, _vertHyp{ 0, 0 }, _edgeWOLLen{ 0., 0.}
       {}
+
+      bool IsEqualLengthEWOL( const BndPart& other ) const
+      {
+        return ( std::abs( _edgeWOLLen[0] - other._edgeWOLLen[0] ) < _tol &&
+                 std::abs( _edgeWOLLen[1] - other._edgeWOLLen[1] ) < _tol );
+      }
 
       bool operator==( const BndPart& other ) const
       {
@@ -10857,7 +10870,8 @@ namespace VISCOUS_3D
                  (( !_isShrink ) ||
                   ( *_hyp        == *other._hyp &&
                     vertHyp1()   == other.vertHyp1() &&
-                    vertHyp2()   == other.vertHyp2() ))
+                    vertHyp2()   == other.vertHyp2() &&
+                    IsEqualLengthEWOL( other )))
                  );
       }
       bool CanAppend( const BndPart& other )
@@ -10875,10 +10889,12 @@ namespace VISCOUS_3D
         bool hasCommonNode = ( _nodes.back()->GetID() == other._nodes.front()->GetID() );
         _nodes.insert( _nodes.end(), other._nodes.begin() + hasCommonNode, other._nodes.end() );
         _vertSWOLType[1] = other._vertSWOLType[1];
-        if ( _isShrink )
-          _vertHyp[1] = other._vertHyp[1];
+        if ( _isShrink ) {
+          _vertHyp[1]    = other._vertHyp[1];
+          _edgeWOLLen[1] = other._edgeWOLLen[1];
+        }
       }
-      const SMDS_MeshNode*    Node(size_t i)  const
+      const SMDS_MeshNode* Node(size_t i)  const
       {
         return _nodes[ _isReverse ? ( _nodes.size() - 1 - i ) : i ]._node;
       }
@@ -11026,6 +11042,11 @@ namespace VISCOUS_3D
       for ( int iE = 0; iE < nbEdgesInWire.front(); ++iE )
       {
         BndPart bndPart;
+
+        std::vector<const SMDS_MeshNode*> nodes = fSide.GetOrderedNodes( iE );
+        bndPart._nodes.assign( nodes.begin(), nodes.end() );
+        bndPart._nbSegments = bndPart._nodes.size() - 1;
+
         _EdgesOnShape*  eos = _data1->GetShapeEdges( fSide.EdgeID( iE ));
 
         bndPart._isShrink = ( eos->SWOLType() == TopAbs_FACE );
@@ -11054,10 +11075,14 @@ namespace VISCOUS_3D
                 bndPart._vertSWOLType[iV] = eov[iV]->SWOLType();
             }
           }
+          bndPart._edgeWOLLen[0] = fSide.EdgeLength( iE - 1 );
+          bndPart._edgeWOLLen[1] = fSide.EdgeLength( iE + 1 );
+
+          bndPart._tol = std::numeric_limits<double>::max(); // tolerance by segment size
+          for ( size_t i = 1; i < bndPart._nodes.size(); ++i )
+            bndPart._tol = Min( bndPart._tol,
+                                ( bndPart._nodes[i-1] - bndPart._nodes[i] ).SquareModulus() );
         }
-        std::vector<const SMDS_MeshNode*> nodes = fSide.GetOrderedNodes( iE );
-        bndPart._nodes.assign( nodes.begin(), nodes.end() );
-        bndPart._nbSegments = bndPart._nodes.size() - 1;
 
         if ( _boundary.empty() || ! _boundary.back().CanAppend( bndPart ))
           _boundary.push_back( bndPart );
@@ -11164,6 +11189,9 @@ namespace VISCOUS_3D
     }
     SMESHDS_Mesh* meshDS = dataSrc->GetHelper().GetMeshDS();
 
+    dumpFunction(SMESH_Comment("periodicMoveNodes_F")
+                               << _shriFace[iSrc]->_subMesh->GetId() << "_F"
+                               << _shriFace[iTgt]->_subMesh->GetId() );
     TNode2Edge::iterator n2e;
     TNodeNodeMap::iterator n2n = _nnMap.begin();
     for ( ; n2n != _nnMap.end(); ++n2n )
@@ -11193,6 +11221,8 @@ namespace VISCOUS_3D
           SMESH_NodeXYZ pSrc = leSrc->_nodes[ iN ];
           gp_XYZ pTgt = trsf->Transform( pSrc );
           meshDS->MoveNode( leTgt->_nodes[ iN ], pTgt.X(), pTgt.Y(), pTgt.Z() );
+
+          dumpMove( leTgt->_nodes[ iN ]);
         }
       }
     }
@@ -11201,6 +11231,7 @@ namespace VISCOUS_3D
               << _shriFace[iSrc]->_subMesh->GetId() << " -> "
               << _shriFace[iTgt]->_subMesh->GetId() << " -- "
               << ( done ? "DONE" : "FAIL"));
+    dumpFunctionEnd();
 
     return done;
   }
@@ -11735,6 +11766,8 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
       {
         _EdgesOnShape& eos = * subEOS[ iS ];
         if ( eos.ShapeType() != TopAbs_EDGE ) continue;
+        if ( eos.size() == 0 )
+          continue;
 
         const TopoDS_Edge& E = TopoDS::Edge( eos._shape );
         data.SortOnEdge( E, eos._edges );
@@ -11757,8 +11790,8 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
           uvPtVec[ i ].param = helper.GetNodeU( E, edges[i]->_nodes[0] );
           uvPtVec[ i ].SetUV( helper.GetNodeUV( F, edges[i]->_nodes.back() ));
         }
-        if ( edges.empty() )
-          continue;
+        // if ( edges.empty() )
+        //   continue;
         BRep_Tool::Range( E, uvPtVec[0].param, uvPtVec.back().param );
         StdMeshers_FaceSide fSide( uvPtVec, F, E, _mesh );
         StdMeshers_ViscousLayers2D::SetProxyMeshOfEdge( fSide );
