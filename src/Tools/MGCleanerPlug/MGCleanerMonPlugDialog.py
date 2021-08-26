@@ -577,6 +577,11 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if not self.CB_ComputedOverlapDistance.isChecked(): #computed default
       self.commande+=" --overlap_distance " + self.SP_toStr(self.SP_OverlapDistance)
     self.commande+=" --overlap_angle " + str(self.SP_OverlapAngle.value())
+
+    import SMeshHelper
+    key = SMeshHelper.GetMGLicenseKey( self.self.fichierIn )
+    self.commande+=' --key ' + key
+
     if verbose: print(("INFO: MGCCleaner command:\n  %s" % self.commande))
     return True
 
