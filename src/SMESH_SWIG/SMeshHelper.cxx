@@ -52,7 +52,7 @@ std::string GetMGLicenseKeyImpl(const char* gmfFile)
                                                         errorTxt );
   if ( !errorTxt.empty() )
   {
-    std::cerr << "Error: Pb with MeshGens license: " << errorTxt << std::endl;
+    std::cerr << "Error: Pb with MeshGems license: " << errorTxt << std::endl;
     key = "<" + errorTxt + ">";
   }
   return key;
