@@ -4934,7 +4934,7 @@ bool _ViscousBuilder::inflate(_SolidData& data)
         if ( eos._edges[i]->_nodes.size() > 1 )
           avgThick    += Min( 1., eos._edges[i]->_len / shapeTgtThick );
         else
-          avgThick    += shapeTgtThick;
+          avgThick    += 1;
         nbActiveEdges += ( ! eos._edges[i]->Is( _LayerEdge::BLOCKED ));
       }
     }
@@ -5448,8 +5448,11 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
 
         // intersection not ignored
 
-        if ( toBlockInfaltion &&
-             dist < ( eos._edges[i]->_len * theThickToIntersection ))
+        double minDist = 0;
+        if ( eos._edges[i]->_maxLen < 0.99 * eos._hyp.GetTotalThickness() ) // limited length
+          minDist = eos._edges[i]->_len * theThickToIntersection;
+
+        if ( toBlockInfaltion && dist < minDist  )
         {
           if ( is1stBlocked ) { is1stBlocked = false; // debug
             dumpFunction(SMESH_Comment("blockIntersected") <<data._index<<"_InfStep"<<infStep);
