@@ -525,18 +525,6 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
   def PrepareLigneCommande(self):
     """
-    #use doc examples of mg-cleaner:
-    ls -al /data/tmplgls/salome/prerequis/install/COMMON_64/MeshGems-1.0/bin
-    source /data/tmplgls/salome/prerequis/install/LICENSE/dlim8.var.sh
-    export PATH=/data/tmplgls/salome/prerequis/install/COMMON_64/MeshGems-1.0/bin/Linux_64:$PATH
-    cp -r /data/tmplgls/salome/prerequis/install/COMMON_64/MeshGems-1.0/examples .
-    cd examples
-    mg-cleaner.exe --help
-    mg-cleaner.exe --in case7.mesh --out case7-test.mesh --check
-    mg-cleaner.exe case7.mesh case7-fix.mesh --fix
-    mg-cleaner.exe --in Porsche.mesh --out Porsche-test.mesh --check
-    mg-cleaner.exe --in Porsche.mesh --out Porschefix.mesh --fix
-    mg-cleaner.exe --in Porsche.mesh --out PorscheNewfix.mesh --fix --resolution_length 0.03
     """
     
     #self.commande="mg-cleaner.exe --in " + self.fichierIn + " --out " + self.fichierOut + " --fix2pass" 
@@ -579,7 +567,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.commande+=" --overlap_angle " + str(self.SP_OverlapAngle.value())
 
     import SMeshHelper
-    key = SMeshHelper.GetMGLicenseKey( self.self.fichierIn )
+    key = SMeshHelper.GetMGLicenseKey( self.fichierIn )
     self.commande+=' --key ' + key
 
     if verbose: print(("INFO: MGCCleaner command:\n  %s" % self.commande))
