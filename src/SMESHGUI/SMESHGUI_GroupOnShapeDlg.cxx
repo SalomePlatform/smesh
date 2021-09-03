@@ -463,29 +463,23 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
     // study
     if (_PTR(Study) aStudy = SMESH::getStudy()) {
       // mesh
-      if (_PTR(SObject)  meshSO = aStudy->FindObjectID( myMeshID.toUtf8().data() )) {
+      if (_PTR(SObject) meshSO = aStudy->FindObjectID( myMeshID.toUtf8().data() ))
+      {
         // shape to mesh
-        _PTR(SObject) anObj, shapeToMesh;
-        if (meshSO->FindSubObject(1, anObj) && anObj->ReferencedObject(shapeToMesh)) {
-          // loop on selected
-          QStringList::iterator name = names.begin(), id = ids.begin(), idEnd = ids.end();
-          for (; id != idEnd; ++id, ++name ) {
-            // shape SO
-            if (_PTR(SObject) shapeSO = aStudy->FindObjectID( id->toUtf8().data() )) {
-            // check if shape SO is a child of shape to mesh 
-              while ( shapeSO && shapeSO->GetID() != shapeToMesh->GetID() )
-                if  ( shapeSO->Depth() < 2 )
-                  shapeSO.reset();
-                else
-                  shapeSO = shapeSO->GetFather();
-              if ( shapeSO ) {
-                //printf( "selectionDone() %s %s\n", (*id).latin1(), (*name).latin1() );
-                if ( !goodIds.contains( *id )) {
-                  goodIds.append( *id );
-                  goodNames.append( *name );
-                }
-              }
-            }
+        GEOM::GEOM_Object_var mainGeom = SMESH::GetGeom( meshSO );
+        // loop on selected
+        QStringList::iterator name = names.begin(), id = ids.begin(), idEnd = ids.end();
+        for (; id != idEnd; ++id, ++name )
+        {
+          if ( goodIds.contains( *id ))
+            continue;
+          // shape SO
+          _PTR(SObject) shapeSO = aStudy->FindObjectID( id->toUtf8().data() );
+          GEOM::GEOM_Object_var subGeom = SMESH::GetGeom( shapeSO );
+          if ( SMESH::ContainsSubShape( mainGeom, subGeom ))
+          {
+            goodIds.append( *id );
+            goodNames.append( *name );
           }
         }
       }

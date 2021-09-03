@@ -59,6 +59,9 @@ namespace SMESH
 
   SMESHGUI_EXPORT bool GetGeomEntries( Handle(SALOME_InteractiveObject)& hypIO,
                                        QString& subGeom, QString& meshGeom);
+
+  SMESHGUI_EXPORT bool ContainsSubShape( GEOM::GEOM_Object_ptr mainShape,
+                                         GEOM::GEOM_Object_ptr subShape );
 }
 
 #endif // SMESHGUI_GEOMGENUTILS_H

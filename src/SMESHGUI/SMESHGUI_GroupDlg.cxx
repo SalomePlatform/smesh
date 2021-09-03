@@ -1405,72 +1405,23 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
     else if (myCurrentLineEdit == myGeomGroupLine)
     {
       myGeomObjects = new GEOM::ListOfGO();
+      myGeomObjects->length( aNbSel );
 
-      // The mesh SObject
-      _PTR(SObject) aMeshSO = SMESH::FindSObject(myMesh);
-
-      if (aNbSel == 0 || !aMeshSO)
+      if ( aNbSel == 0 || myMesh->_is_nil() )
       {
-        myGeomObjects->length(0);
         updateButtons();
         myIsBusy = false;
         return;
       }
 
-      myGeomObjects->length(aNbSel);
-
-      GEOM::GEOM_Object_var aGeomGroup;
+      GEOM::GEOM_Object_var mainGeom = myMesh->GetShapeToMesh();
       int i = 0;
-
-      SALOME_ListIteratorOfListIO anIt (aList);
-      for (; anIt.More(); anIt.Next())
+      for ( SALOME_ListIteratorOfListIO anIt( aList ); anIt.More(); anIt.Next() )
       {
-        CORBA::Object_var aGroupObj = SMESH::IObjectToObject(anIt.Value());
-        if (CORBA::is_nil(aGroupObj))
-          continue;
-        // Check if the object is a geometry group
-        aGeomGroup = GEOM::GEOM_Object::_narrow(aGroupObj);
-        if (CORBA::is_nil(aGeomGroup))
-          continue;
-
         // Check if group constructed on the same shape as a mesh or on its child
-
-        // The main shape of the group
-        GEOM::GEOM_Object_var aGroupMainShape;
-        if (aGeomGroup->GetType() == 37)
-        {
-          GEOM::GEOM_IGroupOperations_wrap anOp =
-            SMESH::GetGEOMGen( aGeomGroup )->GetIGroupOperations();
-          aGroupMainShape = anOp->GetMainShape( aGeomGroup );
-          // aGroupMainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
-        }
-        else
-        {
-          aGroupMainShape = aGeomGroup;
-          aGroupMainShape->Register();
-        }
-        CORBA::String_var entry = aGroupMainShape->GetStudyEntry();
-        _PTR(SObject) aGroupMainShapeSO =
-          SMESH::getStudy()->FindObjectID( entry.in() );
-
-        _PTR(SObject) anObj, aRef;
-        bool isRefOrSubShape = false;
-        if (aMeshSO->FindSubObject(1, anObj) &&  anObj->ReferencedObject(aRef)) {
-          if (aRef->GetID() == aGroupMainShapeSO->GetID()) {
-            isRefOrSubShape = true;
-          } else {
-            _PTR(SObject) aFather = aGroupMainShapeSO->GetFather();
-            _PTR(SComponent) aComponent = aGroupMainShapeSO->GetFatherComponent();
-            while (!isRefOrSubShape && aFather->GetID() != aComponent->GetID()) {
-              if (aRef->GetID() == aFather->GetID())
-                isRefOrSubShape = true;
-              else
-                aFather = aFather->GetFather();
-            }
-          }
-        }
-        if (isRefOrSubShape)
-          myGeomObjects[i++] = aGeomGroup;
+        GEOM::GEOM_Object_var geomGroup = SMESH::GetGeom( anIt.Value() );
+        if ( SMESH::ContainsSubShape( mainGeom, geomGroup ))
+          myGeomObjects[ i++ ] = geomGroup;
       }
 
       myGeomObjects->length(i);

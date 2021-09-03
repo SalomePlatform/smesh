@@ -178,7 +178,7 @@ private:
   QPushButton*                  myAddBtn;
   QPushButton*                  myRemoveBtn;
   QPushButton*                  mySortBtn;
-  
+
   QGroupBox*                    mySelectBox;
   QCheckBox*                    mySelectSubMesh;
   QPushButton*                  mySubMeshBtn;
@@ -186,9 +186,9 @@ private:
   QCheckBox*                    mySelectGroup;
   QPushButton*                  myGroupBtn;
   QLineEdit*                    myGroupLine;
-  
+
   QtxColorButton*               myColorBtn;
-  
+
   QCheckBox*                    mySelectGeomGroup;
   QToolButton*                  myGeomGroupBtn;
   QLineEdit*                    myGeomGroupLine;
@@ -198,9 +198,9 @@ private:
   QPushButton*                  myApplyBtn;
   QPushButton*                  myCloseBtn;
   QPushButton*                  myHelpBtn;
-  
+
   SMESHGUI_ShapeByMeshOp*       myShapeByMeshOp;
-  
+
   SMESH::SMESH_Mesh_var         myMesh;
   QList<SMESH_Actor*>           myActorsList;
   SMESH::SMESH_Group_var        myGroup;
@@ -209,22 +209,19 @@ private:
   SMESH::Filter_var             myFilter;
   QList<int>                    myIdList;
   GEOM::ListOfGO_var            myGeomObjects;
-  
+
   int                           mySelectionMode;
-  //Handle(SMESH_TypeFilter)      myMeshFilter;
-  //Handle(SMESH_TypeFilter)      mySubMeshFilter;
-  //Handle(SMESH_TypeFilter)      myGroupFilter;
   SUIT_SelectionFilter*         myMeshFilter;
   SMESH_LogicalFilter*          mySubMeshFilter;
   SMESH_LogicalFilter*          myGroupFilter;
   SUIT_SelectionFilter*         myGeomFilter;
-  
+
   SMESHGUI_FilterDlg*           myFilterDlg;
-  
+
   bool                          myCreate, myIsBusy;
-  
+
   QString                       myHelpFileName;
-  
+
   QMap<QAction*, int>           myActions;
 
   bool                          myNameChanged; //added by skl for IPAL19574

@@ -42,6 +42,11 @@
 
 #include <QString>
 
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopoDS_Iterator.hxx>
+
 namespace SMESH
 {
   GEOM::GEOM_Gen_var GetGEOMGen( GEOM::GEOM_Object_ptr go )
@@ -243,5 +248,81 @@ namespace SMESH
     return !meshGeom.isEmpty() && !subGeom.isEmpty();
   }
 
+
+  //================================================================================
+  /*!
+   * \brief Return type of shape contained in a group
+   */
+  //================================================================================
+
+  TopAbs_ShapeEnum _getGroupType(const TopoDS_Shape& group)
+  {
+    if ( group.ShapeType() != TopAbs_COMPOUND )
+      return group.ShapeType();
+
+    // iterate on a compound
+    TopoDS_Iterator it( group );
+    if ( it.More() )
+      return _getGroupType( it.Value() );
+
+    return TopAbs_SHAPE;
+  }
+
+
+  //================================================================================
+  /*!
+   * \brief Check if a subGeom contains sub-shapes of a mainGeom
+   */
+  //================================================================================
+
+  bool ContainsSubShape( GEOM::GEOM_Object_ptr mainGeom,
+                         GEOM::GEOM_Object_ptr subGeom )
+  {
+    if ( CORBA::is_nil( mainGeom ) ||
+         CORBA::is_nil( subGeom ))
+      return false;
+
+    GEOM::GEOM_Gen_var geomGen = mainGeom->GetGen();
+    if ( geomGen->_is_nil() ) return false;
+
+    GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
+    if ( op->_is_nil() ) return false;
+
+    GEOM::GEOM_Object_var mainObj = op->GetMainShape( subGeom ); /* _var not _wrap as
+                                                                    mainObj already exists! */
+    while ( !mainObj->_is_nil() )
+    {
+      CORBA::String_var entry1 = mainObj->GetEntry();
+      CORBA::String_var entry2 = mainGeom->GetEntry();
+      if ( std::string( entry1.in() ) == entry2.in() )
+        return true;
+      mainObj = op->GetMainShape( mainObj );
+    }
+    if ( subGeom->GetShapeType() == GEOM::COMPOUND )
+    {
+      // is subGeom a compound of sub-shapes?
+      GEOM::GEOM_IShapesOperations_wrap sop = geomGen->GetIShapesOperations();
+      if ( sop->_is_nil() ) return false;
+      GEOM::ListOfLong_var ids = sop->GetAllSubShapesIDs( subGeom,
+                                                          GEOM::SHAPE,/*sorted=*/false);
+      if ( ids->length() > 0 )
+      {
+        GEOM_Client geomClient;
+        TopoDS_Shape  subShape = geomClient.GetShape( geomGen, subGeom );
+        TopoDS_Shape mainShape = geomClient.GetShape( geomGen, mainGeom );
+        if ( subShape.IsNull() || mainShape.IsNull() )
+          return false;
+
+        TopAbs_ShapeEnum subType = _getGroupType( subShape );
+        TopTools_IndexedMapOfShape subMap;
+        TopExp::MapShapes( subShape, subType, subMap );
+        for ( TopExp_Explorer exp( mainShape, subType ); exp.More(); exp.Next() )
+          if ( subMap.Contains( exp.Current() ))
+            return true;
+
+      }
+    }
+    return false;
+  }
 
 } // end of namespace SMESH

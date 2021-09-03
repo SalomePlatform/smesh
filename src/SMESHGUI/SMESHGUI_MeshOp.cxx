@@ -321,25 +321,6 @@ SUIT_SelectionFilter* SMESHGUI_MeshOp::createFilter( const int theId ) const
 
 //================================================================================
 /*!
- * \brief Return type of shape contained in a group
- */
-//================================================================================
-
-TopAbs_ShapeEnum getGroupType(const TopoDS_Shape& group)
-{
-  if ( group.ShapeType() != TopAbs_COMPOUND )
-    return group.ShapeType();
-
-  // iterate on a compound
-  TopoDS_Iterator it( group );
-  if ( it.More() )
-    return getGroupType( it.Value() );
-
-  return TopAbs_SHAPE;
-}
-
-//================================================================================
-/*!
  * \brief check if selected shape is a sub-shape of the shape to mesh
  *  \retval bool - check result
  */
@@ -365,60 +346,17 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
   QStringList aGEOMs;
   myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
 
-  if (aGEOMs.count() > 0) {
-    GEOM::GEOM_Gen_var geomGen = mainGeom->GetGen();
-    if (geomGen->_is_nil()) return false;
+  // check all selected shapes
+  for ( QString& aSubGeomEntry : aGEOMs )
+  {
+    _PTR(SObject) pSubGeom = SMESH::getStudy()->FindObjectID( aSubGeomEntry.toUtf8().data() );
+    if ( !pSubGeom ) return false;
 
-    GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
-    if (op->_is_nil()) return false;
+    GEOM::GEOM_Object_var subGeom =
+      GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
 
-    // check all selected shapes
-    QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
-    for ( ; aSubShapesIter != aGEOMs.end(); aSubShapesIter++)
-    {
-      QString aSubGeomEntry = (*aSubShapesIter);
-      _PTR(SObject) pSubGeom = SMESH::getStudy()->FindObjectID(aSubGeomEntry.toUtf8().data());
-      if (!pSubGeom) return false;
-
-      GEOM::GEOM_Object_var aSubGeomVar =
-        GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
-      if (aSubGeomVar->_is_nil()) return false;
-
-      // skl for NPAL14695 - implementation of searching of mainObj
-      GEOM::GEOM_Object_var mainObj = op->GetMainShape(aSubGeomVar); /* _var not _wrap as
-                                                                        mainObj already exists! */
-      while( !mainObj->_is_nil())
-      {
-        CORBA::String_var entry1 = mainObj->GetEntry();
-        CORBA::String_var entry2 = mainGeom->GetEntry();
-        if (std::string( entry1.in() ) == entry2.in() )
-          return true;
-        mainObj = op->GetMainShape(mainObj);
-      }
-      if ( aSubGeomVar->GetShapeType() == GEOM::COMPOUND )
-      {
-        // is aSubGeomVar a compound of sub-shapes?
-        GEOM::GEOM_IShapesOperations_wrap sop = geomGen->GetIShapesOperations();
-        if (sop->_is_nil()) return false;
-        GEOM::ListOfLong_var ids = sop->GetAllSubShapesIDs( aSubGeomVar,
-                                                            GEOM::SHAPE,/*sorted=*/false);
-        if ( ids->length() > 0 )
-        {
-          GEOM_Client geomClient;
-          TopoDS_Shape  subShape = geomClient.GetShape( geomGen, aSubGeomVar );
-          TopoDS_Shape mainShape = geomClient.GetShape( geomGen, mainGeom );
-          if ( subShape.IsNull() || mainShape.IsNull() )
-            return false;
-
-          TopAbs_ShapeEnum subType = getGroupType( subShape );
-          TopTools_IndexedMapOfShape subMap;
-          TopExp::MapShapes( subShape, subType, subMap );
-          for ( TopExp_Explorer exp( mainShape, subType ); exp.More(); exp.Next() )
-            if ( subMap.Contains( exp.Current() ))
-              return true;
-        }
-      }
-    }
+    if ( SMESH::ContainsSubShape( mainGeom, subGeom ))
+      return true;
   }
 
   return false;

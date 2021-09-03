@@ -58,27 +58,15 @@ protected:
   virtual void                  startOperation();
   virtual void                  selectionDone();
   virtual SUIT_SelectionFilter* createFilter( const int ) const;
-  //virtual bool                  isValid( SUIT_Operation* ) const;
 
 private slots:
 
     bool                        onApply();
     void                        onButtonClick();
 
-
-//     void                        onSelectColor();
-
-
 private:
 
     void                        init();
-//     void                        setGroupColor( const SALOMEDS::Color& );
-//     SALOMEDS::Color             getGroupColor() const;
-
-//     void                        setGroupQColor( const QColor& );
-//     QColor                      getGroupQColor() const;
-
-//     void                        setDefaultGroupColor();
 
 private:
 
@@ -86,7 +74,6 @@ private:
 
   QString                       myMeshID;
   QStringList                   myElemGeoIDs, myNodeGeoIDs;
-  //GEOM::ListOfGO_var            myElemGObj;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_GroupOnShapeDlg : public SMESHGUI_Dialog
@@ -104,22 +91,14 @@ public slots:
 
 private:
 
-  //QLineEdit*                    myGrpNameLine;
-
   QPushButton*                  myMeshBtn;
   QLineEdit*                    myMeshLine;
 
   QPushButton*                  myElemGeomBtn;
-  QListWidget*                     myElemGeomList;
+  QListWidget*                  myElemGeomList;
 
   QPushButton*                  myNodeGeomBtn;
-  QListWidget*                     myNodeGeomList;
-
-//   QPushButton*                  myColorBtn;
-
-//   bool                          myCreate, myIsBusy;
-
-//   QString                       myHelpFileName;
+  QListWidget*                  myNodeGeomList;
 
   friend class SMESHGUI_GroupOnShapeOp;
 };
