@@ -197,17 +197,32 @@ namespace
 
   bool isURL( LibraryFile & libraryFile )
   {
-    enum { SCHEME = 2, AUTHORITY = 4, PATH = 5 }; // sub-strings
-    std::regex urlRegex ( R"(^(([^:\/?#]+):)?(//([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)",
-                          std::regex::extended );
-    std::smatch matchResult;
+    {// round1
+      enum { SCHEME = 2, AUTHORITY = 4, PATH = 5 }; // sub-strings
+      std::regex urlRegex ( R"(^(([^:\/?#]+):)?(//([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)",
+                            std::regex::extended );
+      std::smatch matchResult;
 
-    libraryFile._isURL = false;
-    if ( std::regex_match( libraryFile._name, matchResult, urlRegex ))
-      libraryFile._isURL = ( !matchResult.str( SCHEME    ).empty() &&
-                             !matchResult.str( AUTHORITY ).empty() &&
-                             !matchResult.str( PATH      ).empty() );
+      libraryFile._isURL = false;
+      if ( std::regex_match( libraryFile._name, matchResult, urlRegex ))
+        libraryFile._isURL = ( !matchResult.str( SCHEME    ).empty() &&
+                              !matchResult.str( AUTHORITY ).empty() &&
+                              !matchResult.str( PATH      ).empty() );
+    }
+    if(libraryFile._isURL)
+      return true;
+    {// round2
+      enum { HOST = 2, PORT = 3, PATH = 4 }; // sub-strings
+      std::regex urlRegex ( R"(^(([^:\/?#]+):)?([^/]+)?(/[^#]*))",
+                            std::regex::extended );
+      std::smatch matchResult;
 
+      libraryFile._isURL = false;
+      if ( std::regex_match( libraryFile._name, matchResult, urlRegex ))
+        libraryFile._isURL = ( !matchResult.str( HOST ).empty() &&
+                              !matchResult.str( PORT ).empty() &&
+                              !matchResult.str( PATH ).empty() );
+    }
     return libraryFile._isURL;
   }
 
