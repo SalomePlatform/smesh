@@ -34,11 +34,6 @@ from ViewText_ui import Ui_ViewExe
 
 verbose = True
 
-force = os.getenv("FORCE_DISTENE_LICENSE_FILE")
-if force != None:
-    os.environ["DISTENE_LICENSE_FILE"] = force
-    os.environ["DLIM8VAR"] = "NOTHING"
-
 class MonViewText(Ui_ViewExe, QDialog):
     """
     Classe permettant la visualisation de texte

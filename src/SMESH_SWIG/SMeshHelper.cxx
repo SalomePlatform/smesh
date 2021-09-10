@@ -25,9 +25,35 @@
 
 #include <cstring>
 
+#include <DriverGMF_Read.hxx>
+#include <SMESH_MGLicenseKeyGen.hxx>
+
+
 std::string BuildSMESHInstanceInternal()
 {
   Engines::EngineComponent_var zeRef = RetrieveSMESHInstance();
   CORBA::String_var ior = KERNEL::getORB()->object_to_string(zeRef);
   return std::string(ior.in());
+}
+
+std::string GetMGLicenseKeyImpl(const char* gmfFile)
+{
+  smIdType nbVertex, nbEdge, nbFace, nbVol;
+  DriverGMF_Read gmfReader;
+  gmfReader.SetFile( gmfFile );
+  gmfReader.GetMeshInfo( nbVertex, nbEdge, nbFace, nbVol );
+
+  std::string errorTxt;
+  std::string key = SMESHUtils_MGLicenseKeyGen::GetKey( gmfFile,
+                                                        FromSmIdType<int>( nbVertex ),
+                                                        FromSmIdType<int>( nbEdge ),
+                                                        FromSmIdType<int>( nbFace ),
+                                                        FromSmIdType<int>( nbVol ),
+                                                        errorTxt );
+  if ( !errorTxt.empty() )
+  {
+    std::cerr << "Error: Pb with MeshGems license: " << errorTxt << std::endl;
+    key = "<" + errorTxt + ">";
+  }
+  return key;
 }

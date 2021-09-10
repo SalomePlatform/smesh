@@ -44,7 +44,7 @@ namespace SMESHUtils_MGLicenseKeyGen
                                        int                nbVol,
                                        std::string&       error);
 
-  SMESHUtils_EXPORT bool        CheckKeyGeLibrary( std::string& error );
+  SMESHUtils_EXPORT bool        CheckKeyGenLibrary( std::string& error );
 
   SMESHUtils_EXPORT std::string GetLibraryName();
 }

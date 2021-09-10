@@ -545,6 +545,10 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
     self.commande+=' --in "'  + self.fichierIn +'"'
     self.commande+=' --out "' + self.fichierOut +'"'
+
+    import SMeshHelper
+    key = SMeshHelper.GetMGLicenseKey( self.fichierIn )
+    self.commande+=' --key ' + key
     
     print(self.commande)
     return True
