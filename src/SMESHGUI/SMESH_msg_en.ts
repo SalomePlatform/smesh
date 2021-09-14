@@ -1615,6 +1615,10 @@ Please enter correct values and try again</translation>
         <translation>Automatically define space dimension</translation>
     </message>
     <message>
+        <source>SMESH_MED_SAVE_NUMS</source>
+        <translation>Export indices</translation>
+    </message>
+    <message>
         <source>SMESH_ZTOLERANCE</source>
         <translation>Z tolerance</translation>
     </message>

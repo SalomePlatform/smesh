@@ -659,6 +659,7 @@ namespace
     bool toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
     bool   toOverwrite  = true;
     bool   toFindOutDim = true;
+    bool    saveNumbers = resMgr->booleanValue( "SMESH", "med_save_numbers", true );
     bool     toRenumber = true;
     double         zTol = resMgr->doubleValue( "SMESH", "med_ztolerance", 0. );
 
@@ -770,7 +771,9 @@ namespace
           aDefaultFilter = it.key();
       }
       QStringList checkBoxes;
-      checkBoxes << QObject::tr("SMESH_AUTO_GROUPS") << QObject::tr("SMESH_AUTO_DIM");
+      checkBoxes << QObject::tr("SMESH_AUTO_GROUPS")
+                 << QObject::tr("SMESH_AUTO_DIM")
+                 << QObject::tr("SMESH_MED_SAVE_NUMS");
 
       SMESHGUI_FieldSelectorWdg* fieldSelWdg = new SMESHGUI_FieldSelectorWdg();
       QList< QWidget* > wdgList;
@@ -798,6 +801,7 @@ namespace
       fd->selectNameFilter( aDefaultFilter );
       fd->SetChecked( toCreateGroups, 0 );
       fd->SetChecked( toFindOutDim,   1 );
+      fd->SetChecked( saveNumbers,    2 );
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
@@ -888,6 +892,7 @@ namespace
       }
       toCreateGroups = fd->IsChecked(0);
       toFindOutDim   = fd->IsChecked(1);
+      saveNumbers    = fd->IsChecked(2);
       zTol           = zTolCheck->isChecked() ? zTolSpin->value() : -1;
       fieldSelWdg->GetSelectedFields();
       if ( resMgr ) resMgr->setValue( "SMESH", "enable_ztolerance", zTolCheck->isChecked() );
@@ -927,7 +932,6 @@ namespace
 //         }
         if ( isMED && isOkToWrite )
         {
-          const bool saveNumbers = resMgr->booleanValue( "SMESH", "med_save_numbers", true );
           aMeshIter = aMeshList.begin();
           for( int aMeshIndex = 0; aMeshIter != aMeshList.end(); aMeshIter++, aMeshIndex++ )
           {

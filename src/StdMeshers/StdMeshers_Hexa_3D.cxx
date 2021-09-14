@@ -1166,8 +1166,8 @@ SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &          aMesh,
     bool hasVLonFace = false;
     for ( TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next() )
     {
-       const SMESHDS_SubMesh* sm1 = aMesh.GetSubMesh( exp.Current() )->GetSubMeshDS();
-       const SMESHDS_SubMesh* sm2 = proxyMesh->GetSubMesh( exp.Current() );
+      const SMESHDS_SubMesh* sm1 = aMesh.GetSubMesh( exp.Current() )->GetSubMeshDS();
+      const SMESHDS_SubMesh* sm2 = proxyMesh->GetSubMesh( exp.Current() );
       if (( hasVLonFace = ( sm2 && sm1->NbElements() != sm2->NbElements() )))
         break;
     }
