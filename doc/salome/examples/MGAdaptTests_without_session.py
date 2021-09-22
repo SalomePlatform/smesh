@@ -450,7 +450,7 @@ if __name__ == "__main__" :
   L_OPTIONS.append("05")
   L_OPTIONS.append("06")
   L_OPTIONS.append("08")
-  #L_OPTIONS.append("13")
+  L_OPTIONS.append("13")
 
 # 2. Lancement de la classe
 

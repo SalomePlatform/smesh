@@ -1381,8 +1381,17 @@ void MgAdapt::convertMedFile(std::string& meshFormatMeshFileName, std::string& s
     checkTimeStepRank(medFileIn) ;
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeFieldMultiTS> fts( mfd->getFields()->getFieldWithName(fieldName) );
     MEDCoupling::MCAuto<MEDCoupling::MEDFileAnyTypeField1TS> f = fts->getTimeStep(timeStep, rank);
-    MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::MEDFileFieldMultiTS::New();
-    tmFts->pushBackTimeStep(f);
+    MEDCoupling::MCAuto<MEDCoupling::MEDFileFieldMultiTS> tmFts = MEDCoupling::DynamicCast<MEDCoupling::MEDFileAnyTypeFieldMultiTS,MEDCoupling::MEDFileFieldMultiTS>(fts);
+
+    // if not able to cast to double field, try float field
+    if (!tmFts)
+    {
+      MEDCoupling::MCAuto<MEDCoupling::MEDFileFloatFieldMultiTS>  tmFtsFloat = MEDCoupling::DynamicCast<MEDCoupling::MEDFileAnyTypeFieldMultiTS,MEDCoupling::MEDFileFloatFieldMultiTS>(fts);
+      if (!tmFtsFloat)
+        THROW_SALOME_EXCEPTION("\nUnexpected field type.\n");
+      // convert float field to double
+      tmFts = tmFtsFloat->convertToDouble();
+    }
 
     fields->pushField(tmFts);
 
