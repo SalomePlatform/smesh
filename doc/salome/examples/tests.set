@@ -200,6 +200,7 @@ set(SESSION_FREE_TESTS
   shaper_smesh_groups_without_session.py
   basic_smesh_output_with_mc_field.py
   ssl_hdf5_symbols_conflicts.py
+  doublenodes_polyhedra.py
 )
 
 SET(EXAMPLES_TESTS ${BAD_TESTS} ${GOOD_TESTS} ${SESSION_FREE_TESTS} testme.py)

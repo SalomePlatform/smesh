@@ -10792,7 +10792,23 @@ bool SMESH_MeshEditor::doubleNodes(SMESHDS_Mesh*           theMeshDS,
     if ( theIsDoubleElem )
       AddElement( newNodes, elemType.Init( anElem, /*basicOnly=*/false ));
     else
-      theMeshDS->ChangeElementNodes( anElem, &newNodes[ 0 ], newNodes.size() );
+    {
+      // change element nodes
+      const SMDSAbs_EntityType geomType = anElem->GetEntityType();
+      if ( geomType == SMDSEntity_Polyhedra )
+      {
+        // special treatment for polyhedron
+        const SMDS_MeshVolume* aPolyhedron = SMDS_Mesh::DownCast< SMDS_MeshVolume >( anElem );
+        if (!aPolyhedron) {
+          MESSAGE("Warning: bad volumic element");
+          return false;
+        }
+        theMeshDS->ChangePolyhedronNodes( anElem, newNodes, aPolyhedron->GetQuantities() );
+      }
+      else
+        // standard entity type
+        theMeshDS->ChangeElementNodes( anElem, &newNodes[ 0 ], newNodes.size() );
+    }
 
     res = true;
   }
