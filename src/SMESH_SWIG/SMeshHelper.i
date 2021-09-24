@@ -31,4 +31,9 @@
   {
     return BuildSMESHInstanceInternal();
   }
+
+  std::string GetMGLicenseKey(const char* gmfFile)
+  {
+    return GetMGLicenseKeyImpl( gmfFile );
+  }
 }

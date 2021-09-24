@@ -39,7 +39,7 @@ namespace SMESHUtils
    * Try to workaround the issue that loading fails if the archive string
    * is created by a newer version of boost::archive library.
    *
-   * Usage: ObjType obj;  BoostTxtArchive( arcString ) >> obj;
+   * Usage: ObjType obj;  SMESHUtils::BoostTxtArchive( arcString ) >> obj;
    */
   class SMESHUtils_EXPORT BoostTxtArchive
   {

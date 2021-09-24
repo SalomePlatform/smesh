@@ -31,15 +31,6 @@ def YamsLct(context):
   import tempfile
   from qtsalome import QFileDialog, QMessageBox
   
-  #prior test to avoid unnecessary user GUI work with ending crash
-  try :
-      os.environ['DISTENE_LICENSE_FILE']
-  except:
-      QMessageBox.warning(None,"Products","""\
-Distene's product MeshGem SurfOpt is not installed.
-required environment variable:
-DISTENE_LICENSE_FILE='.../dlim8.var.sh'""")
-      return
   import monYamsPlugDialog
   window = monYamsPlugDialog.getDialog()
   window.show()
