@@ -21,10 +21,10 @@
 
 # scripts / static
 SET(_bin_SCRIPTS
-  __init__.py
   smeshstudytools.py
 )
 
 # --- rules ---
 
 SALOME_INSTALL_SCRIPTS("${_bin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/salome/smesh)
+SALOME_CONFIGURE_FILE(__init__.py __init__.py INSTALL ${SALOME_INSTALL_PYTHON}/salome/smesh)
