@@ -48,7 +48,7 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
 
     text_2 = ""
     ok_maillage = True
-    with open(fichierStatMaillageFissure, "w") as fic_stat :
+    with open(fichierStatMaillageFissure, "w", encoding='utf-8') as fic_stat :
 
       # Le nombre de quadrangles ou d'hexaèdres doit être rigoureusement identique
       for key in ('Entity_Quad_Quadrangle', 'Entity_Quad_Hexa'):
@@ -89,6 +89,6 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
       with open(fichierNewRef, "w") as fic_info :
         fic_info.write(text_2[:-4]+" \\")
 
-    print (text)
+    print (text.encode('utf-8'))
 
   return ok_maillage

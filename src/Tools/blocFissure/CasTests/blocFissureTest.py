@@ -429,7 +429,7 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
     else:
       nom = cas.nomProbleme
     texte_a = "\n=== Exécution du cas n° {}, '{}'".format(NREF_PB[nom],nom)
-    logging.critical(ligne+texte_a)
+    logging.critical((ligne+texte_a).encode('utf-8'))
 
     try:
       ok_maillage = cas.executeProbleme()
@@ -470,8 +470,8 @@ Le(s) numéro/nom du/des tests à passer. Si aucun n'est donné, tous les cas so
         texte += ". Nombre de cas_tests NOOK : {}\n".format(nb_cas_nook)
       else:
         texte += "Les {} tests se sont bien passés.\n".format(nb_cas)
-    print (texte+ligne)
-    logging.critical(ligne+texte)
+    print ((texte+ligne).encode('utf-8'))
+    logging.critical((ligne+texte).encode('utf-8'))
 
     return texte
 
