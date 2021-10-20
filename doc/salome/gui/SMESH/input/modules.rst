@@ -25,13 +25,11 @@ Importing and exporting meshes
    smeshBuilder.CreateMeshesFromSTL
    smeshBuilder.CreateMeshesFromCGNS
    smeshBuilder.CreateMeshesFromGMF
-   smeshBuilder.CreateMeshesFromSAUV
    Mesh.ExportMED
    Mesh.ExportUNV
    Mesh.ExportSTL
    Mesh.ExportCGNS
    Mesh.ExportDAT
-   Mesh.ExportSAUV
    Mesh.ExportGMF
 
 

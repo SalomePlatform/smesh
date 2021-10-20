@@ -23,7 +23,7 @@ Mesh module provides several ways to create the mesh:
   
 * Bottom-up way, using :ref:`mesh modification <modifying_meshes_page>` operations, especially :ref:`extrusion <extrusion_page>` and :ref:`revolution <revolution_page>`. To create an empty mesh not based on geometry, use the same dialog as to :ref:`construct the mesh on geometry <constructing_meshes_page>` but specify neither the geometry nor meshing algorithms.
   
-* The mesh can be :ref:`imported <importing_exporting_meshes_page>` from (and exported to) the file in MED, UNV, STL, CGNS, DAT, GMF and SAUVE formats.
+* The mesh can be :ref:`imported <importing_exporting_meshes_page>` from (and exported to) the file in MED, UNV, STL, CGNS, DAT and GMF formats.
   
 * The 3D mesh can be generated from the 2D mesh not based on geometry, which was either :ref:`imported <importing_exporting_meshes_page>` or created in other way. To setup the meshing parameters of a mesh not based on geometry, just invoke :ref:`Edit mesh / sub-mesh <editing_meshes_page>` command on your 2D mesh.
   

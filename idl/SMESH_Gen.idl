@@ -253,16 +253,9 @@ module SMESH
     /*!
      * Create Mesh object(s) importing data from given MED file
      */
-     mesh_array CreateMeshesFromMED( in string theFileName,
-                                     out SMESH::DriverMED_ReadStatus theStatus )
-       raises ( SALOME::SALOME_Exception );
-
-    /*!
-     * Create Mesh object(s) importing data from given MED file
-     */
-     mesh_array CreateMeshesFromSAUV( in string theFileName,
-				      out SMESH::DriverMED_ReadStatus theStatus )
-       raises ( SALOME::SALOME_Exception );
+    mesh_array CreateMeshesFromMED( in string theFileName,
+                                    out SMESH::DriverMED_ReadStatus theStatus )
+      raises ( SALOME::SALOME_Exception );
 
     /*!
      * Create Mesh object importing data from given STL file

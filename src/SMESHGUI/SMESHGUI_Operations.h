@@ -40,14 +40,12 @@ namespace SMESHOp {
     OpImportMED              = 1102,   // MENU FILE - IMPORT - MED FILE
     OpImportSTL              = 1103,   // MENU FILE - IMPORT - STL FILE
     OpImportCGNS             = 1104,   // MENU FILE - IMPORT - CGNS FILE
-    OpImportSAUV             = 1105,   // MENU FILE - IMPORT - SAUV FILE
     OpImportGMF              = 1106,   // MENU FILE - IMPORT - GMF FILE
     OpPopupImportDAT         = 1120,   // POPUP MENU - IMPORT - DAT FILE
     OpPopupImportUNV         = 1121,   // POPUP MENU - IMPORT - UNV FILE
     OpPopupImportMED         = 1122,   // POPUP MENU - IMPORT - MED FILE
     OpPopupImportSTL         = 1123,   // POPUP MENU - IMPORT - STL FILE
     OpPopupImportCGNS        = 1124,   // POPUP MENU - IMPORT - CGNS FILE
-    OpPopupImportSAUV        = 1125,   // POPUP MENU - IMPORT - SAUV FILE
     OpPopupImportGMF         = 1126,   // POPUP MENU - IMPORT - GMF FILE
     // Export -------------------------//--------------------------------
     OpExportDAT              = 1200,   // MENU FILE  - EXPORT - DAT FILE
@@ -55,14 +53,12 @@ namespace SMESHOp {
     OpExportUNV              = 1202,   // MENU FILE  - EXPORT - UNV FILE
     OpExportSTL              = 1203,   // MENU FILE  - EXPORT - STL FILE
     OpExportCGNS             = 1204,   // MENU FILE  - EXPORT - CGNS FILE
-    OpExportSAUV             = 1205,   // MENU FILE  - EXPORT - SAUV FILE
     OpExportGMF              = 1206,   // MENU FILE  - EXPORT - GMF FILE
     OpPopupExportDAT         = 1210,   // POPUP MENU - EXPORT - DAT FILE
     OpPopupExportMED         = 1211,   // POPUP MENU - EXPORT - MED FILE
     OpPopupExportUNV         = 1212,   // POPUP MENU - EXPORT - UNV FILE
     OpPopupExportSTL         = 1213,   // POPUP MENU - EXPORT - STL FILE
     OpPopupExportCGNS        = 1214,   // POPUP MENU - EXPORT - CGNS FILE
-    OpPopupExportSAUV        = 1215,   // POPUP MENU - EXPORT - SAUV FILE
     OpPopupExportGMF         = 1216,   // POPUP MENU - EXPORT - GMF FILE
     // Mesh ---------------------------//--------------------------------
     OpCreateMesh             = 2030,   // MENU MESH  - CREATE MESH

@@ -1416,8 +1416,7 @@ void SMESH_Mesh::exportMEDCommmon(DriverMED_W_SMESHDS_Mesh& theWriter,
                                   bool                      theAutoDimension,
                                   bool                      theAddODOnVertices,
                                   double                    theZTolerance,
-                                  bool                      theSaveNumbers,
-                                  bool                      theAllElemsToGroup)
+                                  bool                      theSaveNumbers)
 {
   Driver_Mesh::Status status = Driver_Mesh::DRS_OK;
 
@@ -1443,8 +1442,6 @@ void SMESH_Mesh::exportMEDCommmon(DriverMED_W_SMESHDS_Mesh& theWriter,
     theWriter.AddGroupOf0DElems();
     theWriter.AddGroupOfBalls();
   }
-  if ( theAllElemsToGroup )
-    theWriter.AddAllToGroup();
 
   // Pass groups to writer. Provide unique group names.
   //set<string> aGroupNames; // Corrected for Mantis issue 0020028
@@ -1499,8 +1496,7 @@ SMESH_Mesh::ExportMEDCoupling(const char*         theMeshName,
 {
   DriverMED_W_SMESHDS_Mesh_Mem writer;
   this->exportMEDCommmon( writer, theMeshName, theAutoGroups, theMeshPart, theAutoDimension,
-                          theAddODOnVertices, theZTolerance, theSaveNumbers,
-                          /*AllElemsToGroup(for ExportSAUV())=*/false);
+                          theAddODOnVertices, theZTolerance, theSaveNumbers);
   return writer.getData();
 }
 
@@ -1525,8 +1521,6 @@ SMESH_Mesh::ExportMEDCoupling(const char*         theMeshName,
  *              within a given tolerance, the coordinate is set to zero.
  *              If \a ZTolerance is negative, the node coordinates are kept as is.
  *  \param [in] theSaveNumbers : enable saving numbers of nodes and cells.
- *  \param [in] theAllElemsToGroup - to make every element to belong to any group (PAL23413).
- *              It is used by ExportSAUV() only
  *  \return int - mesh index in the file
  */
 //================================================================================
@@ -1539,65 +1533,12 @@ void SMESH_Mesh::ExportMED(const char *        theFile,
                            bool                theAutoDimension,
                            bool                theAddODOnVertices,
                            double              theZTolerance,
-                           bool                theSaveNumbers,
-                           bool                theAllElemsToGroup)
+                           bool                theSaveNumbers)
 {
   MESSAGE("MED_VERSION:"<< theVersion);
   DriverMED_W_SMESHDS_Mesh writer;
   writer.SetFile( theFile, theVersion );
-  this->exportMEDCommmon( writer, theMeshName, theAutoGroups, theMeshPart, theAutoDimension, theAddODOnVertices, theZTolerance, theSaveNumbers, theAllElemsToGroup );
-}
-
-//================================================================================
-/*!
- * \brief Export the mesh to a SAUV file
- */
-//================================================================================
-
-void SMESH_Mesh::ExportSAUV(const char *theFile,
-                            const char* theMeshName,
-                            bool        theAutoGroups)
-{
-  std::string medfilename( theFile );
-  medfilename += ".med";
-  std::string cmd;
-#ifdef WIN32
-  cmd = "%PYTHONBIN% ";
-#else
-  cmd = "python3 ";
-#endif
-  cmd += "-c \"";
-  cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
-  cmd += "\"";
-  system(cmd.c_str());
-  try {
-    ExportMED( medfilename.c_str(), theMeshName, theAutoGroups, /*minor=*/-1,
-               /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
-               /*zTol=*/-1, /*theSaveNumbers=*/false,
-               /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
-  }
-  catch ( TooLargeForExport )
-  {
-    throw TooLargeForExport("SAUV");
-  }
-#ifdef WIN32
-  cmd = "%PYTHONBIN% ";
-#else
-  cmd = "python3 ";
-#endif
-  cmd += "-c \"";
-  cmd += "from medutilities import convert ; convert(r'" + medfilename + "', 'MED', 'GIBI', 1, r'" + theFile + "')";
-  cmd += "\"";
-  system(cmd.c_str());
-#ifdef WIN32
-  cmd = "%PYTHONBIN% ";
-#else
-  cmd = "python3 ";
-#endif
-  cmd += "-c \"";
-  cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
-  cmd += "\"";
-  system(cmd.c_str());
+  this->exportMEDCommmon( writer, theMeshName, theAutoGroups, theMeshPart, theAutoDimension, theAddODOnVertices, theZTolerance, theSaveNumbers );
 }
 
 //================================================================================

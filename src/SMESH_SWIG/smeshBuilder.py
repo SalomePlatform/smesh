@@ -685,18 +685,6 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         aMeshes = [ Mesh(self, self.geompyD, m) for m in aSmeshMeshes ]
         return aMeshes, aStatus
 
-    def CreateMeshesFromSAUV( self,theFileName ):
-        """
-        Create a Mesh object(s) importing data from the given SAUV file
-
-        Returns:
-                a tuple ( list of class :class:`Mesh` instances, :class:`SMESH.DriverMED_ReadStatus` )
-        """
-
-        aSmeshMeshes, aStatus = SMESH._objref_SMESH_Gen.CreateMeshesFromSAUV(self,theFileName)
-        aMeshes = [ Mesh(self, self.geompyD, m) for m in aSmeshMeshes ]
-        return aMeshes, aStatus
-
     def CreateMeshesFromSTL( self, theFileName ):
         """
         Create a Mesh object importing data from the given STL file
@@ -2455,20 +2443,6 @@ class Mesh(metaclass = MeshMeta):
                                        fields, geomAssocFields, z_tolerance, saveNumbers )
         else:
             self.mesh.ExportMED(fileName, auto_groups, version, overwrite, autoDimension)
-
-    def ExportSAUV(self, f, auto_groups=0):
-        """
-        Export the mesh in a file in SAUV format
-
-
-        Parameters:
-                f: is the file name
-                auto_groups: boolean parameter for creating/not creating
-                        the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
-                        the typical use is auto_groups=False.
-        """
-
-        self.mesh.ExportSAUV(f, auto_groups)
 
     def ExportDAT(self, f, meshPart=None, renumber=True):
         """

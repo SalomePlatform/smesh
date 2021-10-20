@@ -12,10 +12,6 @@
         <translation>Fichiers MED</translation>
     </message>
     <message>
-        <source>SAUV_FILES_FILTER</source>
-        <translation>Fichiers SAUV</translation>
-    </message>
-    <message>
         <source>IDEAS_FILES_FILTER</source>
         <translation>Fichiers IDEAS</translation>
     </message>
@@ -649,10 +645,6 @@
         <translation>Exporter au format GMF</translation>
     </message>
     <message>
-        <source>MEN_EXPORT_SAUV</source>
-        <translation>Exporter au format SAUV (ASCII)</translation>
-    </message>
-    <message>
         <source>MEN_EXPORT_STL</source>
         <translation>Exporter au format STL</translation>
     </message>
@@ -875,14 +867,6 @@
     <message>
         <source>MEN_GMF</source>
         <translation>Fichier GMF</translation>
-    </message>
-    <message>
-        <source>MEN_IMPORT_SAUV</source>
-        <translation>Fichier SAUV (ASCII)</translation>
-    </message>
-    <message>
-        <source>MEN_SAUV</source>
-        <translation>Fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>MEN_MERGE</source>
@@ -3452,10 +3436,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Exporter au format GMF</translation>
     </message>
     <message>
-        <source>STB_EXPORT_SAUV</source>
-        <translation>Exporter au format SAUV (ASCII)</translation>
-    </message>
-    <message>
         <source>STB_EXPORT_STL</source>
         <translation>Exporter au format STL</translation>
     </message>
@@ -3586,14 +3566,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_GMF</source>
         <translation>Exporter un fichier GMF</translation>
-    </message>
-    <message>
-        <source>STB_IMPORT_SAUV</source>
-        <translation>Importer un fichier SAUV (ASCII)</translation>
-    </message>
-    <message>
-        <source>STB_SAUV</source>
-        <translation>Exporter un fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>STB_MERGE</source>
@@ -4152,10 +4124,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Exporter au format MED</translation>
     </message>
     <message>
-        <source>TOP_EXPORT_SAUV</source>
-        <translation>Exporter au format SAUV (ASCII)</translation>
-    </message>
-    <message>
         <source>TOP_EXPORT_STL</source>
         <translation>Exporter au format STL</translation>
     </message>
@@ -4286,14 +4254,6 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_GMF</source>
         <translation>Exporter un fichier GMF</translation>
-    </message>
-    <message>
-        <source>TOP_IMPORT_SAUV</source>
-        <translation>Importer un fichier SAUV (ASCII)</translation>
-    </message>
-    <message>
-        <source>TOP_SAUV</source>
-        <translation>Exporter un fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>TOP_MERGE</source>

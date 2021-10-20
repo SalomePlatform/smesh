@@ -1316,17 +1316,17 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
  */
 //=============================================================================
 
-SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileName,
-                                                           SMESH::DriverMED_ReadStatus& theStatus,
-                                                           const char* theCommandNameForPython,
-                                                           const char* theFileNameForPython)
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char*                  theFileName,
+                                                     SMESH::DriverMED_ReadStatus& theStatus )
 {
+  checkFileReadable( theFileName );
+
 #ifdef WIN32
   char bname[ _MAX_FNAME ];
-  _splitpath( theFileNameForPython, NULL, NULL, bname, NULL );
+  _splitpath( theFileName, NULL, NULL, bname, NULL );
   string aFileName = bname;
 #else
-  string aFileName = basename( const_cast<char *>(theFileNameForPython) );
+  string aFileName = basename( const_cast<char *>( theFileName ));
 #endif
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
@@ -1339,125 +1339,63 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
 
   { // open a new scope to make aPythonDump die before PythonDump in SMESH_Mesh::GetGroups()
 
-  // Python Dump
-  TPythonDump aPythonDump(this);
-  aPythonDump << "([";
+    // Python Dump
+    TPythonDump aPythonDump(this);
+    aPythonDump << "([";
 
-  if (theStatus == SMESH::DRS_OK) {
-    SALOMEDS::StudyBuilder_var aStudyBuilder;
-    aStudyBuilder = getStudyServant()->NewBuilder();
-    aStudyBuilder->NewCommand();  // There is a transaction
-
-    aResult->length( aNames.size() );
-    int i = 0;
-
-    // Iterate through all meshes and create mesh objects
-    for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ )
+    if (theStatus == SMESH::DRS_OK)
     {
-      // Python Dump
-      if (i > 0) aPythonDump << ", ";
+      SALOMEDS::StudyBuilder_var aStudyBuilder;
+      aStudyBuilder = getStudyServant()->NewBuilder();
+      aStudyBuilder->NewCommand();  // There is a transaction
 
-      // create mesh
-      SMESH::SMESH_Mesh_var mesh = createMesh();
+      aResult->length( aNames.size() );
+      int i = 0;
 
-      // publish mesh in the study
-      SALOMEDS::SObject_wrap aSO;
-      if ( CanPublishInStudy( mesh ) )
-        // little trick: for MED file theFileName and theFileNameForPython are the same, but they are different for SAUV
-        // - as names of meshes are stored in MED file, we use them for data publishing
-        // - as mesh name is not stored in UNV file, we use file name as name of mesh when publishing data
-        aSO = PublishMesh( mesh.in(), ( theFileName == theFileNameForPython ) ? (*it).c_str() : aFileName.c_str() );
+      // Iterate through all meshes and create mesh objects
+      for ( const std::string & meshName : aNames )
+      {
+        // Python Dump
+        if (i > 0) aPythonDump << ", ";
 
-      // Python Dump
-      if ( !aSO->_is_nil() ) {
-        aPythonDump << aSO;
-      } else {
-        aPythonDump << "mesh_" << i;
+        // create mesh
+        SMESH::SMESH_Mesh_var mesh = createMesh();
+
+        // publish mesh in the study
+        SALOMEDS::SObject_wrap aSO;
+        if ( CanPublishInStudy( mesh ) )
+          aSO = PublishMesh( mesh.in(), meshName.c_str() );
+
+        // Python Dump
+        if ( !aSO->_is_nil() ) {
+          aPythonDump << aSO;
+        } else {
+          aPythonDump << "mesh_" << i;
+        }
+
+        // Read mesh data (groups are published automatically by ImportMEDFile())
+        SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
+        ASSERT( meshServant );
+        SMESH::DriverMED_ReadStatus status1 =
+          meshServant->ImportMEDFile( theFileName, meshName.c_str() );
+        if (status1 > theStatus)
+          theStatus = status1;
+
+        aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
+        meshServant->GetImpl().GetMeshDS()->Modified();
       }
-
-      // Read mesh data (groups are published automatically by ImportMEDFile())
-      SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
-      ASSERT( meshServant );
-      SMESH::DriverMED_ReadStatus status1 =
-        meshServant->ImportMEDFile( theFileName, (*it).c_str() );
-      if (status1 > theStatus)
-        theStatus = status1;
-
-      aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
-      meshServant->GetImpl().GetMeshDS()->Modified();
+      if ( !aStudyBuilder->_is_nil() )
+        aStudyBuilder->CommitCommand();
     }
-    if ( !aStudyBuilder->_is_nil() )
-      aStudyBuilder->CommitCommand();
-  }
 
-  // Update Python script
-  aPythonDump << "], status) = " << this << "." << theCommandNameForPython << "(r'" << theFileNameForPython << "')";
+    // Update Python script
+    aPythonDump << "], status) = " << this << ".CreateMeshesFromMED( r'" << theFileName << "' )";
   }
   // Dump creation of groups
   for ( CORBA::ULong  i = 0; i < aResult->length(); ++i )
     SMESH::ListOfGroups_var groups = aResult[ i ]->GetGroups();
 
   return aResult._retn();
-}
-
-//================================================================================
-/*!
- * \brief Create meshes by reading a MED file
- */
-//================================================================================
-
-SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char*                  theFileName,
-                                                     SMESH::DriverMED_ReadStatus& theStatus)
-{
-  Unexpect aCatch(SALOME_SalomeException);
-  checkFileReadable( theFileName );
-
-  SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(theFileName, theStatus,
-                                                        "CreateMeshesFromMED", theFileName);
-  return result;
-}
-
-//=============================================================================
-/*!
- *  SMESH_Gen_i::CreateMeshFromSAUV
- *
- *  Create mesh and import data from SAUV file
- */
-//=============================================================================
-
-SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char*                  theFileName,
-                                                      SMESH::DriverMED_ReadStatus& theStatus)
-{
-  Unexpect aCatch(SALOME_SalomeException);
-  checkFileReadable( theFileName );
-
-  std::string sauvfilename(theFileName);
-  std::string medfilename(theFileName);
-  medfilename += ".med";
-  std::string cmd;
-#ifdef WIN32
-  cmd = "%PYTHONBIN% ";
-#else
-  cmd = "python3 ";
-#endif
-  cmd += "-c \"";
-  cmd += "from medutilities import convert ; convert(r'" + sauvfilename + "', 'GIBI', 'MED', 1, r'" + medfilename + "')";
-  cmd += "\"";
-  system(cmd.c_str());
-  SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(medfilename.c_str(),
-                                                        theStatus,
-                                                        "CreateMeshesFromSAUV",
-                                                        sauvfilename.c_str());
-#ifdef WIN32
-  cmd = "%PYTHONBIN% ";
-#else
-  cmd = "python3 ";
-#endif
-  cmd += "-c \"";
-  cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
-  cmd += "\"";
-  system(cmd.c_str());
-  return result;
 }
 
 //=============================================================================

@@ -166,21 +166,6 @@ void DriverMED_W_SMESHDS_Mesh::AddGroupOfBalls()
   myDoGroupOfBalls = true;
 }
 
-//================================================================================
-/*!
- * \brief Set up a flag to add all elements not belonging to any group to
- *        some auxiliary group. This is needed for SMESH -> SAUVE -> SMESH conversion,
- *        which since PAL0023285 reads only SAUVE elements belonging to any group,
- *        and hence can lose some elements. That auxiliary group is ignored while
- *        reading a MED file.
- */
-//================================================================================
-
-void DriverMED_W_SMESHDS_Mesh::AddAllToGroup()
-{
-  myDoAllInGroups = true;
-}
-
 
 namespace
 {

@@ -1024,7 +1024,6 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     return;
   }
   if ( method == "CreateMeshesFromMED" ||
-       method == "CreateMeshesFromSAUV"||
        method == "CreateMeshesFromCGNS" ||
        method == "CreateMeshesFromGMF" ) // command result is ( [mesh1,mesh2], status )
   {
@@ -2194,7 +2193,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
   static TStringSet sameMethods;
   if ( sameMethods.empty() ) {
     const char * names[] =
-      { "ExportDAT","ExportUNV","ExportSTL","ExportSAUV", "RemoveGroup","RemoveGroupWithContents",
+      { "ExportDAT","ExportUNV","ExportSTL", "RemoveGroup","RemoveGroupWithContents",
         "GetGroups","UnionGroups","IntersectGroups","CutGroups","CreateDimGroup","GetLog","GetId",
         "ClearLog","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
         "NbEdges","NbEdgesOfOrder","NbFaces","NbFacesOfOrder","NbTriangles",

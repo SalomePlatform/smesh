@@ -282,8 +282,7 @@ class SMESH_EXPORT SMESH_Mesh
                  bool                theAutoDimension = false,
                  bool                theAddODOnVertices = false,
                  double              theZTolerance = -1.,
-                 bool                theSaveNumbers = true,
-                 bool                theAllElemsToGroup = false);
+                 bool                theSaveNumbers = true);
 
   void ExportDAT(const char *        file,
                  const SMESHDS_Mesh* meshPart = 0,
@@ -302,9 +301,6 @@ class SMESH_EXPORT SMESH_Mesh
   void ExportGMF(const char *        file,
                  const SMESHDS_Mesh* mesh,
                  bool                withRequiredGroups = true );
-  void ExportSAUV(const char *file, 
-                  const char* theMeshName = NULL, 
-                  bool theAutoGroups = true);
 
   double GetComputeProgress() const;
   
@@ -395,8 +391,7 @@ private:
                         bool                      theAutoDimension,
                         bool                      theAddODOnVertices,
                         double                    theZTolerance,
-                        bool                      theSaveNumbers,
-                        bool                      theAllElemsToGroup);
+                        bool                      theSaveNumbers);
 
  private:
   void fillAncestorsMap(const TopoDS_Shape& theShape);

@@ -215,8 +215,6 @@ public:
   CORBA::LongLong ExportMEDCoupling(CORBA::Boolean auto_groups,
                                     CORBA::Boolean autoDimension = true);
 
-  void ExportSAUV( const char* file, CORBA::Boolean auto_groups );
-
   void ExportDAT( const char* file, const CORBA::Boolean renumber );
   void ExportUNV( const char* file, const CORBA::Boolean renumber  );
   void ExportSTL( const char* file, bool isascii );

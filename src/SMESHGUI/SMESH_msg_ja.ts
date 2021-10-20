@@ -12,10 +12,6 @@
       <translation>MEDファイル</translation>
     </message>
     <message>
-        <source>SAUV_FILES_FILTER</source>
-        <translation>SAUVファイル</translation>
-    </message>
-    <message>
       <source>IDEAS_FILES_FILTER</source>
       <translation>IDEAS ファイル</translation>
     </message>
@@ -504,10 +500,6 @@
       <translation>GMF形式でエクスポート</translation>
     </message>
     <message>
-      <source>MEN_EXPORT_SAUV</source>
-      <translation>SAUV (ASCII) 形式でエクスポート</translation>
-    </message>
-    <message>
       <source>MEN_EXPORT_STL</source>
       <translation>STL形式でエクスポート</translation>
     </message>
@@ -726,14 +718,6 @@
     <message>
       <source>MEN_GMF</source>
       <translation>GMFファイル</translation>
-    </message>
-    <message>
-      <source>MEN_IMPORT_SAUV</source>
-      <translation>SAUVファイル</translation>
-    </message>
-    <message>
-      <source>MEN_SAUV</source>
-      <translation>SAUVファイル</translation>
     </message>
     <message>
       <source>MEN_MERGE</source>
@@ -3148,10 +3132,6 @@
       <translation>組み換えをエクスポートします。</translation>
     </message>
     <message>
-      <source>STB_EXPORT_SAUV</source>
-      <translation>SAUV (ASCII) 形式でエクスポート</translation>
-    </message>
-    <message>
       <source>STB_EXPORT_STL</source>
       <translation>STL形式でエクスポート</translation>
     </message>
@@ -3278,14 +3258,6 @@
     <message>
       <source>STB_GMF</source>
       <translation>組み換えファイルをエクスポートします。</translation>
-    </message>
-    <message>
-      <source>STB_IMPORT_SAUV</source>
-      <translation>バックアップ (ASCII) ファイルをインポートします。</translation>
-    </message>
-    <message>
-      <source>STB_SAUV</source>
-      <translation>バックアップ (ASCII) ファイルをエクスポートします。</translation>
     </message>
     <message>
       <source>STB_MERGE</source>
@@ -3828,10 +3800,6 @@
       <translation>MED形式でエクスポート</translation>
     </message>
     <message>
-      <source>TOP_EXPORT_SAUV</source>
-      <translation>SAUV (ASCII) 形式でエクスポート</translation>
-    </message>
-    <message>
       <source>TOP_EXPORT_STL</source>
       <translation>STL形式でエクスポート</translation>
     </message>
@@ -3958,14 +3926,6 @@
     <message>
       <source>TOP_GMF</source>
       <translation>組み換えファイルをエクスポートします。</translation>
-    </message>
-    <message>
-      <source>TOP_IMPORT_SAUV</source>
-      <translation>バックアップ (ASCII) ファイルをインポートします。</translation>
-    </message>
-    <message>
-      <source>TOP_SAUV</source>
-      <translation>バックアップ (ASCII) ファイルをエクスポートします。</translation>
     </message>
     <message>
       <source>TOP_MERGE</source>

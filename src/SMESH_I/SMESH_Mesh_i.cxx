@@ -3799,27 +3799,6 @@ CORBA::LongLong SMESH_Mesh_i::ExportMEDCoupling(CORBA::Boolean auto_groups, CORB
 
 //================================================================================
 /*!
- * \brief Export a mesh to a SAUV file
- */
-//================================================================================
-
-void SMESH_Mesh_i::ExportSAUV( const char* file, CORBA::Boolean auto_groups )
-{
-  SMESH_TRY;
-  if ( _preMeshInfo )
-    _preMeshInfo->FullLoadFromFile();
-
-  string aMeshName = prepareMeshNameAndGroups(file, true);
-  TPythonDump() << SMESH::SMESH_Mesh_var( _this())
-                << ".ExportSAUV( r'" << file << "', " << auto_groups << " )";
-  _impl->ExportSAUV(file, aMeshName.c_str(), auto_groups);
-
-  SMESH_CATCH( SMESH::throwCorbaException );
-}
-
-
-//================================================================================
-/*!
  * \brief Export a mesh to a DAT file
  */
 //================================================================================

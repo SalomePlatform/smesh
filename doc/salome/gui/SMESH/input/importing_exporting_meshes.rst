@@ -8,7 +8,6 @@ Importing and exporting meshes
 In MESH there is a functionality allowing import/export of meshes in the following formats:
 
 * **MED**,
-* **SAUV** (format of the CASTEM code),
 * **UNV** (I-DEAS 10),
 * **STL**, 
 * **CGNS**,
@@ -45,7 +44,7 @@ If you try to export a group, the warning will be shown:
 
 Only MED format supports all types of elements that can be created in the module. If you export a mesh or group that includes elements of types that are not supported by chosen format, you will be warned about that.
 
-There are additional parameters available at export to MED and SAUV format files.
+There are additional parameters available at export to MED format files.
 
 .. _export_auto_groups:
 

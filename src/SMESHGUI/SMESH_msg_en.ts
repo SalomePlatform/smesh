@@ -12,10 +12,6 @@
         <translation>MED files</translation>
     </message>
     <message>
-        <source>SAUV_FILES_FILTER</source>
-        <translation>SAUV files</translation>
-    </message>
-    <message>
         <source>IDEAS_FILES_FILTER</source>
         <translation>IDEAS files</translation>
     </message>
@@ -649,10 +645,6 @@
         <translation>Export to GMF file</translation>
     </message>
     <message>
-        <source>MEN_EXPORT_SAUV</source>
-        <translation>Export to SAUV file</translation>
-    </message>
-    <message>
         <source>MEN_EXPORT_STL</source>
         <translation>Export to STL file</translation>
     </message>
@@ -875,14 +867,6 @@
     <message>
         <source>MEN_GMF</source>
         <translation>GMF file</translation>
-    </message>
-    <message>
-        <source>MEN_IMPORT_SAUV</source>
-        <translation>SAUV file</translation>
-    </message>
-    <message>
-        <source>MEN_SAUV</source>
-        <translation>SAUV file</translation>
     </message>
     <message>
         <source>MEN_MERGE</source>
@@ -3465,10 +3449,6 @@ Use Display Entity menu command to show them.
         <translation>Export to GMF file</translation>
     </message>
     <message>
-        <source>STB_EXPORT_SAUV</source>
-        <translation>Export to SAUV file</translation>
-    </message>
-    <message>
         <source>STB_EXPORT_STL</source>
         <translation>Export to STL file</translation>
     </message>
@@ -3599,14 +3579,6 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_GMF</source>
         <translation>Export GMF file</translation>
-    </message>
-    <message>
-        <source>STB_IMPORT_SAUV</source>
-        <translation>Import SAUV file</translation>
-    </message>
-    <message>
-        <source>STB_SAUV</source>
-        <translation>Export SAUV file</translation>
     </message>
     <message>
         <source>STB_MERGE</source>
@@ -4165,10 +4137,6 @@ Use Display Entity menu command to show them.
         <translation>Export to MED file</translation>
     </message>
     <message>
-        <source>TOP_EXPORT_SAUV</source>
-        <translation>Export to SAUV file</translation>
-    </message>
-    <message>
         <source>TOP_EXPORT_STL</source>
         <translation>Export to STL file</translation>
     </message>
@@ -4299,14 +4267,6 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_GMF</source>
         <translation>Export GMF file</translation>
-    </message>
-    <message>
-        <source>TOP_IMPORT_SAUV</source>
-        <translation>Import SAUV file</translation>
-    </message>
-    <message>
-        <source>TOP_SAUV</source>
-        <translation>Export SAUV file</translation>
     </message>
     <message>
         <source>TOP_MERGE</source>

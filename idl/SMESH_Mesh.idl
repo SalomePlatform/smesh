@@ -715,17 +715,10 @@ module SMESH
                                        in boolean            saveNumbers) raises (SALOME::SALOME_Exception);
 
     /*!
-     * Export Mesh to SAUV formatted file
-     * Write a temporary med file and use med2sauv
-     */
-    void ExportSAUV( in string file, in boolean auto_groups )
-      raises (SALOME::SALOME_Exception);
-    
-    /*!
      * Return string representation of a MED file version comprising nbDigits
      */
     string GetVersionString(in long minor, in short nbDigits);
-    
+
     /*!
      *  Return the list of med versions compatibles for write/append,
      *  encoded in 10*major+minor (for instance, code for med 3.2.1 is 32)

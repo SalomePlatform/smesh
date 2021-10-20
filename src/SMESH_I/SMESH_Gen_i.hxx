@@ -241,10 +241,6 @@ public:
   SMESH::mesh_array* CreateMeshesFromMED( const char* theFileName,
                                           SMESH::DriverMED_ReadStatus& theStatus );
 
-  //  Create mesh(es) and import data from MED file
-  SMESH::mesh_array* CreateMeshesFromSAUV( const char* theFileName,
-                                           SMESH::DriverMED_ReadStatus& theStatus );
-
   //  Create a mesh and import data from a STL file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName );
 
@@ -640,11 +636,6 @@ private:
                                                  const char*           name );
 
   void highLightInvalid( SALOMEDS::SObject_ptr theSObject, bool isInvalid );
-
-  SMESH::mesh_array* CreateMeshesFromMEDorSAUV( const char* theFileName,
-                                                SMESH::DriverMED_ReadStatus& theStatus,
-                                                const char* theCommandNameForPython,
-                                                const char* theFileNameForPython);
 
   std::vector<long> _GetInside(SMESH::SMESH_IDSource_ptr meshPart,
                                SMESH::ElementType        ElemType,
