@@ -30,7 +30,7 @@ error = 40
 critical = 50
 always = 100
 
-LOGFILE = os.path.join(tempfile.gettempdir(),"blocFissure.log")
+LOGFILE = tempfile.NamedTemporaryFile().name + "_blocFissure.log"
 
 LOG_LEVEL = warning
 
