@@ -43,7 +43,6 @@ SET(BAD_TESTS
   quality_controls_ex22.py
   viewing_meshes_ex01.py
   radial_prism_3d_algo.py
-  test_smeshplugin_mg_tetra_parallele.py
   test_smeshplugins.py
   MGAdaptTests_without_session.py
   blocFissure_01_without_session.py
@@ -54,6 +53,12 @@ SET(BAD_TESTS
   blocFissure_06_without_session.py
   blocFissure_07_without_session.py
   )
+
+IF (NOT WIN32)
+  LIST(APPEND BAD_TESTS
+    test_smeshplugin_mg_tetra_parallele.py
+  )
+ENDIF(NOT WIN32)
 
 SET(GOOD_TESTS
   cartesian_algo.py
