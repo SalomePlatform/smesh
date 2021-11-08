@@ -236,6 +236,7 @@ SET(SMESH_RESOURCES_FILES
   pattern_sample_3D.png
   reorient_faces_face.png
   reorient_faces_point.png
+  reorient_faces_ref_groups.png
   reorient_faces_volume.png
   scale.png
   scale_along_axes.png

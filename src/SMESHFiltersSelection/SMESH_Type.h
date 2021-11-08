@@ -62,7 +62,8 @@ namespace SMESH {
     IDSOURCE,
     IDSOURCE_EDGE, // IDSource including edges
     IDSOURCE_FACE,
-    IDSOURCE_VOLUME
+    IDSOURCE_VOLUME,
+    NB_SMESH_TYPES
   };
 }
 #endif

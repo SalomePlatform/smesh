@@ -1696,7 +1696,8 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
   if ( dirVec.Magnitude() < std::numeric_limits< double >::min() )
     THROW_SALOME_CORBA_EXCEPTION("Zero size vector", SALOME::BAD_PARAM);
 
-  int nbReori = getEditor().Reorient2D( elements, dirVec, face );
+  TIDSortedElemSet refFaces = { face };
+  int nbReori = getEditor().Reorient2D( elements, dirVec, refFaces, /*allowNonManifold=*/true );
 
   if ( nbReori ) {
     declareMeshModified( /*isReComputeSafe=*/false );
@@ -1706,6 +1707,64 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
                 << theDirection << ", "
                 << theFace << ", "
                 << thePoint << " )";
+
+  return nbReori;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return 0;
+}
+
+//=======================================================================
+//function : Reorient2DByNeighbours
+//purpose  : Reorient faces contained in a list of objectFaces
+//           equally to faces contained in a list of referenceFaces.
+//=======================================================================
+
+CORBA::Long
+SMESH_MeshEditor_i::Reorient2DByNeighbours(const SMESH::ListOfIDSources& theObjectFaces,
+                                           const SMESH::ListOfIDSources& theReferenceFaces)
+{
+  SMESH_TRY;
+  initData(/*deleteSearchers=*/false);
+
+  if ( theObjectFaces.length() == 0 )
+    return 0;
+
+  // get object faces
+  TIDSortedElemSet objFaces;
+  bool invalidObjFaces = false;
+  for ( CORBA::ULong i = 0; i < theObjectFaces.length(); ++i )
+  {
+    IDSource_Error err;
+    if ( !idSourceToSet( theObjectFaces[i], getMeshDS(), objFaces, SMDSAbs_Face,
+                         /*emptyIfIsMesh=*/1, &err ) &&
+         err == IDSource_INVALID )
+      invalidObjFaces = true;
+  }
+  if ( objFaces.empty() && invalidObjFaces )
+    THROW_SALOME_CORBA_EXCEPTION("No valid faces in given groups", SALOME::BAD_PARAM);
+
+  // get reference faces
+  TIDSortedElemSet refFaces;
+  for ( CORBA::ULong i = 0; i < theReferenceFaces.length(); ++i )
+  {
+    idSourceToSet( theReferenceFaces[i], getMeshDS(), refFaces, SMDSAbs_Face, /*emptyIfIsMesh=*/1 );
+  }
+  if ( refFaces.empty() && theReferenceFaces.length() > 0 )
+    THROW_SALOME_CORBA_EXCEPTION("Reference faces are invalid", SALOME::BAD_PARAM);
+
+
+  gp_Vec zeroVec( 0,0,0 );
+
+  // reorient
+  int nbReori = getEditor().Reorient2D( objFaces, zeroVec, refFaces, /*allowNonManifold=*/false );
+
+  if ( nbReori )
+    declareMeshModified( /*isReComputeSafe=*/false );
+
+  TPythonDump() << this << ".Reorient2DByNeighbours("
+                << theObjectFaces << ", "
+                << theReferenceFaces << ")";
 
   return nbReori;
 

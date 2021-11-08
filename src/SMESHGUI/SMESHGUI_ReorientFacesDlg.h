@@ -27,31 +27,37 @@
 #define SMESHGUI_ReorientFacesDlg_H
 
 // SMESH includes
+
 #include "SMESH_SMESHGUI.hxx"
 
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_SelectionOp.h"
+
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class QButtonGroup;
 class QCheckBox;
 class QLineEdit;
 class SMESHGUI_SpinBox;
 class SMESHGUI_ReorientFacesDlg;
+class SMESH_TypeFilter;
 
-/*!
+/*! ================================================================================
  * \brief Operation to reorient faces according to some criterion
  */
+
 class SMESHGUI_EXPORT SMESHGUI_ReorientFacesOp: public SMESHGUI_SelectionOp
 {
   Q_OBJECT
 
-public:
+ public:
   SMESHGUI_ReorientFacesOp();
   virtual ~SMESHGUI_ReorientFacesOp();
 
   virtual LightApp_Dialog*       dlg() const;
 
-protected:
+ protected:
 
   virtual void                   startOperation();
   virtual void                   stopOperation();
@@ -60,27 +66,35 @@ protected:
   virtual void                   selectionDone();
 
   bool                           isValid( QString& );
+  void                           setRefFiltersByConstructor();
+  int                            constructorID();
 
-protected slots:
+
+ protected slots:
   virtual bool                   onApply();
 
-private slots:
+ private slots:
   virtual void                   onActivateObject( int );
   void                           redisplayPreview();
   void                           onTextChange( const QString& );
+  bool                           onlyOneObjAllowed();
 
-private:
-  SMESHGUI_ReorientFacesDlg*    myDlg;
+ private:
 
-  //SMESHGUI_MeshEditPreview*     myVectorPreview;
-  SMESH_Actor*                  myObjectActor;
-  int                           mySelectionMode;
+  SMESHGUI_ReorientFacesDlg* myDlg;
 
-  SMESH::SMESH_IDSource_var     myObject;
-  SMESH::SMESH_IDSource_var     myVolumeObj;
+  SMESH_Actor*               myObjectActor;
+  int                        mySelectionMode;
+
+  SMESH_TypeFilter*          myRefGroupFilter;
+  SMESH_TypeFilter*          myRefSubMeshFilter;
+  SMESH_TypeFilter*          myRefMeshFilter;
+
+  SMESH::ListOfIDSources_var myObjects;
+  SMESH::ListOfIDSources_var myRefGroups;
 };
 
-/*!
+/*! ================================================================================
  * \brief Dialog to reorient faces according to vector
  */
 
@@ -88,7 +102,7 @@ class SMESHGUI_EXPORT SMESHGUI_ReorientFacesDlg : public SMESHGUI_Dialog
 {
   Q_OBJECT
 
-public:
+ public:
   SMESHGUI_ReorientFacesDlg();
 
 public slots:
@@ -96,12 +110,13 @@ public slots:
 
 private:
   QWidget*                      createMainFrame( QWidget* );
+  void                          setLabel( int object, const char* text );
   
   QButtonGroup*                 myConstructorGrp;
   QFrame*                       myFaceFrm;
   QFrame*                       myPointFrm;
   QFrame*                       myDirFrm;
-  QFrame*                       myVolumFrm;
+  QFrame*                       myRefGroupFrm;
   QCheckBox*                    myOutsideChk;
   SMESHGUI_SpinBox*             myX;
   SMESHGUI_SpinBox*             myY;

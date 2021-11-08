@@ -449,6 +449,7 @@ Changing orientation of elements
    Mesh.Reorient
    Mesh.ReorientObject
    Mesh.Reorient2D
+   Mesh.Reorient2DByNeighbours
    Mesh.Reorient2DBy3D
 
 Uniting triangles

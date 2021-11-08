@@ -193,6 +193,17 @@ public:
                          CORBA::Long               theFace,
                          const SMESH::PointStruct& thePoint);
   /*!
+   * \brief Reorient faces contained in a list of \a objectFaces
+   *        equally to faces contained in a list of \a referenceFaces.
+   * \param objectFaces - faces to reorient in a list including either
+   *        the whole mesh or groups and/or sub-meshes.
+   * \param referenceFaces  - correctly oriented faces in a list of groups and/or sub-meshes.
+   *        It can be empty, then the 1st face in \a objectFaces is used as the reference.
+   * \return number of reoriented faces.
+   */
+  CORBA::Long Reorient2DByNeighbours(const SMESH::ListOfIDSources& objectFaces,
+                                     const SMESH::ListOfIDSources& referenceFaces);
+  /*!
    * \brief Reorient faces basing on orientation of adjacent volumes.
    * \param faces - a list of objects containing face to reorient
    * \param volumes - an object containing volumes.

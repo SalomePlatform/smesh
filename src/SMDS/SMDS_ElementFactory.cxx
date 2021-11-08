@@ -232,6 +232,18 @@ smIdType SMDS_ElementFactory::FromVtkToSmds( vtkIdType vtkID )
 
 //================================================================================
 /*!
+ * \brief Clear marked flag of all elements
+ */
+//================================================================================
+
+void SMDS_ElementFactory::SetAllNotMarked()
+{
+  for ( SMDS_ElementChunk& chunk : myChunks )
+    chunk.SetAllNotMarked();
+}
+
+//================================================================================
+/*!
  * \brief Mark the element as non-used
  *  \param [in] e - element
  */
@@ -725,6 +737,17 @@ void SMDS_ElementChunk::SetIsMarked( const SMDS_MeshElement* e, bool is )
   if ( !is && myMarkedSet.empty() ) return;
   if ( myMarkedSet.empty() ) myMarkedSet.resize( theChunkSize, false );
   myMarkedSet[ Index( e )] = is;
+}
+
+//================================================================================
+/*!
+ * \brief Clear marked flag of all elements
+ */
+//================================================================================
+
+void SMDS_ElementChunk::SetAllNotMarked()
+{
+  clearVector( myMarkedSet );
 }
 
 //================================================================================

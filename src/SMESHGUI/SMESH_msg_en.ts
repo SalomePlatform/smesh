@@ -8609,6 +8609,10 @@ red in the Object Browser.</translation>
         <source>OBJECT</source>
         <translation>Object</translation>
     </message>
+     <message>
+         <source>OBJECTS</source>
+         <translation>Objects</translation>
+     </message>
     <message>
         <source>POINT</source>
         <translation>Point</translation>
@@ -8628,6 +8632,10 @@ red in the Object Browser.</translation>
     <message>
         <source>VOLUMES</source>
         <translation>Volumes</translation>
+    </message>
+    <message>
+        <source>REF_GROUPS</source>
+        <translation>Ref. objects (optional)</translation>
     </message>
     <message>
         <source>OUTSIDE_VOLUME_NORMAL</source>

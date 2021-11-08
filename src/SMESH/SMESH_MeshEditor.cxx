@@ -1161,69 +1161,88 @@ bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
 /*!
  * \brief Reorient faces.
  * \param theFaces - the faces to reorient. If empty the whole mesh is meant
- * \param theDirection - desired direction of normal of \a theFace
- * \param theFace - one of \a theFaces that should be oriented according to
- *        \a theDirection and whose orientation defines orientation of other faces
+ * \param theDirection - desired direction of normal of \a theRefFaces.
+ *        It can be (0,0,0) in order to keep orientation of \a theRefFaces.
+ * \param theRefFaces - correctly oriented faces whose orientation defines
+ *        orientation of other faces.
  * \return number of reoriented faces.
  */
 //================================================================================
 
-int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
-                                  const gp_Dir&            theDirection,
-                                  const SMDS_MeshElement * theFace)
+int SMESH_MeshEditor::Reorient2D( TIDSortedElemSet &  theFaces,
+                                  const gp_Vec&       theDirection,
+                                  TIDSortedElemSet &  theRefFaces,
+                                  bool                theAllowNonManifold )
 {
   int nbReori = 0;
-  if ( !theFace || theFace->GetType() != SMDSAbs_Face ) return nbReori;
 
   if ( theFaces.empty() )
   {
-    SMDS_FaceIteratorPtr fIt = GetMeshDS()->facesIterator(/*idInceasingOrder=true*/);
+    SMDS_FaceIteratorPtr fIt = GetMeshDS()->facesIterator();
     while ( fIt->more() )
       theFaces.insert( theFaces.end(), fIt->next() );
+
+    if ( theFaces.empty() )
+      return nbReori;
   }
 
-  // orient theFace according to theDirection
-  gp_XYZ normal;
-  SMESH_MeshAlgos::FaceNormal( theFace, normal, /*normalized=*/false );
-  if ( normal * theDirection.XYZ() < 0 )
-    nbReori += Reorient( theFace );
+  // orient theRefFaces according to theDirection
+  if ( theDirection.X() != 0 || theDirection.Y() != 0 || theDirection.Z() != 0 )
+    for ( const SMDS_MeshElement* refFace : theRefFaces )
+    {
+      gp_XYZ normal;
+      SMESH_MeshAlgos::FaceNormal( refFace, normal, /*normalized=*/false );
+      if ( normal * theDirection.XYZ() < 0 )
+        nbReori += Reorient( refFace );
+    }
 
-  // Orient other faces
+  // mark reference faces
+  GetMeshDS()->SetAllCellsNotMarked();
+  for ( const SMDS_MeshElement* refFace : theRefFaces )
+    refFace->setIsMarked( true );
 
-  set< const SMDS_MeshElement* > startFaces, visitedFaces;
-  TIDSortedElemSet avoidSet;
-  set< SMESH_TLink > checkedLinks;
-  pair< set< SMESH_TLink >::iterator, bool > linkIt_isNew;
+  // erase reference faces from theFaces
+  for ( TIDSortedElemSet::iterator fIt = theFaces.begin(); fIt != theFaces.end(); )
+    if ( (*fIt)->isMarked() )
+      fIt = theFaces.erase( fIt );
+    else
+      ++fIt;
 
-  if ( theFaces.size() > 1 )// leave 1 face to prevent finding not selected faces
-    theFaces.erase( theFace );
-  startFaces.insert( theFace );
+  if ( theRefFaces.empty() )
+  {
+    theRefFaces.insert( *theFaces.begin() );
+    theFaces.erase( theFaces.begin() );
+  }
+
+  // Orient theFaces
+
+  // if ( theFaces.size() > 1 )// leave 1 face to prevent finding not selected faces
+  //   theFaces.erase( theFace );
 
   int nodeInd1, nodeInd2;
-  const SMDS_MeshElement*           otherFace;
+  const SMDS_MeshElement*           refFace, *otherFace;
   vector< const SMDS_MeshElement* > facesNearLink;
   vector< std::pair< int, int > >   nodeIndsOfFace;
+  TIDSortedElemSet                  avoidSet, emptySet;
+  NCollection_Map< SMESH_TLink, SMESH_TLink > checkedLinks;
 
-  set< const SMDS_MeshElement* >::iterator startFace = startFaces.begin();
-  while ( !startFaces.empty() )
+  while ( !theRefFaces.empty() )
   {
-    startFace = startFaces.begin();
-    theFace = *startFace;
-    startFaces.erase( startFace );
-    if ( !visitedFaces.insert( theFace ).second )
-      continue;
+    auto refFaceIt = theRefFaces.begin();
+    refFace = *refFaceIt;
+    theRefFaces.erase( refFaceIt );
 
     avoidSet.clear();
-    avoidSet.insert(theFace);
+    avoidSet.insert( refFace );
 
-    NLink link( theFace->GetNode( 0 ), (SMDS_MeshNode *) 0 );
+    NLink link( refFace->GetNode( 0 ), nullptr );
 
-    const int nbNodes = theFace->NbCornerNodes();
-    for ( int i = 0; i < nbNodes; ++i ) // loop on links of theFace
+    const int nbNodes = refFace->NbCornerNodes();
+    for ( int i = 0; i < nbNodes; ++i ) // loop on links of refFace
     {
-      link.second = theFace->GetNode(( i+1 ) % nbNodes );
-      linkIt_isNew = checkedLinks.insert( link );
-      if ( !linkIt_isNew.second )
+      link.second = refFace->GetNode(( i+1 ) % nbNodes );
+      bool isLinkVisited = checkedLinks.Contains( link );
+      if ( isLinkVisited )
       {
         // link has already been checked and won't be encountered more
         // if the group (theFaces) is manifold
@@ -1231,28 +1250,41 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
       }
       else
       {
+        checkedLinks.Add( link );
+
         facesNearLink.clear();
         nodeIndsOfFace.clear();
+        TIDSortedElemSet::iterator objFaceIt = theFaces.end();
+
         while (( otherFace = SMESH_MeshAlgos::FindFaceInSet( link.first, link.second,
-                                                             theFaces, avoidSet,
+                                                             emptySet, avoidSet,
                                                              &nodeInd1, &nodeInd2 )))
-          if ( otherFace != theFace)
+        {
+          if (( otherFace->isMarked() ) || // ref face
+              (( objFaceIt = theFaces.find( otherFace )) != theFaces.end() )) // object face
           {
             facesNearLink.push_back( otherFace );
             nodeIndsOfFace.push_back( make_pair( nodeInd1, nodeInd2 ));
-            avoidSet.insert( otherFace );
           }
+          avoidSet.insert( otherFace );
+        }
         if ( facesNearLink.size() > 1 )
         {
           // NON-MANIFOLD mesh shell !
-          // select a face most co-directed with theFace,
+          if ( !theAllowNonManifold )
+          {
+            throw SALOME_Exception("Non-manifold topology of groups");
+          }
+          // select a face most co-directed with refFace,
           // other faces won't be visited this time
           gp_XYZ NF, NOF;
-          SMESH_MeshAlgos::FaceNormal( theFace, NF, /*normalized=*/false );
+          SMESH_MeshAlgos::FaceNormal( refFace, NF, /*normalized=*/false );
           double proj, maxProj = -1;
-          for ( size_t i = 0; i < facesNearLink.size(); ++i ) {
+          for ( size_t i = 0; i < facesNearLink.size(); ++i )
+          {
             SMESH_MeshAlgos::FaceNormal( facesNearLink[i], NOF, /*normalized=*/false );
-            if (( proj = Abs( NF * NOF )) > maxProj ) {
+            if (( proj = Abs( NF * NOF )) > maxProj )
+            {
               maxProj = proj;
               otherFace = facesNearLink[i];
               nodeInd1  = nodeIndsOfFace[i].first;
@@ -1260,9 +1292,9 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
             }
           }
           // not to visit rejected faces
-          for ( size_t i = 0; i < facesNearLink.size(); ++i )
-            if ( facesNearLink[i] != otherFace && theFaces.size() > 1 )
-              visitedFaces.insert( facesNearLink[i] );
+          // for ( size_t i = 0; i < facesNearLink.size(); ++i )
+          //   if ( facesNearLink[i] != otherFace && theFaces.size() > 1 )
+          //     visitedFaces.insert( facesNearLink[i] );
         }
         else if ( facesNearLink.size() == 1 )
         {
@@ -1270,20 +1302,36 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
           nodeInd1  = nodeIndsOfFace.back().first;
           nodeInd2  = nodeIndsOfFace.back().second;
         }
-        if ( otherFace && otherFace != theFace)
+        if ( otherFace )
         {
-          // link must be reverse in otherFace if orientation to otherFace
-          // is same as that of theFace
-          if ( abs(nodeInd2-nodeInd1) == 1 ? nodeInd2 > nodeInd1 : nodeInd1 > nodeInd2 )
+          // link must be reverse in otherFace if orientation of otherFace
+          // is same as that of refFace
+          if ( abs( nodeInd2 - nodeInd1 ) == 1 ? nodeInd2 > nodeInd1 : nodeInd1 > nodeInd2 )
           {
+            if ( otherFace->isMarked() )
+              throw SALOME_Exception("Different orientation of reference faces");
             nbReori += Reorient( otherFace );
           }
-          startFaces.insert( otherFace );
+          if ( !otherFace->isMarked() )
+          {
+            theRefFaces.insert( otherFace );
+            if ( objFaceIt != theFaces.end() )
+              theFaces.erase( objFaceIt );
+          }
         }
       }
-      std::swap( link.first, link.second ); // reverse the link
+      link.first = link.second; // reverse the link
+
+    } // loop on links of refFace
+
+    if ( theRefFaces.empty() && !theFaces.empty() )
+    {
+      theRefFaces.insert( *theFaces.begin() );
+      theFaces.erase( theFaces.begin() );
     }
-  }
+
+  } // while ( !theRefFaces.empty() )
+
   return nbReori;
 }
 

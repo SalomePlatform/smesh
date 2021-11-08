@@ -116,6 +116,8 @@ public:
   boost::shared_ptr< ElemIterator > GetShapeIterator( int                     shapeID,
                                                       size_t                  nbElemsToReturn,
                                                       const SMDS_MeshElement* sm1stElem );
+  //! Clear marked flag of all elements
+  void SetAllNotMarked();
 
   //! Mark the element as non-used
   void Free( const SMDS_MeshElement* );
@@ -441,6 +443,7 @@ public:
 
   bool IsMarked   ( const SMDS_MeshElement* e ) const;
   void SetIsMarked( const SMDS_MeshElement* e, bool is );
+  void SetAllNotMarked();
 
   SMDS_PositionPtr GetPosition( const SMDS_MeshNode* n ) const;
   void SetPosition( const SMDS_MeshNode* n, const SMDS_PositionPtr& pos, int shapeID );
