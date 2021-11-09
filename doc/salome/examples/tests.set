@@ -44,7 +44,6 @@ SET(BAD_TESTS
   viewing_meshes_ex01.py
   radial_prism_3d_algo.py
   test_smeshplugins.py
-  MGAdaptTests_without_session.py
   blocFissure_01_without_session.py
   blocFissure_02_without_session.py
   blocFissure_03_without_session.py
@@ -54,8 +53,9 @@ SET(BAD_TESTS
   blocFissure_07_without_session.py
   )
 
-IF (NOT WIN32)
+IF(NOT WIN32)
   LIST(APPEND BAD_TESTS
+    MGAdaptTests_without_session.py
     test_smeshplugin_mg_tetra_parallele.py
   )
 ENDIF(NOT WIN32)
