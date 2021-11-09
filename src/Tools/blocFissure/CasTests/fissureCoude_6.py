@@ -106,13 +106,26 @@ class fissureCoude_6(fissureCoude):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict( \
-                                          Entity_Quad_Quadrangle = 7392, \
-                                          Entity_Quad_Hexa = 9888, \
-                                          Entity_Node = 62571, \
-                                          Entity_Quad_Edge = 833, \
-                                          Entity_Quad_Triangle = 1048, \
-                                          Entity_Quad_Tetra = 7723, \
-                                          Entity_Quad_Pyramid = 452, \
-                                          Entity_Quad_Penta = 408 \
-                                         )
+    from salome.smesh import smeshBuilder
+    if smeshBuilder.NETGEN_VERSION_MAJOR < 6:
+      self.referencesMaillageFissure = dict( \
+                                             Entity_Quad_Quadrangle = 7392, \
+                                             Entity_Quad_Hexa = 9888, \
+                                             Entity_Node = 62571, \
+                                             Entity_Quad_Edge = 833, \
+                                             Entity_Quad_Triangle = 1048, \
+                                             Entity_Quad_Tetra = 7723, \
+                                             Entity_Quad_Pyramid = 452, \
+                                             Entity_Quad_Penta = 408 \
+                                           )
+    else:
+      self.referencesMaillageFissure = dict( \
+                                             Entity_Quad_Quadrangle = 7392, \
+                                             Entity_Quad_Hexa = 9888, \
+                                             Entity_Node = 62361, \
+                                             Entity_Quad_Edge = 833, \
+                                             Entity_Quad_Triangle = 983, \
+                                             Entity_Quad_Tetra = 7642, \
+                                             Entity_Quad_Pyramid = 452, \
+                                             Entity_Quad_Penta = 408 \
+                                           )
