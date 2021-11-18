@@ -2082,7 +2082,20 @@ void SMESHGUI::OnEditDelete()
         SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
         aStudyBuilder->RemoveObjectWithChildren( SO );
       }
-      else {// default action: remove SObject from the study
+      else {// default action: remove SObject from the study		
+		// Find Sub-Meshes and Group and delete corresopning visual objects and actors
+		_PTR(ChildIterator) it1 = aStudy->NewChildIterator(SO);
+		for (it1->InitEx(false); it1->More(); it1->Next()) {
+		  _PTR(SObject) SObj = it1->Value();
+		  if (!SObj) continue;
+		  if (SObj->FindAttribute(anAttr, "AttributeIOR")) {
+			SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(SMESH::SObjectToObject(SObj));
+			SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow(SMESH::SObjectToObject(SObj));
+			if (!aGroup->_is_nil() || !aSubMesh->_is_nil()) {
+			  SMESH::RemoveVisualObjectWithActors(SObj->GetID().c_str(), true);
+			}
+		  }
+		}
         // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
         //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
         //op->start();
