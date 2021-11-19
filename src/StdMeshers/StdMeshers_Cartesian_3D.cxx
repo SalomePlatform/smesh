@@ -5644,8 +5644,8 @@ namespace
           continue;
 
         gp_Dir direction(1,0,0);
-        const SMDS_MeshElement* anyFace = *facesToOrient.begin();
-        editor.Reorient2D( facesToOrient, direction, anyFace );
+        TIDSortedElemSet refFaces;
+        editor.Reorient2D( facesToOrient, direction, refFaces, /*allowNonManifold=*/true );
       }
     }
     return;

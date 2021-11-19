@@ -33,6 +33,10 @@ group = mesh.Group( faces[1] )
 
 vec = geompy.MakeVectorDXDYDZ( 1, 1, 1 )
 
+# ============
+# Reorient2D()
+# ============
+
 # Each of arguments of Reorient2D() function can be of different types:
 #
 # 2DObject    - the whole mesh
@@ -53,6 +57,19 @@ mesh.Reorient2D( group, smesh.MakeDirStruct( -10, 1, 10 ), [0,0,0])
 # FaceOrPoint - a SMESH.PointStruct structure
 mesh.Reorient2D( localAlgo.GetSubMesh().GetIDs(), [10,1,0], SMESH.PointStruct(0,0,0))
 
+# ========================
+# Reorient2DByNeighbours()
+# ========================
+
+# Use faces of 'group' as a reference to reorient equally all faces
+mesh.Reorient2DByNeighbours([mesh], [group])
+
+# Orient equally face on 'group', but not define which orientation is correct
+mesh.Reorient2DByNeighbours([group])
+
+# =================
+# Reorient2DBy3D()
+# =================
 
 # Use Reorient2DBy3D() to orient faces of 2 geom faces to have their normal pointing inside volumes
 

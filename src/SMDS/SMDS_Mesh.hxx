@@ -618,6 +618,9 @@ public:
                              const std::vector<const SMDS_MeshNode*>& nodes,
                              const std::vector<int>&                  quantities);
 
+  void SetAllNodesNotMarked();
+  void SetAllCellsNotMarked();
+
   //virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
   // Renumber all nodes or elements.
 

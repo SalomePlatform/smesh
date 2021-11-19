@@ -496,6 +496,10 @@
             <translation>reorient_faces_face.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_REORIENT2D_GROUPS</source>
+            <translation>reorient_faces_ref_groups.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_REORIENT2D_VOLUME</source>
             <translation>reorient_faces_volume.png</translation>
         </message>

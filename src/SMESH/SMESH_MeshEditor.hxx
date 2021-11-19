@@ -158,11 +158,12 @@ public:
   bool Reorient (const SMDS_MeshElement * theElement);
   // Reverse theElement orientation
 
-  int Reorient2D (TIDSortedElemSet &       theFaces,
-                  const gp_Dir&            theDirection,
-                  const SMDS_MeshElement * theFace);
-  // Reverse theFaces whose orientation to be same as that of theFace
-  // oriented according to theDirection. Return nb of reoriented faces
+  int Reorient2D (TIDSortedElemSet &  theFaces,
+                  const gp_Vec&       theDirection,
+                  TIDSortedElemSet &  theRefFaces,
+                  bool                theAllowNonManifold);
+  // Reverse theFaces whose orientation to be same as that of theRefFaces
+  // optionally oriented according to theDirection. Return nb of reoriented faces
 
   int Reorient2DBy3D (TIDSortedElemSet & theFaces,
                       TIDSortedElemSet & theVolumes,

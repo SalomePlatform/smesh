@@ -1053,6 +1053,26 @@ bool SMDS_Mesh::RemoveSubMesh(const SMDS_Mesh * aMesh)
 }
 
 //=======================================================================
+//function : SetAllNodesNotMarked
+//purpose  : Clear marked flag of all nodes
+//=======================================================================
+
+void SMDS_Mesh::SetAllNodesNotMarked()
+{
+  myNodeFactory->SetAllNotMarked();
+}
+
+//=======================================================================
+//function : SetAllCellsNotMarked
+//purpose  : Clear marked flag of all cells
+//=======================================================================
+
+void SMDS_Mesh::SetAllCellsNotMarked()
+{
+  myCellFactory->SetAllNotMarked();
+}
+
+//=======================================================================
 //function : ChangePolyhedronNodes
 //purpose  :
 //=======================================================================

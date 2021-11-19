@@ -4664,6 +4664,29 @@ class Mesh(metaclass = MeshMeta):
             theFace = -1
         return self.editor.Reorient2D( the2DObject, theDirection, theFace, thePoint )
 
+    def Reorient2DByNeighbours(self, objectFaces, referenceFaces=[]):
+        """
+        Reorient faces contained in a list of *objectFaces*
+        equally to faces contained in a list of *referenceFaces*.
+
+        Parameters:
+                 objectFaces: list of :class:`mesh, sub-mesh, group, filter <SMESH.SMESH_IDSource>` holding faces to reorient.
+                 referenceFaces: list of :class:`sub-mesh, group, filter <SMESH.SMESH_IDSource>` holding reference faces. It can be empty, then any face in *objectFaces* is used as the reference.
+
+        Returns:
+                 number of reoriented faces.
+        """
+        if not isinstance( objectFaces, list ):
+            objectFaces = [ objectFaces ]
+        for i,obj2D in enumerate( objectFaces ):
+            if isinstance( obj2D, Mesh ):
+                objectFaces[i] = obj2D.GetMesh()
+        if not isinstance( referenceFaces, list ):
+            referenceFaces = [ referenceFaces ]
+
+        return self.editor.Reorient2DByNeighbours( objectFaces, referenceFaces )
+
+
     def Reorient2DBy3D(self, the2DObject, the3DObject, theOutsideNormal=True ):
         """
         Reorient faces according to adjacent volumes.
