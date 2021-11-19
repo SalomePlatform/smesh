@@ -4843,7 +4843,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_SHOW_WARN</source>
-        <translation>Affiche un avertissement quand un groupe est exporté</translation>
+        <translation>Afficher un avertissement quand un groupe est exporté</translation>
+    </message>
+    <message>
+        <source>PREF_MED_SAVE_NUMS</source>
+        <translation>Enregistrer les numéros des nœuds/mailles dans le fichier MED</translation>
     </message>
     <message>
         <source>PREF_ZTOLERANCE</source>
