@@ -2209,7 +2209,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * /*theGen*/,
     }
   }
 
-  return aCompound;
+  return theSubs.size() == 1 ? theSubs[0]->GetSubShape() : aCompound;
 }
 
 //=======================================================================

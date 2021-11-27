@@ -189,22 +189,22 @@ PortableServer::ServantBase_var SMESH_Gen_i::GetServant( CORBA::Object_ptr theOb
   }
   catch (PortableServer::POA::ObjectNotActive &ex)
   {
-    INFOS("GetServant: ObjectNotActive");
+    MESSAGE("GetServant: ObjectNotActive");
     return NULL;
   }
   catch (PortableServer::POA::WrongAdapter &ex)
   {
-    INFOS("GetServant: WrongAdapter: OK when several servants used to build several mesh in parallel...");
+    MESSAGE("GetServant: WrongAdapter: OK when several servants used to build several mesh in parallel...");
     return NULL;
   }
   catch (PortableServer::POA::WrongPolicy &ex)
   {
-    INFOS("GetServant: WrongPolicy");
+    MESSAGE("GetServant: WrongPolicy");
     return NULL;
   }
   catch (...)
   {
-    INFOS( "GetServant - Unknown exception was caught!!!" );
+    MESSAGE( "GetServant - Unknown exception was caught!!!" );
     return NULL;
   }
 }

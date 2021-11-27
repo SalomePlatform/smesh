@@ -95,7 +95,7 @@ All 16 cases are shown Table 2. Two views show the whole cracked structure and a
 | vis (Crack is in the radius filet between the screw head and the screw shank)              |
 +--------------------------------------------+-----------------------------------------------+
 |.. image:: images/13_vis_1.png              | .. image:: images/13_vis_1_2.png              |
-|   :width: 400                             |    :width: 400                                 |
+|   :width: 400                              |    :width: 400                                |
 |   :align: center                           |    :align: center                             |
 +--------------------------------------------+-----------------------------------------------+
 | tube                                                                                       |
