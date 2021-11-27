@@ -3038,6 +3038,7 @@ void _ViscousBuilder::limitStepSizeByCurvature( _SolidData& data )
     cnvFace._face = F;
     cnvFace._normalsFixed = false;
     cnvFace._isTooCurved = false;
+    cnvFace._normalsFixedOnBorders = false;
 
     double maxCurvature = cnvFace.GetMaxCurvature( data, eof, surfProp, helper );
     if ( maxCurvature > 0 )
@@ -6565,6 +6566,7 @@ void _Smoother1D::prepare(_SolidData& data)
   _edgeDir[1] = getEdgeDir( E, leOnV[1]->_nodes[0], data.GetHelper() );
   _leOnV[0]._cosin = Abs( leOnV[0]->_cosin );
   _leOnV[1]._cosin = Abs( leOnV[1]->_cosin );
+  _leOnV[0]._flags = _leOnV[1]._flags = 0;
   if ( _eos._sWOL.IsNull() ) // 3D
     for ( int iEnd = 0; iEnd < 2; ++iEnd )
       _leOnV[iEnd]._cosin = Abs( _edgeDir[iEnd].Normalized() * leOnV[iEnd]->_normal );
@@ -11795,6 +11797,17 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
           uvPtVec[ i ].param = helper.GetNodeU( E, edges[i]->_nodes[0] );
           uvPtVec[ i ].SetUV( helper.GetNodeUV( F, edges[i]->_nodes.back() ));
         }
+        if ( uvPtVec[ 0 ].node == uvPtVec.back().node &&            // closed
+             helper.IsSeamShape( uvPtVec[ 0 ].node->GetShapeID() ))
+        {
+          uvPtVec[ 0 ].SetUV( helper.GetNodeUV( F,
+                                                edges[0]->_nodes.back(),
+                                                edges[1]->_nodes.back() ));
+          size_t i = edges.size() - 1;
+          uvPtVec[ i ].SetUV( helper.GetNodeUV( F,
+                                                edges[i  ]->_nodes.back(),
+                                                edges[i-1]->_nodes.back() ));
+        }
         // if ( edges.empty() )
         //   continue;
         BRep_Tool::Range( E, uvPtVec[0].param, uvPtVec.back().param );
@@ -11811,8 +11824,12 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
       smDS->Clear();
 
       // compute the mesh on the FACE
+      TopTools_IndexedMapOfShape allowed(1);
+      allowed.Add( sm->GetSubShape() );
+      sm->SetAllowedSubShapes( &allowed );
       sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
       sm->ComputeStateEngine( SMESH_subMesh::COMPUTE_SUBMESH );
+      sm->SetAllowedSubShapes( nullptr );
 
       // re-fill proxy sub-meshes of the FACE
       for ( size_t i = 0 ; i < _sdVec.size(); ++i )
@@ -12413,17 +12430,16 @@ gp_XY _SmoothNode::computeAngularPos(vector<gp_XY>& uv,
   edgeSize.back() = edgeSize.front();
 
   gp_XY  newPos(0,0);
-  //int    nbEdges = 0;
-  double sumSize = 0;
+  double sumWgt = 0;
   for ( size_t i = 1; i < edgeDir.size(); ++i )
   {
-    if ( edgeDir[i-1].X() > 1. ) continue;
-    int i1 = i-1;
+    const int i1 = i-1;
+    if ( edgeDir[i1].X() > 1. ) continue;
     while ( edgeDir[i].X() > 1. && ++i < edgeDir.size() );
     if ( i == edgeDir.size() ) break;
     gp_XY p = uv[i];
     gp_XY norm1( -edgeDir[i1].Y(), edgeDir[i1].X() );
-    gp_XY norm2( -edgeDir[i].Y(),  edgeDir[i].X() );
+    gp_XY norm2( -edgeDir[i ].Y(), edgeDir[i ].X() );
     gp_XY bisec = norm1 + norm2;
     double bisecSize = bisec.Modulus();
     if ( bisecSize < numeric_limits<double>::min() )
@@ -12433,16 +12449,16 @@ gp_XY _SmoothNode::computeAngularPos(vector<gp_XY>& uv,
     }
     bisec /= bisecSize;
 
-    gp_XY  dirToN  = uvToFix - p;
-    double distToN = dirToN.Modulus();
+    gp_XY   dirToN = uvToFix - p;
+    double distToN = bisec * dirToN;
     if ( bisec * dirToN < 0 )
       distToN = -distToN;
 
-    newPos += ( p + bisec * distToN ) * ( edgeSize[i1] + edgeSize[i] );
-    //++nbEdges;
-    sumSize += edgeSize[i1] + edgeSize[i];
+    double wgt = edgeSize[i1] + edgeSize[i];
+    newPos += ( p + bisec * distToN ) * wgt;
+    sumWgt += wgt;
   }
-  newPos /= /*nbEdges * */sumSize;
+  newPos /= sumWgt;
   return newPos;
 }
 
