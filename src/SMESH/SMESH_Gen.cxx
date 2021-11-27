@@ -376,7 +376,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
 
           const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
           const int aShapeDim = GetShapeDim( aSubShape );
-          if ( aShapeDim < 1 || aSubShape.ShapeType() == shapeType )
+          if ( aShapeDim < 1 || aSubShape.ShapeType() <= shapeType )
             continue;
 
           // check for preview dimension limitations
