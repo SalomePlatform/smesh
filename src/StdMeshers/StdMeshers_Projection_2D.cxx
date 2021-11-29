@@ -775,7 +775,7 @@ namespace {
 
     // check node positions
 
-    if ( !tgtFace.IsPartner( srcFace ) )
+    // if ( !tgtFace.IsPartner( srcFace ) ) for NETGEN 6 which sets wrong UV
     {
       helper->ToFixNodeParameters( true );
 
