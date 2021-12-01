@@ -341,6 +341,10 @@
         <translation>Remaillage avec MG_Adapt</translation>
     </message>
     <message>
+        <source>MEN_HOMARD_ADAPT</source>
+        <translation>Raffinement uniforme</translation>
+    </message>
+    <message>
         <source>Args</source>
         <translation>Arguments</translation>
     </message>
@@ -1611,6 +1615,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
         <translation>Disponible</translation>
     </message>
     <message>
+        <source>SMESH_NOT_AVAILABLE</source>
+        <translation>Indisponible</translation>
+    </message>
+    <message>
         <source>SMESH_AVAILABLE_ALGORITHMS</source>
         <translation>Algorithmes disponibles</translation>
     </message>
@@ -1750,7 +1758,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_CONTINUE_MESH_VISUALIZATION</source>
-        <translation>La système semble manquer de mémoire pour visualiser le maillage,
+        <translation>Le système semble manquer de mémoire pour visualiser le maillage,
 ce qui peut faire planter l'application. Voulez-vous continuer la visualisation ?</translation>
     </message>
     <message>
@@ -2816,6 +2824,10 @@ Référez-vous à la documentation sur l'algorithme et la géométrie supportée
     </message>
     <message>
         <source>SMESH_RENUMBERING</source>
+        <translation>Renumérotation</translation>
+    </message>
+    <message>
+        <source>SMESH_RENUMBER</source>
         <translation>Renuméroter</translation>
     </message>
     <message>
@@ -2836,7 +2848,7 @@ Référez-vous à la documentation sur l'algorithme et la géométrie supportée
     </message>
     <message>
         <source>SMESH_RM_HYP_WRN</source>
-        <translation>&quot;%1&quot; n'est pas attribué, mais:
+        <translation>&quot;%1&quot; n'est pas attribué, mais :
 </translation>
     </message>
     <message>
@@ -3010,6 +3022,10 @@ Référez-vous à la documentation sur l'algorithme et la géométrie supportée
     <message>
         <source>ADAPT_PREF_NONE</source>
         <translation>Sans</translation>
+    </message>
+    <message>
+        <source>ADAPT_WITH_HOMARD</source>
+        <translation>Adaptation avec HOMARD</translation>
     </message>
     <message>
         <source>ADAPT_PREF_MG_ADAPT</source>
@@ -3204,6 +3220,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Z</translation>
     </message>
     <message>
+        <source>SMESH_Z_SCALARBAR</source>
+        <translation>Z :</translation>
+    </message>
+    <message>
         <source>STATE_ALGO_MISSING</source>
         <translation>Il manque l'algorithme %3 %2D</translation>
     </message>
@@ -3298,6 +3318,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_MG_ADAPT</source>
         <translation>Remaillage avec MG_Adapt</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_ADAPT</source>
+        <translation>Raffinement uniforme</translation>
     </message>
     <message>
         <source>STB_CONV_TO_QUAD</source>
@@ -3521,7 +3545,7 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>STB_DEFLECTION_2D</source>
-        <translation>Deflection 2D</translation>
+        <translation>Déflection 2D</translation>
     </message>
     <message>
         <source>STB_MAP</source>
@@ -3994,6 +4018,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_MG_ADAPT</source>
         <translation>Remaillage avec MG_Adapt</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_ADAPT</source>
+        <translation>Raffinement uniforme</translation>
     </message>
     <message>
         <source>TOP_CONV_TO_QUAD</source>

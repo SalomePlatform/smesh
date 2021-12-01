@@ -184,6 +184,7 @@ namespace SMESHOp {
     OpSplitBiQuadratic       = 4515,   // MENU MODIFICATION - SPLIT BI-QUADRATIC TO LINEAR
     // Adaptation ---------------------//--------------------------------
     OpMGAdapt                = 8020,   // MENU ADAPTATION - MG-ADAPT
+    OpHomardAdapt            = 8021,   // MENU ADAPTATION - HOMARD-ADAPT
     // Measurements -------------------//--------------------------------
     OpPropertiesLength       = 5000,   // MENU MEASUREMENTS - BASIC PROPERTIES - LENGTH
     OpPropertiesArea         = 5001,   // MENU MEASUREMENTS - BASIC PROPERTIES - AREA

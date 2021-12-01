@@ -88,6 +88,10 @@
             <translation>adapt_mg_adapt.png</translation>
         </message>
         <message>
+            <source>ICON_HOMARD_ADAPT</source>
+            <translation>adapt_homard.png</translation>
+        </message>
+        <message>
             <source>ICON_CONV_TO_QUAD</source>
             <translation>mesh_conv_to_quad.png</translation>
         </message>

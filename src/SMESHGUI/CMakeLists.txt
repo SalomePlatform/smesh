@@ -150,6 +150,9 @@ SET(_moc_HEADERS
   SMESHGUI_PreVisualObj.h
   SMESHGUI_MG_ADAPTDRIVER.h
   SMESHGUI_MgAdaptDlg.h
+  SMESHGUI_HomardAdaptDlg.h
+  SMESHGUI_HomardBoundaryDlg.h
+  SMESHGUI_HomardListGroup.h
 )
 
 # header files / no moc processing
@@ -172,6 +175,7 @@ SET(_other_HEADERS
   SMESHGUI_FileValidator.h
   SMESHGUI_SelectionProxy.h
   SMESH_SMESHGUI.hxx
+  SMESHGUI_HomardUtils.h
 )
 
 # header files / to install
@@ -267,6 +271,10 @@ SET(_other_SOURCES
   SMESHGUI_IdPreview.cxx
   SMESHGUI_MG_ADAPTDRIVER.cxx
   SMESHGUI_MgAdaptDlg.cxx
+  SMESHGUI_HomardUtils.cxx
+  SMESHGUI_HomardAdaptDlg.cxx
+  SMESHGUI_HomardBoundaryDlg.cxx
+  SMESHGUI_HomardListGroup.cxx
 )
 
 # sources / to compile
@@ -280,6 +288,9 @@ SET(_ts_RESOURCES
   SMESH_msg_en.ts
   SMESH_msg_fr.ts
   SMESH_msg_ja.ts
+  SMESHGUI_Homard_msg_en.ts
+  SMESHGUI_Homard_msg_fr.ts
+  SMESHGUI_Homard_msg_ja.ts
 )
 
 # --- rules ---

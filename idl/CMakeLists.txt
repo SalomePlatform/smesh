@@ -40,6 +40,7 @@ SET(SalomeIDLSMESH_IDLSOURCES
   SMESH_Measurements.idl
   ${CMAKE_CURRENT_BINARY_DIR}/SMESH_smIdType.idl
   MG_ADAPT.idl
+  SMESH_Homard.idl
 )
 
 SET(_idl_include_dirs

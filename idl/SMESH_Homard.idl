@@ -1,0 +1,183 @@
+// Copyright (C) 2011-2021  CEA/DEN, EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
+#ifndef _SMESH_HOMARD_IDL
+#define _SMESH_HOMARD_IDL
+
+#include "SMESH_Mesh.idl"
+
+#include "SALOME_Exception.idl"
+#include "SALOMEDS.idl"
+
+module SMESHHOMARD
+{
+  typedef sequence<double> double_array;
+  typedef sequence<double> extrema;
+  typedef sequence<string> ListGroupType;
+  typedef sequence<string> ListBoundaryGroupType;
+  typedef sequence<string> listeBoundarys;
+
+  interface HOMARD_Boundary : SALOME::GenericObj
+  {
+    // Generalites
+    void     SetName(in string Name)         raises (SALOME::SALOME_Exception);
+    string   GetName()                       raises (SALOME::SALOME_Exception);
+
+    // Caracteristiques
+    void     SetType (in long Type)          raises (SALOME::SALOME_Exception);
+    long     GetType()                       raises (SALOME::SALOME_Exception);
+
+    void     SetDataFile(in string DataFile) raises (SALOME::SALOME_Exception);
+    string   GetDataFile()                   raises (SALOME::SALOME_Exception);
+
+    void     SetMeshName(in string MeshName) raises (SALOME::SALOME_Exception);
+    string   GetMeshName()                   raises (SALOME::SALOME_Exception);
+
+    void     SetCylinder (in double Xcentre, in double Ycentre, in double Zcentre,
+                          in double Xaxe, in double Yaxe, in double Zaxe, in double rayon)
+      raises (SALOME::SALOME_Exception);
+
+    void     SetSphere (in double Xcentre, in double Ycentre, in double Zcentre, in double rayon)
+      raises (SALOME::SALOME_Exception);
+
+    void     SetConeR (in double Xcentre1, in double Ycentre1, in double Zcentre1,
+                       in double Rayon1,
+                       in double Xcentre2, in double Ycentre2, in double Zcentre2,
+                       in double Rayon2) raises (SALOME::SALOME_Exception);
+
+    void     SetConeA(in double Xaxe, in double Yaxe, in double Zaxe, in double Angle,
+                      in double Xcentre, in double Ycentre, in double ZCentre)
+      raises (SALOME::SALOME_Exception);
+
+    void     SetTorus (in double Xcentre, in double Ycentre, in double Zcentre,
+                       in double Xaxe, in double Yaxe, in double Zaxe,
+                       in double rayonRev, in double rayonPri)
+      raises (SALOME::SALOME_Exception);
+
+    SMESHHOMARD::double_array GetCoords() raises (SALOME::SALOME_Exception);
+
+    void     SetLimit (in double Xincr, in double Yincr, in double Zincr)
+      raises (SALOME::SALOME_Exception);
+    SMESHHOMARD::double_array GetLimit() raises (SALOME::SALOME_Exception);
+
+    void       AddGroup(in string LeGroupe)                raises (SALOME::SALOME_Exception);
+    void       SetGroups(in ListGroupType ListGroup)       raises (SALOME::SALOME_Exception);
+    ListGroupType GetGroups()                              raises (SALOME::SALOME_Exception);
+
+    string   GetDumpPython()                 raises (SALOME::SALOME_Exception);
+  };
+
+  interface HOMARD_Cas : SALOME::GenericObj
+  {
+    void     SetDirName(in string NomDir) raises (SALOME::SALOME_Exception);
+    string   GetDirName()                 raises (SALOME::SALOME_Exception);
+
+    void     SetBoundingBox(in extrema LesExtremes)        raises (SALOME::SALOME_Exception);
+    extrema  GetBoundingBox()                              raises (SALOME::SALOME_Exception);
+
+    void     AddGroup(in string Group)                     raises (SALOME::SALOME_Exception);
+    void     SetGroups(in ListGroupType ListGroup)         raises (SALOME::SALOME_Exception);
+    ListGroupType GetGroups()                              raises (SALOME::SALOME_Exception);
+
+    void     AddBoundary(in string BoundaryName) raises (SALOME::SALOME_Exception);
+    void     AddBoundaryGroup(in string BoundaryName,
+                              in string Group) raises (SALOME::SALOME_Exception);
+    ListBoundaryGroupType GetBoundaryGroup() raises (SALOME::SALOME_Exception);
+    void SupprBoundaryGroup() raises (SALOME::SALOME_Exception);
+
+    string GetDumpPython() raises (SALOME::SALOME_Exception);
+  };
+
+  interface HOMARD_Gen : SALOME::GenericObj
+  {
+    // Create boundaries
+    HOMARD_Boundary CreateBoundaryCAO (in string BoundaryName, in string FileName)
+      raises(SALOME::SALOME_Exception);
+    HOMARD_Boundary CreateBoundaryDi (in string BoundaryName, in string MeshName,
+                                      in string FileName)
+      raises(SALOME::SALOME_Exception);
+    HOMARD_Boundary CreateBoundaryCylinder (in string BoundaryName,
+                                            in double Xcentre, in double Ycentre, in double Zcentre,
+                                            in double Xaxis, in double Yaxis, in double Zaxis,
+                                            in double Radius)
+      raises (SALOME::SALOME_Exception);
+    HOMARD_Boundary CreateBoundarySphere (in string BoundaryName,
+                                          in double Xcentre, in double Ycentre, in double Zcentre,
+                                          in double Radius)
+      raises(SALOME::SALOME_Exception);
+    HOMARD_Boundary CreateBoundaryConeR (in string BoundaryName,
+                                         in double Xcentre1, in double Ycentre1, in double Zcentre1,
+                                         in double Radius1,
+                                         in double Xcentre2, in double Ycentre2, in double Zcentre2,
+                                         in double Radius2)
+      raises(SALOME::SALOME_Exception);
+    HOMARD_Boundary CreateBoundaryConeA (in string BoundaryName,
+                                         in double Xaxis, in double Yaxis, in double Zaxis,
+                                         in double Angle,
+                                         in double Xcentre, in double Ycentre, in double Zcentre)
+      raises(SALOME::SALOME_Exception);
+    HOMARD_Boundary CreateBoundaryTorus (in string BoundaryName,
+                                         in double Xcentre, in double Ycentre, in double Zcentre,
+                                         in double Xaxis, in double Yaxis, in double Zaxis,
+                                         in double RadiusRev, in double RadiusPri)
+      raises (SALOME::SALOME_Exception);
+
+    // Set mesh (SMESH_Mesh object or MED file) and working directory
+    HOMARD_Cas CreateCaseOnMesh(in string MeshName,
+                                in SMESH::SMESH_Mesh smeshMesh,
+                                in string theWorkingDir) raises(SALOME::SALOME_Exception);
+    HOMARD_Cas CreateCase(in string MeshName,
+                          in string FileName,
+                          in string theWorkingDir) raises(SALOME::SALOME_Exception);
+
+    // Associate boundaries to groups
+    void AddBoundary(in string BoundaryName) raises (SALOME::SALOME_Exception);
+    void AddBoundaryGroup(in string BoundaryName,
+                          in string Group) raises (SALOME::SALOME_Exception);
+
+    // Information
+    HOMARD_Boundary  GetBoundary(in string BoundaryName) raises (SALOME::SALOME_Exception);
+    HOMARD_Cas       GetCase() raises (SALOME::SALOME_Exception);
+    listeBoundarys   GetAllBoundarysName()  raises (SALOME::SALOME_Exception);
+
+    //  Preferences
+    void SetConfType(in long ConfType) raises (SALOME::SALOME_Exception);
+    void SetKeepMedOUT (in boolean theKeepMedOUT);
+    void SetPublishMeshOUT (in boolean thePublishMeshOUT);
+    void SetMeshNameOUT (in string theMeshName) raises (SALOME::SALOME_Exception);
+    void SetMeshFileOUT (in string theFileName) raises (SALOME::SALOME_Exception);
+
+    void SetVerboseLevel (in long theLevel);
+    void SetKeepWorkingFiles (in boolean theKeepWorkingFiles);
+    void SetLogInFile (in boolean theLogInFile);
+    void SetLogFile (in string theFileName) raises (SALOME::SALOME_Exception);
+    void SetRemoveLogOnSuccess (in boolean theRemoveLogOnSuccess);
+
+    // Computation
+    long Compute() raises (SALOME::SALOME_Exception);
+
+    // Clean data
+    void InvalideBoundary (in string BoundaryName) raises (SALOME::SALOME_Exception);
+    long DeleteBoundary (in string BoundaryName) raises (SALOME::SALOME_Exception);
+    void DeleteCase() raises (SALOME::SALOME_Exception);
+  };
+
+}; // module SMESHHOMARD
+
+#endif

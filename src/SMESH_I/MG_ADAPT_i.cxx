@@ -19,6 +19,8 @@
 
 #include "MG_ADAPT_i.hxx"
 
+#include CORBA_SERVER_HEADER(SMESH_Homard)
+
 #include "MG_ADAPT.hxx"
 #include "SMESH_File.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -114,7 +116,8 @@ SMESH::MG_ADAPT_ptr SMESH_Gen_i::CreateAdaptationHypothesis()
   return SMESH::MG_ADAPT_ptr();
 #endif
 }
-SMESH::MG_ADAPT_OBJECT_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
+//SMESH::MG_ADAPT_OBJECT_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
+SALOME::GenericObj_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
 {
 #ifndef DISABLE_MG_ADAPT
   if (!strcmp(adaptationType, "MG_Adapt"))
@@ -124,6 +127,9 @@ SMESH::MG_ADAPT_OBJECT_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
     return anObj._retn();
   }
 #endif
+  if (!strcmp(adaptationType, "Uniform")) {
+    return CreateHOMARD_ADAPT();
+  }
   return SMESH::MG_ADAPT_OBJECT_ptr();
 }
 //=============================================================================
