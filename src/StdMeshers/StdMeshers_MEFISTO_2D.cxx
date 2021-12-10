@@ -637,7 +637,11 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       m++;
     }
 
-    int mFirst = mOnVertex.front(), mLast = m - 1;
+    int mFirst = 0, mLast = 0;
+    if (!mOnVertex.empty()) {
+      mFirst = mOnVertex.front();
+      mLast = m - 1;
+    }
     list< int >::iterator mIt = mOnVertex.begin();
     for ( ; mIt != mOnVertex.end(); ++mIt)
     {

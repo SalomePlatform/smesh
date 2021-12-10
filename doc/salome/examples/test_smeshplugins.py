@@ -17,6 +17,7 @@ __revision__ = "V1.0"
 ComputeMeshes = True
 
 import salome
+import platform
 
 salome.salome_init_without_session()
 theStudy = salome.myStudy
@@ -74,23 +75,27 @@ while not ERROR :
         print(TEXTE+": OK")
 
 # B.2. Gmsh
-  TEXTE = "Gmsh"
-  MESH_2 = smesh.Mesh(BOX)
-  smesh.SetName(MESH_2.GetMesh(), "M_"+TEXTE)
-  try :
-    GMSH = MESH_2.Tetrahedron(algo=smeshBuilder.GMSH)
-  except :
-    MESSAGE += "\nImpossible d'utiliser "+TEXTE
-    ERROR += 1
+  # GMSH for windows not yet implemented BOS #18709
+  if platform.system() != "Windows" :
+    TEXTE = "Gmsh"
+    MESH_2 = smesh.Mesh(BOX)
+    smesh.SetName(MESH_2.GetMesh(), "M_"+TEXTE)
+    try :
+      GMSH = MESH_2.Tetrahedron(algo=smeshBuilder.GMSH)
+    except :
+      MESSAGE += "\nImpossible d'utiliser "+TEXTE
+      ERROR += 1
+    else :
+      if ComputeMeshes :
+        smesh.SetName(GMSH.GetAlgorithm(), TEXTE)
+        OK_COMPUTE = MESH_2.Compute()
+        if not OK_COMPUTE :
+          MESSAGE += "\nErreur avec "+TEXTE
+          ERROR += 1
+        else :
+          print(TEXTE+": OK")
   else :
-    if ComputeMeshes :
-      smesh.SetName(GMSH.GetAlgorithm(), TEXTE)
-      OK_COMPUTE = MESH_2.Compute()
-      if not OK_COMPUTE :
-        MESSAGE += "\nErreur avec "+TEXTE
-        ERROR += 1
-      else :
-        print(TEXTE+": OK")
+    print("Skipping B.2 on windows")
 
 # B.3. MG_CADSurf
   TEXTE = "MG_CADSurf"

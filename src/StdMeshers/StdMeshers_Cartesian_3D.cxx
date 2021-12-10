@@ -4458,7 +4458,7 @@ namespace
 
     // connect pn2 (probably new, at _eIntNodes) with a split
 
-    int i, iConn;
+    int i, iConn = 0;
     size_t nbCommon;
     TGeomID commonFaces[20];
     _Node* nPrev = nullptr;
