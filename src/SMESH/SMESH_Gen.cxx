@@ -40,7 +40,6 @@
 #include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
-#include "OpUtil.hxx"
 #include "Utils_ExceptHandlers.hxx"
 
 #include <TopoDS_Iterator.hxx>

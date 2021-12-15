@@ -39,7 +39,6 @@
 #include "SMESH_subMeshEventListener.hxx"
 
 #include "utilities.h"
-#include "OpUtil.hxx"
 #include "Basics_Utils.hxx"
 
 #include <BRep_Builder.hxx>
