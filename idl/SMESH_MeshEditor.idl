@@ -160,6 +160,13 @@ module SMESH
     smIdType RemoveOrphanNodes() raises (SALOME::SALOME_Exception);
 
     /*!
+     * \brief Remove a mesh node and change surrounding faces to close a hole
+     * \param nodeID node identifier
+     * \throw if mesh is not a triangle one
+     */
+    void RemoveNodeWithReconnection(in smIdType nodeID) raises (SALOME::SALOME_Exception);
+
+    /*!
      * \brief Add a new node.
      * \param x X coordinate of new node
      * \param y Y coordinate of new node
@@ -291,18 +298,44 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
 
+    /*!
+     * \brief Change node location
+     */
     boolean MoveNode(in smIdType NodeID, in double x, in double y, in double z)
       raises (SALOME::SALOME_Exception);
 
+    /*!
+     * \brief Swap a diagonal of a quadrangle formed by two adjacent triangles
+     */
     boolean InverseDiag(in smIdType NodeID1, in smIdType NodeID2) 
       raises (SALOME::SALOME_Exception);
-
+    /*!
+     * \brief Delete a diagonal of a quadrangle formed by two adjacent triangles
+     *        so that a new quadrangle appears in place of the triangles
+     */
     boolean DeleteDiag(in smIdType NodeID1, in smIdType NodeID2) 
       raises (SALOME::SALOME_Exception);
+    /*!
+     * \brief Replace each triangle bound by Node1-Node2 segment with
+     *        two triangles by connecting a node made on the segment with a node opposite
+     *        to the segment.
+     */
+    void AddNodeOnSegment(in smIdType Node1, in smIdType Node2, in double position)
+      raises (SALOME::SALOME_Exception);
+    /*!
+     * \brief Split a face into triangles by adding a new node onto the face
+     *        and connecting the new node with face nodes
+     */
+    void AddNodeOnFace(in smIdType triangle, in double x, in double y, in double z);
 
+    /*!
+     * \brief Change orientation of cells
+     */
     boolean Reorient(in smIdType_array IDsOfElements) 
       raises (SALOME::SALOME_Exception);
-
+    /*!
+     * \brief Change orientation of cells
+     */
     boolean ReorientObject(in SMESH_IDSource theObject) 
       raises (SALOME::SALOME_Exception);
     /*!
@@ -408,8 +441,8 @@ module SMESH
      *  \return 1 if 1-3 diagonal is better, 2 if 2-4
      *          diagonal is better, 0 if error occurs.
      */
-    long BestSplit (in long            IDOfQuad,
-                    in NumericalFunctor Criterion) raises (SALOME::SALOME_Exception);
+    short BestSplit (in smIdType         IDOfQuad,
+                     in NumericalFunctor Criterion) raises (SALOME::SALOME_Exception);
 
     /*!
      * \brief Split volumic elements into tetrahedrons

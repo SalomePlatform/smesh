@@ -889,6 +889,18 @@
         <translation>Move Node</translation>
     </message>
     <message>
+        <source>MEN_MOVE_NODE_INTRCT</source>
+        <translation>Move node by mouse</translation>
+    </message>
+    <message>
+        <source>MEN_SPLIT_DIAG_INTRC</source>
+        <translation>Add node on segment</translation>
+    </message>
+    <message>
+        <source>MEN_SPLIT_FACE_INTRC</source>
+        <translation>Add node to triangle</translation>
+    </message>
+    <message>
         <source>MEN_MIN_ANG</source>
         <translation>Minimum Angle</translation>
     </message>
@@ -1079,6 +1091,10 @@
     <message>
         <source>MEN_REMOVE_NODES</source>
         <translation>Nodes</translation>
+    </message>
+    <message>
+        <source>MEN_REMOVE_NODE_RECON</source>
+        <translation>Node with reconnection</translation>
     </message>
     <message>
         <source>MEN_REMOVE_ORPHAN_NODES</source>
@@ -3613,6 +3629,18 @@ Use Display Entity menu command to show them.
         <translation>Move Node</translation>
     </message>
     <message>
+        <source>STB_MOVE_NODE_INTRCT</source>
+        <translation>Move Node by mouse</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_DIAG_INTRC</source>
+        <translation>Add node on segment</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_FACE_INTRC</source>
+        <translation>Add node to triangle</translation>
+    </message>
+    <message>
         <source>STB_MIN_ANG</source>
         <translation>Minimum Angle</translation>
     </message>
@@ -3699,6 +3727,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_REMOVE_NODES</source>
         <translation>Remove nodes</translation>
+    </message>
+    <message>
+        <source>STB_REMOVE_NODE_RECON</source>
+        <translation>Remove node with reconnection</translation>
     </message>
     <message>
         <source>STB_REMOVE_ORPHAN_NODES</source>
@@ -3895,6 +3927,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TB_RENUMBER</source>
         <translation>Renumbering Toolbar</translation>
+    </message>
+    <message>
+        <source>TB_INTERACT</source>
+        <translation>Interactive modifications Toolbar</translation>
     </message>
     <message>
         <source>TB_TRANSFORM</source>
@@ -4309,6 +4345,18 @@ Use Display Entity menu command to show them.
         <translation>Move Node</translation>
     </message>
     <message>
+        <source>TOP_MOVE_NODE_INTRCT</source>
+        <translation>Move node by mouse</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_DIAG_INTRC</source>
+        <translation>Add node on segment</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_FACE_INTRC</source>
+        <translation>Add node to triangle</translation>
+    </message>
+    <message>
         <source>TOP_MIN_ANG</source>
         <translation>Minimum Angle</translation>
     </message>
@@ -4395,6 +4443,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_REMOVE_NODES</source>
         <translation>Remove nodes</translation>
+    </message>
+    <message>
+        <source>TOP_REMOVE_NODE_RECON</source>
+        <translation>Remove node with reconnection</translation>
     </message>
     <message>
         <source>TOP_REMOVE_ORPHAN_NODES</source>
@@ -6714,6 +6766,10 @@ Please specify them and try again</translation>
         <translation>Destination</translation>
     </message>
     <message>
+        <source>DESTINATION_BY_MOUSE</source>
+        <translation>Destination by mouse click</translation>
+    </message>
+    <message>
         <source>MOVE_NODE</source>
         <translation>Move node</translation>
     </message>
@@ -6732,6 +6788,120 @@ Please specify them and try again</translation>
 </context>
 <context>
     <name>SMESHGUI_MakeNodeAtPointOp</name>
+    <message>
+        <source>INVALID_ID</source>
+        <translation>Node ID is invalid</translation>
+    </message>
+    <message>
+        <source>INVALID_MESH</source>
+        <translation>Mesh to modify not selected</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddNodeOnSegmentDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Add node to segment</translation>
+    </message>
+    <message>
+        <source>SEGMENT_GROUP</source>
+        <translation>Edge between neighboring triangles</translation>
+    </message>
+    <message>
+        <source>SEGMENT</source>
+        <translation>Edge</translation>
+    </message>
+    <message>
+        <source>POSITION_GROUP</source>
+        <translation>Node on Edge</translation>
+    </message>
+    <message>
+        <source>POSITION</source>
+        <translation>Location by mouse click</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddNodeOnSegmentOp</name>
+    <message>
+        <source>INVALID_EDGE</source>
+        <translation>Edge is invalid</translation>
+    </message>
+    <message>
+        <source>INVALID_MESH</source>
+        <translation>Mesh to modify not selected</translation>
+    </message>
+    <message>
+        <source>NO_ELEMENTS</source>
+        <translation>Edge belongs to none face</translation>
+    </message>
+    <message>
+        <source>VOLUME_FOUND</source>
+        <translation>Can't split an edge of a volume</translation>
+    </message>
+    <message>
+        <source>NOT_TRIANGLE_FACE_FOUND</source>
+        <translation>Operation applies to triangles only</translation>
+    </message>
+    <message>
+        <source>BAD_POSITION</source>
+        <translation>Position on edge is incorrect</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddNodeOnFaceDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Add node to triangle</translation>
+    </message>
+    <message>
+        <source>FACE_GROUP</source>
+        <translation>Triangle to split</translation>
+    </message>
+    <message>
+        <source>FACE_ID</source>
+        <translation>ID</translation>
+    </message>
+    <message>
+        <source>XYZ_GROUP</source>
+        <translation>Node location by mouse click</translation>
+    </message>
+    <message>
+        <source>XYZ_NODE_ON_FACE</source>
+        <translation>Node on face</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddNodeOnFaceOp</name>
+    <message>
+        <source>INVALID_MESH</source>
+        <translation>Mesh to modify not selected</translation>
+    </message>
+    <message>
+        <source>NOT_FACE</source>
+        <translation>Not a face selected</translation>
+    </message>
+    <message>
+        <source>INVALID_ID</source>
+        <translation>Face ID is invalid</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_RemoveNodeReconnectionDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Remove Node with Reconnection</translation>
+    </message>
+    <message>
+        <source>NODE_2REMOVE_ID</source>
+        <translation>ID</translation>
+    </message>
+    <message>
+        <source>NODE_2REMOVE</source>
+        <translation>Node</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_RemoveNodeReconnectionOp</name>
     <message>
         <source>INVALID_ID</source>
         <translation>Node ID is invalid</translation>

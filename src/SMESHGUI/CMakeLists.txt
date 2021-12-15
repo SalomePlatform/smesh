@@ -153,6 +153,10 @@ SET(_moc_HEADERS
   SMESHGUI_HomardAdaptDlg.h
   SMESHGUI_HomardBoundaryDlg.h
   SMESHGUI_HomardListGroup.h
+  SMESHGUI_RemoveNodeReconnectionDlg.h
+  SMESHGUI_AddNodeOnSegmentDlg.h
+  SMESHGUI_AddNodeOnFaceDlg.h
+  SMESHGUI_InteractiveOp.h
 )
 
 # header files / no moc processing
@@ -275,6 +279,10 @@ SET(_other_SOURCES
   SMESHGUI_HomardAdaptDlg.cxx
   SMESHGUI_HomardBoundaryDlg.cxx
   SMESHGUI_HomardListGroup.cxx
+  SMESHGUI_RemoveNodeReconnectionDlg.cxx
+  SMESHGUI_AddNodeOnSegmentDlg.cxx
+  SMESHGUI_AddNodeOnFaceDlg.cxx
+  SMESHGUI_InteractiveOp.cxx
 )
 
 # sources / to compile

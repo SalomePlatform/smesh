@@ -196,6 +196,18 @@
             <translation>mesh_move_without_node.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_MOVE_NODE_INTERACTIVE</source>
+            <translation>mesh_move_node_interactive.png</translation>
+        </message>
+        <message>
+            <source>ICON_SPLIT_DIAG_INTERACTIVE</source>
+            <translation>mesh_split_diag_interactive.png</translation>
+        </message>
+        <message>
+            <source>ICON_SPLIT_FACE_INTERACTIVE</source>
+            <translation>mesh_split_face_interactive.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_NODE</source>
             <translation>mesh_vertex.png</translation>
         </message>
@@ -278,6 +290,10 @@
         <message>
             <source>ICON_DLG_REM_NODE</source>
             <translation>mesh_rem_node.png</translation>
+        </message>
+        <message>
+            <source>ICON_REM_NODE_RECON</source>
+            <translation>mesh_rem_node_recon.png</translation>
         </message>
         <message>
             <source>ICON_DLG_REM_ORPHAN_NODES</source>

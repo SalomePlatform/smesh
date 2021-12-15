@@ -20,19 +20,14 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-// File   : SMESHGUI_MakeNodeAtPointDlg.h
+// File   : SMESHGUI_AddNodeOnSegmentDlg.h
 // Author : Edward AGAPOV, Open CASCADE S.A.S.
 //
-#ifndef SMESHGUI_MAKENODEATPOINTDLG_H
-#define SMESHGUI_MAKENODEATPOINTDLG_H
-
-// SMESH includes
-#include "SMESH_SMESHGUI.hxx"
+#ifndef SMESHGUI_AddNodeOnSegmentDLG_H
+#define SMESHGUI_AddNodeOnSegmentDLG_H
 
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_InteractiveOp.h"
-
-#include <vtkSmartPointer.h>
 
 class QButtonGroup;
 class QCheckBox;
@@ -42,19 +37,18 @@ class QPushButton;
 class QRadioButton;
 class SMESHGUI_SpinBox;
 class SMESHGUI_MeshEditPreview;
-class SMESHGUI_MakeNodeAtPointDlg;
-
+class SMESHGUI_AddNodeOnSegmentDlg;
 
 /*!
  * \brief Operation to make a mesh pass through a point
  */
-class SMESHGUI_EXPORT SMESHGUI_MakeNodeAtPointOp: public SMESHGUI_InteractiveOp
+class SMESHGUI_EXPORT SMESHGUI_AddNodeOnSegmentOp: public SMESHGUI_InteractiveOp
 {
   Q_OBJECT
 
 public:
-  SMESHGUI_MakeNodeAtPointOp(int defaultConstructor = 0);
-  virtual ~SMESHGUI_MakeNodeAtPointOp();
+  SMESHGUI_AddNodeOnSegmentOp();
+  virtual ~SMESHGUI_AddNodeOnSegmentOp();
 
   virtual LightApp_Dialog*       dlg() const;  
 
@@ -63,91 +57,69 @@ protected:
   virtual void                   startOperation() override;
   virtual void                   stopOperation() override;
 
-  virtual void                   activateSelection() override;
+  virtual void                   activateSelection();
 
-  bool                           isValid( QString& );
+  bool                           isValid( QString&, SMESH::smIdType& n1, SMESH::smIdType& n2 );
 
   virtual void                   processStyleEvents(unsigned long event,
-                                                    void* calldata)  override;
+    void* calldata)  override;
 
   virtual void                   processInteractorEvents(unsigned long event,
-                                                         void* calldata) override;
+    void* calldata) override;
+
 
 protected slots:
-  virtual bool                   onApply();
+  virtual bool                   onApply() override;
+
 
 private slots:
   void                           onSelectionDone();
   void                           redisplayPreview();
   void                           onTextChange( const QString& );
-  void                           onUpdateDestination();
-  void                           onDestCoordChanged();
+  void                           onSelTypeChange();
   void                           onOpenView();
   void                           onCloseView();
-  void                           constructorChanged();
 
 private:
-  int                           GetConstructorId();
 
-  int                           myDefaultConstructor;
-  SMESHGUI_MakeNodeAtPointDlg*  myDlg;
+  SMESHGUI_AddNodeOnSegmentDlg* myDlg;
 
-  SUIT_SelectionFilter*         myFilter;
   SMESHGUI*                     mySMESHGUI;
   SMESHGUI_MeshEditPreview*     mySimulation;
   SMESH_Actor*                  myMeshActor;
   bool                          myNoPreview;
-  bool                          myUpdateDestination;
-  bool                          myDestCoordChanged;
 };
 
 /*!
  * \brief Dialog to make a mesh pass through a point
  */
 
-class SMESHGUI_EXPORT SMESHGUI_MakeNodeAtPointDlg : public SMESHGUI_Dialog
+class SMESHGUI_EXPORT SMESHGUI_AddNodeOnSegmentDlg : public SMESHGUI_Dialog
 {
   Q_OBJECT
 
 public:
-  SMESHGUI_MakeNodeAtPointDlg();
+  SMESHGUI_AddNodeOnSegmentDlg();
+
+signals:
+
+  void                          selTypeChanged();
 
 private:
   QWidget*                      createMainFrame( QWidget* );
 
-  QWidget*                      myMainFrame;
-
-  QButtonGroup*                 myButtonGroup;
-  QRadioButton*                 myRButNodeToMove;
-  QRadioButton*                 myRButMoveWithoutNode;
-  QRadioButton*                 myRButMoveInteractive;
-  QPushButton*                  myDestBtn;
-  QPushButton*                  myUpdateBtn;
-  QGroupBox*                    myDestinationGrp;
-  QGroupBox*                    myNodeToMoveGrp;
-  QPushButton*                  myIdBtn;
-  QLineEdit*                    myId;
-  SMESHGUI_SpinBox*             myCurrentX;
-  SMESHGUI_SpinBox*             myCurrentY;
-  SMESHGUI_SpinBox*             myCurrentZ;
-  SMESHGUI_SpinBox*             myDestinationX;
-  SMESHGUI_SpinBox*             myDestinationY;
-  SMESHGUI_SpinBox*             myDestinationZ;
-  QLabel*                       myDestDXLabel;
-  QLabel*                       myDestDYLabel;
-  QLabel*                       myDestDZLabel;
-  SMESHGUI_SpinBox*             myDestDX;
-  SMESHGUI_SpinBox*             myDestDY;
-  SMESHGUI_SpinBox*             myDestDZ;
+  QPushButton*                  mySegmentBtn;
+  QLineEdit*                    mySegment;
+  QPushButton*                  myPositionBtn;
+  SMESHGUI_SpinBox*             myPositionSpin;
   QCheckBox*                    myPreviewChkBox;
 
   QString                       myHelpFileName;
 
-  friend class SMESHGUI_MakeNodeAtPointOp;
+  friend class SMESHGUI_AddNodeOnSegmentOp;
 
 private slots:
   void                          ButtonToggled( bool );
-  void                          ConstructorsClicked( int );
 };
 
-#endif // SMESHGUI_MAKENODEATPOINTDLG_H
+#endif // SMESHGUI_AddNodeOnSegmentDLG_H

@@ -834,7 +834,7 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::smIdType_array & IDs
 
 //=============================================================================
 /*!
- *
+ * Remove orphan nodes
  */
 //=============================================================================
 
@@ -863,6 +863,58 @@ SMESH::smIdType SMESH_MeshEditor_i::RemoveOrphanNodes()
 
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
+}
+
+//=============================================================================
+/*!
+ * Remove a node and fill a hole appeared by changing surrounding faces
+ */
+//=============================================================================
+
+void SMESH_MeshEditor_i::RemoveNodeWithReconnection( SMESH::smIdType nodeID )
+{
+  SMESH_TRY;
+  initData();
+
+  const SMDS_MeshNode * node = getMeshDS()->FindNode( nodeID );
+  if ( ! node )
+    THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID ") << nodeID,
+                                  SALOME::BAD_PARAM);
+  if ( node->NbInverseElements( SMDSAbs_Volume ) > 0 )
+    THROW_SALOME_CORBA_EXCEPTION( "RemoveNodeWithReconnection() applies to 2D mesh only",
+                                  SALOME::BAD_PARAM);
+
+  if ( myIsPreviewMode ) // make preview data
+  {
+    // in a preview mesh, make edges linked to a node
+    TPreviewMesh& tmpMesh = *getPreviewMesh( SMDSAbs_Edge );
+    TIDSortedElemSet linkedNodes;
+    ::SMESH_MeshEditor::GetLinkedNodes( node, linkedNodes );
+    SMDS_MeshNode *nodeCpy1 = tmpMesh.Copy( node );
+    for ( const SMDS_MeshElement* n : linkedNodes )
+    {
+      SMDS_MeshNode *nodeCpy2 = tmpMesh.Copy ( cast2Node( n ));
+      tmpMesh.GetMeshDS()->AddEdge( nodeCpy1, nodeCpy2 );
+    }
+    // copy surrounding faces
+    for ( SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator( SMDSAbs_Face ); fIt->more(); )
+      tmpMesh.Copy ( fIt->next() );
+    
+    // remove copied node
+    if ( nodeCpy1 )
+      getEditor().RemoveNodeWithReconnection( nodeCpy1 );
+  }
+  else
+  {
+    getEditor().RemoveNodeWithReconnection( node );
+
+    // Update Python script
+    TPythonDump() << this << ".RemoveNodeWithReconnection( " << nodeID << " )";
+
+    declareMeshModified( /*isReComputeSafe=*/ true );
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 //=============================================================================
@@ -1569,6 +1621,121 @@ CORBA::Boolean SMESH_MeshEditor_i::DeleteDiag(SMESH::smIdType NodeID1,
 
 //=============================================================================
 /*!
+ * \brief Split a diagonal of a quadrangle formed by two adjacent triangles
+ *        so that four new triangles appear in place of the two triangles
+ */
+//=============================================================================
+
+void SMESH_MeshEditor_i::AddNodeOnSegment(SMESH::smIdType nodeID1,
+                                          SMESH::smIdType nodeID2,
+                                          CORBA::Double   position)
+{
+  SMESH_TRY;
+  initData();
+
+  const SMDS_MeshNode * n1 = getMeshDS()->FindNode( nodeID1 );
+  const SMDS_MeshNode * n2 = getMeshDS()->FindNode( nodeID2 );
+  if ( !n1 )
+    THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID: ") << nodeID1,
+                                  SALOME::BAD_PARAM);
+  if ( !n2 )
+    THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID: ") << nodeID2,
+                                  SALOME::BAD_PARAM);
+
+  if ( myIsPreviewMode ) // make preview data
+  {
+    TPreviewMesh* tmpMesh = getPreviewMesh();
+    TIDSortedElemSet elemSet, avoidSet;
+    TopoDS_Shape shape;
+    while ( const SMDS_MeshElement* face = SMESH_MeshAlgos::FindFaceInSet( n1, n2,
+                                                                           elemSet, avoidSet ))
+    {
+      if ( avoidSet.empty() )
+      {
+        shape = getMeshDS()->IndexToShape( face->GetShapeID() );
+        if ( !shape.IsNull() )
+        {
+          tmpMesh->ShapeToMesh( TopoDS_Shape() );
+          tmpMesh->ShapeToMesh( shape );
+        }
+      }
+      SMDS_MeshElement* faceCopy = tmpMesh->Copy ( face );
+      avoidSet.insert( face );
+
+      if ( !shape.IsNull() )
+        tmpMesh->GetMeshDS()->SetMeshElementOnShape( faceCopy, shape );
+    }
+    n1 = tmpMesh->GetMeshDS()->FindNode( nodeID1 );
+    n2 = tmpMesh->GetMeshDS()->FindNode( nodeID2 );
+
+    if ( !shape.IsNull() )
+    {
+      tmpMesh->GetMeshDS()->SetMeshElementOnShape( n1, shape );
+      tmpMesh->GetMeshDS()->SetMeshElementOnShape( n2, shape );
+    }
+  }
+
+  getEditor().SplitEdge( n1, n2, position );
+
+  if ( !myIsPreviewMode )
+  {
+    // Update Python script
+    TPythonDump() << this << ".AddNodeOnSegment( "
+                  << nodeID1 << ", " << nodeID2 << ", " << position << " )";
+
+    declareMeshModified( /*isReComputeSafe=*/true );
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//=============================================================================
+/*!
+ * \brief Split a face into triangles by adding a new node onto the face
+ *        and connecting the new node with face nodes
+ */
+//=============================================================================
+
+void  SMESH_MeshEditor_i::AddNodeOnFace(SMESH::smIdType theFaceID,
+                                        CORBA::Double   theX,
+                                        CORBA::Double   theY,
+                                        CORBA::Double   theZ)
+{
+  SMESH_TRY;
+  initData();
+
+  const SMDS_MeshElement * face = getMeshDS()->FindElement( theFaceID );
+  if ( !face )
+    THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid face ID: ") << theFaceID,
+                                  SALOME::BAD_PARAM);
+  if ( face->GetType() != SMDSAbs_Face )
+    THROW_SALOME_CORBA_EXCEPTION( "The element is not a face ", SALOME::BAD_PARAM );
+
+  if ( myIsPreviewMode ) // make preview data
+  {
+    TPreviewMesh* tmpMesh = getPreviewMesh();
+    face = tmpMesh->Copy ( face );
+  }
+
+  getEditor().SplitFace( face, theX, theY, theZ );
+
+  if ( !myIsPreviewMode )
+  {
+    // Update Python script
+    TPythonDump() << this << ".AddNodeOnFace( "
+                  << theFaceID << ", "
+                  << theX << ", "
+                  << theY << ", "
+                  << theZ << " )";
+
+    declareMeshModified( /*isReComputeSafe=*/true );
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//=============================================================================
+/*!
  *
  */
 //=============================================================================
@@ -2065,8 +2232,8 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr th
  */
 //=============================================================================
 
-CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
-                                           SMESH::NumericalFunctor_ptr Criterion)
+CORBA::Short SMESH_MeshEditor_i::BestSplit (SMESH::smIdType             IDOfQuad,
+                                            SMESH::NumericalFunctor_ptr Criterion)
 {
   SMESH_TRY;
   initData();
@@ -4489,7 +4656,6 @@ CORBA::Boolean SMESH_MeshEditor_i::MoveNode(SMESH::smIdType NodeID,
     // move copied node
     if ( nodeCpy1 )
       tmpMesh.GetMeshDS()->MoveNode(nodeCpy1, x, y, z);
-    // fill preview data
   }
   else if ( theNodeSearcher ) // move node and update theNodeSearcher data accordingly
     theNodeSearcher->MoveNode(node, gp_Pnt( x,y,z ));

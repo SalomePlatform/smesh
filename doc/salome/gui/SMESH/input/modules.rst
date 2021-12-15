@@ -365,6 +365,7 @@ Removing nodes and elements
 
    Mesh.RemoveElements
    Mesh.RemoveNodes
+   Mesh.RemoveNodeWithReconnection
    Mesh.RemoveOrphanNodes
 
 Modifying nodes and elements
@@ -479,6 +480,8 @@ Cutting elements
    Mesh.SplitQuadsNearTriangularFacets
    Mesh.SplitHexaToTetras
    Mesh.SplitHexaToPrisms
+   Mesh.AddNodeOnSegment
+   Mesh.AddNodeOnFace
 
 Smoothing
 =========

@@ -100,9 +100,10 @@ public:
    */
   std::string GenerateGroupName(const std::string& thePrefix);
 
-  CORBA::Boolean RemoveElements(const SMESH::smIdType_array & IDsOfElements);
-  CORBA::Boolean RemoveNodes   (const SMESH::smIdType_array & IDsOfNodes);
-  SMESH::smIdType    RemoveOrphanNodes();
+  CORBA::Boolean  RemoveElements(const SMESH::smIdType_array & IDsOfElements);
+  CORBA::Boolean  RemoveNodes   (const SMESH::smIdType_array & IDsOfNodes);
+  SMESH::smIdType RemoveOrphanNodes();
+  void            RemoveNodeWithReconnection(SMESH::smIdType nodeID);
 
   /*!
    * Methods for creation new elements.
@@ -170,15 +171,42 @@ public:
    */
   void SetMeshElementOnShape(SMESH::smIdType ElementID, CORBA::Long ShapeID);
 
-
+  /*!
+   * \brief Change node location
+   */
   CORBA::Boolean MoveNode(SMESH::smIdType NodeID,
                           CORBA::Double x, CORBA::Double y, CORBA::Double z);
 
+  /*!
+   * \brief Swap a diagonal of a quadrangle formed by two adjacent triangles
+   */
   CORBA::Boolean InverseDiag(SMESH::smIdType NodeID1, SMESH::smIdType NodeID2);
+  /*!
+   * \brief Delete a diagonal of a quadrangle formed by two adjacent triangles
+   *        so that a new quadrangle appears in place of the triangles
+   */
   CORBA::Boolean DeleteDiag(SMESH::smIdType NodeID1, SMESH::smIdType NodeID2);
-  CORBA::Boolean Reorient(const SMESH::smIdType_array & IDsOfElements);
-  CORBA::Boolean ReorientObject(SMESH::SMESH_IDSource_ptr theObject);
+  /*!
+   * \brief Split a diagonal of a quadrangle formed by two adjacent triangles
+   *        so that four new triangles appear in place of the two triangles
+   */
+  void AddNodeOnSegment(SMESH::smIdType segmentNode1, SMESH::smIdType segmentNode2,
+                        CORBA::Double   position);
+  /*!
+   * \brief Split a face into triangles by adding a new node onto the face
+   *        and connecting the new node with face nodes
+   */
+  void AddNodeOnFace(SMESH::smIdType triangle,
+                     CORBA::Double x, CORBA::Double y, CORBA::Double z);
 
+  /*!
+   * \brief Change orientation of cells
+   */
+  CORBA::Boolean Reorient(const SMESH::smIdType_array & IDsOfElements);
+  /*!
+   * \brief Change orientation of cells
+   */
+  CORBA::Boolean ReorientObject(SMESH::SMESH_IDSource_ptr theObject);
   /*!
    * \brief Reorient faces contained in \a the2Dgroup.
    * \param the2Dgroup - the mesh or its part to reorient
@@ -231,7 +259,7 @@ public:
                                   CORBA::Boolean                Diag13);
   CORBA::Boolean SplitQuadObject (SMESH::SMESH_IDSource_ptr     theObject,
                                   CORBA::Boolean                Diag13);
-  CORBA::Long    BestSplit       (CORBA::Long                   IDOfQuad,
+  CORBA::Short   BestSplit       (SMESH::smIdType               IDOfQuad,
                                   SMESH::NumericalFunctor_ptr   Criterion);
   void           SplitVolumesIntoTetra(SMESH::SMESH_IDSource_ptr elems,
                                        CORBA::Short             methodFlags);

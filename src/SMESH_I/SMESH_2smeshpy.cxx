@@ -2491,10 +2491,10 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   static TStringSet sameMethods;
   if ( sameMethods.empty() ) {
     const char * names[] = {
-      "RemoveElements","RemoveNodes","RemoveOrphanNodes",
+      "RemoveElements","RemoveNodes","RemoveOrphanNodes","RemoveNodeWithReconnection",
       "AddNode","Add0DElement","AddEdge","AddFace","AddPolygonalFace","AddBall",
-      "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces",
-      "MoveNode", "MoveClosestNodeToPoint","InverseDiag","DeleteDiag",
+      "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces","AddNodeOnSegment",
+      "MoveNode", "MoveClosestNodeToPoint","InverseDiag","DeleteDiag","AddNodeOnFace",
       "Reorient","ReorientObject","Reorient2DBy3D","Reorient2DByNeighbours",
       "TriToQuad","TriToQuadObject", "QuadTo4Tri", "SplitQuad","SplitQuadObject",
       "BestSplit","Smooth","SmoothObject","SmoothParametric","SmoothParametricObject",

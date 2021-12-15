@@ -20,19 +20,17 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-// File   : SMESHGUI_MakeNodeAtPointDlg.h
+// File   : SMESHGUI_AddNodeOnFaceDlg.h
 // Author : Edward AGAPOV, Open CASCADE S.A.S.
 //
-#ifndef SMESHGUI_MAKENODEATPOINTDLG_H
-#define SMESHGUI_MAKENODEATPOINTDLG_H
+#ifndef SMESHGUI_AddNodeOnFaceDLG_H
+#define SMESHGUI_AddNodeOnFaceDLG_H
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_InteractiveOp.h"
-
-#include <vtkSmartPointer.h>
 
 class QButtonGroup;
 class QCheckBox;
@@ -42,30 +40,31 @@ class QPushButton;
 class QRadioButton;
 class SMESHGUI_SpinBox;
 class SMESHGUI_MeshEditPreview;
-class SMESHGUI_MakeNodeAtPointDlg;
-
+class SMESHGUI_AddNodeOnFaceDlg;
+class vtkCellPicker;
 
 /*!
- * \brief Operation to make a mesh pass through a point
+ * \brief Operation to split a face into triangles by creating a new node
+ *        on the face and connecting it to the face nodes
  */
-class SMESHGUI_EXPORT SMESHGUI_MakeNodeAtPointOp: public SMESHGUI_InteractiveOp
+class SMESHGUI_EXPORT SMESHGUI_AddNodeOnFaceOp: public SMESHGUI_InteractiveOp
 {
   Q_OBJECT
 
 public:
-  SMESHGUI_MakeNodeAtPointOp(int defaultConstructor = 0);
-  virtual ~SMESHGUI_MakeNodeAtPointOp();
+  SMESHGUI_AddNodeOnFaceOp();
+  virtual ~SMESHGUI_AddNodeOnFaceOp();
 
-  virtual LightApp_Dialog*       dlg() const;  
+  virtual LightApp_Dialog*      dlg() const;  
 
 protected:
 
-  virtual void                   startOperation() override;
-  virtual void                   stopOperation() override;
+  virtual void                  startOperation() override;
+  virtual void                  stopOperation() override;
 
-  virtual void                   activateSelection() override;
+  virtual void                  activateSelection() override;
 
-  bool                           isValid( QString& );
+  bool                          isValid( QString& );
 
   virtual void                   processStyleEvents(unsigned long event,
                                                     void* calldata)  override;
@@ -73,24 +72,23 @@ protected:
   virtual void                   processInteractorEvents(unsigned long event,
                                                          void* calldata) override;
 
+
 protected slots:
-  virtual bool                   onApply();
+  virtual bool                  onApply();
 
 private slots:
-  void                           onSelectionDone();
-  void                           redisplayPreview();
-  void                           onTextChange( const QString& );
-  void                           onUpdateDestination();
-  void                           onDestCoordChanged();
-  void                           onOpenView();
-  void                           onCloseView();
-  void                           constructorChanged();
+  void                          onSelectionDone();
+  void                          redisplayPreview();
+  void                          onSelTypeChange();
+  void                          onTextChange( const QString& );
+//  void                          onDestCoordChanged();
+  void                          onOpenView();
+  void                          onCloseView();
+  void                          pointLocationChanged(bool);
+  void                          onDestCoordChanged();
 
 private:
-  int                           GetConstructorId();
-
-  int                           myDefaultConstructor;
-  SMESHGUI_MakeNodeAtPointDlg*  myDlg;
+  SMESHGUI_AddNodeOnFaceDlg*    myDlg;
 
   SUIT_SelectionFilter*         myFilter;
   SMESHGUI*                     mySMESHGUI;
@@ -99,55 +97,44 @@ private:
   bool                          myNoPreview;
   bool                          myUpdateDestination;
   bool                          myDestCoordChanged;
+  vtkCellPicker*                myFacePicker;      
 };
 
 /*!
- * \brief Dialog to make a mesh pass through a point
+ * \brief Dialog to split a face into triangles by creating a new node
+ *        on the face and connecting it to the face nodes
  */
 
-class SMESHGUI_EXPORT SMESHGUI_MakeNodeAtPointDlg : public SMESHGUI_Dialog
+class SMESHGUI_EXPORT SMESHGUI_AddNodeOnFaceDlg : public SMESHGUI_Dialog
 {
   Q_OBJECT
 
 public:
-  SMESHGUI_MakeNodeAtPointDlg();
+  SMESHGUI_AddNodeOnFaceDlg();
 
 private:
   QWidget*                      createMainFrame( QWidget* );
 
   QWidget*                      myMainFrame;
 
-  QButtonGroup*                 myButtonGroup;
-  QRadioButton*                 myRButNodeToMove;
-  QRadioButton*                 myRButMoveWithoutNode;
-  QRadioButton*                 myRButMoveInteractive;
   QPushButton*                  myDestBtn;
-  QPushButton*                  myUpdateBtn;
-  QGroupBox*                    myDestinationGrp;
-  QGroupBox*                    myNodeToMoveGrp;
   QPushButton*                  myIdBtn;
   QLineEdit*                    myId;
-  SMESHGUI_SpinBox*             myCurrentX;
-  SMESHGUI_SpinBox*             myCurrentY;
-  SMESHGUI_SpinBox*             myCurrentZ;
   SMESHGUI_SpinBox*             myDestinationX;
   SMESHGUI_SpinBox*             myDestinationY;
   SMESHGUI_SpinBox*             myDestinationZ;
-  QLabel*                       myDestDXLabel;
-  QLabel*                       myDestDYLabel;
-  QLabel*                       myDestDZLabel;
-  SMESHGUI_SpinBox*             myDestDX;
-  SMESHGUI_SpinBox*             myDestDY;
-  SMESHGUI_SpinBox*             myDestDZ;
+  QCheckBox*                    myPointOnFace;
   QCheckBox*                    myPreviewChkBox;
 
   QString                       myHelpFileName;
 
-  friend class SMESHGUI_MakeNodeAtPointOp;
+  friend class SMESHGUI_AddNodeOnFaceOp;
 
-private slots:
+signals:
+  void                          selTypeChanged();
+
+ private slots:
   void                          ButtonToggled( bool );
-  void                          ConstructorsClicked( int );
 };
 
-#endif // SMESHGUI_MAKENODEATPOINTDLG_H
+#endif // SMESHGUI_AddNodeOnFaceDLG_H

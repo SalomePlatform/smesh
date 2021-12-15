@@ -29,6 +29,8 @@ Salome provides a vast specter of mesh modification and transformation operation
 * :ref:`Unite two triangles <uniting_two_triangles_page>`.
 * :ref:`Unite several adjacent triangles <uniting_set_of_triangles_page>`.
 * :ref:`Cut a quadrangle <cutting_quadrangles_page>` into two triangles.
+* :ref:`Cut triangles <add_node_on_segment_page>` into two by adding a node on edge.
+* :ref:`Cut a face <add_node_on_face_page>` into triangles by adding a node on it.
 * :ref:`Split <split_to_tetra_page>` volumic elements into tetrahedra or prisms.
 * :ref:`Split bi-quadratic <split_biquad_to_linear_page>` elements into linear ones without creation of additional nodes.
 * :ref:`Smooth <smoothing_page>` elements, reducung distortions in them by adjusting the locations of nodes.
@@ -67,6 +69,8 @@ Salome provides a vast specter of mesh modification and transformation operation
    changing_orientation_of_elements.rst
    reorient_faces.rst
    cutting_quadrangles.rst
+   add_node_on_segment.rst
+   add_node_on_face.rst
    split_to_tetra.rst
    split_biquad_to_linear.rst
    smoothing.rst

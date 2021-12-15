@@ -200,6 +200,12 @@ namespace SMESH_MeshAlgos
   std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
                                                     const SMDS_MeshElement* e2);
   /*!
+   * \brief Return true if a node is on a boundary of 2D mesh.
+   *        Optionally returns two neighboring boundary nodes (or more in non-manifold mesh)
+   */
+  SMESHUtils_EXPORT bool IsOn2DBoundary( const SMDS_MeshNode* node,
+                                         std::vector< const SMDS_MeshNode*> * neibors = nullptr );
+  /*!
    * \brief Return true if node1 encounters first in the face and node2, after.
    *        The nodes are supposed to be neighbor nodes in the face.
    */
@@ -225,6 +231,7 @@ namespace SMESH_MeshAlgos
 
   /*!
    * \brief Mark elements given by SMDS_Iterator
+   * \sa SMDS_Mesh::SetAllNodesNotMarked() and SMDS_Mesh::SetAllCellsNotMarked()
    */
   template< class ElemIter >
   void MarkElems( ElemIter it, const bool isMarked )

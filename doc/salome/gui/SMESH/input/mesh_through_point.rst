@@ -8,6 +8,7 @@ In mesh you can define a node at a certain point either
 
 * by movement of the node closest to the point or 
 * by movement of a selected node to the point.
+* by movement of a selected node to the point specified by mouse click.
 
 *To displace a node:*
 
@@ -34,6 +35,11 @@ In mesh you can define a node at a certain point either
 	.. centered::
 		Automatic node selection
 
+	.. image:: ../images/meshtopass3.png
+		:align: center
+
+	.. centered::
+		Manual node selection with mouse location
 
 
 #. Specify the way of node selection: manually (the first radio button) or automatically (the second radio button).

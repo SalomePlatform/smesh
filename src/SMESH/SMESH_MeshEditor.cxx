@@ -412,8 +412,8 @@ SMDS_MeshElement* SMESH_MeshEditor::AddElement(const vector<smIdType> & nodeIDs,
 //           Modify a compute state of sub-meshes which become empty
 //=======================================================================
 
-smIdType SMESH_MeshEditor::Remove (const list< smIdType >& theIDs,
-                              const bool         isNodes )
+smIdType SMESH_MeshEditor::Remove (const std::list< smIdType >& theIDs,
+                                   const bool                   isNodes )
 {
   ClearLastCreated();
 
@@ -476,8 +476,85 @@ smIdType SMESH_MeshEditor::Remove (const list< smIdType >& theIDs,
 
 //================================================================================
 /*!
+ * \brief Remove a node and fill a hole appeared, by changing surrounding faces
+ */
+//================================================================================
+
+void SMESH_MeshEditor::RemoveNodeWithReconnection( const SMDS_MeshNode* node )
+{
+  if ( ! node )
+    return;
+
+  if ( node->NbInverseElements( SMDSAbs_Volume ) > 0 )
+    throw SALOME_Exception( "RemoveNodeWithReconnection() applies to 2D mesh only" );
+
+  // check that only triangles surround the node
+  for ( SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator( SMDSAbs_Face ); fIt->more(); )
+  {
+    const SMDS_MeshElement* face = fIt->next();
+    if ( face->GetGeomType() != SMDSGeom_TRIANGLE )
+      throw SALOME_Exception( "RemoveNodeWithReconnection() applies to triangle mesh only" );
+    if ( face->IsQuadratic() )
+      throw SALOME_Exception( "RemoveNodeWithReconnection() applies to linear mesh only" );
+  }
+
+  std::vector< const SMDS_MeshNode*> neighbours(2);
+  SMESH_MeshAlgos::IsOn2DBoundary( node, & neighbours );
+
+  bool toRemove = ( neighbours.size() > 2 ); // non-manifold ==> just remove
+
+  // if ( neighbours.size() == 2 ) // on boundary
+  // {
+  //   // check if theNode and neighbours are on a line
+  //   gp_Pnt pN = SMESH_NodeXYZ( node );
+  //   gp_Pnt p0 = SMESH_NodeXYZ( neighbours[0] );
+  //   gp_Pnt p1 = SMESH_NodeXYZ( neighbours[1] );
+  //   double dist01 = p0.Distance( p1 );
+  //   double    tol = 0.01 * dist01;
+  //   double  distN = ( gp_Vec( p0, p1 ) ^ gp_Vec( p0, pN )).Magnitude() / dist01;
+  //   bool   onLine = distN < tol;
+  //   toRemove = !onLine;
+  // }
+
+  if ( neighbours.empty() ) // not on boundary
+  {
+    TIDSortedElemSet linkedNodes;
+    GetLinkedNodes( node, linkedNodes, SMDSAbs_Face );
+    for ( const SMDS_MeshElement* e : linkedNodes ) neighbours.push_back( cast2Node( e ));
+    if ( neighbours.empty() )
+      toRemove = true;
+  }
+
+  if ( toRemove )
+  {
+    this->Remove( std::list< smIdType >( 1, node->GetID() ), /*isNode=*/true );
+    return;
+  }
+
+  // choose a node to replace by
+  const SMDS_MeshNode* nToReplace = nullptr;
+  SMESH_NodeXYZ           nodeXYZ = node;
+  double                  minDist = Precision::Infinite();
+  for ( const SMDS_MeshNode* n : neighbours )
+  {
+    double dist = nodeXYZ.SquareDistance( n );
+    if ( dist < minDist )
+    {
+      minDist = dist;
+      nToReplace = n;
+    }
+  }
+
+  // remove node + replace by nToReplace
+  std::list< const SMDS_MeshNode* > nodeGroup = { nToReplace, node };
+  TListOfListOfNodes nodesToMerge( 1, nodeGroup );
+  this->MergeNodes( nodesToMerge );
+}
+
+//================================================================================
+/*!
  * \brief Create 0D elements on all nodes of the given object.
- *  \param elements - Elements on whose nodes to create 0D elements; if empty, 
+ *  \param elements - Elements on whose nodes to create 0D elements; if empty,
  *                    the all mesh is treated
  *  \param all0DElems - returns all 0D elements found or created on nodes of \a elements
  *  \param duplicateElements - to add one more 0D element to a node or not
@@ -947,24 +1024,24 @@ bool getQuadrangleNodes(const SMDS_MeshNode *    theQuadNodes [],
 {
   if( tr1->NbNodes() != tr2->NbNodes() )
     return false;
+
   // find the 4-th node to insert into tr1
   const SMDS_MeshNode* n4 = 0;
   SMDS_ElemIteratorPtr it = tr2->nodesIterator();
-  int i=0;
-  while ( !n4 && i<3 ) {
+  for ( int i = 0; !n4 && i < 3; ++i )
+  {
     const SMDS_MeshNode * n = cast2Node( it->next() );
-    i++;
     bool isDiag = ( n == theNode1 || n == theNode2 );
     if ( !isDiag )
       n4 = n;
   }
+
   // Make an array of nodes to be in a quadrangle
   int iNode = 0, iFirstDiag = -1;
   it = tr1->nodesIterator();
-  i=0;
-  while ( i<3 ) {
+  for ( int i = 0; i < 3; ++i )
+  {
     const SMDS_MeshNode * n = cast2Node( it->next() );
-    i++;
     bool isDiag = ( n == theNode1 || n == theNode2 );
     if ( isDiag ) {
       if ( iFirstDiag < 0 )
@@ -1077,6 +1154,210 @@ bool SMESH_MeshEditor::DeleteDiag (const SMDS_MeshNode * theNode1,
   GetMeshDS()->RemoveNode( N1[4] );
 
   return true;
+}
+
+//=======================================================================
+//function : SplitEdge
+//purpose  : Replace each triangle bound by theNode1-theNode2 segment with
+//           two triangles by connecting a node made on the link with a node opposite to the link.
+//=======================================================================
+
+void SMESH_MeshEditor::SplitEdge (const SMDS_MeshNode * theNode1,
+                                  const SMDS_MeshNode * theNode2,
+                                  double                thePosition)
+{
+  ClearLastCreated();
+
+  SMESHDS_Mesh * mesh = GetMeshDS();
+
+  // Get triangles and segments to divide
+
+  std::vector<const SMDS_MeshNode *> diagNodes = { theNode1, theNode2 };
+  std::vector<const SMDS_MeshElement *> foundElems;
+  if ( !mesh->GetElementsByNodes( diagNodes, foundElems ) || foundElems.empty() )
+    throw SALOME_Exception( SMESH_Comment("No triangle is bound by the edge ")
+                            << theNode1->GetID() << " - " << theNode2->GetID());
+
+  SMESH_MesherHelper helper( *GetMesh() );
+
+  for ( const SMDS_MeshElement * elem : foundElems )
+  {
+    SMDSAbs_ElementType type = elem->GetType();
+    switch ( type ) {
+    case SMDSAbs_Volume:
+      throw SALOME_Exception( "Can't split an edge of a volume");
+      break;
+
+    case SMDSAbs_Face:
+      if ( elem->GetGeomType() != SMDSGeom_TRIANGLE )
+        throw SALOME_Exception( "Can't split an edge of a face of type other than triangle");
+      if ( elem->IsQuadratic() )
+      {
+        helper.SetIsQuadratic( true );
+        helper.AddTLinks( static_cast< const SMDS_MeshFace*>( elem ));
+        helper.SetIsBiQuadratic( elem->GetEntityType() == SMDSEntity_BiQuad_Triangle );
+      }
+      break;
+
+    case SMDSAbs_Edge:
+      if ( elem->IsQuadratic() )
+      {
+        helper.SetIsQuadratic( true );
+        helper.AddTLinks( static_cast< const SMDS_MeshEdge*>( elem ));
+      }
+      break;
+    default:;
+    }
+  }
+
+  // Make a new node
+
+  const SMDS_MeshNode* nodeOnLink = helper.GetMediumNode( theNode1, theNode2,/*force3d=*/false );
+
+  gp_Pnt newNodeXYZ = ( SMESH_NodeXYZ( theNode1 ) * ( 1 - thePosition ) +
+                        SMESH_NodeXYZ( theNode2 ) * thePosition );
+
+  const TopoDS_Shape& S = mesh->IndexToShape( nodeOnLink->GetShapeID() );
+  if ( !S.IsNull() && S.ShapeType() == TopAbs_FACE ) // find newNodeXYZ by UV on FACE
+  {
+    Handle(ShapeAnalysis_Surface) surface = helper.GetSurface( TopoDS::Face( S ));
+    double  tol = 100 * helper.MaxTolerance( S );
+    gp_Pnt2d uv = surface->ValueOfUV( newNodeXYZ, tol );
+    if ( surface->Gap() < SMESH_NodeXYZ( theNode1 ).Distance( theNode2 ))
+    {
+      newNodeXYZ = surface->Value( uv );
+      if ( SMDS_FacePositionPtr nPos = nodeOnLink->GetPosition())
+        nPos->SetParameters( uv.X(), uv.Y() );
+    }
+  }
+  if ( !S.IsNull() && S.ShapeType() == TopAbs_EDGE ) // find newNodeXYZ by param on EDGE
+  {
+    mesh->MoveNode( nodeOnLink, newNodeXYZ.X(), newNodeXYZ.Y(), newNodeXYZ.Z() );
+    double u = Precision::Infinite(), tol = 100 * helper.MaxTolerance( S ), distXYZ[4];
+    helper.ToFixNodeParameters( true );
+    if ( helper.CheckNodeU( TopoDS::Edge( S ), nodeOnLink, u, tol, /*force3D=*/false, distXYZ ))
+      newNodeXYZ.SetCoord( distXYZ[1], distXYZ[2], distXYZ[3] );
+  }
+  mesh->MoveNode( nodeOnLink, newNodeXYZ.X(), newNodeXYZ.Y(), newNodeXYZ.Z() );
+
+  // Split triangles and segments
+
+  std::vector<const SMDS_MeshNode *> nodes( 7 );
+  for ( const SMDS_MeshElement * elem : foundElems )
+  {
+    nodes.assign( elem->begin_nodes(), elem->end_nodes() );
+    nodes.resize( elem->NbCornerNodes() + 1 );
+    nodes.back() = nodes[0];
+
+    smIdType id = elem->GetID();
+    int shapeID = elem->GetShapeID();
+
+    const SMDS_MeshNode* centralNode = nullptr;
+    if ( elem->GetEntityType() == SMDSEntity_BiQuad_Triangle )
+      centralNode = elem->GetNode( 6 );
+
+    mesh->RemoveFreeElement( elem, /*sm=*/0, /*fromGroups=*/false );
+    if ( centralNode )
+      mesh->RemoveFreeNode( centralNode, /*sm=*/0, /*fromGroups=*/true );
+
+    for ( size_t i = 1; i < nodes.size(); ++i )
+    {
+      const SMDS_MeshNode* n1 = nodes[i-1];
+      const SMDS_MeshNode* n2 = nodes[i];
+      const SMDS_MeshElement* newElem;
+      if ( nodes.size() == 4 ) //    triangle
+      {
+        bool isDiag1 = ( n1 == theNode1 || n1 == theNode2 );
+        bool isDiag2 = ( n2 == theNode1 || n2 == theNode2 );
+        if ( isDiag1 && isDiag2 )
+          continue;
+
+        newElem = helper.AddFace( n1, n2, nodeOnLink, id );
+      }
+      else //    segment
+      {
+        newElem = helper.AddEdge( n1, nodeOnLink, id );
+      }
+      myLastCreatedElems.push_back( newElem );
+      AddToSameGroups( newElem, elem, mesh );
+      if ( shapeID )
+        mesh->SetMeshElementOnShape( newElem, shapeID );
+      id = 0;
+    }
+  }
+  return;
+}
+
+//=======================================================================
+//function : SplitFace
+//purpose  : Split a face into triangles each formed by two nodes of the 
+//           face and a new node added at the given coordinates.
+//=======================================================================
+
+void SMESH_MeshEditor::SplitFace (const SMDS_MeshElement * theFace,
+                                  double                   theX,
+                                  double                   theY,
+                                  double                   theZ )
+{
+  ClearLastCreated();
+
+  if ( !theFace )
+    throw SALOME_Exception("Null face given");
+  if ( theFace->GetType() != SMDSAbs_Face )
+    throw SALOME_Exception("Not a face given");
+
+  SMESHDS_Mesh * mesh = GetMeshDS();
+
+  SMESH_MesherHelper helper( *GetMesh() );
+  if ( theFace->IsQuadratic() )
+  {
+    helper.SetIsQuadratic( true );
+    helper.AddTLinks( static_cast< const SMDS_MeshFace*>( theFace ));
+  }
+  const TopoDS_Shape& shape = mesh->IndexToShape( theFace->GetShapeID() );
+  helper.SetSubShape( shape );
+  helper.SetElementsOnShape( true );
+
+  // Make a new node
+
+  const SMDS_MeshNode* centralNode = nullptr;
+  if (      theFace->GetEntityType() == SMDSEntity_BiQuad_Triangle )
+    centralNode = theFace->GetNode( 6 );
+  else if ( theFace->GetEntityType() == SMDSEntity_BiQuad_Quadrangle )
+    centralNode = theFace->GetNode( 8 );
+
+  if ( centralNode )
+  {
+    helper.SetIsBiQuadratic( true );
+    mesh->MoveNode( centralNode, theX, theY, theZ );
+  }
+  else
+    centralNode = helper.AddNode( theX, theY, theZ );
+
+
+  // Split theFace
+
+  std::vector<const SMDS_MeshNode *> nodes( theFace->NbNodes() + 1 );
+  nodes.assign( theFace->begin_nodes(), theFace->end_nodes() );
+  nodes.resize( theFace->NbCornerNodes() + 1 );
+  nodes.back() = nodes[0];
+
+  smIdType id = theFace->GetID();
+  int shapeID = theFace->GetShapeID();
+
+  mesh->RemoveFreeElement( theFace, /*sm=*/0, /*fromGroups=*/false );
+
+  for ( size_t i = 1; i < nodes.size(); ++i )
+  {
+    const SMDS_MeshElement* newElem = helper.AddFace( nodes[i-1], nodes[i], centralNode, id );
+
+    myLastCreatedElems.push_back( newElem );
+    AddToSameGroups( newElem, theFace, mesh );
+    if ( shapeID )
+      mesh->SetMeshElementOnShape( newElem, shapeID );
+    id = 0;
+  }
+  return;
 }
 
 //=======================================================================
