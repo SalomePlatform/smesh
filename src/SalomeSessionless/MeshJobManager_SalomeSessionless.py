@@ -1,3 +1,4 @@
+#  -*- coding: iso-8859-1 -*-
 # Copyright (C) 2021  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
@@ -17,9 +18,11 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-SET(_bin_SCRIPTS
-  SMESH_SalomeSessionless.py
-  MeshJobManager_SalomeSessionless.py
-)
-
-SALOME_INSTALL_SCRIPTS("${_bin_SCRIPTS}" ${SALOME_INSTALL_PYTHON} DEF_PERMS)
+def buildInstance(orb):
+    import SMeshPadderHelper
+    padder_ior = SMeshPadderHelper.BuildPadderMeshJobManagerInstance()
+    import MESHJOB
+    import CORBA
+    orb=CORBA.ORB_init([''])
+    padderInst = orb.string_to_object(padder_ior)
+    return padderInst, orb

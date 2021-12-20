@@ -83,6 +83,11 @@ static bool fexists(const char *filename)
   return false;
 }
 
+Engines::EngineComponent_var RetrievePadderMeshJobManagerInstance()
+{
+
+}
+
 //
 // ====================================================================
 // Constructor/Destructor
@@ -92,8 +97,9 @@ MeshJobManager_i::MeshJobManager_i(CORBA::ORB_ptr orb,
                                    PortableServer::POA_ptr poa,
                                    PortableServer::ObjectId * contId,
                                    const char *instanceName,
-                                   const char *interfaceName)
-  : Engines_Component_i(orb, poa, contId, instanceName, interfaceName)
+                                   const char *interfaceName,
+                                   bool checkNS, bool regist)
+  : Engines_Component_i(orb, poa, contId, instanceName, interfaceName, checkNS, regist)
 {
   LOG("Activating MESHJOB::MeshJobManager object");
   _thisObj = this ;

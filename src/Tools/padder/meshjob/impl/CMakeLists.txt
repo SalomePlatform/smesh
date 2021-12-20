@@ -17,9 +17,11 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+include(${SWIG_USE_FILE})
+
 # --- options ---
-# additional include directories
 INCLUDE_DIRECTORIES(
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${KERNEL_INCLUDE_DIRS}
   ${GEOM_INCLUDE_DIRS}
   ${OpenCASCADE_INCLUDE_DIR}
@@ -85,6 +87,28 @@ SET(SPADDERPluginTesterEngine_SOURCES
   SPADDERPluginTester_i.hxx
   SPADDERPluginTester_i.cxx
 )
+
+# - swiggy pop
+
+SET(SMeshPadderHelper_HEADERS SMeshPadderHelper.h SMeshPadderHelper.i)
+SET(SMeshPadderHelper_SOURCES SMeshPadderHelper.cxx ${SMeshPadderHelper_HEADERS})
+SET_SOURCE_FILES_PROPERTIES(SMeshPadderHelper.i PROPERTIES CPLUSPLUS ON)
+SET_SOURCE_FILES_PROPERTIES(SMeshPadderHelper.i PROPERTIES SWIG_FLAGS "-py3")
+SET_SOURCE_FILES_PROPERTIES(SMeshPadderHelper_wrap.cpp PROPERTIES COMPILE_FLAGS "-DHAVE_CONFIG_H")
+SET(_swig_SCRIPTS ${CMAKE_CURRENT_BINARY_DIR}/SMeshPadderHelper.py )
+IF(${CMAKE_VERSION} VERSION_LESS "3.8.0") 
+  SWIG_ADD_MODULE(SMeshPadderHelper python ${SMeshPadderHelper_SOURCES})
+ELSE()
+  SWIG_ADD_LIBRARY(SMeshPadderHelper LANGUAGE python SOURCES ${SMeshPadderHelper_SOURCES})
+ENDIF()
+SWIG_LINK_LIBRARIES(SMeshPadderHelper ${PYTHON_LIBRARIES} ${PLATFORM_LIBS} MeshJobManagerEngine )
+SWIG_CHECK_GENERATION(SMeshPadderHelper)
+IF(WIN32)
+  SET_TARGET_PROPERTIES(_SMeshPadderHelper PROPERTIES DEBUG_OUTPUT_NAME _SMeshPadderHelper_d)
+ENDIF(WIN32)
+install(TARGETS _SMeshPadderHelper DESTINATION ${SALOME_INSTALL_LIBS})
+install(FILES ${SMeshPadderHelper_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})
+SALOME_INSTALL_SCRIPTS("${_swig_SCRIPTS}"  ${SALOME_INSTALL_BINS} EXTRA_DPYS "${SWIG_MODULE_SMeshPadderHelper_REAL_NAME}")
 
 # --- rules ---
 
