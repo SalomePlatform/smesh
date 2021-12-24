@@ -34,7 +34,8 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_XmlHandler.h"
 
-#include "SMESH_Actor.h"
+#include <SMESH_Actor.h>
+#include <SMESH_TryCatch.hxx>
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
@@ -628,10 +629,13 @@ namespace SMESH
 
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
+    SMESH_TRY;
     return SMESHGUI::GetSMESHGen()->IsApplicable( aHypType.toLatin1().data(),
                                                   aServLib.toUtf8().data(),
                                                   theGeomObject,
                                                   toCheckAll);
+    SMESH_CATCH( SMESH::printErrorInDebugMode );
+    return false;
   }
 
 
