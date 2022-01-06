@@ -27,7 +27,7 @@
 
 static Engines::EngineComponent_var _unique_compo;
 
-Engines::EngineComponent_var BuildPadderMeshJobManagerInstance()
+Engines::EngineComponent_var GetPadderMeshJobManagerInstance()
 {
   if (CORBA::is_nil(_unique_compo))
   {
@@ -56,7 +56,7 @@ Engines::EngineComponent_var BuildPadderMeshJobManagerInstance()
 
 std::string BuildPadderMeshJobManagerInstanceInternal()
 {
-  Engines::EngineComponent_var zeRef = BuildPadderMeshJobManagerInstance();
+  Engines::EngineComponent_var zeRef = GetPadderMeshJobManagerInstance();
   CORBA::String_var ior = KERNEL::getORB()->object_to_string(zeRef);
   return std::string(ior.in());
 }
