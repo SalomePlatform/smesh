@@ -83,10 +83,9 @@ static bool fexists(const char *filename)
   return false;
 }
 
-Engines::EngineComponent_var RetrievePadderMeshJobManagerInstance()
-{
-
-}
+//Engines::EngineComponent_var RetrievePadderMeshJobManagerInstance()
+//{
+//}
 
 //
 // ====================================================================

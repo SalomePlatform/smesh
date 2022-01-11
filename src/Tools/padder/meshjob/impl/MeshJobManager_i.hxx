@@ -43,7 +43,7 @@
  #define MESHJOBMANAGERENGINE_EXPORT
 #endif
 
-Engines::EngineComponent_var RetrievePadderMeshJobManagerInstance();
+//Engines::EngineComponent_var RetrievePadderMeshJobManagerInstance();
 
 class MESHJOBMANAGERENGINE_EXPORT MeshJobManager_i: public virtual POA_MESHJOB::MeshJobManager,
                                                     public Engines_Component_i
