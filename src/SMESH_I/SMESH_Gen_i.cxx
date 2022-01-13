@@ -6254,46 +6254,6 @@ void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
       useCaseBuilder->AppendTo( where, sobj );        // append to the end of list
   }
 }
-//================================================================================
-/*!
- * \brief Returns true if algorithm can be used to mesh a given geometry
- *  \param [in] theAlgoType - the algorithm type
- *  \param [in] theLibName - a name of the Plug-in library implementing the algorithm
- *  \param [in] theGeomObject - the geometry to mesh
- *  \param [in] toCheckAll - if \c True, returns \c True if all shapes are meshable,
- *         else, returns \c True if at least one shape is meshable
- *  \return CORBA::Boolean - can or can't
- */
-//================================================================================
-
-CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
-                                           const char*           theLibName,
-                                           GEOM::GEOM_Object_ptr theGeomObject,
-                                           CORBA::Boolean        toCheckAll)
-{
-  SMESH_TRY;
-
-  std::string aPlatformLibName;
-  GenericHypothesisCreator_i* aCreator =
-    getHypothesisCreator(theAlgoType, theLibName, aPlatformLibName);
-  if (aCreator)
-  {
-    TopoDS_Shape shape = GeomObjectToShape( theGeomObject );
-    const SMESH_Algo::Features& feat = SMESH_Algo::GetFeatures( theAlgoType );
-    return shape.IsNull() || aCreator->IsApplicable( shape, toCheckAll, feat._dim );
-  }
-  else
-  {
-    return false;
-  }
-
-  SMESH_CATCH( SMESH::doNothing );
-
-#ifdef _DEBUG_
-  cout << "SMESH_Gen_i::IsApplicable(): exception in " << ( theAlgoType ? theAlgoType : "") << endl;
-#endif
-  return true;
-}
 
 //================================================================================
 /*!
@@ -6508,4 +6468,48 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
     }
   }
   return res;
+}
+
+//================================================================================
+/*!
+ * \brief Returns true if algorithm can be used to mesh a given geometry
+ *  \param [in] theAlgoType - the algorithm type
+ *  \param [in] theLibName - a name of the Plug-in library implementing the algorithm
+ *  \param [in] theGeomObject - the geometry to mesh
+ *  \param [in] toCheckAll - if \c True, returns \c True if all shapes are meshable,
+ *         else, returns \c True if at least one shape is meshable
+ *  \return CORBA::Boolean - can or can't
+ */
+//================================================================================
+
+#undef SMY_OWN_CATCH
+#define SMY_OWN_CATCH // prevent re-throwing SALOME::SALOME_Exception in IsApplicable()
+
+CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
+                                           const char*           theLibName,
+                                           GEOM::GEOM_Object_ptr theGeomObject,
+                                           CORBA::Boolean        toCheckAll)
+{
+  SMESH_TRY;
+
+  std::string aPlatformLibName;
+  GenericHypothesisCreator_i* aCreator =
+    getHypothesisCreator(theAlgoType, theLibName, aPlatformLibName);
+  if (aCreator)
+  {
+    TopoDS_Shape shape = GeomObjectToShape( theGeomObject );
+    const SMESH_Algo::Features& feat = SMESH_Algo::GetFeatures( theAlgoType );
+    return shape.IsNull() || aCreator->IsApplicable( shape, toCheckAll, feat._dim );
+  }
+  else
+  {
+    return false;
+  }
+
+  SMESH_CATCH( SMESH::doNothing );
+
+#ifdef _DEBUG_
+  cout << "SMESH_Gen_i::IsApplicable(): exception in " << ( theAlgoType ? theAlgoType : "") << endl;
+#endif
+  return true;
 }
