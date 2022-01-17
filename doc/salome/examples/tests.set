@@ -56,6 +56,8 @@ SET(BAD_TESTS
 IF(NOT WIN32)
   LIST(APPEND BAD_TESTS
     MGAdaptTests_without_session.py
+    test_homard_adapt.py
+    test_uniform_refinement.py
     test_smeshplugin_mg_tetra_parallele.py
   )
 ENDIF(NOT WIN32)

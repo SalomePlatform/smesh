@@ -1013,6 +1013,11 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   {
     Handle(_pyMesh) mesh = new _pyMesh( theCommand );
     AddObject( mesh );
+    // set mesh name
+    _pyID id = mesh->GetID(), comma("'");
+    if ( myObjectNames.IsBound( id ))
+      theCommand->SetArg( theCommand->GetNbArgs() + 1,
+                          comma + myObjectNames( id ) + comma);
     return;
   }
   if ( method == "CreateMeshesFromUNV" ||

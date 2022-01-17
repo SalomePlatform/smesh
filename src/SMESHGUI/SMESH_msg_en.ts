@@ -341,6 +341,10 @@
         <translation>Remesh with MG_Adapt</translation>
     </message>
     <message>
+        <source>MEN_HOMARD_ADAPT</source>
+        <translation>Uniform refinement</translation>
+    </message>
+    <message>
         <source>Args</source>
         <translation>Arguments</translation>
     </message>
@@ -3026,6 +3030,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>None</translation>
     </message>
     <message>
+        <source>ADAPT_WITH_HOMARD</source>
+        <translation>Adaptation with HOMARD</translation>
+    </message>
+    <message>
         <source>ADAPT_PREF_MG_ADAPT</source>
         <translation>Adaptation with MG-Adapt</translation>
     </message>
@@ -3217,6 +3225,10 @@ Use Display Entity menu command to show them.
         <translation>Z</translation>
     </message>
     <message>
+        <source>SMESH_Z_SCALARBAR</source>
+        <translation>Z:</translation>
+    </message>
+    <message>
         <source>STATE_ALGO_MISSING</source>
         <translation>%3 %2D algorithm is missing</translation>
     </message>
@@ -3311,6 +3323,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_MG_ADAPT</source>
         <translation>Remesh with MG_Adapt</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_ADAPT</source>
+        <translation>Uniform refinement</translation>
     </message>
     <message>
         <source>STB_CONV_TO_QUAD</source>
@@ -4007,6 +4023,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_MG_ADAPT</source>
         <translation>Remesh with MG_Adapt</translation>
+    </message>
+    <message>
+        <source>TOP_HOMARD_ADAPT</source>
+        <translation>Uniform refinement</translation>
     </message>
     <message>
         <source>TOP_CONV_TO_QUAD</source>

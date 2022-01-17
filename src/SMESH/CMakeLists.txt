@@ -89,6 +89,7 @@ SET(SMESHimpl_HEADERS
   SMESH_ProxyMesh.hxx
   SMESH_SMESH.hxx
   MG_ADAPT.hxx
+  SMESH_Homard.hxx
 )
 
 # --- sources ---
@@ -108,6 +109,7 @@ SET(SMESHimpl_SOURCES
   SMESH_ProxyMesh.cxx
   SMESH_MesherHelper.cxx
   MG_ADAPT.cxx
+  SMESH_Homard.cxx
 )
 
 # --- rules ---

@@ -23,6 +23,7 @@
 SET(SMESH_RESOURCES_FILES
   ModuleMesh.png
   adapt_mg_adapt.png
+  adapt_homard.png
   advanced_mesh_info.png
   bare_border_face.png
   bare_border_volume.png

@@ -35,6 +35,11 @@
 #include "SMESH_Hypothesis.idl"
 #include "SMESH_smIdType.idl"
 
+module SMESHHOMARD
+{
+  interface HOMARD_Gen;
+};
+
 module SMESH
 {
   typedef sequence<SALOMEDS::SObject> sobject_list;
@@ -581,7 +586,9 @@ module SMESH
 			  in double theTolerance );    
 
     MG_ADAPT CreateMG_ADAPT();
-    MG_ADAPT_OBJECT Adaptation(in string adaptType);
+    SMESHHOMARD::HOMARD_Gen CreateHOMARD_ADAPT() raises ( SALOME::SALOME_Exception );
+    //MG_ADAPT_OBJECT Adaptation(in string adaptType);
+    SALOME::GenericObj Adaptation(in string adaptType) raises ( SALOME::SALOME_Exception );
     MG_ADAPT CreateAdaptationHypothesis();
   };
 
