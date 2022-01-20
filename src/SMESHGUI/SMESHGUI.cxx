@@ -3030,6 +3030,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 #endif
+#ifndef DISABLE_HOMARD_ADAPT
   case SMESHOp::OpHomardAdapt:
     {
       if ( isStudyLocked() )
@@ -3051,6 +3052,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
+#endif
   // Adaptation - end
   case SMESHOp::OpSplitBiQuadratic:
   case SMESHOp::OpConvertMeshToQuadratic:
@@ -4289,7 +4291,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 #ifndef DISABLE_MG_ADAPT
   createSMESHAction( SMESHOp::OpMGAdapt, "MG_ADAPT", "ICON_MG_ADAPT" );
 #endif
+#ifndef DISABLE_HOMARD_ADAPT
   createSMESHAction( SMESHOp::OpHomardAdapt, "HOMARD_ADAPT", "ICON_HOMARD_ADAPT" );
+#endif
   // Adaptation - end
 
   createSMESHAction( SMESHOp::OpMinimumDistance,  "MEASURE_MIN_DIST", "ICON_MEASURE_MIN_DIST" );
@@ -4333,7 +4337,7 @@ void SMESHGUI::initialize( CAM_Application* app )
       meshId    = createMenu( tr( "MEN_MESH" ),    -1, 70, 10 ),
       ctrlId    = createMenu( tr( "MEN_CTRL" ),    -1, 60, 10 ),
       modifyId  = createMenu( tr( "MEN_MODIFY" ),  -1, 40, 10 ),
-#ifndef DISABLE_MG_ADAPT
+#if !defined(DISABLE_MG_ADAPT) || !defined(DISABLE_HOMARD_ADAPT)
       adaptId   = createMenu( tr( "MEN_ADAPT" ),   -1, 80, 10 ),
 #endif
       measureId = createMenu( tr( "MEN_MEASURE" ), -1, 50, 10 ),
@@ -4510,7 +4514,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 #ifndef DISABLE_MG_ADAPT
   createMenu( SMESHOp::OpMGAdapt, adaptId, -1 );
 #endif
+#ifndef DISABLE_HOMARD_ADAPT
   createMenu( SMESHOp::OpHomardAdapt, adaptId, -1 );
+#endif
   // Adaptation - end
 
   createMenu( SMESHOp::OpMinimumDistance,  measureId,   -1 );
@@ -4657,11 +4663,15 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpPatternMapping,         modifyTb );
 
   // Adaptation - begin
-#ifndef DISABLE_MG_ADAPT
+#if !defined(DISABLE_MG_ADAPT) || !defined(DISABLE_HOMARD_ADAPT)
   int adaptTb = createTool( tr( "TB_ADAPTATION" ), QString( "SMESHAdaptationToolbar" ) ) ;
+#endif
+#ifndef DISABLE_MG_ADAPT
   createTool( SMESHOp::OpMGAdapt, adaptTb );
 #endif
+#ifndef DISABLE_HOMARD_ADAPT
   createTool( SMESHOp::OpHomardAdapt, adaptTb );
+#endif
   // Adaptation - end
 
   int measuremTb = createTool( tr( "TB_MEASUREM" ), QString( "SMESHMeasurementsToolbar" ) ) ;
@@ -4749,7 +4759,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 #ifndef DISABLE_MG_ADAPT
   createPopupItem( SMESHOp::OpMGAdapt, OB, mesh );
 #endif
+#ifndef DISABLE_HOMARD_ADAPT
   createPopupItem( SMESHOp::OpHomardAdapt, OB, mesh );
+#endif
   popupMgr()->insert( separator(), -1, 0 );
   // Adaptation - end
 

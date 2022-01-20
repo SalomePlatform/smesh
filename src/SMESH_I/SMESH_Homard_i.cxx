@@ -981,7 +981,7 @@ SMESHHOMARD::HOMARD_Cas_ptr HOMARD_Gen_i::GetCase()
   return SMESHHOMARD::HOMARD_Cas::_duplicate(myCase);
 }
 //=============================================================================
-HOMARD_Iteration_i* HOMARD_Gen_i::GetIteration(int numIter)
+HOMARD_Iteration_i* HOMARD_Gen_i::GetIteration(CORBA::Long numIter)
 {
   if (numIter == 0) {
     ASSERT(myIteration0);
@@ -1778,6 +1778,7 @@ CORBA::Long HOMARD_Gen_i::ComputeCAO()
   // A. Prealable
   // A.1. Bases
   int codret = 0;
+#ifndef DISABLE_HOMARD_ADAPT
   // A.2. Le sous-répertoire de l'iteration en cours de traitement
   char* DirCompute = myIteration1->GetDirName();
   // A.3. Le maillage résultat de l'iteration en cours de traitement
@@ -1869,7 +1870,7 @@ CORBA::Long HOMARD_Gen_i::ComputeCAO()
   //    de savoir le faire avec MEDCoupling
   MESSAGE (". Transfert des coordonnées");
   codret = ComputeCAObis();
-
+#endif
   return codret;
 }
 //=============================================================================
@@ -1981,6 +1982,7 @@ CORBA::Long HOMARD_Gen_i::ComputeCAObis()
 //=============================================================================
 char* HOMARD_Gen_i::CreateDirNameIter(const char* nomrep, CORBA::Long num)
 {
+#ifndef DISABLE_HOMARD_ADAPT 
   MESSAGE ("CreateDirNameIter : nomrep ="<< nomrep << ", num = "<<num);
   // On verifie que le répertoire parent existe
   int codret = CHDIR(nomrep);
@@ -2051,12 +2053,16 @@ char* HOMARD_Gen_i::CreateDirNameIter(const char* nomrep, CORBA::Long num)
   MESSAGE (". On retourne dans nomDirActuel = " << nomDirActuel);
   CHDIR(nomDirActuel.c_str());
   return CORBA::string_dup(DirName.c_str());
+#else
+	return "";
+#endif
 }
 //=============================================================================
 // Calcul d'une iteration : gestion du répertoire de calcul
 //=============================================================================
 char* HOMARD_Gen_i::ComputeDirManagement()
 {
+#ifndef DISABLE_HOMARD_ADAPT
   MESSAGE ("ComputeDirManagement : répertoires pour le calcul");
 
   //Si le sous-répertoire existe :
@@ -2149,6 +2155,9 @@ char* HOMARD_Gen_i::ComputeDirManagement()
   }
 
   return CORBA::string_dup(DirCompute.str().c_str());
+#else
+	return "";
+#endif
 }
 //=============================================================================
 // Calcul d'une iteration : gestion du répertoire de calcul de l'iteration parent

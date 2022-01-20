@@ -127,10 +127,12 @@ SALOME::GenericObj_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
     return anObj._retn();
   }
 #endif
+#ifndef DISABLE_HOMARD_ADAPT
   if (!strcmp(adaptationType, "Uniform")) {
     return CreateHOMARD_ADAPT();
   }
-  return SMESH::MG_ADAPT_OBJECT_ptr();
+#endif
+  return SALOME::GenericObj_ptr();
 }
 //=============================================================================
 /*!
