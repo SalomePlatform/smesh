@@ -4,7 +4,7 @@
 Over-constrained volumes
 ************************
 
-This mesh quality control highlights volumes sharing only one border with other volumes.
+This mesh quality control highlights volumes having all their points on the border.
 
 
 .. note::
@@ -16,4 +16,4 @@ This mesh quality control highlights volumes sharing only one border with other 
 .. centered::
 	Over-constrained volume is displayed in red.
 
-**See Also** a sample TUI Script of a :ref:`tui_over_constrained_volumes` filter.  
+**See Also** a sample TUI Script of a :ref:`tui_over_constrained_volumes` filter.

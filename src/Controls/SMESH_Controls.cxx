@@ -2469,16 +2469,22 @@ bool BareBorderFace::IsSatisfy(long theElementId )
 
 bool OverConstrainedVolume::IsSatisfy(long theElementId )
 {
-  // An element is over-constrained if it has N-1 free borders where
-  // N is the number of edges/faces for a 2D/3D element.
-  SMDS_VolumeTool  myTool;
-  if ( myTool.Set( myMesh->FindElement(theElementId)))
+  // An element is over-constrained if all its nodes are on the boundary.
+  // A node is on the boundary if it is connected to one or more faces.
+  SMDS_VolumeTool myTool;
+  if (myTool.Set(myMesh->FindElement(theElementId)))
   {
-    int nbSharedFaces = 0;
-    for ( int iF = 0; iF < myTool.NbFaces(); ++iF )
-      if ( !myTool.IsFreeFace( iF ) && ++nbSharedFaces > 1 )
-        break;
-    return ( nbSharedFaces == 1 );
+    auto nodes = myTool.GetNodes();
+
+    for (int i = 0; i < myTool.NbNodes(); ++i)
+    {
+      auto node = nodes[i];
+      if (node->NbInverseElements(SMDSAbs_Face) == 0)
+      {
+        return false;
+      }
+    }
+    return true;
   }
   return false;
 }
@@ -2491,29 +2497,19 @@ bool OverConstrainedVolume::IsSatisfy(long theElementId )
 
 bool OverConstrainedFace::IsSatisfy(long theElementId )
 {
-  // An element is over-constrained if it has N-1 free borders where
-  // N is the number of edges/faces for a 2D/3D element.
-  if ( const SMDS_MeshElement* face = myMesh->FindElement(theElementId))
-    if ( face->GetType() == SMDSAbs_Face )
+  // An element is over-constrained if all its nodes are on the boundary.
+  // A node is on the boundary if it is connected to one or more faces.
+  if (const SMDS_MeshElement *face = myMesh->FindElement(theElementId))
+    if (face->GetType() == SMDSAbs_Face)
     {
-      int nbSharedBorders = 0;
       int nbN = face->NbCornerNodes();
-      for ( int i = 0; i < nbN; ++i )
+      for (int i = 0; i < nbN; ++i)
       {
-        // check if a link is shared by another face
-        const SMDS_MeshNode* n1 = face->GetNode( i );
-        const SMDS_MeshNode* n2 = face->GetNode( (i+1)%nbN );
-        SMDS_ElemIteratorPtr fIt = n1->GetInverseElementIterator( SMDSAbs_Face );
-        bool isShared = false;
-        while ( !isShared && fIt->more() )
-        {
-          const SMDS_MeshElement* f = fIt->next();
-          isShared = ( f != face && f->GetNodeIndex(n2) != -1 );
-        }
-        if ( isShared && ++nbSharedBorders > 1 )
-          break;
+        const SMDS_MeshNode *n1 = face->GetNode(i);
+        if (n1->NbInverseElements(SMDSAbs_Edge) == 0)
+          return false;
       }
-      return ( nbSharedBorders == 1 );
+      return true;
     }
   return false;
 }

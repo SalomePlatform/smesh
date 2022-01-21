@@ -22,6 +22,6 @@ n2 = mesh.AddNode(10,0,0)
 edge = mesh.AddEdge([n1,n2])
 assert( not mesh.GetIdsFromFilter( faceFilter ))
 
-# make faces 
+# make faces
 mesh.ExtrusionSweep([edge], smesh.MakeDirStruct(0,7,0), 5)
-assert( 2 == len( mesh.GetIdsFromFilter( faceFilter )))
+assert( 5 == len( mesh.GetIdsFromFilter( faceFilter )))
