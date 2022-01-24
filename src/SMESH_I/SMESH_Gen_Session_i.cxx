@@ -49,6 +49,8 @@ SALOME_ModuleCatalog::ModuleCatalog_var SMESH_Gen_Session_i::getModuleCatalog() 
   return aCat;
 }
 
+#include "SMESH_Gen_No_Session_i.hxx"
+
 extern "C"
 { SMESH_I_EXPORT
   PortableServer::ObjectId* SMESHEngine_factory( CORBA::ORB_ptr            orb,
@@ -57,7 +59,17 @@ extern "C"
                                                  const char*               instanceName,
                                                  const char*               interfaceName )
   {
-    SMESH_Gen_Session_i* aSMESHGen = new SMESH_Gen_Session_i(orb, poa, contId, instanceName, interfaceName);
-    return aSMESHGen->getId() ;
+    CORBA::Object_var o = poa->id_to_reference(*contId);
+    Engines::Container_var cont = Engines::Container::_narrow(o);
+    if(cont->is_SSL_mode())
+    {
+      SMESH_Gen_No_Session_i* aSMESHGen = new SMESH_Gen_No_Session_i(orb, poa, contId, instanceName, interfaceName);
+      return aSMESHGen->getId() ;
+    }
+    else
+    {
+      SMESH_Gen_Session_i* aSMESHGen = new SMESH_Gen_Session_i(orb, poa, contId, instanceName, interfaceName);
+      return aSMESHGen->getId() ;
+    }
   }
 }
