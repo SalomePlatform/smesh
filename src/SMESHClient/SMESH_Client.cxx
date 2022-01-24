@@ -31,6 +31,7 @@
 #include "SMESH_Component_Generator.hxx"
 
 #include "SALOME_NamingService.hxx"
+#include "SALOME_Fake_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 
 #include <SALOMEconfig.h>
@@ -39,6 +40,7 @@
 #include CORBA_SERVER_HEADER(SALOME_Exception)
 
 #include "Basics_Utils.hxx"
+#include "KernelBasis.hxx"
 #include "utilities.h"
 
 #ifdef WIN32
@@ -48,6 +50,7 @@
 #endif
 
 #include <stdexcept>
+#include <memory>
 
 #ifndef EXCEPTION
 #define EXCEPTION(TYPE, MSG) {\
@@ -796,8 +799,16 @@ SMESH_Client::GetSMESHGen(CORBA::ORB_ptr theORB,
       long aClientPID =  (long)getpid();
 #endif
 
-      SALOME_NamingService aNamingService(theORB);
-      SALOME_LifeCycleCORBA aLifeCycleCORBA(&aNamingService);
+      std::unique_ptr<SALOME_NamingService_Abstract> aNamingService;
+      if(getSSLMode())
+      {
+        aNamingService.reset(new SALOME_Fake_NamingService);
+      }
+      else
+      {
+        aNamingService.reset(new SALOME_NamingService(theORB));
+      }
+      SALOME_LifeCycleCORBA aLifeCycleCORBA(aNamingService.get());
       Engines::EngineComponent_var aComponent = aLifeCycleCORBA.FindOrLoad_Component("FactoryServer","SMESH");
       aMeshGen = SMESH::SMESH_Gen::_narrow(aComponent);
 

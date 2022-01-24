@@ -22,6 +22,7 @@
 #include "SALOME_KernelServices.hxx"
 #include "SALOME_Fake_NamingService.hxx"
 #include "SALOME_ModuleCatalog_impl.hxx"
+#include "Utils_SINGLETON.hxx"
 
 SMESH_Gen_No_Session_i::SMESH_Gen_No_Session_i( CORBA::ORB_ptr orb,
                                                 PortableServer::POA_ptr   poa,
@@ -29,6 +30,7 @@ SMESH_Gen_No_Session_i::SMESH_Gen_No_Session_i( CORBA::ORB_ptr orb,
                                                 const char*               instanceName,
                                                 const char*               interfaceName):SMESH_Gen_i(orb,poa,contId,instanceName,interfaceName,false)
 {
+  myNS = SINGLETON_<SALOME_Fake_NamingService>::Instance();
 }
 
 GEOM::GEOM_Gen_var SMESH_Gen_No_Session_i::GetGeomEngine( bool isShaper )

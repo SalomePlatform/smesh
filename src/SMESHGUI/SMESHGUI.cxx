@@ -2139,15 +2139,8 @@ SMESHGUI::SMESHGUI() : SalomeApp_Module( "SMESH" )
   if ( CORBA::is_nil( myComponentSMESH ) )
   {
     CORBA::Boolean anIsEmbeddedMode;
-    SALOME_NamingService_Abstract *ns = SalomeApp_Application::namingService();
-    if( dynamic_cast<SALOME_NamingService *>(ns) )
-      myComponentSMESH = SMESH_Client::GetSMESHGen(getApp()->orb(),anIsEmbeddedMode);
-    else
-      {
-        Engines::EngineComponent_var comp = RetrieveSMESHInstance();
-        myComponentSMESH = SMESH::SMESH_Gen::_narrow(comp);
-      }
-    
+    myComponentSMESH = SMESH_Client::GetSMESHGen(getApp()->orb(),anIsEmbeddedMode);
+     
     //MESSAGE("-------------------------------> anIsEmbeddedMode=" << anIsEmbeddedMode);
 
     //  0019923: EDF 765 SMESH : default values of hypothesis
