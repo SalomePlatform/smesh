@@ -3549,6 +3549,7 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent ): SMESHGUI_Info( parent )
   connect( aDoubleVolumesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleVolumesInfo() ) );
   connect( aOverContVolumesBtn,SIGNAL( clicked() ), this, SLOT( computeOverConstrainedVolumesInfo() ) );
   connect( myToleranceWidget, SIGNAL( valueChanged( double ) ), this, SLOT( setTolerance( double ) ) );
+  this->setTolerance(myToleranceWidget->GetValue());
 
   l->addWidget( aNameLab,           0, 0 ); //0
   l->addWidget( aName,              0, 1 ); //1
