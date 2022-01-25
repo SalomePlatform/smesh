@@ -715,7 +715,13 @@ extern "C"
                                                            const char *interfaceName)
   {
     LOG("PortableServer::ObjectId * MeshJobManagerEngine_factory()");
-    MeshJobManager_i * myEngine = new MeshJobManager_i(orb, poa, contId, instanceName, interfaceName);
+    MeshJobManager_i * myEngine = nullptr;
+    CORBA::Object_var o = poa->id_to_reference(*contId);
+    Engines::Container_var cont = Engines::Container::_narrow(o);
+    if(cont->is_SSL_mode())
+      myEngine = new MeshJobManager_i(orb, poa, contId, instanceName, interfaceName, false, false);
+    else
+      myEngine = new MeshJobManager_i(orb, poa, contId, instanceName, interfaceName, true, true);
     return myEngine->getId() ;
   }
 }
