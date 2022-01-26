@@ -5,7 +5,7 @@ Over-constrained volumes
 ************************
 
 This mesh quality control highlights volumes sharing only one border with other volumes.
-In other words, the volumes having all their nodes on the external border of the mesh are highlighted.
+
 
 .. note::
 	The highlighted volumes are actually over-constrained only if, at the computation time, the boundary conditions on the borders where the nodes are located are all Dirichlet boundary conditions.
