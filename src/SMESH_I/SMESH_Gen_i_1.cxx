@@ -282,10 +282,10 @@ GEOM::GEOM_Object_ptr SMESH_Gen_i::GetGeomObjectByEntry( const std::string& entr
 //=======================================================================
 
 SALOMEDS::SObject_ptr SMESH_Gen_i::publish(CORBA::Object_ptr     theIOR,
-                                     SALOMEDS::SObject_ptr theFatherObject,
-                                     const int             theTag,
-                                     const char*           thePixMap,
-                                     const bool            theSelectable)
+                                           SALOMEDS::SObject_ptr theFatherObject,
+                                           const int             theTag,
+                                           const char*           thePixMap,
+                                           const bool            theSelectable)
 {
   SALOMEDS::Study_var theStudy = getStudyServant();
   SALOMEDS::SObject_wrap SO = ObjectToSObject( theIOR );

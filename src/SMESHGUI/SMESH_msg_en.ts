@@ -3297,6 +3297,10 @@ Use Display Entity menu command to show them.
         <translation>Compute</translation>
     </message>
     <message>
+        <source>STB_RE_COMPUTE</source>
+        <translation>Clear + Compute</translation>
+    </message>
+    <message>
         <source>STB_COMPUTE_SUBMESH</source>
         <translation>Compute Sub-mesh</translation>
     </message>
@@ -3995,6 +3999,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_COMPUTE</source>
         <translation>Compute</translation>
+    </message>
+    <message>
+        <source>TOP_RE_COMPUTE</source>
+        <translation>Clear + Compute</translation>
     </message>
     <message>
         <source>TOP_COMPUTE_SUBMESH</source>
