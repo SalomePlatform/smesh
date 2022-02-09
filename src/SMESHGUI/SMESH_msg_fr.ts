@@ -889,6 +889,18 @@
         <translation>Déplacer un nœud</translation>
     </message>
     <message>
+        <source>MEN_MOVE_NODE_INTRCT</source>
+        <translation>Déplacer un nœud à la souris</translation>
+    </message>
+    <message>
+        <source>MEN_SPLIT_DIAG_INTRC</source>
+        <translation>Ajouter un nœud sur un segment</translation>
+    </message>
+    <message>
+        <source>MEN_SPLIT_FACE_INTRC</source>
+        <translation>Ajouter un nœud dans un triangle</translation>
+    </message>
+    <message>
         <source>MEN_MIN_ANG</source>
         <translation>Angle minimal</translation>
     </message>
@@ -1079,6 +1091,10 @@
     <message>
         <source>MEN_REMOVE_NODES</source>
         <translation>Nœuds</translation>
+    </message>
+    <message>
+        <source>MEN_REMOVE_NODE_RECON</source>
+        <translation>Retirer un nœud avec reconnection</translation>
     </message>
     <message>
         <source>MEN_REMOVE_ORPHAN_NODES</source>
@@ -1601,6 +1617,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
     <message>
         <source>SMESH_AUTO_DIM</source>
         <translation>Définition automatique des dimensions spatiales</translation>
+    </message>
+    <message>
+        <source>SMESH_MED_SAVE_NUMS</source>
+        <translation>Export des indices</translation>
     </message>
     <message>
         <source>SMESH_ZTOLERANCE</source>
@@ -3292,6 +3312,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Calculer</translation>
     </message>
     <message>
+        <source>STB_RE_COMPUTE</source>
+        <translation>Effacer + Calculer</translation>
+    </message>
+    <message>
         <source>STB_COMPUTE_SUBMESH</source>
         <translation>Calculer le sous-maillage</translation>
     </message>
@@ -3604,6 +3628,18 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Déplacer un nœud</translation>
     </message>
     <message>
+        <source>STB_MOVE_NODE_INTRCT</source>
+        <translation>Déplacer un nœud à la souris</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_DIAG_INTRC</source>
+        <translation>Ajouter un nœud à un segment</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_FACE_INTRC</source>
+        <translation>Ajouter un nœud à un triangle</translation>
+    </message>
+    <message>
         <source>STB_MIN_ANG</source>
         <translation>Angle minimal</translation>
     </message>
@@ -3690,6 +3726,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_REMOVE_NODES</source>
         <translation>Supprimer les nœuds</translation>
+    </message>
+    <message>
+        <source>STB_REMOVE_NODE_RECON</source>
+        <translation>Supprimer un nœud avec reconnection</translation>
     </message>
     <message>
         <source>STB_REMOVE_ORPHAN_NODES</source>
@@ -3888,6 +3928,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Barre de renumérotation</translation>
     </message>
     <message>
+        <source>TB_INTERACT</source>
+        <translation>Barre des modifications interactives</translation>
+    </message>
+    <message>
         <source>TB_TRANSFORM</source>
         <translation>Barre des transformations</translation>
     </message>
@@ -3990,6 +4034,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_COMPUTE</source>
         <translation>Calculer</translation>
+    </message>
+    <message>
+        <source>TOP_RE_COMPUTE</source>
+        <translation>Effacer + Calculer</translation>
     </message>
     <message>
         <source>TOP_COMPUTE_SUBMESH</source>
@@ -4296,6 +4344,18 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Déplacer un nœud</translation>
     </message>
     <message>
+        <source>TOP_MOVE_NODE_INTRCT</source>
+        <translation>Deplacer un nœud à la souris</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_DIAG_INTRC</source>
+        <translation>Ajouter un nœud sur un segment</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_FACE_INTRC</source>
+        <translation>Ajouter un nœud dans un triangle</translation>
+    </message>
+    <message>
         <source>TOP_MIN_ANG</source>
         <translation>Angle minimal</translation>
     </message>
@@ -4382,6 +4442,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_REMOVE_NODES</source>
         <translation>Supprimer les nœuds</translation>
+    </message>
+    <message>
+        <source>TOP_REMOVE_NODE_RECON</source>
+        <translation>Supprimer un nœud avec reconnection</translation>
     </message>
     <message>
         <source>TOP_REMOVE_ORPHAN_NODES</source>
@@ -5239,71 +5303,71 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>INFO_WELCOME_TO_SMESH</source>
-        <translation type="unfinished">Bienvenue dans le module Mesh</translation>
+        <translation>Bienvenue dans le module Mesh</translation>
     </message>
     <message>
         <source>INFO_GRP_CREATE_MESH</source>
-        <translation type="unfinished">Créer un maillage</translation>
+        <translation>Créer un maillage</translation>
     </message>
     <message>
         <source>INFO_DEFINE_ALGOS</source>
-        <translation type="unfinished">Choisir les algorithmes</translation>
+        <translation>Choisir les algorithmes</translation>
     </message>
     <message>
         <source>INFO_DEFINE_HYPOS</source>
-        <translation type="unfinished">Définir des hypothèses</translation>
+        <translation>Définir des hypothèses</translation>
     </message>
     <message>
         <source>INFO_COMPUTE</source>
-        <translation type="unfinished">Calculer</translation>
+        <translation>Calculer</translation>
     </message>
     <message>
         <source>INFO_REFINE</source>
-        <translation type="unfinished">Ajouter des raffinements</translation>
+        <translation>Ajouter des raffinements</translation>
     </message>
     <message>
         <source>INFO_REFINE_LOCAL_SIZE</source>
-        <translation type="unfinished">via des tailles locales dans certaines hypothèses</translation>
+        <translation>via des tailles locales dans certaines hypothèses</translation>
     </message>
     <message>
         <source>INFO_REFINE_SUBMESH</source>
-        <translation type="unfinished">via des sous-maillages</translation>
+        <translation>via des sous-maillages</translation>
     </message>
     <message>
         <source>INFO_GRP_IMPORT_MESH</source>
-        <translation type="unfinished">Importer un maillage</translation>
+        <translation>Importer un maillage</translation>
     </message>
     <message>
         <source>INFO_AVAILABLE_FORMATS</source>
-        <translation type="unfinished">Formats disponibles</translation>
+        <translation>Formats disponibles</translation>
     </message>
     <message>
         <source>INFO_GRP_CHECK_MESH</source>
-        <translation type="unfinished">Contrôler la qualité du maillage</translation>
+        <translation>Contrôler la qualité du maillage</translation>
     </message>
     <message>
         <source>INFO_DISPLAY</source>
-        <translation type="unfinished">Afficher le maillage</translation>
+        <translation>Afficher le maillage</translation>
     </message>
     <message>
         <source>INFO_QUALITY_INFO</source>
-        <translation type="unfinished">Afficher des critères de qualité</translation>
+        <translation>Afficher des critères de qualité</translation>
     </message>
     <message>
         <source>INFO_QUALITY_AREA</source>
-        <translation type="unfinished">surface</translation>
+        <translation>surface</translation>
     </message>
     <message>
         <source>INFO_QUALITY_VOLUME</source>
-        <translation type="unfinished">volume</translation>
+        <translation>volume</translation>
     </message>
     <message>
         <source>INFO_QUALITY_ASPECT_RATION</source>
-        <translation type="unfinished">Facteur de forme</translation>
+        <translation>Facteur de forme</translation>
     </message>
     <message>
         <source>INFO_CLIPPING</source>
-        <translation type="unfinished">Insérer un plan de coupe</translation>
+        <translation>Insérer un plan de coupe</translation>
     </message>
 </context>
 <context>
@@ -6708,6 +6772,10 @@ Indiquez-les et essayez de nouveau</translation>
         <translation>Destination</translation>
     </message>
     <message>
+        <source>DESTINATION_BY_MOUSE</source>
+        <translation>Destination par clic souris</translation>
+    </message>
+    <message>
         <source>MOVE_NODE</source>
         <translation>Déplacer un nœud</translation>
     </message>
@@ -6733,6 +6801,120 @@ Indiquez-les et essayez de nouveau</translation>
     <message>
         <source>INVALID_MESH</source>
         <translation>Le maillage à modifier n'est pas sélectionné</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddNodeOnSegmentDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Ajout de nœud sur un segment</translation>
+    </message>
+    <message>
+        <source>SEGMENT_GROUP</source>
+        <translation>Segment entre triangles voisins</translation>
+    </message>
+    <message>
+        <source>SEGMENT</source>
+        <translation>Segment</translation>
+    </message>
+    <message>
+        <source>POSITION_GROUP</source>
+        <translation>Nœud sur le segment</translation>
+    </message>
+    <message>
+        <source>POSITION</source>
+        <translation>Position par clic de souris</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddNodeOnSegmentOp</name>
+    <message>
+        <source>INVALID_EDGE</source>
+        <translation>Segment non valide</translation>
+    </message>
+    <message>
+        <source>INVALID_MESH</source>
+        <translation>Maillage à modifier non selectionner</translation>
+    </message>
+    <message>
+        <source>NO_ELEMENTS</source>
+        <translation>Le segment n'appartient à aucune face</translation>
+    </message>
+    <message>
+        <source>VOLUME_FOUND</source>
+        <translation>Ne peut pas découpé le segment d'un volume</translation>
+    </message>
+    <message>
+        <source>NOT_TRIANGLE_FACE_FOUND</source>
+        <translation>Cette opération ne fonctionne que sur des triangles</translation>
+    </message>
+    <message>
+        <source>BAD_POSITION</source>
+        <translation>La position sur le segment n'est pas valide</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddNodeOnFaceDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Ajout d'un nœud dans un triangle</translation>
+    </message>
+    <message>
+        <source>FACE_GROUP</source>
+        <translation>Triangle à découper</translation>
+    </message>
+    <message>
+        <source>FACE_ID</source>
+        <translation>ID</translation>
+    </message>
+    <message>
+        <source>XYZ_GROUP</source>
+        <translation>Position du nœud par clic de souris</translation>
+    </message>
+    <message>
+        <source>XYZ_NODE_ON_FACE</source>
+        <translation>Nœud sur la face</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddNodeOnFaceOp</name>
+    <message>
+        <source>INVALID_MESH</source>
+        <translation>Maillage à modifier pas selectionné</translation>
+    </message>
+    <message>
+        <source>NOT_FACE</source>
+        <translation>Pas de face selectionnée</translation>
+    </message>
+    <message>
+        <source>INVALID_ID</source>
+        <translation>L'ID de la face n'est pas valide</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_RemoveNodeReconnectionDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Supression de nœud avec reconnection</translation>
+    </message>
+    <message>
+        <source>NODE_2REMOVE_ID</source>
+        <translation>ID</translation>
+    </message>
+    <message>
+        <source>NODE_2REMOVE</source>
+        <translation>Nœud</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_RemoveNodeReconnectionOp</name>
+    <message>
+        <source>INVALID_ID</source>
+        <translation>L'ID du nœud n'est pas valide</translation>
+    </message>
+    <message>
+        <source>INVALID_MESH</source>
+        <translation>Maillage à modifier pas selectionné</translation>
     </message>
 </context>
 <context>
