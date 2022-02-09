@@ -17,11 +17,12 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(tests.set)
-
+SET(MED_INT_IS_LONG @MED_INT_IS_LONG@)
 SET(PYTHON_TEST_DRIVER "$ENV{KERNEL_ROOT_DIR}/bin/salome/appliskel/python_test_driver.py")
 SET(COMPONENT_NAME SMESH)
 SET(TIMEOUT        300)
+
+INCLUDE(tests.set)
 
 FOREACH(tfile ${GOOD_TESTS} ${BAD_TESTS})
   GET_FILENAME_COMPONENT(BASE_NAME ${tfile} NAME_WE)

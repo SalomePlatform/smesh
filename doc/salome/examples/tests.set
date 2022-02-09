@@ -56,10 +56,14 @@ SET(BAD_TESTS
 IF(NOT WIN32)
   LIST(APPEND BAD_TESTS
     MGAdaptTests_without_session.py
-    test_homard_adapt.py
-    test_uniform_refinement.py
     test_smeshplugin_mg_tetra_parallele.py
   )
+  IF(MED_INT_IS_LONG)
+    LIST(APPEND BAD_TESTS
+      test_homard_adapt.py
+      test_uniform_refinement.py
+    )
+  ENDIF(MED_INT_IS_LONG)
 ENDIF(NOT WIN32)
 
 SET(GOOD_TESTS
