@@ -2254,6 +2254,56 @@ std::vector< const SMDS_MeshNode*> SMESH_MeshAlgos::GetCommonNodes(const SMDS_Me
 
 //================================================================================
 /*!
+ * \brief Return true if a node is on a boundary of 2D mesh.
+ *        Optionally returns two neighboring boundary nodes (or more in non-manifold mesh)
+ */
+//================================================================================
+
+bool SMESH_MeshAlgos::IsOn2DBoundary( const SMDS_MeshNode*                 theNode,
+                                      std::vector< const SMDS_MeshNode*> * theNeibors )
+{
+  typedef NCollection_DataMap< SMESH_TLink, int, SMESH_TLink > TLinkCountMap;
+  TLinkCountMap linkCountMap( 10 );
+
+  int nbFreeLinks = 0;
+  for ( SMDS_ElemIteratorPtr fIt = theNode->GetInverseElementIterator(SMDSAbs_Face); fIt->more(); )
+  {
+    const SMDS_MeshElement* face = fIt->next();
+    const int          nbCorners = face->NbCornerNodes();
+
+    int    iN = face->GetNodeIndex( theNode );
+    int iPrev = ( iN - 1 + nbCorners ) % nbCorners;
+    int iNext = ( iN + 1 ) % nbCorners;
+
+    for ( int i : { iPrev, iNext } )
+    {
+      SMESH_TLink link( theNode, face->GetNode( i ));
+      int* count = linkCountMap.ChangeSeek( link );
+      if ( count )  ++( *count );
+      else          linkCountMap.Bind( link, 1 );
+
+      if ( !count ) ++nbFreeLinks;
+      else          --nbFreeLinks;
+    }
+  }
+
+  if ( theNeibors )
+  {
+    theNeibors->clear();
+    theNeibors->reserve( nbFreeLinks );
+    for ( TLinkCountMap::Iterator linkIt( linkCountMap ); linkIt.More(); linkIt.Next() )
+      if ( linkIt.Value() == 1 )
+      {
+        theNeibors->push_back( linkIt.Key().node1() );
+        if ( theNeibors->back() == theNode )
+          theNeibors->back() = linkIt.Key().node2();
+      }
+  }
+  return nbFreeLinks > 0;
+}
+
+//================================================================================
+/*!
  * \brief Return true if node1 encounters first in the face and node2, after
  */
 //================================================================================

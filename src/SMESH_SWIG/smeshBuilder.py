@@ -4098,6 +4098,16 @@ class Mesh(metaclass = MeshMeta):
 
         return self.editor.RemoveNodes(IDsOfNodes)
 
+    def RemoveNodeWithReconnection(self, nodeID ):
+        """
+        Remove a node along with changing surrounding faces to cover a hole.
+
+        Parameters:
+                nodeID: ID of node to remove
+        """
+
+        return self.editor.RemoveNodeWithReconnection( nodeID )
+
     def RemoveOrphanNodes(self):
         """
         Remove all orphan (free) nodes from mesh
@@ -4590,6 +4600,30 @@ class Mesh(metaclass = MeshMeta):
         """
 
         return self.editor.DeleteDiag(NodeID1, NodeID2)
+
+    def AddNodeOnSegment(self, Node1, Node2, position = 0.5):
+        """
+        Replace each triangle bound by Node1-Node2 segment with
+        two triangles by connecting a node made on the link with a node 
+        opposite to the link.
+
+        Parameters:
+                Node1: ID of the first node
+                Node2: ID of the second node
+                position: location [0,1] of the new node on the segment
+        """
+        return self.editor.AddNodeOnSegment(Node1, Node2, position)
+
+    def AddNodeOnFace(self, face, x, y, z):
+        """
+        Split a face into triangles by adding a new node onto the face
+        and connecting the new node with face nodes
+
+        Parameters:
+                face: ID of the face
+                x,y,z: coordinates of the new node
+        """
+        return self.editor.AddNodeOnFace(face, x, y, z)
 
     def Reorient(self, IDsOfElements=None):
         """

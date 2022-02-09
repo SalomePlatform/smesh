@@ -122,6 +122,9 @@ SET(SMESH_RESOURCES_FILES
   mesh_minus.png
   mesh_move_node.png
   mesh_move_without_node.png
+  mesh_move_node_interactive.png
+  mesh_split_diag_interactive.png
+  mesh_split_face_interactive.png
   mesh_multi_edges.png
   mesh_multi_edges_2d.png
   mesh_node_to_point.png
@@ -158,6 +161,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_rem_element.png
   mesh_rem_node.png
   mesh_rem_orphan_nodes.png
+  mesh_rem_node_recon.png
   mesh_remove.png
   mesh_renumbering_elements.png
   mesh_renumbering_nodes.png

@@ -126,6 +126,10 @@ public:
    */
   SMDS_MeshElement* AddElement(const std::vector<smIdType> & nodeIDs,
                                const ElemFeatures&           features);
+  /*!
+   * \brief Remove a node and fill a hole appeared by changing surrounding faces
+   */
+  void RemoveNodeWithReconnection( const SMDS_MeshNode* node );
 
   smIdType Remove (const std::list< smIdType >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
@@ -154,6 +158,20 @@ public:
   // Replace two neighbour triangles sharing theNode1-theNode2 link
   // with a quadrangle built on the same 4 nodes.
   // Return false if proper faces not found
+
+  void SplitEdge (const SMDS_MeshNode * theNode1,
+                  const SMDS_MeshNode * theNode2,
+                  double                thePosition);
+  // Replace each triangle bound by theNode1-theNode2 link
+  // with two triangles by connecting a node made on the link with a node opposite to the link.
+
+  void SplitFace (const SMDS_MeshElement * theFace,
+                  double                   theX,
+                  double                   theY,
+                  double                   theZ );
+  // Split a face into triangles each formed by two nodes of the face and a new node added
+  // at the given coordinates.
+
 
   bool Reorient (const SMDS_MeshElement * theElement);
   // Reverse theElement orientation

@@ -207,6 +207,16 @@ Cutting Quadrangles
 
 :download:`Download this script <../../../examples/modifying_meshes_ex20.py>`
 
+.. _tui_cutting_triangles: 
+
+Cutting Triangles
+=================
+
+.. literalinclude:: ../../../examples/modifying_meshes_cut_triangles.py
+    :language: python
+
+:download:`Download this script <../../../examples/modifying_meshes_cut_triangles.py>`
+
 .. _modifying_meshes_split_vol: 
 
 Split Volumes into Tetrahedra

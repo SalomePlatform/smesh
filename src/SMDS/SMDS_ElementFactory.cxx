@@ -649,6 +649,13 @@ void SMDS_ElementChunk::SetVTKID( const SMDS_MeshElement* e, const vtkIdType vtk
     }
     myFactory->mySmdsIDs[ vtkID ] = e->GetID() - 1;
   }
+  else
+  {
+    if ((size_t) e->GetID() <= myFactory->myVtkIDs.size() )
+      myFactory->myVtkIDs[ e->GetID() - 1 ] = vtkID;
+    if ((size_t) vtkID < myFactory->mySmdsIDs.size() )
+      myFactory->mySmdsIDs[ vtkID ] = e->GetID() - 1;
+  }
 }
 
 //================================================================================

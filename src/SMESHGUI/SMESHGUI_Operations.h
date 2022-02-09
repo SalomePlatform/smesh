@@ -153,6 +153,7 @@ namespace SMESHOp {
     OpRemoveNodes            = 4200,   // MENU MODIFICATION - REMOVE - NODE
     OpRemoveElements         = 4201,   // MENU MODIFICATION - REMOVE - ELEMENTS
     OpRemoveOrphanNodes      = 4202,   // MENU MODIFICATION - REMOVE - ORPHAN NODES
+    OpRemoveNodeWithReconn   = 4203,   // MENU MODIFICATION - REMOVE - NODE, WITH RECONNECTION
     OpDeleteGroup            = 4210,   // MENU MODIFICATION - REMOVE - DELETE GROUPS WITH CONTENTS
     OpClearMesh              = 4220,   // MENU MODIFICATION - REMOVE - CLEAR MESH DATA
     OpRenumberingNodes       = 4300,   // MENU MODIFICATION - RENUMBERING - NODES
@@ -182,6 +183,9 @@ namespace SMESHOp {
     OpConvertMeshToQuadratic = 4513,   // MENU MODIFICATION - CONVERT TO/FROM QUADRATIC
     OpCreateBoundaryElements = 4514,   // MENU MODIFICATION - CREATE BOUNDARY ELEMENTS
     OpSplitBiQuadratic       = 4515,   // MENU MODIFICATION - SPLIT BI-QUADRATIC TO LINEAR
+    OpMoveNodeInteractive    = 4516,   // MENU MODIFICATION - MOVE NODE INTERACTIVE
+    OpSplitEdgeInteract      = 4517,   // MENU MODIFICATION - INTERACTIVE ADD NODE ON EDGE
+    OpSplitFaceInteract      = 4518,   // MENU MODIFICATION - INTERACTIVE ADD NODE ON FACE
     // Adaptation ---------------------//--------------------------------
     OpMGAdapt                = 8020,   // MENU ADAPTATION - MG-ADAPT
     OpHomardAdapt            = 8021,   // MENU ADAPTATION - HOMARD-ADAPT

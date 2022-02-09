@@ -7,6 +7,7 @@ Removing nodes and elements
 In MESH you can remove nodes and all types of cells of your mesh.
 
 * :ref:`removing_nodes_anchor`
+* :ref:`removing_nodes_reconnect_anchor`
 * :ref:`removing_orphan_nodes_anchor`
 * :ref:`removing_elements_anchor`
 * :ref:`clear_mesh_anchor`
@@ -33,13 +34,45 @@ Removing nodes
    In this dialog box you can specify one or several nodes:
 
    * choose mesh nodes with the mouse in the 3D Viewer. It is possible to select a whole area with a mouse frame; or 
-   * input the node IDs directly in **ID Elements** field. The selected nodes will be highlighted in the viewer; or
+   * input the node IDs directly in **Node IDs** field. The selected nodes will be highlighted in the viewer; or
    * apply Filters. **Set filter** button allows to apply a filter to the selection of nodes. See more about filters in the :ref:`selection_filter_library_page` page.
 
 #. Click **Apply** or **Apply and Close** to confirm deletion of the specified nodes.
 
 .. note::
 	Be careful while removing nodes because if you remove a definite node of your mesh all adjacent elements will be also deleted.
+
+
+.. _removing_nodes_reconnect_anchor:
+
+Removing node with reconnection
+###############################
+
+This operation removes a node and changes surrounding faces in order to cover a hole appearing in the mesh. This operation applies to 2D triangle mesh only.
+
+	.. image:: ../images/remove_node_reconnection.png
+		:align: center
+
+**To remove a node:**
+
+.. |rmnr| image:: ../images/remove_node_reconnection_icon.png
+
+#. Select your mesh in the Object Browser or in the 3D viewer.
+#. From the **Modification** menu choose **Remove** and from the associated submenu select the **Node with reconnection**, or just click *"Remove node with reconnection"* button |rmnr| in the toolbar.
+   The following dialog box will appear:
+
+	.. image:: ../images/remove_node_reconnection_dlg.png
+		:align: center
+
+
+   In this dialog box you can specify one node to remove:
+
+   * choose a mesh node with the mouse in the 3D Viewer or 
+   * input the node ID directly in **ID** field. The selected node will be highlighted in the viewer.
+
+   Activate **Preview** to see how faces will change.
+
+#. Click **Apply** or **Apply and Close** to confirm deletion of the specified node.
 
 
 .. _removing_orphan_nodes_anchor:
