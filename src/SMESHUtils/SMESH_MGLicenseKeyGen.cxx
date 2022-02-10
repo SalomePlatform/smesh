@@ -60,6 +60,8 @@ namespace boofs = boost::filesystem;
 #undef SMESH_CAUGHT
 #define SMESH_CAUGHT error =
 
+constexpr char MESHGEMS_OLD_STYLE[] = "MESHGEMS_OLD_STYLE";
+
 
 namespace
 {
@@ -372,7 +374,7 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
    */
   //================================================================================
 
-  bool SignCAD( void* meshgems_cad, std::string& error )
+  bool SignCAD_After( void* meshgems_cad, std::string& error )
   {
     LibraryFile libraryFile;
     if ( !loadLibrary( error, libraryFile ))
@@ -401,6 +403,15 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     }
     return ok;
   }
+  
+  bool SignCAD( void* meshgems_cad, std::string& error )
+  {
+    const char *meshGemsOldStyleEnvVar( getenv( MESHGEMS_OLD_STYLE ) );
+    if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 )
+      return SignCAD_After(meshgems_cad, error);
+    else
+      return true;
+  }
 
   //================================================================================
   /*!
@@ -411,7 +422,7 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
    */
   //================================================================================
 
-  bool SignMesh( void* meshgems_mesh, std::string& error )
+  bool SignMesh_After( void* meshgems_mesh, std::string& error )
   {
     LibraryFile libraryFile;
     if ( !loadLibrary( error, libraryFile ))
@@ -440,6 +451,15 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     }
     return ok;
   }
+  
+  bool SignMesh( void* meshgems_mesh, std::string& error )
+  {
+    const char *meshGemsOldStyleEnvVar( getenv( MESHGEMS_OLD_STYLE ) );
+    if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 )
+      return SignMesh_After(meshgems_mesh, error);
+    else
+      return true;
+  }
 
   //================================================================================
   /*!
@@ -451,12 +471,12 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
    */
   //================================================================================
 
-  std::string GetKey(const std::string& gmfFile,
-                     int                nbVertex,
-                     int                nbEdge,
-                     int                nbFace,
-                     int                nbVol,
-                     std::string&       error)
+  std::string GetKey_After(const std::string& gmfFile,
+                            int                nbVertex,
+                            int                nbEdge,
+                            int                nbFace,
+                            int                nbVol,
+                            std::string&       error)
   {
     std::string key;
     LibraryFile libraryFile;
@@ -478,6 +498,20 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
       error = "GetKey() failed (located in '" + libraryFile._name + "')";
 
     return key;
+  }
+
+  std::string GetKey(const std::string& gmfFile,
+                    int                nbVertex,
+                    int                nbEdge,
+                    int                nbFace,
+                    int                nbVol,
+                    std::string&       error)
+  {
+    const char *meshGemsOldStyleEnvVar( getenv( MESHGEMS_OLD_STYLE ) );
+    if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 )
+      return GetKey_After(gmfFile,nbVertex,nbEdge,nbFace,nbVol,error);
+    else
+      return std::string("0");
   }
 
   //================================================================================
