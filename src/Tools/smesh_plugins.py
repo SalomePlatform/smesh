@@ -91,3 +91,14 @@ except Exception as e:
   #print 'probleme zcracks'
   salome_pluginsmanager.logger.info('ERROR: Zcrack plug-in is unavailable: {}'.format(e))
   pass
+
+# Topological to volumic mesh plugin
+try:
+  from TopIIVolMeshPlugin import TopIIVolMeshLct
+  salome_pluginsmanager.AddFunction('Run Topological Volumic mesher',
+                                    'run topological volumic mesher',
+                                    TopIIVolMeshLct)
+except Exception as e:
+  #print 'probleme zcracks'
+  salome_pluginsmanager.logger.info('ERROR: TopIIVolMesh plug-in is unavailable: {}'.format(e))
+  pass

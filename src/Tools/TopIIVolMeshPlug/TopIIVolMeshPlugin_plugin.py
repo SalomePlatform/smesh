@@ -1,4 +1,5 @@
-# Copyright (C) 2012-2021  EDF R&D
+# -*- coding: utf-8 -*-
+# Copyright (C) 2013-2020  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,24 +18,19 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(MeshCut)
-ADD_SUBDIRECTORY(padder)
-ADD_SUBDIRECTORY(Verima)
-ADD_SUBDIRECTORY(blocFissure)
-ADD_SUBDIRECTORY(MacMesh)
+# if you already have plugins defined in a salome_plugins.py file, add this file at the end.
+# if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
-IF(SALOME_BUILD_GUI)
-  ADD_SUBDIRECTORY(MGCleanerPlug)
-  ADD_SUBDIRECTORY(YamsPlug)
-  ADD_SUBDIRECTORY(TopIIVolMeshPlug)
-#  ADD_SUBDIRECTORY(ZCracksPlug)
-ENDIF(SALOME_BUILD_GUI)
+def TopIIVolMeshLct(context):
+  # get context study, salomeGui
+  study = context.study
+  sg = context.sg
 
-# scripts / static
-SET(plugin_SCRIPTS
-  smesh_plugins.py 
-)
+  import os
+  import subprocess
+  import tempfile
+  from qtsalome import QFileDialog, QMessageBox
 
-# --- rules ---
-
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+  import TopIIVolMeshPluginDialog
+  window = TopIIVolMeshPluginDialog.getDialog()
+  window.show()

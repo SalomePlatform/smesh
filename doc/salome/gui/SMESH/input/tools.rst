@@ -9,6 +9,7 @@ The following plugins are accessible via **Mesh > SMESH plugins** menu:
 * `SpherePadder plugin <padder/padder_userguide_page.html>`_
 * `MGSurfOpt plugin <yams/index.html>`_
 * `MGCleaner plugin <MGCleaner/index.html>`_
+* `topIIVolMesh plugin <TopIIVolMesh/index.html>`_
 * `Z-cracks plugin <zcracks/index.html>`_
 * `MacMesh plugin <MacMesh/index.html>`_
 * `blocFissure plugin <blocFissure/index.html>`_
