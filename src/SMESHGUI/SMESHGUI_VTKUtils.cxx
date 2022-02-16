@@ -692,6 +692,7 @@ namespace SMESH
       try {
         OCC_CATCH_SIGNALS;
         //MESSAGE("DisplayActor " << theActor);
+        theActor->SetPointRepresentation(false);
         vtkWnd->AddActor(theActor);
         vtkWnd->Repaint();
       }
