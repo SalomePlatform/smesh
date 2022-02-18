@@ -23,8 +23,8 @@ import unittest, sys, os
 
 class SalomeSession(object):
     def __init__(self, script):
-        import runSalome
-        run_script = "runSalome.py"
+        import runSalomeOld as runSalome
+        run_script = "runSalomeOld.py"
         if sys.platform == 'win32':
             module_dir = os.getenv("KERNEL_ROOT_DIR")
             if module_dir: run_script = os.path.join(module_dir, "bin", "salome", run_script)
