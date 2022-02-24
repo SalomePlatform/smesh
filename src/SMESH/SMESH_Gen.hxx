@@ -154,6 +154,7 @@ public:
   static int GetShapeDim(const TopAbs_ShapeEnum & aShapeType);
   static int GetShapeDim(const TopoDS_Shape &     aShape)
   { return GetShapeDim( aShape.ShapeType() ); }
+  static int GetFlatShapeDim(const TopoDS_Shape &aShape);
 
   SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, TopoDS_Shape* assignedTo=0);
   SMESH_Algo* GetAlgo(SMESH_subMesh * aSubMesh, TopoDS_Shape* assignedTo=0);

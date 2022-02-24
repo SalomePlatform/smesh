@@ -39,11 +39,12 @@
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 
-#include "utilities.h"
-#include "Utils_ExceptHandlers.hxx"
+#include <utilities.h>
+#include <Utils_ExceptHandlers.hxx>
 
-#include <TopoDS_Iterator.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Iterator.hxx>
 
 #include "memoire.h"
 
@@ -331,6 +332,32 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       else
         smWithAlgoSupportingSubmeshes[0].push_front( shDim2smIt->second );
 
+    // gather sub-shapes with local uni-dimensional algos (bos #29143)
+    // ----------------------------------------------------------------
+    TopTools_MapOfShape uniDimAlgoShapes;
+    ShapeToHypothesis::Iterator s2hyps( aMesh.GetMeshDS()->GetHypotheses() );
+    for ( ; s2hyps.More(); s2hyps.Next() )
+    {
+      const TopoDS_Shape& s = s2hyps.Key();
+      if ( s.IsSame( aMesh.GetShapeToMesh() ))
+        continue;
+      for ( auto & hyp : s2hyps.Value() )
+      {
+        if ( const SMESH_Algo* algo = dynamic_cast< const SMESH_Algo*>( hyp ))
+          if ( algo->NeedDiscreteBoundary() )
+          {
+            TopAbs_ShapeEnum sType;
+            switch ( algo->GetDim() ) {
+            case 3:  sType = TopAbs_SOLID; break;
+            case 2:  sType = TopAbs_FACE; break;
+            default: sType = TopAbs_EDGE; break;
+            }
+            for ( TopExp_Explorer ex( s2hyps.Key(), sType ); ex.More(); ex.Next() )
+              uniDimAlgoShapes.Add( ex.Current() );
+          }
+      }
+    }
+
     // ======================================================
     // Apply all-dimensional algorithms supporing sub-meshes
     // ======================================================
@@ -374,9 +401,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
           SMESH_subMesh* smToCompute = smIt->next();
 
           const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-          const int aShapeDim = GetShapeDim( aSubShape );
+          const           int aShapeDim = GetShapeDim( aSubShape );
           if ( aShapeDim < 1 || aSubShape.ShapeType() <= shapeType )
             continue;
+          if ( !uniDimAlgoShapes.Contains( aSubShape ))
+            continue; // [bos #29143] aMesh.GetHypothesis() is too long
 
           // check for preview dimension limitations
           if ( aShapesId && GetShapeDim( aSubShape.ShapeType() ) > (int)aDim )
@@ -1220,6 +1249,26 @@ int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
     dim[ TopAbs_VERTEX ]    = MeshDim_0D;
   }
   return dim[ aShapeType ];
+}
+
+//================================================================================
+/*!
+ * \brief Return shape dimension by exploding compounds
+ */
+//================================================================================
+
+int SMESH_Gen::GetFlatShapeDim(const TopoDS_Shape &aShape)
+{
+  int aShapeDim;
+  if ( aShape.ShapeType() == TopAbs_COMPOUND ||
+       aShape.ShapeType() == TopAbs_COMPSOLID )
+  {
+    TopoDS_Iterator it( aShape );
+    aShapeDim = GetFlatShapeDim( it.Value() );
+  }
+  else
+    aShapeDim = GetShapeDim( aShape );
+  return aShapeDim;
 }
 
 //=============================================================================
