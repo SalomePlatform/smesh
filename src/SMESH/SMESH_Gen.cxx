@@ -332,32 +332,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       else
         smWithAlgoSupportingSubmeshes[0].push_front( shDim2smIt->second );
 
-    // gather sub-shapes with local uni-dimensional algos (bos #29143)
-    // ----------------------------------------------------------------
-    TopTools_MapOfShape uniDimAlgoShapes;
-    ShapeToHypothesis::Iterator s2hyps( aMesh.GetMeshDS()->GetHypotheses() );
-    for ( ; s2hyps.More(); s2hyps.Next() )
-    {
-      const TopoDS_Shape& s = s2hyps.Key();
-      if ( s.IsSame( aMesh.GetShapeToMesh() ))
-        continue;
-      for ( auto & hyp : s2hyps.Value() )
-      {
-        if ( const SMESH_Algo* algo = dynamic_cast< const SMESH_Algo*>( hyp ))
-          if ( algo->NeedDiscreteBoundary() )
-          {
-            TopAbs_ShapeEnum sType;
-            switch ( algo->GetDim() ) {
-            case 3:  sType = TopAbs_SOLID; break;
-            case 2:  sType = TopAbs_FACE; break;
-            default: sType = TopAbs_EDGE; break;
-            }
-            for ( TopExp_Explorer ex( s2hyps.Key(), sType ); ex.More(); ex.Next() )
-              uniDimAlgoShapes.Add( ex.Current() );
-          }
-      }
-    }
-
     // ======================================================
     // Apply all-dimensional algorithms supporing sub-meshes
     // ======================================================
@@ -367,6 +341,36 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       smVec.insert( smVec.end(),
                     smWithAlgoSupportingSubmeshes[aShapeDim].begin(),
                     smWithAlgoSupportingSubmeshes[aShapeDim].end() );
+
+    // gather sub-shapes with local uni-dimensional algos (bos #29143)
+    // ----------------------------------------------------------------
+    TopTools_MapOfShape uniDimAlgoShapes;
+    if ( !smVec.empty() )
+    {
+      ShapeToHypothesis::Iterator s2hyps( aMesh.GetMeshDS()->GetHypotheses() );
+      for ( ; s2hyps.More(); s2hyps.Next() )
+      {
+        const TopoDS_Shape& s = s2hyps.Key();
+        if ( s.IsSame( aMesh.GetShapeToMesh() ))
+          continue;
+        for ( auto & hyp : s2hyps.Value() )
+        {
+          if ( const SMESH_Algo* algo = dynamic_cast< const SMESH_Algo*>( hyp ))
+            if ( algo->NeedDiscreteBoundary() )
+            {
+              TopAbs_ShapeEnum sType;
+              switch ( algo->GetDim() ) {
+              case 3:  sType = TopAbs_SOLID; break;
+              case 2:  sType = TopAbs_FACE; break;
+              default: sType = TopAbs_EDGE; break;
+              }
+              for ( TopExp_Explorer ex( s2hyps.Key(), sType ); ex.More(); ex.Next() )
+                uniDimAlgoShapes.Add( ex.Current() );
+            }
+        }
+      }
+    }
+
     {
       // ------------------------------------------------
       // sort list of sub-meshes according to mesh order
