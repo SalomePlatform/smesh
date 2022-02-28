@@ -248,7 +248,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     // ================================================================
     // Apply algos that do NOT require discreteized boundaries
     // ("all-dimensional") and do NOT support sub-meshes, starting from
-    // the most complex shapes and collect sub-meshes with algos that 
+    // the most complex shapes and collect sub-meshes with algos that
     // DO support sub-meshes
     // ================================================================
 
@@ -273,7 +273,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
       aShapeDim = GetShapeDim( aSubShape );
       if ( aShapeDim < 1 ) break;
-      
+
       // check for preview dimension limitations
       if ( aShapesId && aShapeDim > (int)aDim )
         continue;
@@ -390,47 +390,50 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
 
         const TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();
 
-        // get a shape the algo is assigned to
-        if ( !GetAlgo( sm, & algoShape ))
-          continue; // strange...
-
-        // look for more local algos
-        if ( SMESH_subMesh* algoSM = aMesh.GetSubMesh( algoShape ))
-          smIt = algoSM->getDependsOnIterator(!includeSelf, !complexShapeFirst);
-        else
-          smIt = sm->getDependsOnIterator(!includeSelf, !complexShapeFirst);
-
-        while ( smIt->more() )
+        if ( !uniDimAlgoShapes.IsEmpty() )
         {
-          SMESH_subMesh* smToCompute = smIt->next();
+          // get a shape the algo is assigned to
+          if ( !GetAlgo( sm, & algoShape ))
+            continue; // strange...
 
-          const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-          const           int aShapeDim = GetShapeDim( aSubShape );
-          if ( aShapeDim < 1 || aSubShape.ShapeType() <= shapeType )
-            continue;
-          if ( !uniDimAlgoShapes.Contains( aSubShape ))
-            continue; // [bos #29143] aMesh.GetHypothesis() is too long
+          // look for more local algos
+          if ( SMESH_subMesh* algoSM = aMesh.GetSubMesh( algoShape ))
+            smIt = algoSM->getDependsOnIterator(!includeSelf, !complexShapeFirst);
+          else
+            smIt = sm->getDependsOnIterator(!includeSelf, !complexShapeFirst);
 
-          // check for preview dimension limitations
-          if ( aShapesId && GetShapeDim( aSubShape.ShapeType() ) > (int)aDim )
-            continue;
-
-          SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
-          filter
-            .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
-            .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
-
-          if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( smToCompute, filter, true))
+          while ( smIt->more() )
           {
-            if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
-            TopTools_IndexedMapOfShape* localAllowed = allowedSubShapes;
-            if ( localAllowed && localAllowed->IsEmpty() )
-              localAllowed = 0; // prevent fillAllowed() with  aSubShape
+            SMESH_subMesh* smToCompute = smIt->next();
 
-            SMESH_Hypothesis::Hypothesis_Status status;
-            if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
-              // mesh a lower smToCompute starting from vertices
-              Compute( aMesh, aSubShape, aFlags | SHAPE_ONLY_UPWARD, aDim, aShapesId, localAllowed );
+            const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
+            const           int aShapeDim = GetShapeDim( aSubShape );
+            if ( aShapeDim < 1 || aSubShape.ShapeType() <= shapeType )
+              continue;
+            if ( !uniDimAlgoShapes.Contains( aSubShape ))
+              continue; // [bos #29143] aMesh.GetHypothesis() is too long
+
+            // check for preview dimension limitations
+            if ( aShapesId && GetShapeDim( aSubShape.ShapeType() ) > (int)aDim )
+              continue;
+
+            SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
+            filter
+              .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
+              .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
+
+            if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( smToCompute, filter, true))
+            {
+              if ( ! subAlgo->NeedDiscreteBoundary() ) continue;
+              TopTools_IndexedMapOfShape* localAllowed = allowedSubShapes;
+              if ( localAllowed && localAllowed->IsEmpty() )
+                localAllowed = 0; // prevent fillAllowed() with  aSubShape
+
+              SMESH_Hypothesis::Hypothesis_Status status;
+              if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
+                // mesh a lower smToCompute starting from vertices
+                Compute( aMesh, aSubShape, aFlags | SHAPE_ONLY_UPWARD, aDim, aShapesId, localAllowed );
+            }
           }
         }
         // --------------------------------

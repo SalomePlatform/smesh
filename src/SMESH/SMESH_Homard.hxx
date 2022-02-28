@@ -237,6 +237,6 @@ private:
   int                           _MessInfo;
 };
 
-}; // namespace SMESHHOMARDImpl
+} // namespace SMESHHOMARDImpl
 
 #endif
