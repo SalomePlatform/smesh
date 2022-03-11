@@ -326,9 +326,9 @@ namespace StdMeshers_ProjectionUtils
    * \param srcShape - source shape
    * \param srcMesh - source mesh
    */
-  void SetEventListener(SMESH_subMesh* subMesh,
-                        TopoDS_Shape   srcShape,
-                        SMESH_Mesh*    srcMesh);
+  STDMESHERS_EXPORT void SetEventListener(SMESH_subMesh* subMesh,
+                                          TopoDS_Shape   srcShape,
+                                          SMESH_Mesh*    srcMesh);
 
   /*!
    * \brief Return a boundary EDGE (or all boundary EDGEs) of edgeContainer
