@@ -217,7 +217,8 @@ namespace
    */
   //================================================================================
 
-  bool isEqualNodes( const int* nIds1, const int* nIds2, int nbNodes, SMESHDS_Mesh* mesh )
+  bool isEqualNodes( const cgsize_t* nIds1, const cgsize_t* nIds2, size_t nbNodes,
+                     SMESHDS_Mesh* mesh )
   {
     if ( nbNodes > 0 )
     {
@@ -317,7 +318,7 @@ namespace
             }
             // check if range and donorRange describe the same nodes
             {
-              int ids1[2], ids2[2], nbN = 0;
+              cgsize_t ids1[2], ids2[2], nbN = 0;
               TPointRangeIterator rangeIt1bis( range, _meshDim );
               index1 = rangeIt1bis.Next();
               index2 = T * ( index1 - begin1 ) + begin2;
