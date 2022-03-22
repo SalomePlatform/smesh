@@ -201,7 +201,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   gp_Pnt p; gp_Vec du, dv;
 
   // BRepClass_FaceClassifier is most time consuming, so minimize its usage
-  const double clsfTol = 10 * BRep_Tool::Tolerance( geomFace );
+  const double clsfTol = 1e2 * BRep_Tool::MaxTolerance( geomFace, TopAbs_VERTEX );
   BRepTopAdaptor_FClass2d classifier( geomFace, clsfTol ); //Brimless_FaceClassifier classifier;
   Bnd_B2d bndBox2d;
   Bnd_Box bndBox3d;
@@ -274,7 +274,6 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   double minGroupTol = Precision::Infinite();
 
   SMESH::Controls::ElementsOnShape onEdgeClassifier;
-  if ( helper.HasSeam() )
   {
     TopoDS_Compound edgesCompound;
     BRep_Builder    builder;
@@ -316,8 +315,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     // another idea: try to use max tol of all edges
     //const double clsfTol = 10 * BRep_Tool::Tolerance( geomFace ); // 0.1 * groupTol;
 
-    if ( helper.HasSeam() )
-      onEdgeClassifier.SetMesh( srcMesh->GetMeshDS() );
+    onEdgeClassifier.SetMesh( srcMesh->GetMeshDS() );
+    onEdgeClassifier.SetTolerance( groupTol / 10 );
+
 
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
     while ( srcElems->more() ) // loop on group contents
@@ -373,15 +373,18 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           // find out if node lies on the surface of theShape
           gp_XY uv( Precision::Infinite(), 0 );
-          isOut = ( !helper.CheckNodeUV( geomFace, node, uv, groupTol, /*force=*/true ) ||
-                    bndBox2d.IsOut( uv ));
+          bool isOutBox = true;
+          isOut = (! helper.CheckNodeUV( geomFace, node, uv, groupTol, /*force=*/true ) ||
+                   ( isOutBox = bndBox2d.IsOut( uv )));
           //int iCoo;
           if ( !isOut && !isIn ) // classify
           {
             nodeState[i] = classifier.Perform( uv ); //classifier.Perform( geomFace, uv, clsfTol );
             //nodeState[i] = classifier.State();
             isOut = ( nodeState[i] == TopAbs_OUT );
-            if ( isOut && helper.IsOnSeam( uv ) && onEdgeClassifier.IsSatisfy( node->GetID() ))
+            if (( isOut ) &&
+                ( !isOutBox || helper.IsOnSeam( uv )) &&
+                onEdgeClassifier.IsSatisfy( node->GetID() ))
             {
               // uv.SetCoord( iCoo, helper.GetOtherParam( uv.Coord( iCoo )));
               // classifier.Perform( geomFace, uv, clsfTol );
@@ -396,7 +399,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
             newNode = tgtMesh->AddNode( nXYZ.X(), nXYZ.Y(), nXYZ.Z());
             tgtMesh->SetNodeOnFace( newNode, shapeID, uv.X(), uv.Y() );
             nbCreatedNodes++;
-            if ( newNode->GetID() >= (int) isNodeIn.size() )
+            if ( newNode->GetID() >= (smIdType) isNodeIn.size() )
             {
               isNodeIn.push_back( false ); // allow allocate more than newNode->GetID()
               isNodeIn.resize( newNode->GetID() + 1, false );
@@ -565,7 +568,6 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     // the imported mesh is valid if all external links (encountered once)
     // lie on geom edges
     subShapeIDs.erase( shapeID ); // to contain edges and vertices only
-    double u, f, l;
     for ( link2Nb = linkCount.begin(); link2Nb != linkCount.end(); ++link2Nb)
     {
       const TLink& link = (*link2Nb).first;
@@ -580,17 +582,12 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           const SMDS_MeshNode* n = is1stN ? link.node1() : link.node2();
           if ( !subShapeIDs.count( n->getshapeId() )) // n is assigned to FACE
           {
-            for ( size_t iE = 0; iE < edges.size(); ++iE )
-              if ( helper.CheckNodeU( edges[iE], n, u=0, projTol, /*force=*/true ))
-              {
-                BRep_Tool::Range(edges[iE],f,l);
-                if ( Abs(u-f) < 2 * faceTol || Abs(u-l) < 2 * faceTol )
-                  // duplicated node on vertex
-                  return error("Source elements overlap one another");
-                tgtFaceSM->RemoveNode( n );
-                tgtMesh->SetNodeOnEdge( n, edges[iE], u );
-                break;
-              }
+            TopoDS_Shape edge;
+            if ( onEdgeClassifier.IsSatisfy( n, &edge ))
+            {
+              tgtFaceSM->RemoveNode( n );
+              tgtMesh->SetNodeOnEdge( n, TopoDS::Edge(edge), /*u=*/0 );
+            }
             nodesOnBoundary = subShapeIDs.count( n->getshapeId());
           }
           if ( nodesOnBoundary )
@@ -638,6 +635,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           edge = tgtMesh->AddEdge( newNodes[0], newNodes[1], link._medium );
 
+          double u;
           TopoDS_Edge geomEdge = TopoDS::Edge(bndShapes.back());
           helper.CheckNodeU( geomEdge, link._medium, u, projTol, /*force=*/true );
           tgtFaceSM->RemoveNode( link._medium );
@@ -710,6 +708,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       TUNodeList nodesOnSeam;
       double u = helper.GetNodeU( seamEdge, vertNode );
       nodesOnSeam.push_back( make_pair( u, vertNode ));
+      size_t nbNodesOnSeam = 1;
       TUNodeList::iterator u2nIt = nodesOnSeam.begin();
       for ( ; u2nIt != nodesOnSeam.end(); ++u2nIt )
       {
@@ -723,8 +722,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           {
             const SMDS_MeshNode* n = face->GetNode( i );
             if ( n == startNode || !checkedNodes.insert( n ).second ) continue;
-            if ( helper.CheckNodeU( seamEdge, n, u=0, projTol, /*force=*/true ))
-              nodesOnSeam.push_back( make_pair( u, n ));
+            helper.CheckNodeU( seamEdge, n, u=0, projTol, /*force=*/true );
+            nodesOnSeam.push_back( make_pair( u, n ));
+            ++nbNodesOnSeam;
           }
         }
       }
@@ -733,6 +733,15 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       map< double, const SMDS_MeshNode* > u2nodeMap;
       for ( u2nIt = nodesOnSeam.begin(); u2nIt != nodesOnSeam.end(); ++u2nIt )
         u2nodeMap.insert( u2nodeMap.end(), *u2nIt );
+      if ( u2nodeMap.size() != nbNodesOnSeam ) // problem with parameters on EDGE
+      {
+        // sort nodes by distance from seamVertex
+        gp_Pnt vertPnt = SMESH_NodeXYZ( vertNode );
+        u2nodeMap.clear();
+        for ( u2nIt = nodesOnSeam.begin(); u2nIt != nodesOnSeam.end(); ++u2nIt )
+          u2nodeMap.insert
+            ({ vertPnt.SquareDistance( SMESH_NodeXYZ( u2nIt->second )), u2nIt->second });
+      }
 
       // create edges
       {

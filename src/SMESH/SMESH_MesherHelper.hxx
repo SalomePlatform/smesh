@@ -554,11 +554,20 @@ public:
   bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
 
   /*!
-   * \brief Return projector initialized by given face without location, which is returned
+   * \brief Return projector initialized by given face without location
    */
   GeomAPI_ProjectPointOnSurf& GetProjector(const TopoDS_Face& F,
                                            TopLoc_Location&   loc,
-                                           double             tol=0 ) const; 
+                                           double             tol=0 ) const;
+  /*!
+   * \brief Return projector initialized by given face
+   */
+  GeomAPI_ProjectPointOnSurf& GetProjector(const TopoDS_Face& F,
+                                           double             tol=0 ) const;
+  /*!
+   * \brief Return projector initialized by given EDGE
+   */
+  GeomAPI_ProjectPointOnCurve& GetPCProjector(const TopoDS_Edge& E ) const;
   /*!
    * \brief Return a cached ShapeAnalysis_Surface of a FACE
    */

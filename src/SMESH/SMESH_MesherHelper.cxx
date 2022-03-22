@@ -51,6 +51,7 @@
 #include <Geom_RectangularTrimmedSurface.hxx>
 #include <Geom_Surface.hxx>
 #include <ShapeAnalysis.hxx>
+#include <ShapeAnalysis_Curve.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -876,6 +877,51 @@ GeomAPI_ProjectPointOnSurf& SMESH_MesherHelper::GetProjector(const TopoDS_Face& 
 }
 
 //=======================================================================
+//function : GetProjector
+//purpose  : Return projector initialized by given face, which is returned
+//=======================================================================
+
+GeomAPI_ProjectPointOnSurf& SMESH_MesherHelper::GetProjector(const TopoDS_Face& F,
+                                                             double             tol ) const
+{
+  Handle(Geom_Surface) surface = BRep_Tool::Surface( F );
+  int faceID = GetMeshDS()->ShapeToIndex( F );
+  TID2ProjectorOnSurf& i2proj = const_cast< TID2ProjectorOnSurf&>( myFace2Projector );
+  TID2ProjectorOnSurf::iterator i_proj = i2proj.find( faceID );
+  if ( i_proj == i2proj.end() )
+  {
+    if ( tol == 0 ) tol = BRep_Tool::Tolerance( F );
+    double U1, U2, V1, V2;
+    surface->Bounds(U1, U2, V1, V2);
+    GeomAPI_ProjectPointOnSurf* proj = new GeomAPI_ProjectPointOnSurf();
+    proj->Init( surface, U1, U2, V1, V2, tol );
+    i_proj = i2proj.insert( make_pair( faceID, proj )).first;
+  }
+  return *( i_proj->second );
+}
+
+//=======================================================================
+//function : GetPCProjector
+//purpose  : Return projector initialized by given EDGE
+//=======================================================================
+
+GeomAPI_ProjectPointOnCurve& SMESH_MesherHelper::GetPCProjector(const TopoDS_Edge& E ) const
+{
+  int edgeID = GetMeshDS()->ShapeToIndex( E );
+  TID2ProjectorOnCurve& i2proj = const_cast< TID2ProjectorOnCurve&>( myEdge2Projector );
+  TID2ProjectorOnCurve::iterator i_proj = i2proj.insert( make_pair( edgeID, nullptr )).first;
+  if ( !i_proj->second  )
+  {
+    double f,l;
+    Handle(Geom_Curve) curve = BRep_Tool::Curve( E,f,l );
+    i_proj->second = new GeomAPI_ProjectPointOnCurve();
+    i_proj->second->Init( curve, f, l );
+  }
+  GeomAPI_ProjectPointOnCurve* projector = i_proj->second;
+  return *projector;
+}
+
+//=======================================================================
 //function : GetSurface
 //purpose  : Return a cached ShapeAnalysis_Surface of a FACE
 //=======================================================================
@@ -1121,27 +1167,17 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       {
         setPosOnShapeValidity( shapeID, false );
         // u incorrect, project the node to the curve
-        int edgeID = GetMeshDS()->ShapeToIndex( E );
-        TID2ProjectorOnCurve& i2proj = const_cast< TID2ProjectorOnCurve&>( myEdge2Projector );
-        TID2ProjectorOnCurve::iterator i_proj =
-          i2proj.insert( make_pair( edgeID, (GeomAPI_ProjectPointOnCurve*) 0 )).first;
-        if ( !i_proj->second  )
-        {
-          i_proj->second = new GeomAPI_ProjectPointOnCurve();
-          i_proj->second->Init( curve, f, l );
-        }
-        GeomAPI_ProjectPointOnCurve* projector = i_proj->second;
-        projector->Perform( nodePnt );
-        if ( projector->NbPoints() < 1 )
-        {
-          MESSAGE( "SMESH_MesherHelper::CheckNodeU() failed to project" );
-          return false;
-        }
-        Standard_Real U = projector->LowerDistanceParameter();
-        u = double( U );
-        curvPnt = curve->Value( u );
-        dist = nodePnt.Distance( curvPnt );
+        //GeomAPI_ProjectPointOnCurve& projector = GetPCProjector( E ); -- bug in OCCT-7.5.3p1
+        GeomAdaptor_Curve curveAd( curve, f, l );
+        ShapeAnalysis_Curve projector;
+        dist = projector.Project( curveAd, nodePnt, tol, curvPnt, u, false );
+        // if ( projector.NbPoints() < 1 )
+        // {
+        //   MESSAGE( "SMESH_MesherHelper::CheckNodeU() failed to project" );
+        //   return false;
+        // }
         if ( distXYZ ) {
+          curvPnt = curve->Value( u );
           curvPnt.Transform( loc );
           distXYZ[0] = dist;
           distXYZ[1] = curvPnt.X(); distXYZ[2] = curvPnt.Y(); distXYZ[3]=curvPnt.Z();
@@ -1154,7 +1190,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
         // store the fixed U on the edge
         if ( myShape.IsSame(E) && shapeID == myShapeID && myFixNodeParameters )
           const_cast<SMDS_MeshNode*>(n)->SetPosition
-            ( SMDS_PositionPtr( new SMDS_EdgePosition( U )));
+            ( SMDS_PositionPtr( new SMDS_EdgePosition( u )));
       }
       else if ( fabs( u ) > numeric_limits<double>::min() )
       {

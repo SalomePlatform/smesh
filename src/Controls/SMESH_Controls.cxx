@@ -4453,9 +4453,12 @@ SMDSAbs_ElementType ElementsOnShape::GetType() const
 
 void ElementsOnShape::SetTolerance (const double theToler)
 {
-  if (myToler != theToler) {
+  if (myToler != theToler)
+  {
     myToler = theToler;
-    SetShape(myShape, myType);
+    TopoDS_Shape s = myShape;
+    myShape.Nullify();
+    SetShape( s, myType );
   }
 }
 
