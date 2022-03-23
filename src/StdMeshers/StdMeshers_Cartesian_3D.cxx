@@ -1243,7 +1243,7 @@ namespace
       if ( solids.size() == 2 )
       {
         if ( solids == solidsBef )
-          return theUndefID; //solids.contain( prevID ) ? solids.otherThan( prevID ) : theUndefID;
+          return solids.contain( prevID ) ? solids.otherThan( prevID ) : theUndefID; // bos #29212
       }
       return solids.oneCommon( solidsBef );
     }
