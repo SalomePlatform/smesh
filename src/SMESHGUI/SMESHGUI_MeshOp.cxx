@@ -355,7 +355,7 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
     GEOM::GEOM_Object_var subGeom =
       GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
 
-    if ( SMESH::ContainsSubShape( mainGeom, subGeom ))
+    if ( SMESH::ContainsSubShape( mainGeom, subGeom, false ))
       return true;
   }
 

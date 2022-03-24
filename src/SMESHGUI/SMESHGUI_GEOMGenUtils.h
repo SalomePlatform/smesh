@@ -61,7 +61,8 @@ namespace SMESH
                                        QString& subGeom, QString& meshGeom);
 
   SMESHGUI_EXPORT bool ContainsSubShape( GEOM::GEOM_Object_ptr mainShape,
-                                         GEOM::GEOM_Object_ptr subShape );
+                                         GEOM::GEOM_Object_ptr subShape,
+                                         bool allowMainShape = true );
 }
 
 #endif // SMESHGUI_GEOMGENUTILS_H

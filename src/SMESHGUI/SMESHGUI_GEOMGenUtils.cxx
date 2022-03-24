@@ -276,11 +276,14 @@ namespace SMESH
   //================================================================================
 
   bool ContainsSubShape( GEOM::GEOM_Object_ptr mainGeom,
-                         GEOM::GEOM_Object_ptr subGeom )
+                         GEOM::GEOM_Object_ptr subGeom, bool allowMainShape )
   {
     if ( CORBA::is_nil( mainGeom ) ||
          CORBA::is_nil( subGeom ))
       return false;
+
+    if (allowMainShape && mainGeom->IsSame(subGeom))
+      return true;
 
     GEOM::GEOM_Gen_var geomGen = mainGeom->GetGen();
     if ( geomGen->_is_nil() ) return false;
