@@ -124,7 +124,6 @@ SET(GOOD_TESTS
   filters_ex39.py
   filters_node_nb_conn.py
   filters_belong2group.py
-  find_salome_actor_delegate_to_vtk.py
   grouping_elements_ex01.py
   grouping_elements_ex02.py
   grouping_elements_ex03.py
