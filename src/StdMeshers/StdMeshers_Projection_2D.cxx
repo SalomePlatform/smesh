@@ -28,25 +28,29 @@
 //
 #include "StdMeshers_Projection_2D.hxx"
 
+#include "StdMeshers_FaceSide.hxx"
+#include "StdMeshers_NumberOfSegments.hxx"
 #include "StdMeshers_ProjectionSource2D.hxx"
 #include "StdMeshers_ProjectionUtils.hxx"
-#include "StdMeshers_FaceSide.hxx"
+#include "StdMeshers_Quadrangle_2D.hxx"
+#include "StdMeshers_Regular_1D.hxx"
 
-#include "SMDS_EdgePosition.hxx"
-#include "SMDS_FacePosition.hxx"
-#include "SMESHDS_Hypothesis.hxx"
-#include "SMESHDS_Mesh.hxx"
-#include "SMESHDS_SubMesh.hxx"
-#include "SMESH_Block.hxx"
-#include "SMESH_Comment.hxx"
-#include "SMESH_Gen.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_MeshAlgos.hxx"
-#include "SMESH_MeshEditor.hxx"
-#include "SMESH_MesherHelper.hxx"
-#include "SMESH_Pattern.hxx"
-#include "SMESH_subMesh.hxx"
-#include "SMESH_subMeshEventListener.hxx"
+#include <ObjectPool.hxx>
+#include <SMDS_EdgePosition.hxx>
+#include <SMDS_FacePosition.hxx>
+#include <SMESHDS_Hypothesis.hxx>
+#include <SMESHDS_Mesh.hxx>
+#include <SMESHDS_SubMesh.hxx>
+#include <SMESH_Block.hxx>
+#include <SMESH_Comment.hxx>
+#include <SMESH_Gen.hxx>
+#include <SMESH_Mesh.hxx>
+#include <SMESH_MeshAlgos.hxx>
+#include <SMESH_MeshEditor.hxx>
+#include <SMESH_MesherHelper.hxx>
+#include <SMESH_Pattern.hxx>
+#include <SMESH_subMesh.hxx>
+#include <SMESH_subMeshEventListener.hxx>
 
 #include <utilities.h>
 
@@ -980,29 +984,382 @@ namespace {
     }  // loop on all mesh faces on srcFace
 
     return true;
+
+  } // projectBy2DSimilarity()
+
+  //================================================================================
+  /*!
+   * \brief Quadrangle algorithm computing structured triangle mesh
+   */
+  //================================================================================
+
+  struct QuadAlgo : public StdMeshers_Quadrangle_2D
+  {
+    QuadAlgo( int hypId, SMESH_Gen* gen ): StdMeshers_Quadrangle_2D( hypId, gen ) {}
+
+    bool Compute( SMESH_MesherHelper & theHelper, const StdMeshers_FaceSidePtr& theWire )
+    {
+      SMESH_Mesh& theMesh = *theHelper.GetMesh();
+
+      // set sides of a quad FACE
+      FaceQuadStruct::Ptr quad( new FaceQuadStruct );
+      quad->side.reserve( 4 );
+      quad->face = theWire->Face();
+      for ( int i = 0; i < 4; ++i )
+        quad->side.push_back
+          ( StdMeshers_FaceSide::New( quad->face, theWire->Edge(i), &theMesh, i < QUAD_TOP_SIDE,
+                                      /*skipMedium=*/true, theWire->FaceHelper() ));
+      if ( !setNormalizedGrid( quad ))
+        return false;
+
+      // make internal nodes
+      SMESHDS_Mesh *  meshDS = theMesh.GetMeshDS();
+      int         geomFaceID = meshDS->ShapeToIndex( quad->face );
+      Handle(Geom_Surface) S = BRep_Tool::Surface( quad->face );
+      for (   int i = 1; i < quad->iSize - 1; i++)
+        for ( int j = 1; j < quad->jSize - 1; j++)
+        {
+          UVPtStruct& uvPnt = quad->UVPt( i, j );
+          gp_Pnt P          = S->Value( uvPnt.u, uvPnt.v );
+          uvPnt.node        = meshDS->AddNode(P.X(), P.Y(), P.Z());
+          meshDS->SetNodeOnFace( uvPnt.node, geomFaceID, uvPnt.u, uvPnt.v );
+        }
+
+      // make triangles
+      for (   int i = 0; i < quad->iSize-1; i++) {
+        for ( int j = 0; j < quad->jSize-1; j++)
+        {
+          const SMDS_MeshNode* a = quad->uv_grid[ j      * quad->iSize + i    ].node;
+          const SMDS_MeshNode* b = quad->uv_grid[ j      * quad->iSize + i + 1].node;
+          const SMDS_MeshNode* c = quad->uv_grid[(j + 1) * quad->iSize + i + 1].node;
+          const SMDS_MeshNode* d = quad->uv_grid[(j + 1) * quad->iSize + i    ].node;
+          theHelper.AddFace(a, b, c);
+          theHelper.AddFace(a, c, d);
+        }
+      }
+      return true;
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Local coordinate system of a triangle. Return barycentric coordinates of a point
+   */
+  //================================================================================
+
+  struct TriaCoordSys
+  {
+    gp_Pnt myO;   //!< origin
+    gp_Vec myX;   //!< X axis
+    gp_Vec myY;   //!< Y axis
+    gp_XY  myUV1; //!< UV of 2nd node in this CS
+    gp_XY  myUV2; //!< UV of 3d  node in this CS
+
+    void Init( const gp_Pnt p1, const gp_Pnt p2, const gp_Pnt p3 )
+    {
+      myO = p1;
+
+      myX = gp_Vec( p1, p2 );
+      myUV1.SetCoord( myX.Magnitude(), 0 );
+      myX /= myUV1.X();
+
+      gp_Vec v13( p1, p3 );
+      myY = myX.CrossCrossed( myX, v13 );
+      myY.Normalize();
+      myUV2.SetCoord( v13 * myX, v13 * myY );
+
+      return;
+    }
+
+    void GetBaryCoords( const gp_Pnt p, double& bc1, double& bc2, double& bc3 ) const
+    {
+      gp_Vec op( myO, p );
+      gp_XY uv( op * myX, op * myY );
+
+      SMESH_MeshAlgos::GetBarycentricCoords( uv,
+                                             gp::Origin2d().XY(), myUV1, myUV2,
+                                             bc1, bc2 );
+      bc3 = 1 - bc1 - bc2;
+    }
+  };
+
+
+  //================================================================================
+  /*!
+   * \brief Structured 2D mesh of a quadrilateral FACE; is used in projectQuads()
+   */
+  //================================================================================
+
+  struct QuadMesh : public SMESH_Mesh
+  {
+    ObjectPool< TriaCoordSys > _traiLCSPool;
+    SMESH_ElementSearcher*     _elemSearcher;
+    SMESH_Gen                  _sgen;
+    SMESH_MesherHelper         _helper;
+
+    QuadMesh(const TopoDS_Face& face):
+      _elemSearcher( nullptr ), _helper( *this )
+    {
+      _meshDS = new SMESHDS_Mesh( 0, true );
+      _gen = &_sgen;
+      ShapeToMesh( face );
+    }
+    ~QuadMesh() { delete _elemSearcher; }
+
+    // --------------------------------------------------------------------------------
+    /*!
+     * \brief Compute quadrangle mesh and prepare for face search
+     */
+    bool Compute( const TSideVector& wires, int nbSeg1, int nbSeg2, bool isSourceMesh )
+    {
+      if ( wires.size() > 1 || wires[0]->NbEdges() != 4 )
+        return false;
+
+      // compute quadrangle mesh
+
+      SMESH_Hypothesis* algo1D = new StdMeshers_Regular_1D( _sgen.GetANewId(), &_sgen );
+      AddHypothesis( GetShapeToMesh(), algo1D->GetID() );
+
+      StdMeshers_NumberOfSegments * nbHyp1, *nbHyp2;
+      nbHyp1 = new StdMeshers_NumberOfSegments( _sgen.GetANewId(), &_sgen );
+      nbHyp1->SetNumberOfSegments( nbSeg1 );
+      AddHypothesis( wires[0]->Edge(0), nbHyp1->GetID() );
+      AddHypothesis( wires[0]->Edge(2), nbHyp1->GetID() );
+
+      nbHyp2 = new StdMeshers_NumberOfSegments( _sgen.GetANewId(), &_sgen );
+      nbHyp2->SetNumberOfSegments( nbSeg2 );
+      AddHypothesis( wires[0]->Edge(1), nbHyp2->GetID() );
+      AddHypothesis( wires[0]->Edge(3), nbHyp2->GetID() );
+
+      if ( !_sgen.Compute( *this, GetShapeToMesh(), SMESH_Gen::SHAPE_ONLY_UPWARD ))
+        return false;
+
+      QuadAlgo algo2D( _sgen.GetANewId(), &_sgen );
+      if ( !algo2D.Compute( _helper, wires[0] ))
+        return false;
+
+      // remove edges
+      // for ( SMDS_ElemIteratorPtr eIt = _meshDS->elementsIterator( SMDSAbs_Edge ); eIt->more(); )
+      //   _meshDS->RemoveFreeElement( eIt->next(), /*sm=*/0, /*groups=*/false );
+
+      // _meshDS->Modified(); // setMyModified();
+      // _meshDS->CompactMesh();
+
+      // create TriaCoordSys for every triangle
+      if ( isSourceMesh )
+      {
+        for ( SMDS_ElemIteratorPtr fIt = _meshDS->elementsIterator( SMDSAbs_Face ); fIt->more(); )
+        {
+          const SMDS_MeshElement* tria = fIt->next();
+          TriaCoordSys* triaLCS = _traiLCSPool.getNew();
+          triaLCS->Init( SMESH_NodeXYZ( tria->GetNode( 0 )),
+                         SMESH_NodeXYZ( tria->GetNode( 1 )),
+                         SMESH_NodeXYZ( tria->GetNode( 2 )));
+          // int i= tria->GetID() - NbEdges() - 1;
+          // cout << "ID from TRIA " << i << " - poolSize " << _traiLCSPool.nbElements() <<
+          //   ( _traiLCSPool[i]!= triaLCS ? " KO" : "" )  << endl;
+        }
+        _elemSearcher = SMESH_MeshAlgos::GetElementSearcher( *_meshDS );
+      }
+      return true;
+    }
+    // --------------------------------------------------------------------------------
+    /*!
+     * \brief Find a source triangle including a point and return its barycentric coordinates
+     */
+    const SMDS_MeshElement* FindFaceByPoint( const gp_Pnt p,
+                                             double & bc1, double & bc2, double & bc3 )
+    {
+      const SMDS_MeshElement* tria = nullptr;
+      gp_XYZ projPnt = _elemSearcher->Project( p, SMDSAbs_Face, &tria );
+
+      int lcsID = tria->GetID() - NbEdges() - 1;
+      const TriaCoordSys* triaLCS = _traiLCSPool[ lcsID ];
+      triaLCS->GetBaryCoords( projPnt, bc1, bc2, bc3 );
+
+      return tria;
+    }
+    // --------------------------------------------------------------------------------
+    /*!
+     * \brief Return a point lying on a corresponding target triangle
+     */
+    gp_Pnt GetPoint( const SMDS_MeshElement* srcTria, double & bc1, double & bc2, double & bc3 )
+    {
+      const SMDS_MeshElement* tgtTria = _meshDS->FindElement( srcTria->GetID() );
+      gp_Pnt p = ( bc1 * SMESH_NodeXYZ( tgtTria->GetNode(0) ) +
+                   bc2 * SMESH_NodeXYZ( tgtTria->GetNode(1) ) +
+                   bc3 * SMESH_NodeXYZ( tgtTria->GetNode(2) ) );
+      return p;
+    }
+    // --------------------------------------------------------------------------------
+    /*!
+     * \brief Return an UV of point lying on a corresponding target triangle
+     */
+    gp_XY GetUV( const SMDS_MeshElement* srcTria,
+                 double & bc1, double & bc2, double & bc3 )
+    {
+      const SMDS_MeshElement* tgtTria = _meshDS->FindElement( srcTria->GetID() );
+      TopoDS_Shape tgtShape = GetShapeToMesh();
+      const TopoDS_Face& face = TopoDS::Face( tgtShape );
+
+      gp_XY p = ( bc1 * _helper.GetNodeUV( face, tgtTria->GetNode(0) ) +
+                  bc2 * _helper.GetNodeUV( face, tgtTria->GetNode(1) ) +
+                  bc3 * _helper.GetNodeUV( face, tgtTria->GetNode(2) ) );
+      return p;
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Calculate average size of faces
+   *         Actually calculate average of min and max face size
+   */
+  //================================================================================
+
+  double calcAverageFaceSize( SMESHDS_SubMesh* sm )
+  {
+    double minLen = Precision::Infinite(), maxLen = 0;
+    for ( SMDS_ElemIteratorPtr fIt = sm->GetElements(); fIt->more(); )
+    {
+      const SMDS_MeshElement* face = fIt->next();
+      int nbNodes = face->NbCornerNodes();
+      gp_XYZ pPrev = SMESH_NodeXYZ( face->GetNode( nbNodes - 1 ));
+      for ( int i = 0; i < nbNodes; ++i )
+      {
+        SMESH_NodeXYZ p( face->GetNode( i ));
+        double len = ( p - pPrev ).SquareModulus();
+        minLen = Min( len, minLen );
+        maxLen = Max( len, maxLen );
+        pPrev = p;
+      }
+    }
+    return 0.5 * ( Sqrt( minLen ) + Sqrt( maxLen ));
   }
 
   //================================================================================
   /*!
-   * \brief Perform projection in case of quadrilateral faces
+   * \brief Perform projection from a quadrilateral FACE to another quadrilateral one
    */
   //================================================================================
 
-  bool projectQuads(const TopoDS_Face&                 /*tgtFace*/,
-                    const TopoDS_Face&                 /*srcFace*/,
-                    const TSideVector&                 /*tgtWires*/,
-                    const TSideVector&                 /*srcWires*/,
-                    const TAssocTool::TShapeShapeMap&  /*shape2ShapeMap*/,
-                    TAssocTool::TNodeNodeMap&          /*src2tgtNodes*/,
-                    const bool                         /*is1DComputed*/)
+  bool projectQuads(const TopoDS_Face&                 tgtFace,
+                    const TopoDS_Face&                 srcFace,
+                    const TSideVector&                 tgtWires,
+                    const TSideVector&                 srcWires,
+                    const TAssocTool::TShapeShapeMap&  shape2ShapeMap,
+                    TAssocTool::TNodeNodeMap&          src2tgtNodes,
+                    const bool                         is1DComputed)
   {
-    // SMESH_Mesh * tgtMesh = tgtWires[0]->GetMesh();
-    // SMESH_Mesh * srcMesh = srcWires[0]->GetMesh();
-    // //SMESHDS_Mesh * tgtMeshDS = tgtMesh->GetMeshDS();
-    // SMESHDS_Mesh * srcMeshDS = srcMesh->GetMeshDS();
+    SMESH_Mesh * tgtMesh = tgtWires[0]->GetMesh();
+    SMESH_Mesh * srcMesh = srcWires[0]->GetMesh();
+    SMESHDS_Mesh * tgtMeshDS = tgtMesh->GetMeshDS();
+    SMESHDS_Mesh * srcMeshDS = srcMesh->GetMeshDS();
 
-    // if ( srcWires[0]->NbEdges() != 4 )
-    //   return false;
+    if ( srcWires.size() != 1 || // requirements below can be weaken
+         SMESH_MesherHelper::Count( tgtFace, TopAbs_EDGE, /*ignoreSame=*/true) != 4 ||
+         SMESH_MesherHelper::Count( srcFace, TopAbs_EDGE, /*ignoreSame=*/true) != 4 )
+      return false;
+
+    // make auxiliary structured meshes that will be used to get corresponding
+    // points on the target FACE
+    QuadMesh srcQuadMesh( srcFace ), tgtQuadMesh( tgtFace );
+    double avgSize = calcAverageFaceSize( srcMeshDS->MeshElements( srcFace ));
+    int nbSeg1 = (int) Max( 2., Max( srcWires[0]->EdgeLength(0),
+                                     srcWires[0]->EdgeLength(2)) / avgSize );
+    int nbSeg2 = (int) Max( 2., Max( srcWires[0]->EdgeLength(1),
+                                     srcWires[0]->EdgeLength(3)) / avgSize );
+    if ( !srcQuadMesh.Compute( srcWires, nbSeg1, nbSeg2, /*isSrc=*/true ) ||
+         !tgtQuadMesh.Compute( tgtWires, nbSeg1, nbSeg2, /*isSrc=*/false ))
+      return false;
+
+    // Make new faces
+
+    // prepare the helper to adding quadratic elements if necessary
+    SMESH_MesherHelper* helper = tgtWires[0]->FaceHelper();
+    helper->IsQuadraticSubMesh( tgtFace );
+
+    SMESHDS_SubMesh* srcSubDS = srcMeshDS->MeshElements( srcFace );
+    if ( !is1DComputed && srcSubDS->NbElements() )
+      helper->SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
+
+    SMESH_MesherHelper* srcHelper = srcWires[0]->FaceHelper();
+    SMESH_MesherHelper  edgeHelper( *tgtMesh );
+    edgeHelper.ToFixNodeParameters( true );
+
+    const SMDS_MeshNode* nullNode = 0;
+    TAssocTool::TNodeNodeMap::iterator srcN_tgtN;
+
+    SMDS_ElemIteratorPtr elemIt = srcSubDS->GetElements();
+    vector< const SMDS_MeshNode* > tgtNodes;
+    while ( elemIt->more() ) // loop on all mesh faces on srcFace
+    {
+      const SMDS_MeshElement* elem = elemIt->next();
+      const int nbN = elem->NbCornerNodes();
+      tgtNodes.resize( nbN );
+      helper->SetElementsOnShape( false );
+      for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
+      {
+        const SMDS_MeshNode* srcNode = elem->GetNode(i);
+        srcN_tgtN = src2tgtNodes.insert( make_pair( srcNode, nullNode )).first;
+        if ( srcN_tgtN->second == nullNode )
+        {
+          // create a new node
+          gp_Pnt srcP = SMESH_TNodeXYZ( srcNode );
+          double bc[3];
+          const SMDS_MeshElement* auxF = srcQuadMesh.FindFaceByPoint( srcP, bc[0], bc[1], bc[2] );
+          gp_Pnt                  tgtP = tgtQuadMesh.GetPoint( auxF, bc[0], bc[1], bc[2] );
+          SMDS_MeshNode* n = helper->AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
+          srcN_tgtN->second = n;
+          switch ( srcNode->GetPosition()->GetTypeOfPosition() )
+          {
+          case SMDS_TOP_FACE:
+          {
+            gp_XY tgtUV = tgtQuadMesh.GetUV( auxF, bc[0], bc[1], bc[2] );
+            tgtMeshDS->SetNodeOnFace( n, helper->GetSubShapeID(), tgtUV.X(), tgtUV.Y() );
+            break;
+          }
+          case SMDS_TOP_EDGE:
+          {
+            const TopoDS_Edge& srcE = TopoDS::Edge( srcMeshDS->IndexToShape( srcNode->GetShapeID()));
+            const TopoDS_Edge& tgtE = TopoDS::Edge( shape2ShapeMap( srcE, /*isSrc=*/true ));
+            double srcU = srcHelper->GetNodeU( srcE, srcNode );
+            tgtMeshDS->SetNodeOnEdge( n, tgtE, srcU );
+            edgeHelper.SetSubShape( tgtE );
+            double tol = BRep_Tool::MaxTolerance( tgtE, TopAbs_VERTEX ), distXYZ[4];
+            /*isOk = */edgeHelper.CheckNodeU( tgtE, n, srcU, 2 * tol, /*force=*/true, distXYZ );
+            //if ( isOk )
+            tgtMeshDS->MoveNode( n, distXYZ[1], distXYZ[2], distXYZ[3] );
+            SMDS_EdgePositionPtr( n->GetPosition() )->SetUParameter( srcU );
+            break;
+          }
+          case SMDS_TOP_VERTEX:
+          {
+            const TopoDS_Shape & srcV = srcMeshDS->IndexToShape( srcNode->getshapeId() );
+            const TopoDS_Shape & tgtV = shape2ShapeMap( srcV, /*isSrc=*/true );
+            tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtV ));
+            tgtMeshDS->MoveNode( n, tgtP.X(), tgtP.Y(), tgtP.Z() );
+            tgtMeshDS->SetNodeOnVertex( n, TopoDS::Vertex( tgtV ));
+            break;
+          }
+          default:;
+          }
+        }
+        tgtNodes[i] = srcN_tgtN->second;
+      }
+      // create a new face
+      helper->SetElementsOnShape( true );
+      switch ( nbN )
+      {
+      case 3: helper->AddFace(tgtNodes[0], tgtNodes[1], tgtNodes[2]); break;
+      case 4: helper->AddFace(tgtNodes[0], tgtNodes[1], tgtNodes[2], tgtNodes[3]); break;
+      default: helper->AddPolygonalFace( tgtNodes );
+      }
+    } //  // loop on all mesh faces on srcFace
+
+    return true;
+
+    // below is projection of a structured source mesh
+
     // if ( !is1DComputed )
     //   return false;
     // for ( int iE = 0; iE < 4; ++iE )
@@ -1766,7 +2123,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( !projDone )
   {
     // projection in case of quadrilateral faces
-    // NOT IMPLEMENTED, returns false
     projDone = projectQuads( tgtFace, srcFace, tgtWires, srcWires,
                              shape2ShapeMap, _src2tgtNodes, is1DComputed);
   }
@@ -2151,8 +2507,11 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       TAssocTool::Morph morph( srcWires );
       morph.Perform( helper, tgtWires, helper.GetSurface( tgtFace ),
                      _src2tgtNodes, /*moveAll=*/true );
+#ifdef _DEBUG_
+      cout << "StdMeshers_Projection_2D: Projection mesh IsDistorted2D() ==> do morph" << endl;
+#endif
 
-      if ( !fixDistortedFaces( helper, tgtWires ))
+      if ( !fixDistortedFaces( helper, tgtWires )) // smooth and check
         return error("Invalid mesh generated");
     }
   // ---------------------------
