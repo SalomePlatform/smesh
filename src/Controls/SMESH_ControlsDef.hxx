@@ -947,6 +947,7 @@ namespace SMESH{
                         const SMDSAbs_ElementType theType);
       bool    IsSatisfy (const SMDS_MeshElement* elem);
       bool    IsSatisfy (const SMDS_MeshNode* node, TopoDS_Shape* okShape=0);
+      void    GetParams( double & u, double & v ) const { u = myU; v = myV; }
 
     private:
 
@@ -963,6 +964,7 @@ namespace SMESH{
       SMDSAbs_ElementType        myType;
       TopoDS_Shape               myShape;
       double                     myToler;
+      double                     myU, myV; // result of node projection on EDGE or FACE
       bool                       myAllNodesFlag;
 
       TMeshModifTracer           myMeshModifTracer;

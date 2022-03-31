@@ -384,7 +384,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
             isOut = ( nodeState[i] == TopAbs_OUT );
             if (( isOut ) &&
                 ( !isOutBox || helper.IsOnSeam( uv )) &&
-                onEdgeClassifier.IsSatisfy( node->GetID() ))
+                onEdgeClassifier.IsSatisfy( node ))
             {
               // uv.SetCoord( iCoo, helper.GetOtherParam( uv.Coord( iCoo )));
               // classifier.Perform( geomFace, uv, clsfTol );
@@ -586,7 +586,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
             if ( onEdgeClassifier.IsSatisfy( n, &edge ))
             {
               tgtFaceSM->RemoveNode( n );
-              tgtMesh->SetNodeOnEdge( n, TopoDS::Edge(edge), /*u=*/0 );
+              double u, v;
+              onEdgeClassifier.GetParams( u, v );
+              tgtMesh->SetNodeOnEdge( n, TopoDS::Edge(edge), u );
             }
             nodesOnBoundary = subShapeIDs.count( n->getshapeId());
           }

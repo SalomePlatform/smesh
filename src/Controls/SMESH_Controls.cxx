@@ -4343,7 +4343,7 @@ namespace {
 
 struct ElementsOnShape::Classifier
 {
-  Classifier() { mySolidClfr = 0; myFlags = 0; }
+  Classifier(): mySolidClfr(0), myProjFace(0), myProjEdge(0), myFlags(0) { myU = myV = 1e100; }
   ~Classifier();
   void Init(const TopoDS_Shape& s, double tol, const Bnd_B3d* box = 0 );
   bool IsOut(const gp_Pnt& p)        { return SetChecked( true ), (this->*myIsOutFun)( p ); }
@@ -4356,6 +4356,7 @@ struct ElementsOnShape::Classifier
   void SetChecked( bool is ) { is ? SetFlag( theIsCheckedFlag ) : UnsetFlag( theIsCheckedFlag ); }
   void SetFlag  ( int flag ) { myFlags |= flag; }
   void UnsetFlag( int flag ) { myFlags &= ~flag; }
+  void GetParams( double & u, double & v ) const { u = myU; v = myV; }
 
 private:
   bool isOutOfSolid (const gp_Pnt& p);
@@ -4369,13 +4370,14 @@ private:
   TopoDS_Shape prepareSolid( const TopoDS_Shape& theSolid );
 
   bool (Classifier::*          myIsOutFun)(const gp_Pnt& p);
-  BRepClass3d_SolidClassifier* mySolidClfr; // ptr because of a run-time forbidden copy-constructor
+  BRepClass3d_SolidClassifier* mySolidClfr;
   Bnd_B3d                      myBox;
-  GeomAPI_ProjectPointOnSurf   myProjFace;
-  GeomAPI_ProjectPointOnCurve  myProjEdge;
+  GeomAPI_ProjectPointOnSurf*  myProjFace;
+  GeomAPI_ProjectPointOnCurve* myProjEdge;
   gp_Pnt                       myVertexXYZ;
   TopoDS_Shape                 myShape;
   double                       myTol;
+  double                       myU, myV; // result of isOutOfFace() and isOutOfEdge()
   int                          myFlags;
 };
 
@@ -4686,6 +4688,7 @@ bool ElementsOnShape::IsSatisfy (const SMDS_MeshNode* node,
           isNodeOut = false;
           if ( okShape )
             *okShape = myWorkClassifiers[i]->Shape();
+          myWorkClassifiers[i]->GetParams( myU, myV );
           break;
         }
     }
@@ -4697,6 +4700,7 @@ bool ElementsOnShape::IsSatisfy (const SMDS_MeshNode* node,
           isNodeOut = false;
           if ( okShape )
             *okShape = myClassifiers[i].Shape();
+          myClassifiers[i].GetParams( myU, myV );
           break;
         }
     }
@@ -4739,7 +4743,8 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
     else
     {
       surf->Bounds( u1,u2,v1,v2 );
-      myProjFace.Init(surf, u1,u2, v1,v2, myTol );
+      myProjFace = new GeomAPI_ProjectPointOnSurf;
+      myProjFace->Init( surf, u1,u2, v1,v2, myTol );
       myIsOutFun = & ElementsOnShape::Classifier::isOutOfFace;
     }
     break;
@@ -4752,7 +4757,8 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
       myIsOutFun = & ElementsOnShape::Classifier::isOutOfNone;
     else
     {
-      myProjEdge.Init(curve, u1, u2);
+      myProjEdge = new GeomAPI_ProjectPointOnCurve;
+      myProjEdge->Init( curve, u1, u2 );
       myIsOutFun = & ElementsOnShape::Classifier::isOutOfEdge;
     }
     break;
@@ -4802,6 +4808,8 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
 ElementsOnShape::Classifier::~Classifier()
 {
   delete mySolidClfr; mySolidClfr = 0;
+  delete myProjFace;  myProjFace = 0;
+  delete myProjEdge;  myProjEdge = 0;
 }
 
 TopoDS_Shape ElementsOnShape::Classifier::prepareSolid( const TopoDS_Shape& theSolid )
@@ -4838,13 +4846,12 @@ bool ElementsOnShape::Classifier::isOutOfBox( const gp_Pnt& p )
 bool ElementsOnShape::Classifier::isOutOfFace( const gp_Pnt& p )
 {
   if ( isOutOfBox( p )) return true;
-  myProjFace.Perform( p );
-  if ( myProjFace.IsDone() && myProjFace.LowerDistance() <= myTol )
+  myProjFace->Perform( p );
+  if ( myProjFace->IsDone() && myProjFace->LowerDistance() <= myTol )
   {
     // check relatively to the face
-    Standard_Real u, v;
-    myProjFace.LowerDistanceParameters(u, v);
-    gp_Pnt2d aProjPnt (u, v);
+    myProjFace->LowerDistanceParameters( myU, myV );
+    gp_Pnt2d aProjPnt( myU, myV );
     BRepClass_FaceClassifier aClsf ( TopoDS::Face( myShape ), aProjPnt, myTol );
     if ( aClsf.State() == TopAbs_IN || aClsf.State() == TopAbs_ON )
       return false;
@@ -4855,8 +4862,11 @@ bool ElementsOnShape::Classifier::isOutOfFace( const gp_Pnt& p )
 bool ElementsOnShape::Classifier::isOutOfEdge( const gp_Pnt& p )
 {
   if ( isOutOfBox( p )) return true;
-  myProjEdge.Perform( p );
-  return ! ( myProjEdge.NbPoints() > 0 && myProjEdge.LowerDistance() <= myTol );
+  myProjEdge->Perform( p );
+  bool isOn = ( myProjEdge->NbPoints() > 0 && myProjEdge->LowerDistance() <= myTol );
+  if ( isOn )
+    myU = myProjEdge->LowerDistanceParameter();
+  return !isOn;
 }
 
 bool ElementsOnShape::Classifier::isOutOfVertex( const gp_Pnt& p )
