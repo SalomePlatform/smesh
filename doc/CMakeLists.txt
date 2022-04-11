@@ -20,4 +20,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(salome)
+ADD_SUBDIRECTORY(examples)
+IF(SALOME_BUILD_DOC)
+  ADD_SUBDIRECTORY(tui)
+  ADD_SUBDIRECTORY(gui)
+ENDIF()

@@ -1,0 +1,7 @@
+This folder contains test scripts for SMESH module.
+
+These tests are exported into the ${SMESH_ROOT_DIR}/bin/test folder and can be executed with the
+`salome test` command, as a part of whole testing procedure.
+
+The example Python scripts to be used in the documentation of Mesh module, must be put into the
+{root_src}/doc/examples folder!
