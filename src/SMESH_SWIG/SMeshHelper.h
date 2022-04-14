@@ -21,6 +21,4 @@
 
 #include <string>
 
-std::string BuildSMESHInstanceInternal();
-
 std::string GetMGLicenseKeyImpl(const char* gmfFile);

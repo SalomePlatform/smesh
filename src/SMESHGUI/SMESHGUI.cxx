@@ -109,7 +109,6 @@
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ScalarBarActor.h"
 #include "SMESH_TypeFilter.hxx"
-#include "SMESH_Component_Generator.hxx"
 
 // SALOME GUI includes
 #include <LightApp_DataOwner.h>
