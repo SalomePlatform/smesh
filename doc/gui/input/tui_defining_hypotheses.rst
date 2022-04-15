@@ -19,7 +19,7 @@ and hypotheses.
     * :ref:`Fixed Points 1D <tui_fixed_points>` hypothesis
   
 
-* Triangle: Mefisto 2D algorithm
+* Triangle: NETGEN 2D algorithm
   
     * :ref:`tui_max_element_area` hypothesis 
     * :ref:`tui_length_from_edges` hypothesis 

@@ -71,23 +71,11 @@ print(hypNbSeg.GetId())
 print(hypNbSeg.GetNumberOfSegments())
 smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegments))
 
-## print "-------------------------- MaxElementArea"
-
-## maxElementArea = 80
-
-## mefisto2D = mesh.Triangle()
-## mefisto2D.SetName("MEFISTO_2D")
-## hypArea = mefisto2D.MaxElementArea(maxElementArea)
-## print hypArea.GetName()
-## print hypArea.GetId()
-## print hypArea.GetMaxElementArea()
-## smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
-
 print("-------------------------- LengthFromEdges")
 
-mefisto2D = mesh.Triangle()
-mefisto2D.SetName("MEFISTO_2D")
-hypLengthFromEdges = mefisto2D.LengthFromEdges()
+triangle = mesh.Triangle()
+triangle.SetName("Triangle")
+hypLengthFromEdges = triangle.LengthFromEdges()
 print(hypLengthFromEdges.GetName())
 print(hypLengthFromEdges.GetId())
 smesh.SetName(hypLengthFromEdges, "LengthFromEdges")

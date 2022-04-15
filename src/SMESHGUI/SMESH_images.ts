@@ -413,7 +413,7 @@
         </message>
         <message>
             <source>ICON_PATTERN_2d</source>
-            <translation>mesh_algo_mefisto.png</translation>
+            <translation>mesh_algo_tri.png</translation>
         </message>
         <message>
             <source>ICON_PATTERN_3d</source>

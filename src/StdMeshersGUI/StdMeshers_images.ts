@@ -124,10 +124,6 @@
             <translation>mesh_tree_algo_hexa.png</translation>
         </message>
         <message>
-            <source>ICON_SMESH_TREE_ALGO_MEFISTO_2D</source>
-            <translation>mesh_tree_algo_mefisto.png</translation>
-        </message>
-        <message>
             <source>ICON_SMESH_TREE_ALGO_PolygonPerFace_2D</source>
             <translation>mesh_tree_algo_polygon.png</translation>
         </message>
@@ -289,7 +285,7 @@
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_TrianglePreference</source>
-            <translation>mesh_tree_algo_mefisto.png</translation>
+            <translation>mesh_tree_algo_tri.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_QuadraticMesh</source>

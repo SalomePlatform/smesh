@@ -129,8 +129,8 @@ smesh.SetName(hAvLength, "AverageLength_"+str(theAverageLength))
 
 print("-------------------------- MaxElementArea")
 theMaxElementArea = 20
-algoMef = mesh.Triangle(smeshBuilder.MEFISTO)
-hArea = algoMef.MaxElementArea( theMaxElementArea )
+algoTri = mesh.Triangle()
+hArea = algoTri.MaxElementArea( theMaxElementArea )
 print(hArea.GetName())
 print(hArea.GetId())
 print(hArea.GetMaxElementArea())

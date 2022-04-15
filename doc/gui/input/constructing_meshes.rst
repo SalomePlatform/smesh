@@ -229,24 +229,24 @@ Choose **Change sub-mesh priority** from the **Mesh** menu or a pop-up menu. The
 There is an example of sub-mesh order modifications taking a Mesh created on a Box shape. The main Mesh object:
 
 * *1D* **Wire discretisation** with **Number of Segments** = 20
-* *2D* **Triangle: Mefisto** with Hypothesis **Max Element Area**
+* *2D* **Triangle** with Hypothesis **Max Element Area**
   
 
 The first sub-mesh **Submesh_1** created on **Face_1** is:
 
 * *1D* **Wire discretisation** with **Number of Segments** = 4
-* *2D* **Triangle: Mefisto** with Hypothesis **MaxElementArea** = 1200
+* *2D* **Triangle** with Hypothesis **MaxElementArea** = 1200
 
 The second sub-mesh **Submesh_2** created on **Face_2** is:
 
 * *1D* **Wire discretisation** with **Number of Segments** = 8
-* *2D* **Triangle: Mefisto** with Hypothesis **MaxElementArea** = 1200
+* *2D* **Triangle** with Hypothesis **MaxElementArea** = 1200
 
 
 And the last sub-mesh **Submesh_3** created on **Face_3** is:
 
 * *1D* **Wire discretisation** with **Number of Segments** = 12
-* *2D* **Triangle: Mefisto** with Hypothesis **MaxElementArea** = 1200
+* *2D* **Triangle** with Hypothesis **MaxElementArea** = 1200
 
 
 The sub-meshes become concurrent if they share sub-shapes that can be meshed with different algorithms (or different hypotheses). In the example, we have three sub-meshes with concurrent algorithms, because they have different hypotheses.

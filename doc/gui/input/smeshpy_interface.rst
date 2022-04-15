@@ -42,18 +42,18 @@ A usual workflow to generate a mesh on geometry is following:
 #. Create and assign :ref:`algorithms <basic_meshing_algos_page>` by calling corresponding methods of the mesh. If a sub-shape is provided as an argument, a :ref:`sub-mesh <constructing_submeshes_page>` is implicitly created on this sub-shape:
 	.. code-block:: python
 
-		regular1D = mesh.Segment()
-		mefisto   = mesh.Triangle( smeshBuilder.MEFISTO )
-		# use other triangle algorithm on a face -- a sub-mesh appears in the mesh
-		netgen    = mesh.Triangle( smeshBuilder.NETGEN_1D2D, face )
+		regular1D  = mesh.Segment()
+		quadrangle = mesh.Quadrangle()
+		# use other 2D algorithm on a face -- a sub-mesh appears in the mesh
+		triangle   = mesh.Triangle( face )
 
 #. Create and assign :ref:`hypotheses <about_hypo_page>` by calling corresponding methods of algorithms:
 	.. code-block:: python
 
-		segLen10 = regular1D.LocalLength( 10. )
-		maxArea  = mefisto.LocalLength( 100. )
-		netgen.SetMaxSize( 20. )
-		netgen.SetFineness( smeshBuilder.VeryCoarse )
+		regular1D.LocalLength( 10. )
+		quadrangle.Reduced()
+		triangle.SetMaxSize( 20. )
+		triangle.SetFineness( smeshBuilder.VeryCoarse )
 
 #. :ref:`Compute the mesh <compute_anchor>` (generate mesh nodes and elements):
 	.. code-block:: python

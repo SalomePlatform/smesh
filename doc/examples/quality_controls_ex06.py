@@ -39,11 +39,10 @@ geom_builder.addToStudy( Plane_2, "Plane_2" )
 ###### SMESH part ######
 
 Mesh_1 = smesh_builder.Mesh(Partition_1)
-Regular_1D = Mesh_1.Segment()
-Max_Size_1 = Regular_1D.MaxSize(34.641)
-MEFISTO_2D = Mesh_1.Triangle()
-Tetrahedronn = Mesh_1.Tetrahedron()
-isDone = Mesh_1.Compute()
+Mesh_1.Segment().MaxSize(34.641)
+Mesh_1.Triangle()
+Mesh_1.Tetrahedron()
+Mesh_1.Compute()
 
 # create a group of free faces
 aFilter = smesh_builder.GetFilter(SMESH.FACE, SMESH.FT_FreeFaces )

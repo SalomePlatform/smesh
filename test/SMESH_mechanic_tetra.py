@@ -128,7 +128,7 @@ smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegment))
 
 maxElementArea = 20
 
-algo2 = mesh.Triangle(smeshBuilder.MEFISTO)
+algo2 = mesh.Triangle()
 hypArea = algo2.MaxElementArea(maxElementArea)
 print(hypArea.GetName())
 print(hypArea.GetId())

@@ -19,7 +19,6 @@ An algorithm represents either an implementation of a certain meshing technique 
 
 * For meshing of 2D entities (**faces**):
 
-  * **Triangle: Mefisto** meshing algorithm - splits faces into triangular elements.
   * :ref:`Quadrangle: Mapping <quad_ijk_algo_page>` meshing algorithm - splits faces into quadrangular elements.
 
 		.. image:: ../images/image123.gif

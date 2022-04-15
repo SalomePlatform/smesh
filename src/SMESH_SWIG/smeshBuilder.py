@@ -2125,7 +2125,7 @@ class Mesh(metaclass = MeshMeta):
 
     def AutomaticTetrahedralization(self, fineness=0):
         """
-        Compute a tetrahedral mesh using AutomaticLength + MEFISTO + Tetrahedron
+        Compute a tetrahedral mesh using AutomaticLength + Triangle + Tetrahedron
 
         Parameters:
                 fineness: [0.0,1.0] defines mesh fineness

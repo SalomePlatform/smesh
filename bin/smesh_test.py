@@ -55,7 +55,6 @@ class TestMesh(unittest.TestCase):
         import SMESH
         from salome.smesh import smeshBuilder
         smesh = smeshBuilder.New()
-        lib = 'StdMeshersEngine'
         self.processGuiEvents()
 
         # ---- create hypotheses 
@@ -63,7 +62,7 @@ class TestMesh(unittest.TestCase):
 
         # **** create local length 
         print('...... Local Length')
-        local_length = smesh.CreateHypothesis('LocalLength', lib)
+        local_length = smesh.CreateHypothesis('LocalLength')
         self.assertIsNotNone(local_length)
         local_length.SetLength(100)
         self.assertEqual(local_length.GetName(), 'LocalLength')
@@ -72,7 +71,7 @@ class TestMesh(unittest.TestCase):
 
         # **** create number of segments
         print('...... Number Of Segments')
-        nb_segments= smesh.CreateHypothesis('NumberOfSegments', lib)
+        nb_segments = smesh.CreateHypothesis('NumberOfSegments')
         self.assertIsNotNone(nb_segments)
         nb_segments.SetNumberOfSegments(7)
         self.assertEqual(nb_segments.GetName(), 'NumberOfSegments')
@@ -81,7 +80,7 @@ class TestMesh(unittest.TestCase):
 
         # **** create max element area
         print('...... Max Element Area')
-        max_area = smesh.CreateHypothesis('MaxElementArea', lib)
+        max_area = smesh.CreateHypothesis('MaxElementArea')
         max_area.SetMaxElementArea(2500)
         self.assertEqual(max_area.GetName(), 'MaxElementArea')
         self.assertEqual(max_area.GetMaxElementArea(), 2500)
@@ -92,23 +91,23 @@ class TestMesh(unittest.TestCase):
 
         # **** create regular 1d
         print('...... Regular 1D')
-        regular = smesh.CreateHypothesis('Regular_1D', lib)
-        listHyp = regular.GetCompatibleHypothesis()
+        regular = smesh.CreateHypothesis('Regular_1D')
+        self.assertTrue(len(regular.GetCompatibleHypothesis()) > 0)
         self.assertEqual(regular.GetName(), 'Regular_1D')
         self.processGuiEvents()
 
-        # **** create mefisto 2d
-        print('...... Mefisto 2D')
-        mefisto = smesh.CreateHypothesis( 'MEFISTO_2D', lib )
-        listHyp = mefisto.GetCompatibleHypothesis()
-        self.assertEqual(mefisto.GetName(), 'MEFISTO_2D')
+        # **** create quadrangle mapping
+        print('...... Quadrangle_2D')
+        quad = smesh.CreateHypothesis('Quadrangle_2D')
+        self.assertTrue(len(quad.GetCompatibleHypothesis()) > 0)
+        self.assertEqual(quad.GetName(), 'Quadrangle_2D')
         self.processGuiEvents()
 
         # ---- create mesh on box
         print('... Create mesh on box')
         mesh = smesh.CreateMesh(box)
         self.assertEqual(mesh.AddHypothesis(box, regular)[0], SMESH.HYP_OK)
-        self.assertEqual(mesh.AddHypothesis(box, mefisto)[0], SMESH.HYP_OK)
+        self.assertEqual(mesh.AddHypothesis(box, quad)[0], SMESH.HYP_OK)
         self.assertEqual(mesh.AddHypothesis(box, nb_segments)[0], SMESH.HYP_OK)
         self.assertEqual(mesh.AddHypothesis(box, max_area)[0], SMESH.HYP_OK)
         self.processGuiEvents()

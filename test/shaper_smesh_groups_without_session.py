@@ -59,15 +59,10 @@ smesh = smeshBuilder.New()
                                  # multiples meshes built in parallel, complex and numerous mesh edition (performance)
 
 Mesh_1 = smesh.Mesh(Box_1_1)
+Mesh_1.Segment().LocalLength(5)
+Mesh_1.Triangle()
 
-Regular_1D = Mesh_1.Segment()
-Local_Length_1 = Regular_1D.LocalLength(5)
-
-MEFISTO_2D = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO)
-
-ok = Mesh_1.Compute()
-
-if not ok:
+if not Mesh_1.Compute():
   raise Exception("Error when computing Mesh_1")
 
 edge_ox_1 = Mesh_1.GroupOnGeom(edge_ox,'edge_ox',SMESH.EDGE)

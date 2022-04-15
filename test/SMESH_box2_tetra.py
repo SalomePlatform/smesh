@@ -103,8 +103,8 @@ print("-------------------------- MaxElementArea")
 
 maxElementArea = 500
 
-mefisto2D = mesh.Triangle()
-hypArea = mefisto2D.MaxElementArea(maxElementArea)
+triangle = mesh.Triangle()
+hypArea = triangle.MaxElementArea(maxElementArea)
 print(hypArea.GetName())
 print(hypArea.GetId())
 print(hypArea.GetMaxElementArea())

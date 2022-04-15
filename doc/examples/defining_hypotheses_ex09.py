@@ -34,10 +34,10 @@ hexa.Compute()
 # 2. Create a tetrahedral mesh on the box
 tetra = smesh_builder.Mesh(box, "Box : tetrahedrical mesh")
 
-# create a Regular 1D algorithm for edges
+# create a 1D algorithm for edges
 algo1D = tetra.Segment()
 
-# create a Mefisto 2D algorithm for faces
+# create a 2D algorithm for faces
 algo2D = tetra.Triangle()
 
 # create a 3D algorithm for solids

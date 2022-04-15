@@ -39,6 +39,7 @@ IF(SALOME_BUILD_TESTS)
 
   FOREACH(test ${GOOD_TESTS})
     GET_FILENAME_COMPONENT(testname ${test} NAME_WE)
+    SET(testname "EXAMPLES_${testname}")
     ADD_TEST(NAME ${testname}
              COMMAND ${PYTHON_EXECUTABLE} -B ${CMAKE_SOURCE_DIR}/test/test_helper.py ${CMAKE_CURRENT_SOURCE_DIR}/${test})
     SET_TESTS_PROPERTIES(${testname} PROPERTIES ENVIRONMENT "${tests_env}" LABELS "examples")

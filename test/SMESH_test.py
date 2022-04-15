@@ -69,33 +69,24 @@ mesh = smesh.Mesh(box, "Meshbox")
 
 print("-------------------------- add hypothesis to box")
 
-algo_1 = mesh.Segment(box)
-hyp = algo_1.LocalLength(100)
+hyp = mesh.Segment(box).LocalLength(100)
 print(hyp.GetName())
 print(hyp.GetId())
 print(hyp.GetLength())
 
-algo_2 = mesh.Triangle(smeshBuilder.MEFISTO, box)
-hyp = algo_2.MaxElementArea(5000)
+hyp = mesh.Triangle().MaxElementArea(5000)
 print(hyp.GetName())
 print(hyp.GetId())
 print(hyp.GetMaxElementArea())
-
-smesh.SetName(algo_2.GetSubMesh(), "SubMeshBox")
-
 
 print("-------------------------- add hypothesis to edge")
 
 edge = salome.IDToObject(ide)
 
-algo_3 = mesh.Segment(edge)
-hyp = algo_3.LocalLength(100)
+hyp = mesh.Segment(edge).LocalLength(100)
 print(hyp.GetName())
 print(hyp.GetId())
 print(hyp.GetLength())
-
-smesh.SetName(algo_3.GetSubMesh(), "SubMeshEdge")
-
 
 print("-------------------------- compute face")
 

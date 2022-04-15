@@ -19,7 +19,9 @@
 
 INCLUDE(tests.set)
 
-FOREACH(tfile ${GOOD_TESTS} ${BAD_TESTS})
+SET(_all_tests ${GOOD_TESTS} ${BAD_TESTS})
+LIST(SORT _all_tests)
+FOREACH(tfile ${_all_tests})
   GET_FILENAME_COMPONENT(BASE_NAME ${tfile} NAME_WE)
   SET(TEST_NAME SMESH_${BASE_NAME})
   ADD_TEST(${TEST_NAME} python ${PYTHON_TEST_DRIVER} ${TIMEOUT} ${tfile})

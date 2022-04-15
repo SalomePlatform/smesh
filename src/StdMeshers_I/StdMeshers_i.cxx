@@ -77,9 +77,6 @@
 #include "StdMeshers_UseExisting_1D2D_i.hxx"
 #include "StdMeshers_ViscousLayers2D_i.hxx"
 #include "StdMeshers_ViscousLayers_i.hxx"
-#ifdef ENABLE_MEFISTO
- #include "StdMeshers_MEFISTO_2D_i.hxx"
-#endif
 
 namespace SMESH {
   class ApplicableToAny
@@ -214,10 +211,6 @@ STDMESHERS_I_EXPORT
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Regular_1D_i>;
-#ifdef ENABLE_MEFISTO
-    else if (strcmp(aHypName, "MEFISTO_2D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_MEFISTO_2D_i>;
-#endif
     else if (strcmp(aHypName, "Quadrangle_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Quadrangle_2D_i, StdMeshers_Quadrangle_2D_i>;
     else if (strcmp(aHypName, "QuadFromMedialAxis_1D2D") == 0)

@@ -63,7 +63,7 @@ Viscous Layers and Viscous Layers 2D
 **Viscous Layers** and **Viscous Layers 2D** additional
 hypotheses can be used by several 3D algorithms, for example
 Hexahedron(i,j,k), or 2D algorithms, for example Triangle
-(MEFISTO), correspondingly. These hypotheses allow creation of layers
+(NETGEN_2D), correspondingly. These hypotheses allow creation of layers
 of highly stretched elements, prisms in 3D and quadrilaterals in 2D,
 near mesh boundary, which is beneficial for high quality viscous
 computations.

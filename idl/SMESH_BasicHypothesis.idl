@@ -933,7 +933,7 @@ module StdMeshers
    * interface of "Viscous Layers 2D" hypothesis.
    * This hypothesis specifies parameters of layers of quadrilaterals to build
    * near mesh boundary. This hypothesis can be used by several 2D algorithms:
-   * Mefisto, Quadrangle (mapping), NETGEN, BLSURF
+   * Quadrangle (mapping), NETGEN, BLSURF
    */
   interface StdMeshers_ViscousLayers2D : SMESH::SMESH_Hypothesis
   {
@@ -1126,13 +1126,6 @@ module StdMeshers
    * StdMeshers_CompositeSegment_1D: interface of "Composite side discretisation" algorithm
    */
   interface StdMeshers_CompositeSegment_1D : SMESH::SMESH_1D_Algo
-  {
-  };
-
-  /*!
-   * StdMeshers_MEFISTO_2D: interface of "Triangle (Mefisto)" algorithm
-   */
-  interface StdMeshers_MEFISTO_2D : SMESH::SMESH_2D_Algo
   {
   };
 

@@ -43,7 +43,7 @@ StdMeshers_LengthFromEdges::StdMeshers_LengthFromEdges(int hypId, SMESH_Gen* gen
 {
   _mode =1;
   _name = "LengthFromEdges";
-  _param_algo_dim = 2; // is used by SMESH_MEFISTO_2D
+  _param_algo_dim = 2;
 }
 
 //=============================================================================

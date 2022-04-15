@@ -41,12 +41,10 @@ vec2 = geom_builder.MakeVector(Vertex_5, Vertex_6)
 # meshing (we have linear tetrahedrons here, but other elements are OK)
 
 Mesh_1 = smesh_builder.Mesh(Partition_1)
-Regular_1D = Mesh_1.Segment()
-Nb_Segments_1 = Regular_1D.NumberOfSegments(15)
-MEFISTO_2D = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO)
-Length_From_Edges_2D = MEFISTO_2D.LengthFromEdges()
-ALGO3D = Mesh_1.Tetrahedron()
-isDone = Mesh_1.Compute()
+Mesh_1.Segment().NumberOfSegments(15)
+Mesh_1.Triangle().LengthFromEdges()
+Mesh_1.Tetrahedron()
+Mesh_1.Compute()
 
 # relevant groups of volumes and faces
 

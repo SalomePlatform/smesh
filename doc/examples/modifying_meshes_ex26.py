@@ -14,17 +14,16 @@ smesh_builder = smeshBuilder.New()
 Sphere = geom_builder.MakeSphereR( 100 )
 geom_builder.addToStudy( Sphere, "Sphere" )
 
-# create simple trihedral mesh
+# create simple tetrahedral mesh
 
 Mesh = smesh_builder.Mesh(Sphere)
-Regular_1D = Mesh.Segment()
-Nb_Segments = Regular_1D.NumberOfSegments(5)
-MEFISTO_2D = Mesh.Triangle()
-Tetrahedron = Mesh.Tetrahedron()
+Mesh.Segment().NumberOfSegments(5)
+Mesh.Triangle()
+Mesh.Tetrahedron()
 
 # compute mesh
 
-isDone = Mesh.Compute()
+Mesh.Compute()
 
 # convert to quadratic
 # theForce3d = 1; this results in the medium node lying at the

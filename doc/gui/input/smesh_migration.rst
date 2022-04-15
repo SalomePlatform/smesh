@@ -42,13 +42,13 @@ User Guide.
 
   For instance::
 
-	MEFISTO_2D_1 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_1)
+	Quadrangle_2D_1 = Mesh_1.Quadrangle(algo=smesh.QUADRANGLE,geom=Face_1)
 
   is replaced by::
 
-	MEFISTO_2D_1 = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO,geom=Face_1)
+	Quadrangle_2D_1 = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE,geom=Face_1)
 
-  StdMeshers algorithms concerned are *REGULAR, PYTHON, COMPOSITE, MEFISTO, Hexa, QUADRANGLE, RADIAL_QUAD*.
+  StdMeshers algorithms concerned are *REGULAR, PYTHON, COMPOSITE, Hexa, QUADRANGLE, RADIAL_QUAD*.
 
   SMESH Plugins provide such algorithms as: *NETGEN, NETGEN_FULL, FULL_NETGEN, NETGEN_1D2D3D, NETGEN_1D2D, NETGEN_2D, NETGEN_3D*.
 

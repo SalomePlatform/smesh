@@ -308,24 +308,6 @@
       </python-wrap>
     </algorithm>
 
-    <algorithm type      ="@MEFISTO2D_NAME@"
-	       label-id  ="Triangle: Mefisto"
-	       icon-id   ="mesh_algo_mefisto.png"
-               group-id ="1"
-               priority ="40"
-               hypos     ="LengthFromEdges,MaxElementArea"
-               opt-hypos ="ViscousLayers2D"
-               input     ="EDGE"
-               output    ="TRIA"
-               dim       ="2">
-      <python-wrap>
-        <algo>MEFISTO_2D=Triangle(algo=smeshBuilder.MEFISTO)</algo>
-        <hypo>LengthFromEdges=LengthFromEdges()</hypo>
-        <hypo>MaxElementArea=MaxElementArea(SetMaxElementArea())</hypo>
-        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetEdges(1),SetEdges(2),SetGroupName())</hypo>
-      </python-wrap>
-    </algorithm>
-
     <algorithm type     ="Quadrangle_2D"
                label-id ="Quadrangle: Mapping"
                icon-id  ="mesh_algo_quad.png"

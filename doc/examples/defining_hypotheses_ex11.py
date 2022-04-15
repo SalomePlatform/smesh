@@ -25,7 +25,7 @@ geom_builder.addToStudy( box, 'box' )
 geom_builder.addToStudyInFather( box, Face_1, 'Face_1' )
 geom_builder.addToStudyInFather( box, Face_2, 'Face_2' )
 
-# Make the source mesh triangulated by MEFISTO
+# Make the source mesh triangulated by default algorithm
 src_mesh = smesh_builder.Mesh(Face_1, "Source mesh")
 src_mesh.Segment().NumberOfSegments(15)
 src_mesh.Triangle()

@@ -69,9 +69,9 @@ smesh.SetName(hypNbSeg1, "NumberOfSegments_" + str(numberOfSegments1))
 
 maxElementArea = 30
 
-algoMef = mesh1.Triangle()
-algoMef.SetName("MEFISTO_2D")
-hypArea = algoMef.MaxElementArea(maxElementArea)
+algoTri = mesh1.Triangle()
+algoTri.SetName("Triangle")
+hypArea = algoTri.MaxElementArea(maxElementArea)
 smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
 
 

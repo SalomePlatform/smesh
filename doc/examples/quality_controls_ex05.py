@@ -16,10 +16,8 @@ idbox = geom_builder.addToStudy(box, "box")
 
 # create a mesh
 mesh = smesh_builder.Mesh(box, "Mesh_free_nodes")
-algo = mesh.Segment()
-algo.NumberOfSegments(10)
-algo = mesh.Triangle(smeshBuilder.MEFISTO)
-algo.MaxElementArea(150.)
+mesh.Segment().NumberOfSegments(10)
+mesh.Triangle().MaxElementArea(150.)
 mesh.Compute() 
 
 # Remove some elements to obtain free nodes

@@ -38,12 +38,6 @@ INCLUDE_DIRECTORIES(
   ${TBB_INCLUDES}
 )
 
-IF(SALOME_SMESH_ENABLE_MEFISTO)
-  INCLUDE_DIRECTORIES(
-    ${PROJECT_SOURCE_DIR}/src/MEFISTO2
-  )
-ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
-
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
   ${OpenCASCADE_DEFINITIONS}
@@ -67,10 +61,6 @@ SET(_link_LIBRARIES
   ${TBB_LIBS}
   ${Boost_LIBRARIES}
 )
-
-IF(SALOME_SMESH_ENABLE_MEFISTO)
-  SET(_link_LIBRARIES ${_link_LIBRARIES} MEFISTO2D)
-ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 # --- headers ---
 
@@ -136,9 +126,6 @@ SET(StdMeshers_HEADERS
   StdMeshers_BlockRenumber.hxx
 )
 
-IF(SALOME_SMESH_ENABLE_MEFISTO)
-  SET(StdMeshers_HEADERS ${StdMeshers_HEADERS} StdMeshers_MEFISTO_2D.hxx)
-ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 # --- sources ---
 
 # sources / static
@@ -202,10 +189,6 @@ SET(StdMeshers_SOURCES
   StdMeshers_PolyhedronPerSolid_3D.cxx
   StdMeshers_BlockRenumber.cxx
 )
-
-IF(SALOME_SMESH_ENABLE_MEFISTO)
-  SET(StdMeshers_SOURCES ${StdMeshers_SOURCES} StdMeshers_MEFISTO_2D.cxx)
-ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 # --- rules ---
 

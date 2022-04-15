@@ -55,17 +55,16 @@ algo1 = mesh.Segment()
 algo1.NumberOfSegments(10)
 
 # Set 2D algorithm/hypotheses to mesh
-algo2 = mesh.Triangle(smeshBuilder.MEFISTO)
+algo2 = mesh.Triangle()
 algo2.MaxElementArea(10)
 
 # Create submesh on face
 algo3 = mesh.Segment(face)
 algo3.NumberOfSegments(10)
-algo4 = mesh.Triangle(smeshBuilder.MEFISTO, face)
+algo4 = mesh.Triangle(face)
 algo4.MaxElementArea(100)
 submesh = algo4.GetSubMesh()
 smesh.SetName(submesh, "SubMeshFace")
-
 
 mesh.Compute()
 

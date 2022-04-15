@@ -42,12 +42,7 @@ Algorithm type: Python 1D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBu
 
 COMPOSITE   = "CompositeSegment_1D"
 """
-
 Algorithm type: Composite segment 1D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_CompositeSegment`
-"""
-MEFISTO     = "MEFISTO_2D"
-"""
-Algorithm type: Triangle MEFISTO 2D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_Triangle_MEFISTO`
 """
 
 Hexa        = "Hexa_3D"
@@ -622,72 +617,6 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
         return hyp
 
     pass # end of StdMeshersBuilder_Segment_Python class
-
-class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
-    """
-    Triangle MEFISTO 2D algorithm.
-    It is created by calling smeshBuilder.Mesh.Triangle(smeshBuilder.MEFISTO,geom=0)
-    """
-    
-
-    meshMethod = "Triangle"
-    """
-    name of the dynamic method in smeshBuilder.Mesh class
-    """
-    algoType   = MEFISTO
-    """
-    type of algorithm used with helper function in smeshBuilder.Mesh class
-    """
-    isDefault  = True
-    """
-    flag pointing whether this algorithm should be used by default in dynamic method
-        of smeshBuilder.Mesh class
-    """
-    docHelper  = "Create triangle 2D algorithm for faces"
-    """
-    doc string of the method
-    """
-
-    def __init__(self, mesh, geom=0):
-        """
-        Private constructor.
-
-        Parameters:
-            mesh: parent mesh object algorithm is assigned to
-            geom: geometry (shape/sub-shape) algorithm is assigned to;
-                if it is :code:`0` (default), the algorithm is assigned to the main shape
-        """
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, self.algoType)
-        pass
-
-    def MaxElementArea(self, area, UseExisting=0):
-        """
-        Defines "MaxElementArea" hypothesis basing on the definition of the maximum area of each triangle
-
-        Parameters:
-            area: for the maximum area of each triangle
-            UseExisting: if ==true - searches for an  existing hypothesis created with the
-                same parameters, else (default) - Create a new one
-        """
-        
-        from salome.smesh.smeshBuilder import IsEqual
-        comparator = lambda hyp, args: IsEqual(hyp.GetMaxElementArea(), args[0])
-        hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting,
-                              CompareMethod=comparator)
-        hyp.SetMaxElementArea(area)
-        return hyp
-
-    def LengthFromEdges(self):
-        """
-        Defines "LengthFromEdges" hypothesis to build triangles
-            based on the length of the edges taken from the wire
-        """
-        
-        hyp = self.Hypothesis("LengthFromEdges", UseExisting=1, CompareMethod=self.CompareEqualHyp)
-        return hyp
-
-    pass # end of StdMeshersBuilder_Triangle_MEFISTO class
 
 class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
     """

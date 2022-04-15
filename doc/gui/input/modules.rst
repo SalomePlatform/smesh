@@ -102,8 +102,6 @@ Defining hypotheses
 
 .. autosummary::
 
-   StdMeshersBuilder_Triangle_MEFISTO.MaxElementArea
-   StdMeshersBuilder_Triangle_MEFISTO.LengthFromEdges
    StdMeshersBuilder_Quadrangle.QuadrangleParameters
    StdMeshersBuilder_Quadrangle.QuadranglePreference
    StdMeshersBuilder_Quadrangle.TrianglePreference

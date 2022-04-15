@@ -37,7 +37,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_add.png
   mesh_add_sub.png
   mesh_algo_hexa.png
-  mesh_algo_mefisto.png
+  mesh_algo_tri.png
   mesh_algo_quad.png
   mesh_algo_regular.png
   mesh_algo_tetra.png
@@ -187,7 +187,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tree_algo_0D.png
   mesh_tree_algo_existing_2D.png
   mesh_tree_algo_hexa.png
-  mesh_tree_algo_mefisto.png
+  mesh_tree_algo_tri.png
   mesh_tree_algo_polygon.png
   mesh_tree_algo_prism.png
   mesh_tree_algo_projection_2d.png
