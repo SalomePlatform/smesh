@@ -2847,7 +2847,7 @@ namespace
       solid = _grid->GetSolid();
       if ( !_grid->_geometry.IsOneSolid() )
       {
-        TGeomID solidIDs[20];
+        TGeomID solidIDs[20] = { 0 };
         size_t nbSolids = getSolids( solidIDs );
         if ( nbSolids > 1 )
         {
