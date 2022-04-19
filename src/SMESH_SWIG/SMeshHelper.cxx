@@ -21,20 +21,10 @@
 
 #include "SALOME_KernelServices.hxx"
 
-#include "SMESH_Component_Generator.hxx"
-
 #include <cstring>
 
 #include <DriverGMF_Read.hxx>
 #include <SMESH_MGLicenseKeyGen.hxx>
-
-
-std::string BuildSMESHInstanceInternal()
-{
-  Engines::EngineComponent_var zeRef = RetrieveSMESHInstance();
-  CORBA::String_var ior = KERNEL::getORB()->object_to_string(zeRef);
-  return std::string(ior.in());
-}
 
 std::string GetMGLicenseKeyImpl(const char* gmfFile)
 {
