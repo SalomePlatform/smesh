@@ -59,6 +59,23 @@ enum EQuadNature { NOT_QUAD, QUAD, DEGEN_QUAD, PYRAM_APEX = 4, TRIA_APEX = 0 };
 // std-like iterator used to get coordinates of nodes of mesh element
 typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
 
+//================================================================================
+/*!
+ * \brief Return ID of pyramid base face, for debug
+ */
+//================================================================================
+
+int getFaceID(const SMDS_MeshElement* pyram)
+{
+  if ( pyram )
+    if ( const SMDS_MeshElement* f = SMDS_Mesh::FindFace( pyram->GetNode(0),
+                                                          pyram->GetNode(1),
+                                                          pyram->GetNode(2),
+                                                          pyram->GetNode(3)))
+      return f->GetID();
+  return -1;
+}
+
 namespace
 {
   //================================================================================
@@ -350,8 +367,6 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
                                                   const SMDS_MeshElement*     PrmJ,
                                                   set<const SMDS_MeshNode*> & nodesToMove)
 {
-  // cout << endl << "Merge " << PrmI->GetID() << " " << PrmJ->GetID() << " "
-  //      << PrmI->GetNode(4)->GetID() << " " << PrmJ->GetNode(4)->GetID() << endl;
   const SMDS_MeshNode* Nrem = PrmJ->GetNode(4); // node to remove
   //int nbJ = Nrem->NbInverseElements( SMDSAbs_Volume );
   SMESH_TNodeXYZ Pj( Nrem );
@@ -366,6 +381,8 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
 
   nodesToMove.insert( CommonNode );
   nodesToMove.erase ( Nrem );
+
+  //cout << "MergePiramids F" << getFaceID( PrmI ) << " - F" << getFaceID( PrmJ ) << endl;
 
   typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TStdElemIterator;
   TStdElemIterator itEnd;
@@ -474,6 +491,61 @@ void StdMeshers_QuadToTriaAdaptor::MergeAdjacent(const SMDS_MeshElement*    PrmI
 
 //================================================================================
 /*!
+ * \brief Decrease height of a given or adjacent pyramids if height difference
+ *        is too large
+ *  \param [in] pyram - a pyramid to treat
+ *  \param [inout] h2 - pyramid's square height
+ *  \return bool - true if the height changes
+ */
+//================================================================================
+
+bool StdMeshers_QuadToTriaAdaptor::DecreaseHeightDifference( const SMDS_MeshElement* thePyram,
+                                                             const double            theH2 )
+{
+  const double allowedFactor2 = 2. * 2.;
+
+  bool modif = false;
+  myNodes[0] = thePyram->GetNode( 3 );
+  for ( int i = 0; i < 4; ++i )
+  {
+    myNodes[1] = thePyram->GetNode( i );
+    SMDS_Mesh::GetElementsByNodes( myNodes, myAdjPyrams, SMDSAbs_Volume );
+    myNodes[0] = myNodes[1];
+
+    for ( const SMDS_MeshElement* pyramAdj : myAdjPyrams )
+    {
+      if ( pyramAdj == thePyram )
+        continue;
+      if ( !myPyramHeight2.IsBound( pyramAdj ))
+        continue;
+      double h2Adj = Abs( myPyramHeight2( pyramAdj ));
+      double h2    = Abs( theH2 );
+      if ( h2Adj > h2 )
+      {
+        if ( h2 * allowedFactor2 < h2Adj )
+        {
+          // bind negative value to allow finding pyramids whose height must change
+          myPyramHeight2.Bind( pyramAdj, - h2 * allowedFactor2 );
+          modif = true;
+        }
+      }
+      else
+      {
+        if ( h2Adj * allowedFactor2 < h2 )
+        {
+          // bind negative value to allow finding pyramids whose height must change
+          myPyramHeight2.Bind( thePyram, - h2Adj * allowedFactor2 );
+          modif = true;
+        }
+      }
+    }
+  }
+  return modif;
+}
+
+
+//================================================================================
+/*!
  * \brief Constructor
  */
 //================================================================================
@@ -504,9 +576,11 @@ StdMeshers_QuadToTriaAdaptor::~StdMeshers_QuadToTriaAdaptor()
 //=======================================================================
 
 static gp_Pnt FindBestPoint(const gp_Pnt& P1, const gp_Pnt& P2,
-                            const gp_Pnt& PC, const gp_Vec& V)
+                            const gp_Pnt& PC, const gp_Vec& V,
+                            double & shift)
 {
   gp_Pnt Pbest = PC;
+  shift = 0;
   const double a2 = P1.SquareDistance(P2);
   const double b2 = P1.SquareDistance(PC);
   const double c2 = P2.SquareDistance(PC);
@@ -517,7 +591,7 @@ static gp_Pnt FindBestPoint(const gp_Pnt& P1, const gp_Pnt& P2,
     const double Vsize = V.Magnitude();
     if ( fabs( Vsize ) > std::numeric_limits<double>::min() )
     {
-      const double shift = sqrt( a2 + (b2-c2)*(b2-c2)/16/a2 - (b2+c2)/2 );
+      shift = sqrt( a2 + (b2-c2)*(b2-c2)/16/a2 - (b2+c2)/2 );
       Pbest.ChangeCoord() += shift * V.XYZ() / Vsize;
     }
   }
@@ -603,7 +677,7 @@ static bool HasIntersection3(const gp_Pnt& P,  const gp_Pnt& PC, gp_Pnt&       P
 
 //=======================================================================
 //function : HasIntersection
-//purpose  : Auxilare for CheckIntersection()
+//purpose  : Auxiliary for CheckIntersection()
 //=======================================================================
 
 static bool HasIntersection(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
@@ -991,19 +1065,23 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
         case QUAD:
           {
             if(!isRev) VNorm.Reverse();
-            double xc = 0., yc = 0., zc = 0.;
+            //double xc = 0., yc = 0., zc = 0.;
+            double h, hMin = Precision::Infinite();
+            gp_Pnt PCbest = PC;
             int i = 1;
             for(; i<=4; i++) {
               gp_Pnt Pbest;
               if(!isRev)
-                Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i).Reversed());
+                Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i).Reversed(), h);
               else
-                Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i));
-              xc += Pbest.X();
-              yc += Pbest.Y();
-              zc += Pbest.Z();
+                Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i), h);
+              if ( 0 < h && h < hMin )
+              {
+                PCbest = Pbest;
+                hMin = h;
+              }
             }
-            gp_Pnt PCbest(xc/4., yc/4., zc/4.);
+            //gp_Pnt PCbest(xc/4., yc/4., zc/4.);
 
             // check PCbest
             double height = PCbest.Distance(PC);
@@ -1027,6 +1105,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
             else
               aPyram = helper->AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
             myPyramids.push_back(aPyram);
+            //cout << "F" << face->GetID() << " - V" << aPyram->GetID() << endl;
+
+            myPyramHeight2.Bind( aPyram, PCbest.SquareDistance( PC ));
 
             // add triangles to result map
             helper->SetElementsOnShape( false );
@@ -1236,13 +1317,19 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
     // Find pyramid peak
 
-    gp_XYZ PCbest(0., 0., 0.); // pyramid peak
+    gp_XYZ PCbest = PC.XYZ();//(0., 0., 0.); // pyramid peak
+    double h, hMin = Precision::Infinite();
     int i = 1;
     for ( ; i <= 4; i++ ) {
-      gp_Pnt Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i));
-      PCbest += Pbest.XYZ();
+      gp_Pnt Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i), h);
+      if ( 0 < h && h < hMin )
+      {
+        PCbest = Pbest.XYZ();
+        h = hMin;
+      }
+      //PCbest += Pbest.XYZ();
     }
-    PCbest /= 4;
+    //PCbest /= 4;
 
     double height = PC.Distance(PCbest); // pyramid height to precise
     if ( height < 1.e-6 ) {
@@ -1354,6 +1441,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
         aPyram = helper.AddVolume( FNodes[0], FNodes[3], FNodes[2], FNodes[1], NewNode );
       myPyramids.push_back(aPyram);
 
+      //myPyramHeight2.Bind( aPyram, Papex.SquareDistance( PC ));
+
       // add triangles to result map
       helper.SetElementsOnShape( false );
       for ( i = 0; i < 4; i++) {
@@ -1398,10 +1487,37 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
 
   // check adjacent pyramids
 
-  for ( i = 0; i <  myPyramids.size(); ++i )
+  // for ( i = 0; i <  myPyramids.size(); ++i )
+  // {
+  //   const SMDS_MeshElement* PrmI = myPyramids[i];
+  //   MergeAdjacent( PrmI, nodesToMove );
+  // }
+
+  // Fix adjacent pyramids whose heights differ too much
+
+  myNodes.resize(2);
+  bool modifHeight = true;
+  typedef NCollection_DataMap< const SMDS_MeshElement*, double >::Iterator TPyramToH2Iter;
+  while ( modifHeight )
   {
-    const SMDS_MeshElement* PrmI = myPyramids[i];
-    MergeAdjacent( PrmI, nodesToMove );
+    modifHeight = false;
+    for ( TPyramToH2Iter pyramToH2( myPyramHeight2 ); pyramToH2.More(); pyramToH2.Next() )
+      modifHeight |= DecreaseHeightDifference( pyramToH2.Key(), pyramToH2.Value() );
+  }
+  for ( TPyramToH2Iter pyramToH2( myPyramHeight2 ); pyramToH2.More(); pyramToH2.Next() )
+  {
+    if ( pyramToH2.Value() > 0 )
+      continue; // not changed
+    const double                h = Sqrt( - pyramToH2.Value() );
+    const SMDS_MeshElement* pyram = pyramToH2.Key();
+    SMESH_NodeXYZ Papex = pyram->GetNode( PYRAM_APEX );
+    gp_XYZ PC( 0,0,0 );
+    for ( int i = 0; i < 4; ++i )
+      PC += SMESH_NodeXYZ( pyram->GetNode( i ));
+    PC /= 4;
+    gp_Vec V( PC, Papex );
+    gp_Pnt newApex = gp_Pnt( PC ).Translated( h * V.Normalized() );
+    meshDS->MoveNode( Papex.Node(), newApex.X(), newApex.Y(), newApex.Z() );
   }
 
   // iterate on all new pyramids
@@ -1464,10 +1580,10 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
           gp_Vec Vtmp( PsI[k], PsI[ PYRAM_APEX ]);
           gp_Pnt Pshift = PsI[k].XYZ() + Vtmp.XYZ() * 0.01; // base node moved a bit to apex
           hasInt =
-          ( HasIntersection3( Pshift, PsI[4], Pint, PsJ[0], PsJ[1], PsJ[PYRAM_APEX]) ||
-            HasIntersection3( Pshift, PsI[4], Pint, PsJ[1], PsJ[2], PsJ[PYRAM_APEX]) ||
-            HasIntersection3( Pshift, PsI[4], Pint, PsJ[2], PsJ[3], PsJ[PYRAM_APEX]) ||
-            HasIntersection3( Pshift, PsI[4], Pint, PsJ[3], PsJ[0], PsJ[PYRAM_APEX]) );
+            ( HasIntersection3( Pshift, PsI[4], Pint, PsJ[0], PsJ[1], PsJ[PYRAM_APEX]) ||
+              HasIntersection3( Pshift, PsI[4], Pint, PsJ[1], PsJ[2], PsJ[PYRAM_APEX]) ||
+              HasIntersection3( Pshift, PsI[4], Pint, PsJ[2], PsJ[3], PsJ[PYRAM_APEX]) ||
+              HasIntersection3( Pshift, PsI[4], Pint, PsJ[3], PsJ[0], PsJ[PYRAM_APEX]) );
         }
         for ( k = 0; k < 4  &&  !hasInt; k++ )
         {
@@ -1490,7 +1606,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
           if ( nbc == 4 )
             continue; // pyrams have a common base face
 
-          if ( nbc > 0 )
+          if ( nbc > 1 )
           {
             // Merge the two pyramids and others already merged with them
             MergePiramids( PrmI, PrmJ, nodesToMove );
@@ -1524,10 +1640,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
             aNode2->setXYZ( PCj.X()+VN2.X(), PCj.Y()+VN2.Y(), PCj.Z()+VN2.Z() );
             nodesToMove.insert( aNode1 );
             nodesToMove.insert( aNode2 );
+            //cout << "Limit H  F" << getFaceID( PrmI ) << " - F" << getFaceID( PrmJ ) << endl;
           }
           // fix intersections that can appear after apex movement
-          MergeAdjacent( PrmI, nodesToMove );
-          MergeAdjacent( PrmJ, nodesToMove );
+          //MergeAdjacent( PrmI, nodesToMove );
+          //MergeAdjacent( PrmJ, nodesToMove );
 
           apexI = PrmI->GetNode( PYRAM_APEX ); // apexI can be removed by merge
 
@@ -1536,6 +1653,13 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
     }  // loop on suspectPyrams
 
   } // loop on all pyramids
+
+  //smIdType nbNodes = aMesh.NbNodes();
+  for ( i = 0; i <  myPyramids.size(); ++i )
+  {
+    const SMDS_MeshElement* PrmI = myPyramids[i];
+    MergeAdjacent( PrmI, nodesToMove );
+  }
 
   if( !nodesToMove.empty() && !meshDS->IsEmbeddedMode() )
   {

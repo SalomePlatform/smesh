@@ -44,6 +44,7 @@ class gp_Vec;
 #include <vector>
 
 #include <TopoDS_Shape.hxx>
+#include <NCollection_DataMap.hxx>
 
 /*!
  * \brief "Transforms" quadrilateral faces into triangular ones by creation of pyramids
@@ -93,11 +94,19 @@ protected:
                      std::set<const SMDS_MeshNode*>& nodesToMove,
                      const bool                      isRecursion = false);
 
+  bool DecreaseHeightDifference( const SMDS_MeshElement* pyram,
+                                 const double            h2 );
 
   TopoDS_Shape                      myShape;
   std::set<const SMDS_MeshElement*> myRemovedTrias;
   std::list< const SMDS_MeshNode* > myDegNodes;
   const SMESH_ElementSearcher*      myElemSearcher;
+
+  NCollection_DataMap< const SMDS_MeshElement*, double > myPyramHeight2;
+
+  // work buffers of DecreaseHeightDifference()
+  std::vector< const SMDS_MeshElement* > myAdjPyrams;
+  std::vector<const SMDS_MeshNode *>     myNodes;
 };
 
 #endif
