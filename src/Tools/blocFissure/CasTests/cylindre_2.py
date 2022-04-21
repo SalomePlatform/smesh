@@ -59,10 +59,10 @@ class cylindre_2(cylindre):
     self.referencesMaillageFissure = dict( \
                                           Entity_Quad_Quadrangle = 7028, \
                                           Entity_Quad_Hexa = 18366, \
-                                          Entity_Node = 105035, \
+                                          Entity_Node = 102327, \
                                           Entity_Quad_Edge = 735, \
                                           Entity_Quad_Triangle = 1056, \
-                                          Entity_Quad_Tetra = 16305, \
+                                          Entity_Quad_Tetra = 14255, \
                                           Entity_Quad_Pyramid = 1158, \
                                           Entity_Quad_Penta = 384 \
                                           )

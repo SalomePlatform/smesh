@@ -55,10 +55,10 @@ class cubeAngle_2(cubeAngle):
     self.referencesMaillageFissure = dict( \
                                           Entity_Quad_Quadrangle = 2350, \
                                           Entity_Quad_Hexa = 5315, \
-                                          Entity_Node = 38196, \
+                                          Entity_Node = 36418, \
                                           Entity_Quad_Edge = 345, \
                                           Entity_Quad_Triangle = 1214, \
-                                          Entity_Quad_Tetra = 7772, \
+                                          Entity_Quad_Tetra = 6430, \
                                           Entity_Quad_Pyramid = 620, \
                                           Entity_Quad_Penta = 512 \
                                          )

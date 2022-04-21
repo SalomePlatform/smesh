@@ -522,10 +522,10 @@ class fissure_Coude(fissureGenerique):
       self.referencesMaillageFissure = dict( \
                                              Entity_Quad_Quadrangle = 6710, \
                                              Entity_Quad_Hexa = 8656, \
-                                             Entity_Node = 76807, \
+                                             Entity_Node = 70896, \
                                              Entity_Quad_Edge = 1006, \
                                              Entity_Quad_Triangle = 2342, \
-                                             Entity_Quad_Tetra = 20392, \
+                                             Entity_Quad_Tetra = 15963, \
                                              Entity_Quad_Pyramid = 1232, \
                                              Entity_Quad_Penta = 1176 \
       )

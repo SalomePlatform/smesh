@@ -122,10 +122,10 @@ class eprouvetteCourbe(fissureGenerique):
     self.referencesMaillageFissure = dict( \
                                           Entity_Quad_Quadrangle = 5318, \
                                           Entity_Quad_Hexa = 18182, \
-                                          Entity_Node = 94472, \
+                                          Entity_Node = 92417, \
                                           Entity_Quad_Edge = 539, \
                                           Entity_Quad_Triangle = 828, \
-                                          Entity_Quad_Tetra = 9024, \
+                                          Entity_Quad_Tetra = 7471, \
                                           Entity_Quad_Pyramid = 578, \
                                           Entity_Quad_Penta = 128 \
                                          )

@@ -39,12 +39,12 @@ dicoParams = dict(nomCas            = "cubeCoin",
   # ---------------------------------------------------------------------------
 
 referencesMaillageFissure = dict( \
-                                Entity_Quad_Quadrangle = 2740, \
-                                Entity_Quad_Hexa = 7420, \
-                                Entity_Node = 46394, \
-                                Entity_Quad_Edge = 323, \
-                                Entity_Quad_Triangle = 486, \
-                                Entity_Quad_Tetra = 8512, \
-                                Entity_Quad_Pyramid = 460, \
-                                Entity_Quad_Penta = 80 \
+                                          Entity_Quad_Quadrangle = 2740, \
+                                          Entity_Quad_Hexa = 7420, \
+                                          Entity_Node = 45191, \
+                                          Entity_Quad_Edge = 323, \
+                                          Entity_Quad_Triangle = 486, \
+                                          Entity_Quad_Tetra = 7601, \
+                                          Entity_Quad_Pyramid = 460, \
+                                          Entity_Quad_Penta = 80 \
                                 )
