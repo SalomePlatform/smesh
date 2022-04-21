@@ -74,10 +74,10 @@ class ellipse_2(ellipse_1):
       self.referencesMaillageFissure = dict( \
                                              Entity_Quad_Quadrangle = 1748, \
                                              Entity_Quad_Hexa = 3795, \
-                                             Entity_Node = 22022, \
+                                             Entity_Node = 21579, \
                                              Entity_Quad_Edge = 258, \
                                              Entity_Quad_Triangle = 412, \
-                                             Entity_Quad_Tetra = 2442, \
+                                             Entity_Quad_Tetra = 2113, \
                                              Entity_Quad_Pyramid = 199, \
                                              Entity_Quad_Penta = 120 \
       )

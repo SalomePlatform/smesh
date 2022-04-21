@@ -105,13 +105,26 @@ class fissureCoude_1(fissureCoude):
 
   # ---------------------------------------------------------------------------
   def setReferencesMaillageFissure(self):
-    self.referencesMaillageFissure = dict( \
+    from salome.smesh import smeshBuilder
+    if smeshBuilder.NETGEN_VERSION_MAJOR < 6:
+      self.referencesMaillageFissure = dict( \
+                                             Entity_Quad_Quadrangle = 6042, \
+                                             Entity_Quad_Hexa = 7794, \
+                                             Entity_Node = 63900, \
+                                             Entity_Quad_Edge = 874, \
+                                             Entity_Quad_Triangle = 2058, \
+                                             Entity_Quad_Tetra = 14900, \
+                                             Entity_Quad_Pyramid = 738, \
+                                             Entity_Quad_Penta = 672 \
+      )
+    else:
+      self.referencesMaillageFissure = dict( \
                                           Entity_Quad_Quadrangle = 6042, \
                                           Entity_Quad_Hexa = 7794, \
-                                          Entity_Node = 63900, \
+                                          Entity_Node = 65091, \
                                           Entity_Quad_Edge = 874, \
-                                          Entity_Quad_Triangle = 2058, \
-                                          Entity_Quad_Tetra = 14900, \
+                                          Entity_Quad_Triangle = 2116, \
+                                          Entity_Quad_Tetra = 15734, \
                                           Entity_Quad_Pyramid = 738, \
                                           Entity_Quad_Penta = 672 \
-                                         )
+      )
