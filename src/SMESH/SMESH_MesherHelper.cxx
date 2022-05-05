@@ -4985,13 +4985,20 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
         SMESH_MesherHelper h(*myMesh);
         h.SetSubShape( s.Current() );
         h.ToFixNodeParameters(true);
-        h.FixQuadraticElements( compError, false );
+        try {
+          OCC_CATCH_SIGNALS;
+          h.FixQuadraticElements( compError, false );
+        }
+        catch(...) {
+          if ( compError && compError->myComment.empty() )
+            compError->myComment = "SMESH_MesherHelper::FixQuadraticElements() failed";
+        }
       }
     }
     // fix nodes on geom faces
 #ifdef _DEBUG_
     int nbfaces = nbSolids;
-    nbfaces = faces.Extent(); /*avoid "unused varianbles": */ nbfaces++, nbfaces--; 
+    nbfaces = faces.Extent(); /*avoid "unused varianbles": */ nbfaces++, nbfaces--;
 #endif
     for ( TopTools_MapIteratorOfMapOfShape fIt( faces ); fIt.More(); fIt.Next() ) {
       MESSAGE("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
@@ -4999,7 +5006,14 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       SMESH_MesherHelper h(*myMesh);
       h.SetSubShape( fIt.Key() );
       h.ToFixNodeParameters(true);
-      h.FixQuadraticElements( compError, true);
+      try {
+        OCC_CATCH_SIGNALS;
+        h.FixQuadraticElements( compError, true);
+      }
+      catch(...) {
+        if ( compError && compError->myComment.empty() )
+          compError->myComment = "SMESH_MesherHelper::FixQuadraticElements() failed";
+      }
     }
     //perf_print_all_meters(1);
     if ( compError && compError->myName == EDITERR_NO_MEDIUM_ON_GEOM )
@@ -5207,8 +5221,10 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
             while ( len < numeric_limits<double>::min() ) { // remove degenerated link
               if ( savedChain.empty() ) savedChain = chain;
               link1 = chain.erase( link1 );
-              if ( link1 == chain.end() )
+              if ( link1 == chain.end() ) {
+                link1 = --chain.end();
                 break;
+              }
               len = ((*link0)->MiddlePnt() - (*link1)->MiddlePnt()).Modulus();
             }
             chainLen += len;
@@ -5225,6 +5241,9 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
               linkPos.push_back( chainLen );
             }
           }
+          if ( chain.begin() == --chain.end() ) // chain.size() == 1
+            continue;
+
           gp_Vec move0 = chain.front()->_nodeMove;
           gp_Vec move1 = chain.back ()->_nodeMove;
 
