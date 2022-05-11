@@ -157,6 +157,41 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
 
 //=============================================================================
 /*
+ * Parallel compute of a submesh
+ * This function is used to pass to thread_pool
+ */
+//=============================================================================
+const std::function<void(int,
+                         SMESH_subMesh*,
+                         SMESH_subMesh::compute_event,
+                         SMESH_subMesh*,
+                         bool,
+                         TopTools_IndexedMapOfShape *,
+                         TSetOfInt*)>
+     parallel_compute([&] (int id,
+                          SMESH_subMesh* sm,
+                          SMESH_subMesh::compute_event event,
+                          SMESH_subMesh *shapeSM,
+                          bool aShapeOnly,
+                          TopTools_IndexedMapOfShape *allowedSubShapes,
+                          TSetOfInt*                  aShapesId) -> void
+{
+    if (sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+  {
+    sm->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
+    //setCurrentSubMesh( sm );
+    sm->ComputeStateEngine(event);
+    //setCurrentSubMesh( nullptr );
+    sm->SetAllowedSubShapes( nullptr );
+  }
+
+  if ( aShapesId )
+    aShapesId->insert( sm->GetId() );
+
+});
+
+//=============================================================================
+/*
  * Compute a mesh
  */
 //=============================================================================
@@ -182,6 +217,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
   const bool complexShapeFirst = true;
   const int  globalAlgoDim = 100;
 
+  // Pool of thread for computation
+  if (!_pool){
+    _pool = new ctpl::thread_pool(2);
+  }
+
   SMESH_subMeshIteratorPtr smIt;
 
   // Fix of Issue 22150. Due to !BLSURF->OnlyUnaryInput(), BLSURF computes edges
@@ -202,7 +242,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     // Mesh all the sub-shapes starting from vertices
     // ===============================================
 
+    TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
     smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);
+    std::vector<std::future<void>> pending;
     while ( smIt->more() )
     {
       SMESH_subMesh* smToCompute = smIt->next();
@@ -213,6 +255,18 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
         continue;
 
+      std::cout << "Shape Type" << shapeType << " previous" << previousShapeType << std::endl;
+      if (shapeType != previousShapeType) {
+        // Waiting for all thread for the previous type to end
+        for(auto it =std::begin(pending); it != std::end(pending); ++it){
+          std::cout << "Waiting" << std::endl;
+          it->wait();
+        }
+        //Resetting threaded pool info
+        previousShapeType = shapeType;
+        pending.clear();
+      }
+
       // check for preview dimension limitations
       if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
       {
@@ -221,25 +275,18 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
         smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
         continue;
       }
+      pending.push_back(_pool->push(parallel_compute, smToCompute, computeEvent,
+                           shapeSM, aShapeOnly, allowedSubShapes,
+                           aShapesId));
+      std::cout << "Launched " << smToCompute << " shape type " << shapeType << std::endl;
 
-      if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
-      {
-        if (_compute_canceled)
-          return false;
-        smToCompute->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
-        setCurrentSubMesh( smToCompute );
-        smToCompute->ComputeStateEngine( computeEvent );
-        setCurrentSubMesh( nullptr );
-        smToCompute->SetAllowedSubShapes( nullptr );
-      }
 
-      // we check all the sub-meshes here and detect if any of them failed to compute
-      if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE &&
-          ( shapeType != TopAbs_EDGE || !SMESH_Algo::isDegenerated( TopoDS::Edge( shape ))))
-        ret = false;
-      else if ( aShapesId )
-        aShapesId->insert( smToCompute->GetId() );
     }
+
+    for(auto it =std::begin(pending); it != std::end(pending); ++it){
+      it->wait();
+    }
+    pending.clear();
     //aMesh.GetMeshDS()->Modified();
     return ret;
   }
@@ -603,7 +650,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
       const int aShapeDim = GetShapeDim( aSubShape );
       if ( aShapeDim < 1 ) break;
-      
+
       SMESH_Algo* algo = GetAlgo( smToCompute );
       if ( algo && !algo->NeedDiscreteBoundary() ) {
         if ( algo->SupportSubmeshes() ) {

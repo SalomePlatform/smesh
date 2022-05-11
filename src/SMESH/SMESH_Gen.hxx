@@ -34,12 +34,15 @@
 
 #include "SMESH_Algo.hxx"
 #include "SMESH_ComputeError.hxx"
+#include "ctpl.h"
+
 
 #include <map>
 #include <list>
 #include <set>
 #include <vector>
 #include <string>
+
 
 #include <TopoDS_Shape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
@@ -77,7 +80,7 @@ public:
     SHAPE_ONLY_UPWARD = 3  // SHAPE_ONLY | UPWARD
   };
   /*!
-   * \brief Computes aMesh on aShape 
+   * \brief Computes aMesh on aShape
    *  \param aMesh - the mesh.
    *  \param aShape - the shape.
    *  \param aFlags - ComputeFlags. By default compute the whole mesh and compact at the end.
@@ -101,7 +104,7 @@ public:
   const SMESH_subMesh* GetCurrentSubMesh() const;
 
   /*!
-   * \brief evaluates size of prospective mesh on a shape 
+   * \brief evaluates size of prospective mesh on a shape
    * \param aMesh - the mesh
    * \param aShape - the shape
    * \param aResMap - map for prospective numbers of elements
@@ -184,6 +187,8 @@ private:
 
   volatile bool               _compute_canceled;
   std::list< SMESH_subMesh* > _sm_current;
+    // TODO: Replace by number of thread
+  ctpl::thread_pool *        _pool = nullptr; //thread pool for computation
 };
 
 #endif

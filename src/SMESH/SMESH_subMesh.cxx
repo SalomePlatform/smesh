@@ -609,7 +609,7 @@ bool SMESH_subMesh::IsApplicableHypothesis(const SMESH_Hypothesis* theHypothesis
  *  \param [in] event - what happens
  *  \param [in] anHyp - a hypothesis
  *  \return SMESH_Hypothesis::Hypothesis_Status - a treatment result.
- * 
+ *
  * Optional description of a problematic situation (if any) can be retrieved
  * via GetComputeError().
  */
@@ -1033,8 +1033,8 @@ SMESH_Hypothesis::Hypothesis_Status
 
   // detect algorithm hiding
   //
-  if ( ret == SMESH_Hypothesis::HYP_OK && 
-       ( event == ADD_ALGO || event == ADD_FATHER_ALGO ) && algo && 
+  if ( ret == SMESH_Hypothesis::HYP_OK &&
+       ( event == ADD_ALGO || event == ADD_FATHER_ALGO ) && algo &&
        algo->GetName() == anHyp->GetName() )
   {
     // is algo hidden?
@@ -1392,12 +1392,14 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
     else if (( event == COMPUTE || event == COMPUTE_SUBMESH )
              && !_alwaysComputed )
     {
+      _father->Lock();
       const TopoDS_Vertex & V = TopoDS::Vertex( _subShape );
       gp_Pnt P = BRep_Tool::Pnt(V);
       if ( SMDS_MeshNode * n = _father->GetMeshDS()->AddNode(P.X(), P.Y(), P.Z()) ) {
         _father->GetMeshDS()->SetNodeOnVertex(n,_Id);
         _computeState = COMPUTE_OK;
       }
+      _father->Unlock();
     }
     if ( event == MODIF_ALGO_STATE )
       cleanDependants();
@@ -1500,6 +1502,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
     case COMPUTE:
     case COMPUTE_SUBMESH:
       {
+        _father->Lock();
         algo = GetAlgo();
         ASSERT(algo);
         ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
@@ -1541,6 +1544,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
             break; // goto exit
           }
         }
+        _father->Unlock();
         // Compute
 
         // to restore cout that may be redirected by algo
@@ -1569,6 +1573,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           }
           else
           {
+            std::cout<<"Running compute for " << _father << " of shape type " << shape.ShapeType() << std::endl;
             ret = algo->Compute((*_father), shape);
           }
           // algo can set _computeError of submesh
@@ -1729,7 +1734,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
             updateDependantsState( SUBMESH_COMPUTED );
         }
         // let algo clear its data gathered while algo->Compute()
+        _father->Lock();
         algo->CheckHypothesis((*_father), _subShape, hyp_status);
+        _father->Unlock();
       }
       break;
     case COMPUTE_CANCELED:               // nothing to do
@@ -1897,7 +1904,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
     break;
   }
 
-  notifyListenersOnEvent( event, COMPUTE_EVENT );
+  //notifyListenersOnEvent( event, COMPUTE_EVENT );
 
   return ret;
 }
@@ -2097,7 +2104,7 @@ void SMESH_subMesh::updateDependantsState(const compute_event theEvent)
 
 //=======================================================================
 //function : cleanDependants
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_subMesh::cleanDependants()
@@ -2121,7 +2128,7 @@ void SMESH_subMesh::cleanDependants()
 
 //=======================================================================
 //function : removeSubMeshElementsAndNodes
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_subMesh::removeSubMeshElementsAndNodes()
@@ -2297,7 +2304,7 @@ SMESH_subMesh::OwnListenerData::OwnListenerData( SMESH_subMesh* sm, EventListene
  * \param listener - the listener to store
  * \param data - the listener data to store
  * \param where - the submesh to store the listener and it's data
- * 
+ *
  * It remembers the submesh where it puts the listener in order to delete
  * them when HYP_OK algo_state is lost
  * After being set, event listener is notified on each event of where submesh.
@@ -2319,7 +2326,7 @@ void SMESH_subMesh::SetEventListener(EventListener*     listener,
  * \brief Sets an event listener and its data to a submesh
  * \param listener - the listener to store
  * \param data - the listener data to store
- * 
+ *
  * After being set, event listener is notified on each event of a submesh.
  */
 //================================================================================
@@ -2529,7 +2536,7 @@ void SMESH_subMesh::loadDependentMeshes()
  * \param subMesh - the submesh where the event occurs
  * \param data - listener data stored in the subMesh
  * \param hyp - hypothesis, if eventType is algo_event
- * 
+ *
  * The base implementation translates CLEAN event to the subMesh
  * stored in listener data. Also it sends SUBMESH_COMPUTED event in case of
  * successful COMPUTE event.

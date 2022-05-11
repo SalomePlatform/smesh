@@ -716,7 +716,7 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
@@ -1164,7 +1164,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -1182,6 +1182,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
 
   SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
+  theMesh.Lock();
   const TopoDS_Edge & EE = TopoDS::Edge(theShape);
   TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
   int shapeID = meshDS->ShapeToIndex( E );
@@ -1196,9 +1197,10 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   ASSERT(!VLast.IsNull());
   const SMDS_MeshNode * nFirst = SMESH_Algo::VertexNode( VFirst, meshDS );
   const SMDS_MeshNode *  nLast = SMESH_Algo::VertexNode( VLast,  meshDS );
-  if ( !nFirst || !nLast )
+  if ( !nFirst || !nLast ){
+    theMesh.Unlock();
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
-
+  }
   // remove elements created by e.g. pattern mapping (PAL21999)
   // CLEAN event is incorrectly ptopagated seemingly due to Propagation hyp
   // so TEMPORARY solution is to clean the submesh manually
@@ -1242,6 +1244,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
 
     BRepAdaptor_Curve C3d( E );
     if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, reversed, true )) {
+      theMesh.Unlock();
       return false;
     }
     redistributeNearVertices( theMesh, C3d, length, params, VFirst, VLast );
@@ -1332,13 +1335,14 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       meshDS->SetMeshElementOnShape(edge, shapeID);
     }
   }
+  theMesh.Unlock();
   return true;
 }
 
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
