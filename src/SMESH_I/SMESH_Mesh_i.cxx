@@ -2415,9 +2415,11 @@ void SMESH_Mesh_i::CheckGeomModif( bool theIsBreakLink )
     {
       smIdType nb = NbNodes() + NbElements();
       CheckGeomGroupModif();
-      if ( nb != NbNodes() + NbElements() ) // something removed due to hypotheses change
+      bool updated = ( nb != NbNodes() + NbElements() );
+      if ( updated ) // something removed due to hypotheses change
         _gen_i->UpdateIcons( me );
-      return;
+      if ( updated == geomChanged || nb == 0 )
+        return;
     }
 
   // Update after shape modification or breakLink w/o geometry change
