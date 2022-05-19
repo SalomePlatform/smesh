@@ -2614,24 +2614,30 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
     // copy elements
 
     std::vector< const SMDS_MeshElement* > newElems( initMeshDS->NbElements() + 1, 0 );
-    elemIt = initImpl->GetElements( theMeshesArray[i], SMESH::ALL );
-    while ( elemIt->more() )
+    SMESH::array_of_ElementType_var srcElemTypes = theMeshesArray[i]->GetTypes();
+    bool hasElems = (( srcElemTypes->length() > 1 ) ||
+                     ( srcElemTypes->length() == 1 && srcElemTypes[0] != SMESH::NODE ));
+    if ( hasElems )
     {
-      const SMDS_MeshElement* elem = elemIt->next();
-      elemType.myNodes.resize( elem->NbNodes() );
-
-      SMDS_NodeIteratorPtr itNodes = elem->nodeIterator();
-      for ( int k = 0; itNodes->more(); k++)
+      elemIt = initImpl->GetElements( theMeshesArray[i], SMESH::ALL );
+      while ( elemIt->more() )
       {
-        const SMDS_MeshNode* node = itNodes->next();
-        elemType.myNodes[ k ] = static_cast< const SMDS_MeshNode*> ( newNodes[ node->GetID() ]);
-      }
+        const SMDS_MeshElement* elem = elemIt->next();
+        elemType.myNodes.resize( elem->NbNodes() );
 
-      // creates a corresponding element on existent nodes in new mesh
-      newElems[ elem->GetID() ] =
-        newEditor.AddElement( elemType.myNodes, elemType.Init( elem, /*basicOnly=*/false ));
+        SMDS_NodeIteratorPtr itNodes = elem->nodeIterator();
+        for ( int k = 0; itNodes->more(); k++)
+        {
+          const SMDS_MeshNode* node = itNodes->next();
+          elemType.myNodes[ k ] = static_cast< const SMDS_MeshNode*> ( newNodes[ node->GetID() ]);
+        }
+
+        // creates a corresponding element on existent nodes in new mesh
+        newElems[ elem->GetID() ] =
+          newEditor.AddElement( elemType.myNodes, elemType.Init( elem, /*basicOnly=*/false ));
+      }
+      newEditor.ClearLastCreated(); // forget the history
     }
-    newEditor.ClearLastCreated(); // forget the history
 
 
     // create groups of just added elements
