@@ -1185,6 +1185,8 @@ namespace
         if ( !npCloseV._node || npCloseV._node == npVert._node )
         {
           npProj = npCloseN;
+          if ( i+1 < projToMerge.size() && u2NPClose == projToMerge[ i+1 ])
+            ++i;
           thePointsOnE.erase( u2NPClose );
           continue;
         }
