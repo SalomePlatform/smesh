@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2021  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2022  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -38,7 +38,7 @@ ENDIF()
 
 # Versioning
 # ===========
-SALOME_SETUP_VERSION(9.8.0 DEVELOPMENT)
+SALOME_SETUP_VERSION(9.9.0 DEVELOPMENT)
 MESSAGE(STATUS "Building ${PROJECT_NAME_UC} ${${PROJECT_NAME_UC}_VERSION} from \"${${PROJECT_NAME_UC}_GIT_SHA1}\"")
 
 # Find KERNEL
