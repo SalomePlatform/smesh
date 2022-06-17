@@ -45,6 +45,13 @@ SMDS_LinearEdge::SMDS_LinearEdge(const SMDS_MeshNode * node1,
   myNodes[1] = node2;
 }
 
+void SMDS_LinearEdge::Init(const SMDS_MeshNode * node1,
+                           const SMDS_MeshNode * node2)
+{
+  myNodes[0] = node1;
+  myNodes[1] = node2;
+}
+
 int SMDS_LinearEdge::NbNodes() const
 {
   return 2;

@@ -24,21 +24,25 @@
 //
 #include "StdMeshers_Cartesian_3D.hxx"
 #include "StdMeshers_CartesianParameters3D.hxx"
-
-#include "ObjectPool.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "SMESHDS_Mesh.hxx"
-#include "SMESH_Block.hxx"
-#include "SMESH_Comment.hxx"
-#include "SMESH_ControlsDef.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_MeshAlgos.hxx"
-#include "SMESH_MeshEditor.hxx"
-#include "SMESH_MesherHelper.hxx"
-#include "SMESH_subMesh.hxx"
-#include "SMESH_subMeshEventListener.hxx"
+#include "StdMeshers_Cartesian_VL.hxx"
 #include "StdMeshers_FaceSide.hxx"
+#include "StdMeshers_ViscousLayers.hxx"
+
+#include <ObjectPool.hxx>
+#include <SMDS_LinearEdge.hxx>
+#include <SMDS_MeshNode.hxx>
+#include <SMDS_VolumeOfNodes.hxx>
+#include <SMDS_VolumeTool.hxx>
+#include <SMESHDS_Mesh.hxx>
+#include <SMESH_Block.hxx>
+#include <SMESH_Comment.hxx>
+#include <SMESH_ControlsDef.hxx>
+#include <SMESH_Mesh.hxx>
+#include <SMESH_MeshAlgos.hxx>
+#include <SMESH_MeshEditor.hxx>
+#include <SMESH_MesherHelper.hxx>
+#include <SMESH_subMesh.hxx>
+#include <SMESH_subMeshEventListener.hxx>
 
 #include <utilities.h>
 #include <Utils_ExceptHandlers.hxx>
@@ -130,7 +134,8 @@ StdMeshers_Cartesian_3D::StdMeshers_Cartesian_3D(int hypId, SMESH_Gen * gen)
 {
   _name = "Cartesian_3D";
   _shapeType = (1 << TopAbs_SOLID);       // 1 bit /shape type
-  _compatibleHypothesis.push_back("CartesianParameters3D");
+  _compatibleHypothesis.push_back( "CartesianParameters3D" );
+  _compatibleHypothesis.push_back( StdMeshers_ViscousLayers::GetHypType() );
 
   _onlyUnaryInput = false;          // to mesh all SOLIDs at once
   _requireDiscreteBoundary = false; // 2D mesh not needed
@@ -149,19 +154,26 @@ bool StdMeshers_Cartesian_3D::CheckHypothesis (SMESH_Mesh&          aMesh,
 {
   aStatus = SMESH_Hypothesis::HYP_MISSING;
 
-  const list<const SMESHDS_Hypothesis*>& hyps = GetUsedHypothesis(aMesh, aShape);
+  const list<const SMESHDS_Hypothesis*>& hyps = GetUsedHypothesis(aMesh, aShape, /*skipAux=*/false);
   list <const SMESHDS_Hypothesis* >::const_iterator h = hyps.begin();
   if ( h == hyps.end())
   {
     return false;
   }
 
+  _hyp = nullptr;
+  _hypViscousLayers = nullptr;
+  _isComputeOffset = false;
+
   for ( ; h != hyps.end(); ++h )
   {
-    if (( _hyp = dynamic_cast<const StdMeshers_CartesianParameters3D*>( *h )))
+    if ( !_hyp && ( _hyp = dynamic_cast<const StdMeshers_CartesianParameters3D*>( *h )))
     {
       aStatus = _hyp->IsDefined() ? HYP_OK : HYP_BAD_PARAMETER;
-      break;
+    }
+    else
+    {
+      _hypViscousLayers = dynamic_cast<const StdMeshers_ViscousLayers*>( *h );
     }
   }
 
@@ -170,7 +182,9 @@ bool StdMeshers_Cartesian_3D::CheckHypothesis (SMESH_Mesh&          aMesh,
 
 namespace
 {
-  typedef int TGeomID; // IDs of sub-shapes
+  typedef int                     TGeomID; // IDs of sub-shapes
+  typedef TopTools_ShapeMapHasher TShapeHasher; // non-oriented shape hasher
+  typedef std::array< int, 3 >    TIJK;
 
   const TGeomID theUndefID = 1e+9;
 
@@ -408,6 +422,11 @@ namespace
     {
       _curInd[0] = i; _curInd[1] = j; _curInd[2] = k;
     }
+    void SetLineIndex(size_t i)
+    {
+      _curInd[_iVar2] = i / _size[_iVar1];
+      _curInd[_iVar1] = i % _size[_iVar1];
+    }
     void operator++()
     {
       if ( ++_curInd[_iVar1] == _size[_iVar1] )
@@ -419,8 +438,10 @@ namespace
     size_t LineIndex01 () const { return _curInd[_iVar1] + (_curInd[_iVar2] + 1 )* _size[_iVar1]; }
     size_t LineIndex11 () const { return (_curInd[_iVar1] + 1 ) + (_curInd[_iVar2] + 1 )* _size[_iVar1]; }
     void SetIndexOnLine (size_t i)  { _curInd[ _iConst ] = i; }
+    bool IsValidIndexOnLine (size_t i) const { return  i < _size[ _iConst ]; }
     size_t NbLines() const { return _size[_iVar1] * _size[_iVar2]; }
   };
+  struct FaceGridIntersector;
   // --------------------------------------------------------------------------
   /*!
    * \brief Container of GridLine's
@@ -460,11 +481,16 @@ namespace
     {
       return i + j*_coords[0].size() + k*_coords[0].size()*_coords[1].size();
     }
+    size_t NodeIndex( const TIJK& ijk ) const
+    {
+      return NodeIndex( ijk[0], ijk[1], ijk[2] );
+    }
     size_t NodeIndexDX() const { return 1; }
     size_t NodeIndexDY() const { return _coords[0].size(); }
     size_t NodeIndexDZ() const { return _coords[0].size() * _coords[1].size(); }
 
     LineIndexer GetLineIndexer(size_t iDir) const;
+    size_t GetLineDir( const GridLine* line, size_t & index ) const;
 
     E_IntersectPoint* Add( const E_IntersectPoint& ip )
     {
@@ -1355,6 +1381,20 @@ namespace
                     s[indices[iDir*3]], s[indices[iDir*3+1]], s[indices[iDir*3+2]]);
     return li;
   }
+  //================================================================================
+  /*
+   * Return direction [0,1,2] of a GridLine
+   */
+  size_t Grid::GetLineDir( const GridLine* line, size_t & index ) const
+  {
+    for ( size_t iDir = 0; iDir < 3; ++iDir )
+      if ( &_lines[ iDir ][0] <= line && line <= &_lines[ iDir ].back() )
+      {
+        index = line - &_lines[ iDir ][0];
+        return iDir;
+      }
+    return -1;
+  }
   //=============================================================================
   /*
    * Creates GridLine's of the grid
@@ -1956,11 +1996,11 @@ namespace
         {
           if ( intPnts.begin()->_transition != Trans_TANGENT &&
                intPnts.begin()->_transition != Trans_APEX )
-          throw SMESH_ComputeError (COMPERR_ALGO_FAILED,
-                                    SMESH_Comment("Wrong SOLE transition of GridLine (")
-                                    << li._curInd[li._iVar1] << ", " << li._curInd[li._iVar2]
-                                    << ") along " << li._nameConst
-                                    << ": " << trName[ intPnts.begin()->_transition] );
+            throw SMESH_ComputeError (COMPERR_ALGO_FAILED,
+                                      SMESH_Comment("Wrong SOLE transition of GridLine (")
+                                      << li._curInd[li._iVar1] << ", " << li._curInd[li._iVar2]
+                                      << ") along " << li._nameConst
+                                      << ": " << trName[ intPnts.begin()->_transition] );
         }
         else
         {
@@ -1975,11 +2015,13 @@ namespace
                                       SMESH_Comment("Wrong END transition of GridLine (")
                                       << li._curInd[li._iVar1] << ", " << li._curInd[li._iVar2]
                                       << ") along " << li._nameConst
-                                    << ": " << trName[ intPnts.rbegin()->_transition ]);
+                                      << ": " << trName[ intPnts.rbegin()->_transition ]);
         }
       }
     }
 #endif
+
+    return;
   }
 
   //=============================================================================
@@ -2634,7 +2676,7 @@ namespace
     if ( _nbFaceIntNodes + _eIntPoints.size()                  > 0 &&
          _nbFaceIntNodes + _eIntPoints.size() + _nbCornerNodes > 3)
     {
-      _intNodes.reserve( 3 * _nbBndNodes + _nbFaceIntNodes + _eIntPoints.size() );
+      _intNodes.reserve( 3 * ( _nbBndNodes + _nbFaceIntNodes + _eIntPoints.size() ));
 
       // this method can be called in parallel, so use own helper
       SMESH_MesherHelper helper( *_grid->_helper->GetMesh() );
@@ -2706,7 +2748,7 @@ namespace
       // 1) add this->_eIntPoints to _Face::_eIntNodes
       // 2) fill _intNodes and _vIntNodes
       //
-      const double tol2 = _grid->_tol * _grid->_tol;
+      const double tol2 = _grid->_tol * _grid->_tol * 4;
       int facets[3], nbFacets, subEntity;
 
       for ( int iF = 0; iF < 6; ++iF )
@@ -6352,6 +6394,27 @@ namespace
 bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
                                       const TopoDS_Shape & theShape)
 {
+  if ( _hypViscousLayers )
+  {
+    const StdMeshers_ViscousLayers* hypViscousLayers = _hypViscousLayers;
+    _hypViscousLayers = nullptr;
+
+    StdMeshers_Cartesian_VL::ViscousBuilder builder( hypViscousLayers, theMesh, theShape );
+
+    std::string error;
+    TopoDS_Shape offsetShape = builder.MakeOffsetShape( theShape, theMesh, error );
+    if ( offsetShape.IsNull() )
+      throw SALOME_Exception( error );
+
+    SMESH_Mesh* offsetMesh = builder.MakeOffsetMesh();
+
+    this->_isComputeOffset = true;
+    if ( ! this->Compute( *offsetMesh, offsetShape ))
+      return false;
+
+    return builder.MakeViscousLayers( theMesh, theShape );
+  }
+
   // The algorithm generates the mesh in following steps:
 
   // 1) Intersection of grid lines with the geometry boundary.
@@ -6379,6 +6442,11 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     grid._toConsiderInternalFaces        = _hyp->GetToConsiderInternalFaces();
     grid._toUseThresholdForInternalFaces = _hyp->GetToUseThresholdForInternalFaces();
     grid._sizeThreshold                  = _hyp->GetSizeThreshold();
+    if ( _isComputeOffset )
+    {
+      grid._toAddEdges = true;
+      grid._toCreateFaces = true;
+    }
     grid.InitGeometry( theShape );
 
     vector< TopoDS_Shape > faceVec;

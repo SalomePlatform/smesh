@@ -202,6 +202,7 @@ struct SMESH_TNodeXYZ : public gp_XYZ
     }
     return false;
   }
+  void SetXYZ( const gp_XYZ& p ) { SetCoord( p.X(), p.Y(), p.Z() ); }
   const SMDS_MeshNode* Node() const { return _node; }
   double Distance(const SMDS_MeshNode* n)       const { return (SMESH_TNodeXYZ( n )-*this).Modulus(); }
   double SquareDistance(const SMDS_MeshNode* n) const { return (SMESH_TNodeXYZ( n )-*this).SquareModulus(); }

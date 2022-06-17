@@ -1162,6 +1162,18 @@ void SMESHDS_Mesh::UnSetNodeOnShape(const SMDS_MeshNode* aNode)
 }
 
 //=======================================================================
+//function : UnSetElementOnShape
+//purpose  :
+//=======================================================================
+void SMESHDS_Mesh::UnSetElementOnShape(const SMDS_MeshElement * anElement)
+{
+  int shapeId = anElement->getshapeId();
+  if (shapeId > 0)
+    if ( SMESHDS_SubMesh* sm = MeshElements( shapeId ))
+      sm->RemoveElement(anElement);
+}
+
+//=======================================================================
 //function : SetMeshElementOnShape
 //purpose  :
 //=======================================================================

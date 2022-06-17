@@ -7279,6 +7279,7 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
   {
     const SMDS_MeshElement* elem = *eIt;
     SMESHDS_SubMesh*          sm = mesh->MeshElements( elem->getshapeId() );
+    bool                 marked = elem->isMarked();
 
     bool keepElem = applyMerge( elem, newElemDefs, nodeNodeMap, /*noHoles=*/false );
     if ( !keepElem )
@@ -7315,6 +7316,8 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
           sm->AddElement( newElem );
         if ( elem != newElem )
           ReplaceElemInGroups( elem, newElem, mesh );
+        if ( marked && newElem )
+          newElem->setIsMarked( true );
       }
     }
   }

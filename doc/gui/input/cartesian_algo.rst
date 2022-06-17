@@ -7,15 +7,15 @@ Body Fitting 3D meshing algorithm
 Body Fitting algorithm generates hexahedrons of a Cartesian grid in
 the internal part of geometry and polyhedrons and other types of
 elements at the intersection of Cartesian cells with the geometrical
-boundary.
+boundary. The algorithm supports construction of 
+:ref:`viscous boundary layers<cartesian_VL_anchor>` (use 
+:ref:`Viscous Layers hypothesis <viscous_layers_anchor>` to define them).
 
 .. image:: ../images/cartesian3D_sphere.png 
 	:align: center
 
 .. centered::
 	A sphere meshed by Body Fitting algorithm
-
-.. note:: The algorithm creates only 3D elements. To add 2D elements use :ref:`Generate boundary elements <make_2dmesh_from_3d_page>` operation.
 
 The meshing algorithm is as follows.
 
@@ -27,7 +27,17 @@ The meshing algorithm is as follows.
    * add a hexahedron in the mesh, if all nodes are inside 
    * add a polyhedron or another cell type in the mesh, if some nodes are inside and some outside.  
 
-To apply this algorithm when you define your mesh, select **Body Fitting** in the list of 3D algorithms and add **Body Fitting  Parameters** hypothesis. The following dialog will appear:
+.. _cartesian_VL_anchor:
+
+**Viscous boundary layers** are constructed as follows:
+
+   * create an offset geometry with offset value equal to full layers thickness by using BRepOffset_MakeOffset OCCT class;
+   * mesh the offset geometry with the Body Fitting algorithm;
+   * create prisms of the layers by projecting boundary nodes of offset geometry onto the boundary of initial geometry.
+
+.. note:: Viscous layers can't be constructed on geometry with **shared/internal** faces.
+
+To apply the algorithm when you define your mesh, select **Body Fitting** in the list of 3D algorithms and add **Body Fitting  Parameters** hypothesis. The following dialog will appear:
 
 .. _cartesian_hyp_anchor:
 

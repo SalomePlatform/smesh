@@ -32,7 +32,8 @@
 class SMDS_EXPORT SMDS_LinearEdge: public SMDS_CellOfNodes
 {
 public:
-  SMDS_LinearEdge(const SMDS_MeshNode * node1, const SMDS_MeshNode * node2);
+  SMDS_LinearEdge(const SMDS_MeshNode * node1=nullptr, const SMDS_MeshNode * node2=nullptr);
+  void Init( const SMDS_MeshNode * node1, const SMDS_MeshNode * node2);
 
   virtual SMDSAbs_ElementType  GetType()       const { return SMDSAbs_Edge; }
   virtual SMDSAbs_GeometryType GetGeomType()   const { return SMDSGeom_EDGE; }

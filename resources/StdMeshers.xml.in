@@ -555,12 +555,14 @@
                group-id         ="0"
                priority         ="20"
                hypos            ="CartesianParameters3D"
+               opt-hypos        ="ViscousLayers"
                support-submeshes="false"
                output           ="HEXA"
                need-hyp         ="true"
                dim              ="3">
       <python-wrap>
         <algo>Cartesian_3D=BodyFitted()</algo>
+        <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetFaces(1),SetFaces(2),SetMethod(),SetGroupName())</hypo>
       </python-wrap>
     </algorithm>
 

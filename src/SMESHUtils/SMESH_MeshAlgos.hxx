@@ -169,6 +169,13 @@ namespace SMESH_MeshAlgos
                              double &    bc0, double &    bc1);
 
   /*!
+   * \brief Intersect volume by a ray
+   */
+  bool IntersectRayVolume( const gp_Ax1& ray, const double rayLen,
+                           const SMDS_MeshElement* vol,
+                           double & tMin, double & tMax,
+                           int & iFacetMin, int & iFacetMax);
+  /*!
    * Return a face having linked nodes n1 and n2 and which is
    * - not in avoidSet,
    * - in elemSet provided that !elemSet.empty()

@@ -642,13 +642,7 @@ namespace VISCOUS_3D
       const double T = ( realThickness > 0 ) ? realThickness : GetTotalThickness();
       const double f = GetStretchFactor();
       const int    N = GetNumberLayers();
-      const double fPowN = pow( f, N );
-      double h0;
-      if ( fPowN - 1 <= numeric_limits<double>::min() )
-        h0 = T / N;
-      else
-        h0 = T * ( f - 1 )/( fPowN - 1 );
-      return h0;
+      return StdMeshers_ViscousLayers::Get1stLayerThickness( T, f, N );
     }
 
     bool   UseSurfaceNormal()  const
@@ -1452,7 +1446,17 @@ bool StdMeshers_ViscousLayers::IsShapeWithLayers(int shapeIndex) const
     ( std::find( _shapeIds.begin(), _shapeIds.end(), shapeIndex ) != _shapeIds.end() );
   return IsToIgnoreShapes() ? !isIn : isIn;
 }
-
+// --------------------------------------------------------------------------------
+double StdMeshers_ViscousLayers::Get1stLayerThickness( double T, double f, int N )
+{
+  const double fPowN = pow( f, N );
+  double h0;
+  if ( fPowN - 1 <= numeric_limits<double>::min() )
+    h0 = T / N;
+  else
+    h0 = T * ( f - 1 )/( fPowN - 1 );
+  return h0;
+}
 // --------------------------------------------------------------------------------
 SMDS_MeshGroup* StdMeshers_ViscousLayers::CreateGroup( const std::string&  theName,
                                                        SMESH_Mesh&         theMesh,

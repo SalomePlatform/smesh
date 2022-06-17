@@ -253,6 +253,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
       void init(const SMDS_MeshElement* elem, double tolerance);
     };
     std::vector< ElementBox* > _elements;
+    //std::string _name;
 
     typedef ObjectPool< ElementBox > TElementBoxPool;
 
@@ -340,6 +341,15 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
       if ( child->isLeaf() && child->_elements.capacity() > child->_elements.size() )
         SMESHUtils::CompactVector( child->_elements );
+
+      // child->_name = _name + char('0' + j);
+      // if ( child->isLeaf() && child->_elements.size() )
+      // {
+      //   cout << child->_name << " ";
+      //   for ( size_t i = 0; i < child->_elements.size(); ++i )
+      //     cout << child->_elements[i]->_element->GetID() << " ";
+      //   cout << endl;
+      // }
     }
   }
 
@@ -2563,4 +2573,112 @@ SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh&           
                                                            double               tolerance)
 {
   return new SMESH_ElementSearcherImpl( mesh, tolerance, elemIt );
+}
+
+
+//================================================================================
+/*!
+ * \brief Intersect a ray with a convex volume
+ *  \param [in] ray - the ray
+ *  \param [in] rayLen - ray length
+ *  \param [in] vol - the volume
+ *  \param [out] tMin - return a ray parameter where the ray enters the volume
+ *  \param [out] tMax - return a ray parameter where the ray exit the volume
+ *  \param [out] iFacetMin - facet index where the ray enters the volume
+ *  \param [out] iFacetMax - facet index  where the ray exit the volume
+ *  \return bool - true if the ray intersects the volume
+ */
+//================================================================================
+
+bool SMESH_MeshAlgos::IntersectRayVolume( const gp_Ax1& ray,
+                                          const double rayLen,
+                                          const SMDS_MeshElement* vol,
+                                          double & tMin,
+                                          double & tMax,
+                                          int & iFacetMin,
+                                          int & iFacetMax)
+{
+  /* Ray-Convex Polyhedron Intersection Test by Eric Haines, erich@eye.com
+   *
+   * This test checks the ray against each face of a polyhedron, checking whether
+   * the set of intersection points found for each ray-plane intersection
+   * overlaps the previous intersection results.  If there is no overlap (i.e.
+   * no line segment along the ray that is inside the polyhedron), then the
+   * ray misses and returns false; else true.
+   */
+  SMDS_VolumeTool vTool;
+  if ( !vTool.Set( vol ))
+    return false;
+
+  tMin = -Precision::Infinite() ;
+  tMax = rayLen ;
+
+  /* Test each plane in polyhedron */
+  for ( int iF = 0; iF < vTool.NbFaces(); ++iF )
+  {
+    const SMDS_MeshNode** fNodes = vTool.GetFaceNodes( iF );
+    gp_XYZ normal;
+    vTool.GetFaceNormal( iF,
+                         normal.ChangeCoord(1),
+                         normal.ChangeCoord(2),
+                         normal.ChangeCoord(3) );
+    double D = - ( normal * SMESH_NodeXYZ( fNodes[0] ));
+
+    /* Compute intersection point T and sidedness */
+    double vd = ray.Direction().XYZ() * normal;
+    double vn = ray.Location().XYZ() * normal + D;
+    if ( vd == 0.0 ) {
+      /* ray is parallel to plane - check if ray origin is inside plane's
+         half-space */
+      if ( vn > 0.0 )
+        /* ray origin is outside half-space */
+        return false;
+    }
+    else
+    {
+      /* ray not parallel - get distance to plane */
+      double t = -vn / vd ;
+      if ( vd < 0.0 )
+      {
+        /* front face - T is a near point */
+        if ( t > tMax ) return false;
+        if ( t > tMin ) {
+          /* hit near face */
+          tMin = t ;
+          iFacetMin = iF;
+        }
+      }
+      else
+      {
+        /* back face - T is a far point */
+        if ( t < tMin ) return false;
+        if ( t < tMax ) {
+          /* hit far face */
+          tMax = t ;
+          iFacetMax = iF;
+        }
+      }
+    }
+  }
+
+  /* survived all tests */
+  /* Note: if ray originates on polyhedron, may want to change 0.0 to some
+   * epsilon to avoid intersecting the originating face.
+   */
+  if ( tMin >= 0.0 ) {
+    /* outside, hitting front face */
+    return true;
+  }
+  else
+  {
+    if ( tMax < rayLen ) {
+      /* inside, hitting back face */
+      return true;
+    }
+    else
+    {
+      /* inside, but back face beyond tmax */
+      return false;
+    }
+  }
 }

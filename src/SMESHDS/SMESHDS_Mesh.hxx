@@ -609,6 +609,7 @@ class SMESHDS_EXPORT SMESHDS_Mesh : public SMDS_Mesh
   void SetNodeOnEdge  (const SMDS_MeshNode * aNode, const TopoDS_Edge& S, double u=0.);
   void SetNodeOnVertex(const SMDS_MeshNode * aNode, const TopoDS_Vertex & S);
   void UnSetNodeOnShape(const SMDS_MeshNode * aNode);
+  void UnSetElementOnShape(const SMDS_MeshElement * anElt);
   void SetMeshElementOnShape  (const SMDS_MeshElement * anElt, const TopoDS_Shape & S);
   void UnSetMeshElementOnShape(const SMDS_MeshElement * anElt, const TopoDS_Shape & S);
   void SetNodeInVolume(const SMDS_MeshNode * aNode, int Index);

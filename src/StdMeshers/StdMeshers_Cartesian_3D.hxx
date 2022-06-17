@@ -37,8 +37,10 @@
  * Issue 0021336
  * Issue #16523: Treatment of internal faces
  * Issue #17237: Body fitting on sub-mesh
+ * Issue #17015: Body fitting with Viscous Layers
  */
 class StdMeshers_CartesianParameters3D;
+class StdMeshers_ViscousLayers;
 
 class STDMESHERS_EXPORT StdMeshers_Cartesian_3D : public SMESH_3D_Algo
 {
@@ -61,6 +63,8 @@ public:
   void setSubmeshesComputed(SMESH_Mesh& aMesh, const TopoDS_Shape& theShape );
 
   const StdMeshers_CartesianParameters3D* _hyp;
+  const StdMeshers_ViscousLayers*         _hypViscousLayers;
+  bool                                    _isComputeOffset;
 };
 
 #endif
