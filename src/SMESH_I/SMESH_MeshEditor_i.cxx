@@ -3664,7 +3664,7 @@ SMESH_MeshEditor_i::TranslateMakeGroups(const SMESH::smIdType_array& theIDsOfEle
                 << theIDsOfElements << ", "
                 << theVector        << " )";
   }
-  return aGroups;
+  return aGroups ? aGroups : new SMESH::ListOfGroups();
 }
 
 //=======================================================================
@@ -3689,7 +3689,7 @@ SMESH_MeshEditor_i::TranslateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObjec
                 << theObject << ", "
                 << theVector << " )";
   }
-  return aGroups;
+  return aGroups ? aGroups : new SMESH::ListOfGroups();
 }
 
 //=======================================================================
@@ -3914,7 +3914,7 @@ SMESH_MeshEditor_i::RotateMakeGroups(const SMESH::smIdType_array& theIDsOfElemen
                 << theAxis          << ", "
                 << TVar( theAngle ) << " )";
   }
-  return aGroups;
+  return aGroups ? aGroups : new SMESH::ListOfGroups();
 }
 
 //=======================================================================
@@ -3941,7 +3941,7 @@ SMESH_MeshEditor_i::RotateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
                 << theAxis          << ", "
                 << TVar( theAngle ) << " )";
   }
-  return aGroups;
+  return aGroups ? aGroups : new SMESH::ListOfGroups();
 }
 
 //=======================================================================
