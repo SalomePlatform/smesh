@@ -191,6 +191,11 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
 
   gp_XY uv = UV.Multiplied( _scale );
 
+  // prevent infinite loop in case of numerical instability
+  // test case NRT_GRIDS_GEOM_BUGS_15_R7
+  const BRepMesh_Triangle* tria1 = 0;
+  const BRepMesh_Triangle* tria2 = tria;
+
   while ( tria )
   {
     // check if the uv is in tria
@@ -203,7 +208,9 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
     SMESH_MeshAlgos::GetBarycentricCoords( uv,
                                            nodeUVs[0], nodeUVs[1], nodeUVs[2],
                                            bc[0], bc[1] );
-    if ( bc[0] >= 0 && bc[1] >= 0 && bc[0] + bc[1] <= 1 )
+    if ( (bc[0] >= 0 && bc[1] >= 0 && bc[0] + bc[1] <= 1) ||
+         (tria == tria1 &&
+          bc[0] >= -1e-14 && bc[1] >= -1e-14 && bc[0] + bc[1] <= 1 + 1e-14) )
     {
       if ( _triaDS->GetNode( nodeIDs[0] ).Movability() != BRepMesh_Frontier ||
            _triaDS->GetNode( nodeIDs[1] ).Movability() != BRepMesh_Frontier ||
@@ -217,6 +224,10 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
       triaNodes[2] = nodeIDs[2] - 1;
       return tria;
     }
+
+    if (tria == tria1) return 0;
+    tria1 = tria2;
+    tria2 = tria;
 
     // look for a neighbor triangle, which is adjacent to a link intersected
     // by a segment( triangle center -> uv )
