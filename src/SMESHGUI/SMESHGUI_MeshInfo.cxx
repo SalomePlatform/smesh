@@ -66,24 +66,24 @@
 #include <QVBoxLayout>
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \class Field
-/// \brief Field widget.
+/// \class FieldInfo
+/// \brief FieldInfo widget.
 /// \internal
 ////////////////////////////////////////////////////////////////////////////////
 
-class Field : public QLabel
+class FieldInfo : public QLabel
 {
 public:
-  Field( QWidget*, const QString& = QString() );
+  FieldInfo( QWidget*, const QString& = QString() );
   bool event( QEvent* );
 };
 
 /*!
   \brief Constructor.
   \param parent Parent widget.
-  \param name Field name. Defaults to null string.
+  \param name FieldInfo name. Defaults to null string.
 */
-Field::Field( QWidget* parent, const QString& name ): QLabel( parent )
+FieldInfo::FieldInfo( QWidget* parent, const QString& name ): QLabel( parent )
 {
   setFrameStyle( QLabel::StyledPanel | QLabel::Sunken );
   setAlignment( Qt::AlignCenter );
@@ -100,7 +100,7 @@ Field::Field( QWidget* parent, const QString& name ): QLabel( parent )
 /*!
   \brief Event handler. Redefined from QLabel.
 */
-bool Field::event( QEvent* e )
+bool FieldInfo::event( QEvent* e )
 {
   if ( e->type() == QEvent::DynamicPropertyChange )
   {
@@ -332,12 +332,12 @@ namespace
   /*!
     \brief Create information field.
     \param parent Parent widget.
-    \param name Field's object. Default to null string.
-    \return New field.
+    \param name FieldInfo's object. Default to null string.
+    \return New FieldInfo.
   */
   QLabel* createField( QWidget* parent, const QString& name = QString() )
   {
-    return new Field( parent, name );
+    return new FieldInfo( parent, name );
   }
 
   /*!
