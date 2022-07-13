@@ -705,7 +705,7 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
       while ( smIt->more() ) {
         SMESH_subMesh* sm = smIt->next();
         if ( sm->IsApplicableHypothesis( anHyp )) {
-          ret2 = sm->CheckConcurrentHypothesis( anHyp->GetType() );
+          ret2 = sm->CheckConcurrentHypothesis( anHyp );
           if (ret2 > ret) {
             ret = ret2;
             break;
@@ -753,7 +753,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
   // there may appear concurrent hyps that were covered by the removed hyp
   if (ret < SMESH_Hypothesis::HYP_CONCURRENT &&
       subMesh->IsApplicableHypothesis( anHyp ) &&
-      subMesh->CheckConcurrentHypothesis( anHyp->GetType() ) != SMESH_Hypothesis::HYP_OK)
+      subMesh->CheckConcurrentHypothesis( anHyp ) != SMESH_Hypothesis::HYP_OK)
     ret = SMESH_Hypothesis::HYP_CONCURRENT;
 
   // sub-shapes
@@ -774,7 +774,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
       while ( smIt->more() ) {
         SMESH_subMesh* sm = smIt->next();
         if ( sm->IsApplicableHypothesis( anHyp )) {
-          ret2 = sm->CheckConcurrentHypothesis( anHyp->GetType() );
+          ret2 = sm->CheckConcurrentHypothesis( anHyp );
           if (ret2 > ret) {
             ret = ret2;
             break;

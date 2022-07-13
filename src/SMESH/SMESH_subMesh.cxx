@@ -2247,10 +2247,10 @@ const SMESH_Hypothesis* SMESH_subMesh::getSimilarAttached(const TopoDS_Shape&   
 //=======================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
-  SMESH_subMesh::CheckConcurrentHypothesis (const int theHypType)
+  SMESH_subMesh::CheckConcurrentHypothesis( SMESH_Hypothesis* theHypothesis)
 {
   // is there local hypothesis on me?
-  if ( getSimilarAttached( _subShape, 0, theHypType ) )
+  if ( getSimilarAttached( _subShape, theHypothesis ) )
     return SMESH_Hypothesis::HYP_OK;
 
 
@@ -2260,7 +2260,7 @@ SMESH_Hypothesis::Hypothesis_Status
   for (; it.More(); it.Next())
   {
     const TopoDS_Shape& ancestor = it.Value();
-    const SMESH_Hypothesis* hyp = getSimilarAttached( ancestor, 0, theHypType );
+    const SMESH_Hypothesis* hyp = getSimilarAttached( ancestor, theHypothesis );
     if ( hyp )
     {
       if ( aPrevWithHyp.IsNull() || aPrevWithHyp.IsSame( ancestor ))

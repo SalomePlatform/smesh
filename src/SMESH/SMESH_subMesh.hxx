@@ -246,7 +246,7 @@ public:
   // return true if theHypothesis can be used to mesh me:
   // its shape type is checked
   
-  SMESH_Hypothesis::Hypothesis_Status CheckConcurrentHypothesis (const int theHypType);
+  SMESH_Hypothesis::Hypothesis_Status CheckConcurrentHypothesis (SMESH_Hypothesis* theHypothesis);
   // check if there are several applicable hypothesis on fathers
 
   /*!
