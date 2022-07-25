@@ -65,6 +65,7 @@ using namespace std;
 //#define PRINT_WHO_COMPUTE_WHAT
 #endif
 
+#define PRINT_WHO_COMPUTE_WHAT
 //=============================================================================
 /*!
  * \brief Allocate some memory at construction and release it at destruction.
@@ -204,6 +205,20 @@ SMESH_Algo* SMESH_subMesh::GetAlgo() const
     me->_algo = _father->GetGen()->GetAlgo( me, & me->_algoShape );
   }
   return _algo;
+}
+
+//================================================================================
+/*!
+ * \brief Returns a current algorithm
+ */
+//================================================================================
+
+SMESH_Algo* SMESH_subMesh::CopyAlgo() const
+{
+  //SMESH_Algo* algo = (SMESH_Algo*) new StdMeshers_Regular_1D(666, _father->GetGent());
+  SMESH_Algo* algo;
+
+  return algo;
 }
 
 //================================================================================
@@ -1392,6 +1407,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
     else if (( event == COMPUTE || event == COMPUTE_SUBMESH )
              && !_alwaysComputed )
     {
+      // LOCK: Adding node to mesh
       _father->Lock();
       const TopoDS_Vertex & V = TopoDS::Vertex( _subShape );
       gp_Pnt P = BRep_Tool::Pnt(V);
@@ -1400,6 +1416,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         _computeState = COMPUTE_OK;
       }
       _father->Unlock();
+      // UNLOCK
     }
     if ( event == MODIF_ALGO_STATE )
       cleanDependants();
@@ -1502,10 +1519,13 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
     case COMPUTE:
     case COMPUTE_SUBMESH:
       {
-        _father->Lock();
         algo = GetAlgo();
+        SMESH_Algo* algo2 = CopyAlgo();
+        cout << "Algo2" << algo2;
         ASSERT(algo);
-        ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
+        //_father->Lock();
+        //ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
+        //_father->Unlock();
         if (!ret)
         {
           MESSAGE("***** verify compute state *****");
@@ -1516,7 +1536,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         TopoDS_Shape shape = _subShape;
         algo->SubMeshesToCompute().assign( 1, this );
         // check submeshes needed
-        if (_father->HasShapeToMesh() ) {
+        // Forcing to false for parallel run
+        // TODO: Remove forced false
+        if (_father->HasShapeToMesh() && false) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {
             //  --- commented for bos#22320 to compute all sub-shapes at once if possible;
@@ -1544,7 +1566,6 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
             break; // goto exit
           }
         }
-        _father->Unlock();
         // Compute
 
         // to restore cout that may be redirected by algo
@@ -1647,8 +1668,10 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
 #ifdef PRINT_WHO_COMPUTE_WHAT
         for (subS.ReInit(); subS.More(); subS.Next())
         {
-          const std::list <const SMESHDS_Hypothesis *> & hyps =
+          _father->Lock();
+          const std::list <const SMESHDS_Hypothesis *> hyps =
             _algo->GetUsedHypothesis( *_father, _subShape );
+          _father->Unlock();
           SMESH_Comment hypStr;
           if ( !hyps.empty() )
           {
@@ -1734,9 +1757,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
             updateDependantsState( SUBMESH_COMPUTED );
         }
         // let algo clear its data gathered while algo->Compute()
-        _father->Lock();
-        algo->CheckHypothesis((*_father), _subShape, hyp_status);
-        _father->Unlock();
+        //_father->Lock();
+        //algo->CheckHypothesis((*_father), _subShape, hyp_status);
+        //_father->Unlock();
       }
       break;
     case COMPUTE_CANCELED:               // nothing to do
@@ -2172,8 +2195,10 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * /*theGen*/,
     return _subShape;
 
   const bool skipAuxHyps = false;
+  _father->Lock();
   list<const SMESHDS_Hypothesis*> usedHyps =
     theAlgo->GetUsedHypothesis( *_father, _subShape, skipAuxHyps ); // copy
+  _father->Lock();
   std::list < TopoDS_Shape >  assiShapes = theAlgo->GetAssignedShapes();
 
   // put in a compound all shapes with the same hypothesis assigned
@@ -2201,6 +2226,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * /*theGen*/,
     }
     else if ( subMesh->GetComputeState() == READY_TO_COMPUTE )
     {
+      _father->Lock();
       SMESH_Algo* anAlgo = subMesh->GetAlgo();
       if (( anAlgo->IsSameName( *theAlgo )) && // same algo
           ( anAlgo->GetUsedHypothesis( *_father, S, skipAuxHyps ) == usedHyps ) && // same hyps
@@ -2212,6 +2238,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * /*theGen*/,
           theSubComputed = false;
         theSubs.push_back( subMesh );
       }
+      _father->Unlock();
     }
   }
 

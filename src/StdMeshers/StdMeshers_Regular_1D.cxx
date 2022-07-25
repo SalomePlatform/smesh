@@ -126,14 +126,22 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
   _onlyUnaryInput = true;
 
   // check propagation in a redefined GetUsedHypothesis()
-  const list <const SMESHDS_Hypothesis * > & hyps =
+  const list <const SMESHDS_Hypothesis * > hyps =
     GetUsedHypothesis(aMesh, aShape, /*ignoreAuxiliaryHyps=*/false);
-
   const SMESH_HypoFilter & propagFilter = StdMeshers_Propagation::GetFilter();
 
   // find non-auxiliary hypothesis
   const SMESHDS_Hypothesis *theHyp = 0;
   set< string > propagTypes;
+  std::cout << "For shape " << aShape.HashCode(1) << " of type "<< aShape.ShapeType() <<
+               "CheckHypothesis" << std::endl;
+  for(auto hyp:hyps){
+    SMESH_Comment hypStr;
+    hypStr << hyp << " " << hyp->GetName() << " ";
+    ((SMESHDS_Hypothesis*)hyp)->SaveTo( hypStr.Stream() );
+    hypStr << " ";
+    std::cout << hypStr << std::endl;
+  }
   list <const SMESHDS_Hypothesis * >::const_iterator h = hyps.begin();
   for ( ; h != hyps.end(); ++h ) {
     if ( static_cast<const SMESH_Hypothesis*>(*h)->IsAuxiliary() ) {
@@ -848,8 +856,12 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     {
       // Number Of Segments hypothesis
       nbSegments = _ivalue[ NB_SEGMENTS_IND ];
-      if ( nbSegments < 1 )  return false;
-      if ( nbSegments == 1 ) return true;
+      if ( nbSegments < 1 )  {
+        return false;
+      }
+      if ( nbSegments == 1 ) {
+        return true;
+      }
 
       switch (_ivalue[ DISTR_TYPE_IND ])
       {
@@ -1170,10 +1182,16 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
 bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & theShape)
 {
-  if ( _hypType == NONE )
-    return false;
+  SMESH_Hypothesis::Hypothesis_Status hyp_status;
+  theMesh.Lock();
+  bool ret = this->CheckHypothesis(theMesh, theShape, hyp_status);
+  int hypType = _hypType;
+  theMesh.Unlock();
 
-  if ( _hypType == ADAPTIVE )
+  if ( hypType == NONE )
+      return false;
+
+  if ( hypType == ADAPTIVE )
   {
     _adaptiveHyp->GetAlgo()->InitComputeError();
     _adaptiveHyp->GetAlgo()->Compute( theMesh, theShape );
@@ -1183,6 +1201,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
   theMesh.Lock();
+
   const TopoDS_Edge & EE = TopoDS::Edge(theShape);
   TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
   int shapeID = meshDS->ShapeToIndex( E );
@@ -1199,6 +1218,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   const SMDS_MeshNode *  nLast = SMESH_Algo::VertexNode( VLast,  meshDS );
   if ( !nFirst || !nLast ){
     theMesh.Unlock();
+    std::cout << "exit no node" << std::endl;
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
   }
   // remove elements created by e.g. pattern mapping (PAL21999)
@@ -1232,7 +1252,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       // take into account reversing the edge the hypothesis is propagated from
       // (_mainEdge.Orientation() marks mutual orientation of EDGEs in propagation chain)
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
-      if ( _hypType != DISTRIB_PROPAGATION ) {
+      if ( hypType != DISTRIB_PROPAGATION ) {
         int mainID = meshDS->ShapeToIndex(_mainEdge);
         if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), mainID) != _revEdgesIDs.end())
           reversed = !reversed;
@@ -1245,6 +1265,8 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     BRepAdaptor_Curve C3d( E );
     if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, reversed, true )) {
       theMesh.Unlock();
+    std::cout << "exit Compute internal failed" << std::endl;
+
       return false;
     }
     redistributeNearVertices( theMesh, C3d, length, params, VFirst, VLast );
@@ -1336,6 +1358,8 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     }
   }
   theMesh.Unlock();
+  std::cout << "exit normal" << std::endl;
+
   return true;
 }
 

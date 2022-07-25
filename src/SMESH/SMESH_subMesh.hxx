@@ -69,7 +69,7 @@ class SMESH_EXPORT SMESH_subMesh
   int GetId() const; // == meshDS->ShapeToIndex( aSubShape )
 
   SMESH_Mesh* GetFather() { return _father; }
-  
+
   SMESHDS_SubMesh *       GetSubMeshDS();
   const SMESHDS_SubMesh * GetSubMeshDS() const;
 
@@ -79,6 +79,7 @@ class SMESH_EXPORT SMESH_subMesh
   SMESH_subMesh *GetFirstToCompute();
 
   SMESH_Algo* GetAlgo() const;
+  SMESH_Algo* CopyAlgo() const;
 
   const std::map < int, SMESH_subMesh * >& DependsOn();
   bool DependsOn( const SMESH_subMesh* other ) const;
@@ -123,7 +124,7 @@ class SMESH_EXPORT SMESH_subMesh
   };
 
   // ==================================================================
-  // Members to track non hierarchical dependencies between sub-meshes 
+  // Members to track non hierarchical dependencies between sub-meshes
   // ==================================================================
 
   /*!
@@ -131,7 +132,7 @@ class SMESH_EXPORT SMESH_subMesh
     * \param listener - the listener to store
     * \param data - the listener data to store
     * \param where - the submesh to store the listener and it's data
-   * 
+   *
    * The method remembers the submesh \awhere it puts the listener in order to delete
    * it when HYP_OK algo_state is lost
    * After being set, event listener is notified on each event of \awhere submesh.
@@ -185,7 +186,7 @@ protected:
    * \brief Sets an event listener and its data to a submesh
     * \param listener - the listener to store
     * \param data - the listener data to store
-   * 
+   *
    * After being set, event listener is notified on each event of a submesh.
    */
   void setEventListener(EventListener* listener, EventListenerData* data);
@@ -245,7 +246,7 @@ public:
   bool IsApplicableHypothesis(const SMESH_Hypothesis* theHypothesis) const;
   // return true if theHypothesis can be used to mesh me:
   // its shape type is checked
-  
+
   SMESH_Hypothesis::Hypothesis_Status CheckConcurrentHypothesis (SMESH_Hypothesis* theHypothesis);
   // check if there are several applicable hypothesis on fathers
 
@@ -277,7 +278,7 @@ public:
 
   int GetComputeCost() const;
   // how costly is to compute this sub-mesh
-  
+
   /*!
    * \brief  Find common submeshes (based on shared subshapes with other
    * \param theOther submesh to check
@@ -319,7 +320,7 @@ protected:
 
   /*!
    * \brief Return a hypothesis attached to theShape.
-   * 
+   *
    * If theHyp is provided, similar but not same hypotheses
    * is returned; else an applicable ones having theHypType
    * is returned
@@ -327,7 +328,7 @@ protected:
   const SMESH_Hypothesis* getSimilarAttached(const TopoDS_Shape&      theShape,
                                              const SMESH_Hypothesis * theHyp,
                                              const int                theHypType = 0);
-  // 
+  //
   int computeCost() const;
 
 protected:

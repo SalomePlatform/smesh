@@ -262,6 +262,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
           std::cout << "Waiting" << std::endl;
           it->wait();
         }
+        cout << "Number of segments: " << aMesh.NbEdges() << endl;
         //Resetting threaded pool info
         previousShapeType = shapeType;
         pending.clear();
