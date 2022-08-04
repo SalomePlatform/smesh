@@ -3840,7 +3840,7 @@ void SMESH_Mesh_i::ExportUNV (const char *file, CORBA::Boolean renumber)
   checkGroupNames();
   // Update Python script
   TPythonDump() << SMESH::SMESH_Mesh_var(_this())
-                << ".ExportUNV( r'" << file << "' " << renumber << "' )";
+                << ".ExportUNV( r'" << file << "', " << renumber << " )";
 
   // Perform Export
   PrepareForWriting( file );
