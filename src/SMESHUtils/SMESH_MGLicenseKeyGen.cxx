@@ -275,7 +275,7 @@ namespace
 
     std::string outFile = tmpDir + "libMeshGemsKeyGenerator.so";
 
-    std::string cmd = "wget " + url + " -O " + outFile;
+    std::string cmd = "smesh_wget.py " + url + " -O " + outFile;
 
 #endif
 
@@ -289,7 +289,33 @@ namespace
       }
     }
 
+#ifndef WIN32
+    //[EDF25906]
+    std::string redirect = tmpDir + "redirect.out";
+    std::ostringstream oss;
+    oss << cmd << " " << redirect;
+    cmd = oss.str();
+#endif
+
     system( cmd.c_str() ); // download
+
+#ifndef WIN32
+    {//[EDF25906]
+      std::ifstream infile(redirect);
+      infile.seekg(0, std::ios::end);
+      size_t length = infile.tellg();
+      infile.seekg(0, std::ios::beg);
+      std::unique_ptr<char []> buffer(new char[length+1]);
+      buffer[length] = '\0';
+      infile.read(const_cast<char *>( buffer.get() ),length);
+
+      MESSAGE( buffer.get() )
+    }
+    {
+      SMESH_File redirectFile( redirect, /*open=*/false );
+      redirectFile.remove();
+    }
+#endif
 
     SMESH_File resultFile( outFile, /*open=*/false );
     bool ok = ( resultFile.exists() && resultFile.size() > 0 );

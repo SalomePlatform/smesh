@@ -1,4 +1,5 @@
-# Copyright (C) 2012-2022  CEA/DEN, EDF R&D, OPEN CASCADE
+#!/usr/bin/env python3
+# Copyright (C) 2007-2022  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,16 +18,14 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-SALOME_CONFIGURE_FILE(VERSION.in VERSION INSTALL ${SALOME_INSTALL_BINS})
+import os
+import os.path as osp
+import sys
+import subprocess as sp
 
-# --- scripts ---
-
-# scripts / static
-SET(_bin_SCRIPTS
-  smesh_setenv.py
-  smesh_test.py
-  smesh_wget.py
-)
-
-# --- rules ---
-SALOME_INSTALL_SCRIPTS("${_bin_SCRIPTS}" ${SALOME_INSTALL_BINS})
+p = sp.Popen(["wget"]+sys.argv[1:-1],stdout=sp.PIPE,stderr=sp.PIPE)
+stdout, stderr = p.communicate()
+ret = p.returncode
+with open(sys.argv[-1],"wb") as f:
+    f.write( stdout + stderr )
+sys.exit( ret )
