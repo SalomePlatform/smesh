@@ -80,6 +80,9 @@
 #include <pthread.h>
 #endif
 
+#include <boost/filesystem.hpp>
+namespace fs=boost::filesystem;
+
 // maximum stored group name length in MED file
 #define MAX_MED_GROUP_NAME_LENGTH 80
 
@@ -121,6 +124,9 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _callUp        = NULL;
   _meshDS->ShapeToMesh( PseudoShape() );
   _subMeshHolder = new SubMeshHolder;
+  // Temporary folder that will be used by parallel computation
+  tmp_folder = fs::temp_directory_path()/fs::unique_path(fs::path("SMESH_%%%%-%%%%"));
+  fs::create_directories(tmp_folder);
 
   // assure unique persistent ID
   if ( _document->NbMeshes() > 1 )

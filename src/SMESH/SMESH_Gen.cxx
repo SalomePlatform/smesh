@@ -30,6 +30,7 @@
 
 #include "SMESH_Gen.hxx"
 
+#include "DriverMesh.hxx"
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -55,6 +56,8 @@
 #include <Basics_Utils.hxx>
 
 using namespace std;
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 // Environment variable separator
 #ifdef WIN32
@@ -255,14 +258,34 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
         continue;
 
-      std::cout << "Shape Type" << shapeType << " previous" << previousShapeType << std::endl;
+      //DEBUG std::cout << "Shape Type" << shapeType << " previous" << previousShapeType << std::endl;
       if (shapeType != previousShapeType) {
         // Waiting for all thread for the previous type to end
         for(auto it =std::begin(pending); it != std::end(pending); ++it){
           std::cout << "Waiting" << std::endl;
           it->wait();
         }
-        cout << "Number of segments: " << aMesh.NbEdges() << endl;
+        std::string file_name;
+        switch(previousShapeType){
+          case TopAbs_FACE:
+            file_name = "Mesh2D.med";
+            break;
+          case TopAbs_EDGE:
+            file_name = "Mesh1D.med";
+            break;
+          case TopAbs_VERTEX:
+            file_name = "Mesh0D.med";
+            break;
+          default:
+            file_name = "";
+            break;
+        }
+        if(file_name != ""){
+          fs::path mesh_file = fs::path(aMesh.tmp_folder) / fs::path(file_name);
+          // TODO: change mesh name
+          export_mesh(mesh_file.string(), aMesh, "Maillage_1");
+
+        }
         //Resetting threaded pool info
         previousShapeType = shapeType;
         pending.clear();
@@ -279,7 +302,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       pending.push_back(_pool->push(parallel_compute, smToCompute, computeEvent,
                            shapeSM, aShapeOnly, allowedSubShapes,
                            aShapesId));
-      std::cout << "Launched " << smToCompute << " shape type " << shapeType << std::endl;
+      //DEBUG std::cout << "Launched " << smToCompute << " shape type " << shapeType << std::endl;
 
 
     }

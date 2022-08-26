@@ -49,6 +49,7 @@
 #include <list>
 #include <vector>
 #include <ostream>
+#include <boost/filesystem.hpp>
 
 #ifdef WIN32
 #pragma warning(disable:4251) // Warning DLL Interface ...
@@ -386,6 +387,9 @@ class SMESH_EXPORT SMESH_Mesh
 
   void Lock() {_my_lock.lock();};
   void Unlock() {_my_lock.unlock();};
+
+  // Temporary folder used during parallel Computation
+  boost::filesystem::path tmp_folder;
 
 private:
 

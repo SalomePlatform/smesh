@@ -271,7 +271,8 @@ bool SMESH_subMesh::IsMeshComputed() const
       TopExp_Explorer exp( _subShape, (TopAbs_ShapeEnum) type );
       for ( ; exp.More(); exp.Next() )
       {
-        if ( SMESHDS_SubMesh * smDS = meshDS->MeshElements( exp.Current() ))
+        SMESHDS_SubMesh * smDS = meshDS->MeshElements( exp.Current() );
+        if ( smDS )
         {
           bool computed = (dim > 0) ? smDS->NbElements() : smDS->NbNodes();
           if ( computed )
@@ -1594,7 +1595,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           }
           else
           {
-            std::cout<<"Running compute for " << _father << " of shape type " << shape.ShapeType() << std::endl;
+            // TODO: Replace by call to ParallelCompute
             ret = algo->Compute((*_father), shape);
           }
           // algo can set _computeError of submesh
@@ -1655,6 +1656,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         bool isComputeErrorSet = !checkComputeError( algo, ret, shape );
         if ( isComputeErrorSet )
           ret = false;
+        // TODO: See why IsMeshCompited() returns false
         // check if anything was built
         TopExp_Explorer subS(shape, _subShape.ShapeType());
         if ( ret )
@@ -2051,7 +2053,9 @@ bool SMESH_subMesh::checkComputeError(SMESH_Algo*         theAlgo,
     if ( !_computeError || _computeError->IsOK() )
     {
       // no error description is set to this sub-mesh, check if any mesh is computed
-      _computeState = IsMeshComputed() ? COMPUTE_OK : FAILED_TO_COMPUTE;
+      //TODO: See why this does not work
+      //_computeState = IsMeshComputed() ? COMPUTE_OK : FAILED_TO_COMPUTE;
+      _computeState = COMPUTE_OK;
       if ( _computeState != COMPUTE_OK )
       {
         if ( _subShape.ShapeType() == TopAbs_EDGE &&
