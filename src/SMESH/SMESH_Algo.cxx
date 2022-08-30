@@ -281,9 +281,6 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   if ( _usedHypList == savedHyps )
     savedHyps.swap( me->_usedHypList );
 
-  for(auto hyp:_usedHypList){
-    std::cout << hyp << std::endl;
-  }
   return _usedHypList;
 }
 

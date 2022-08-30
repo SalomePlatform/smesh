@@ -1328,7 +1328,6 @@ SMESHDS_SubMesh * SMESHDS_Mesh::NewSubMesh(int Index)
   if ( !SM )
   {
     SM = new SMESHDS_SubMesh(this, Index);
-    std::cout << "Adding " << Index << ':' <<SM<<std::endl;
     mySubMeshHolder->Add( Index, SM );
   }
   return SM;

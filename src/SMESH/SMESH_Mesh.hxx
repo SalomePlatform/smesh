@@ -393,8 +393,15 @@ class SMESH_EXPORT SMESH_Mesh
   int GetNbThreads(){return _NbThreads;};
   void SetNbThreads(int nbThreads){_NbThreads=nbThreads;};
 
+  void InitPoolThreads(){_pool = new ctpl::thread_pool(_NbThreads);};
+
+  bool IsParallel(){return _NbThreads > 0;}
+
   // Temporary folder used during parallel Computation
   boost::filesystem::path tmp_folder;
+  // TODO: Replace by number of thread
+  ctpl::thread_pool *     _pool = nullptr; //thread pool for computation
+
 
 private:
 

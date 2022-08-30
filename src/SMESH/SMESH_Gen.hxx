@@ -187,8 +187,6 @@ private:
 
   volatile bool               _compute_canceled;
   std::list< SMESH_subMesh* > _sm_current;
-    // TODO: Replace by number of thread
-  ctpl::thread_pool *        _pool = nullptr; //thread pool for computation
 };
 
 #endif
