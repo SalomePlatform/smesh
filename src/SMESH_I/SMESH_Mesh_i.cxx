@@ -2506,7 +2506,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool theIsBreakLink )
         }
         old2newShapeMap.Bind( group->GetShape(), groupsData.back()._shape );
       }
-      
+
     }
   }
   // store assigned hypotheses
@@ -6170,8 +6170,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Mesh_i::GetMesh()
 /*!
  * \brief Return false if GetMeshInfo() return incorrect information that may
  *        happen if mesh data is not yet fully loaded from the file of study.
- * 
- * 
+ *
+ *
  */
 //================================================================================
 
@@ -7039,6 +7039,16 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
 
 //=============================================================================
 /*!
+ * \brief Set the number of threads for a parallel computation
+ */
+//=============================================================================
+void SMESH_Mesh_i::SetNbThreads(int nbThreads){
+  _impl->SetNbThreads(nbThreads);
+}
+
+
+//=============================================================================
+/*!
  * \brief Convert submesh ids into submesh interfaces
  */
 //=============================================================================
@@ -7229,7 +7239,7 @@ smIdType SMESH_MeshPartDS::MinNodeID() const
 {
   if ( _meshDS ) return _meshDS->MinNodeID();
   return NbNodes() == 0 ? 0 : (*_elements[ SMDSAbs_Node ].begin())->GetID();
-}  
+}
 // -------------------------------------------------------------------------------------
 smIdType SMESH_MeshPartDS::MaxElementID() const
 {

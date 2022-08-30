@@ -156,7 +156,7 @@ module SMESH
     Geom_BALL,
     Geom_LAST
   };
-  
+
   /*!
    * ElementOrder points out entities of what order are requested
    */
@@ -238,7 +238,7 @@ module SMESH
     DRS_FAIL             // general failure (exception etc.)
   };
 
-  /*! 
+  /*!
    * \brief A structure containing information about MED file
    */
   struct MedFileInfo
@@ -263,7 +263,7 @@ module SMESH
    */
   const long EXTRUSION_FLAG_BOUNDARY = 1;
   const long EXTRUSION_FLAG_SEW = 2;
-  
+
   /*!
    * Structure used in mesh edit preview data (MeshPreviewStruct)
    */
@@ -344,7 +344,7 @@ module SMESH
 
     /*!
      * Get geom shape to mesh. A result should not be nil. Use HasShapeToMesh()
-     * to know if a returned shape 
+     * to know if a returned shape
      */
     GEOM::GEOM_Object GetShapeToMesh()
       raises (SALOME::SALOME_Exception);
@@ -457,7 +457,7 @@ module SMESH
                              in SMESH_GroupBase aGroup2,
                              in string          name )
       raises (SALOME::SALOME_Exception);
-      
+
     /*!
      * Union of list of groups
      * New group is created. All mesh elements that are
@@ -476,7 +476,7 @@ module SMESH
                                  in SMESH_GroupBase aGroup2,
                                  in string          name )
       raises (SALOME::SALOME_Exception);
-      
+
     /*!
      *  Intersection of list of groups
      *  New group is created. All mesh elements that are
@@ -495,7 +495,7 @@ module SMESH
                            in SMESH_GroupBase aToolGroup,
                            in string          name )
       raises (SALOME::SALOME_Exception);
-      
+
     /*!
      *  Cut of lists of groups
      *  New group is created. All mesh elements that are present in
@@ -505,14 +505,14 @@ module SMESH
                                  in ListOfGroups aToolGroups,
                                  in string       name)
       raises (SALOME::SALOME_Exception);
-      
+
     /*!
      *  Create a group of entities basing on nodes of other groups.
      *  \param [in] aListOfGroups - list of either groups, sub-meshes or filters.
      *  \param [in] anElemType - a type of elements to include to the new group.
      *  \param [in] name - a name of the new group.
      *  \param [in] nbCommonNodes - criterion of inclusion of an element to the new group.
-     *  \param [in] underlyingOnly - if \c True, an element is included to the 
+     *  \param [in] underlyingOnly - if \c True, an element is included to the
      *         new group provided that it is based on nodes of an element of
      *         \a aListOfGroups
      *  \return SMESH_Group - the created group
@@ -679,12 +679,12 @@ module SMESH
      *           med files in 4.0.0 (default format) or 3.2.1 or 3.3.1 formats.
      *           The minor must be between 0 and the current minor version of MED file library.
      *           If version is equal to -1, the version is not changed (default).
-     * - autoDimension : if @c True, a space dimension for export is defined by mesh 
+     * - autoDimension : if @c True, a space dimension for export is defined by mesh
      *                 configuration; for example a planar mesh lying on XOY plane
-     *                 will be exported as a mesh in 2D space. 
+     *                 will be exported as a mesh in 2D space.
      *                 If @a autoDimension == @c False, the space dimension is 3.
      * - fields : list of GEOM fields defined on the shape to mesh.
-     * - geomAssocFields : each character of this string means a need to export a 
+     * - geomAssocFields : each character of this string means a need to export a
      *         corresponding field; correspondence between fields and characters is following:
      *         - 'v' stands for _vertices_ field;
      *         - 'e' stands for _edges_ field;
@@ -724,7 +724,7 @@ module SMESH
      *  encoded in 10*major+minor (for instance, code for med 3.2.1 is 32)
      */
     long_array GetMEDVersionsCompatibleForAppend();
-    
+
     /*!
      * Export Mesh to different Formats
      * (UNV supported version is I-DEAS 10)
@@ -735,17 +735,17 @@ module SMESH
                     in boolean renumer ) raises (SALOME::SALOME_Exception);
     void ExportSTL( in string  file,
                     in boolean isascii ) raises (SALOME::SALOME_Exception);
-    void ExportCGNS( in SMESH_IDSource meshPart, 
+    void ExportCGNS( in SMESH_IDSource meshPart,
                      in string         file,
                      in boolean        overwrite,
                      in boolean        groupElemsByType) raises (SALOME::SALOME_Exception);
-    void ExportGMF( in SMESH_IDSource  meshPart, 
+    void ExportGMF( in SMESH_IDSource  meshPart,
                     in string          file,
                     in boolean         withRequiredGroups) raises (SALOME::SALOME_Exception);
-    void ExportPartToDAT( in SMESH_IDSource meshPart, 
+    void ExportPartToDAT( in SMESH_IDSource meshPart,
                           in string         file,
                           in boolean        renumer ) raises (SALOME::SALOME_Exception);
-    void ExportPartToUNV( in SMESH_IDSource meshPart, 
+    void ExportPartToUNV( in SMESH_IDSource meshPart,
                           in string         file,
                           in boolean        renumer ) raises (SALOME::SALOME_Exception);
     void ExportPartToSTL( in SMESH_IDSource meshPart,
@@ -857,10 +857,10 @@ module SMESH
 
     smIdType_array GetNodesId()
       raises (SALOME::SALOME_Exception);
-    
+
     /*!
      * Returns type of mesh element
-     */    
+     */
     ElementType GetElementType( in smIdType id, in boolean iselem )
       raises (SALOME::SALOME_Exception);
 
@@ -875,7 +875,7 @@ module SMESH
 
     smIdType_array GetSubMeshNodesId(in long ShapeID, in boolean all )
       raises (SALOME::SALOME_Exception);
-    
+
     ElementType GetSubMeshElementType(in long ShapeID)
       raises (SALOME::SALOME_Exception);
 
@@ -899,6 +899,10 @@ module SMESH
      */
     boolean SetMeshOrder(in submesh_array_array theSubMeshArray);
 
+    /*!
+     * \brief Set Number of Threads
+     */
+    void SetNbThreads(in long nbThreads);
 
     /*!
      * Get mesh description
@@ -939,7 +943,7 @@ module SMESH
     long GetShapeID(in smIdType id);
 
     /*!
-     * For given element returns ID of result shape after 
+     * For given element returns ID of result shape after
      * ::FindShape() from SMESH_MeshEditor
      * If there is not element for given ID - returns -1
      */
@@ -1072,7 +1076,7 @@ module SMESH
      */
     smIdType_array GetElementsByType( in ElementType theType )
       raises (SALOME::SALOME_Exception);
-    
+
     /*!
      * Returns type of mesh element (same as SMESH_Mesh::GetElementType() )
      */

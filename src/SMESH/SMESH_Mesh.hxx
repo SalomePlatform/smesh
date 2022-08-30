@@ -385,8 +385,13 @@ class SMESH_EXPORT SMESH_Mesh
 
   std::ostream& Dump(std::ostream & save);
 
+  // Data for parallel computation
+
   void Lock() {_my_lock.lock();};
   void Unlock() {_my_lock.unlock();};
+
+  int GetNbThreads(){return _NbThreads;};
+  void SetNbThreads(int nbThreads){_NbThreads=nbThreads;};
 
   // Temporary folder used during parallel Computation
   boost::filesystem::path tmp_folder;
@@ -439,6 +444,7 @@ protected:
 
   // Mutex for multhitreading write in SMESH_Mesh
   std::mutex _my_lock;
+  int _NbThreads=0;
 
 protected:
   SMESH_Mesh();
