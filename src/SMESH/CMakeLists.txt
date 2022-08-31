@@ -92,6 +92,7 @@ SET(SMESHimpl_HEADERS
   SMESH_Homard.hxx
   ctpl.h
   DriverMesh.hxx
+  DriverStep.hxx
 )
 
 # --- sources ---
@@ -113,6 +114,7 @@ SET(SMESHimpl_SOURCES
   MG_ADAPT.cxx
   SMESH_Homard.cxx
   DriverMesh.cxx
+  DriverStep.cxx
 )
 
 # --- rules ---
