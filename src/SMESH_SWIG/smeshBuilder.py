@@ -1863,8 +1863,28 @@ class Mesh(metaclass = MeshMeta):
                 geom = self.geom
         return self.smeshpyD.Evaluate(self.mesh, geom)
 
+    def ParallelCompute(self, nbThreads, geom=0, discardModifs=False, refresh=False):
+        """
+        Parallel computation of the mesh and return the status of the computation
+        The mesh must contains have be constructed using create_parallel_mesh
 
-    def Compute(self, geom=0, discardModifs=False, refresh=False, nbThreads=0):
+        Parameters:
+                nbThreads: Number of threads to use for a parallel computation
+                geom: geomtrical shape on which mesh data should be computed
+                discardModifs: if True and the mesh has been edited since
+                        a last total re-compute and that may prevent successful partial re-compute,
+                        then the mesh is cleaned before Compute()
+                refresh: if *True*, Object Browser is automatically updated (when running in GUI)
+
+        Returns:
+                True or False
+        """
+        if (nbThreads <= 1):
+            raise ValueError("nbThreads must be greater than 1")
+        self.mesh.SetNbThreads(nbThreads)
+        return self.Compute(geom=geom, discardModifs=discardModifs, refresh=refresh)
+
+    def Compute(self, geom=0, discardModifs=False, refresh=False):
         """
         Compute the mesh and return the status of the computation
 
@@ -1886,8 +1906,6 @@ class Mesh(metaclass = MeshMeta):
         try:
             if discardModifs and self.mesh.HasModificationsToDiscard(): # issue 0020693
                 self.mesh.Clear()
-            # Setting parallel parameters
-            self.mesh.SetNbThreads(nbThreads)
             ok = self.smeshpyD.Compute(self.mesh, geom)
         except SALOME.SALOME_Exception as ex:
             print("Mesh computation failed, exception caught:")

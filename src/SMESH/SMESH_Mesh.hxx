@@ -394,6 +394,7 @@ class SMESH_EXPORT SMESH_Mesh
   void SetNbThreads(int nbThreads){_NbThreads=nbThreads;};
 
   void InitPoolThreads(){_pool = new ctpl::thread_pool(_NbThreads);};
+  void DeletePoolThreads(){delete _pool;};
 
   bool IsParallel(){return _NbThreads > 0;}
 

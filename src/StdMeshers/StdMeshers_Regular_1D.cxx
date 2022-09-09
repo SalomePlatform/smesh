@@ -133,15 +133,15 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
   // find non-auxiliary hypothesis
   const SMESHDS_Hypothesis *theHyp = 0;
   set< string > propagTypes;
-  std::cout << "For shape " << aShape.HashCode(1) << " of type "<< aShape.ShapeType() <<
-               "CheckHypothesis" << std::endl;
-  for(auto hyp:hyps){
-    SMESH_Comment hypStr;
-    hypStr << hyp << " " << hyp->GetName() << " ";
-    ((SMESHDS_Hypothesis*)hyp)->SaveTo( hypStr.Stream() );
-    hypStr << " ";
-    std::cout << hypStr << std::endl;
-  }
+  //std::cout << "For shape " << aShape.HashCode(1) << " of type "<< aShape.ShapeType() <<
+  //             "CheckHypothesis" << std::endl;
+  // for(auto hyp:hyps){
+  //   SMESH_Comment hypStr;
+  //   hypStr << hyp << " " << hyp->GetName() << " ";
+  //   ((SMESHDS_Hypothesis*)hyp)->SaveTo( hypStr.Stream() );
+  //   hypStr << " ";
+  //   std::cout << hypStr << std::endl;
+  // }
   list <const SMESHDS_Hypothesis * >::const_iterator h = hyps.begin();
   for ( ; h != hyps.end(); ++h ) {
     if ( static_cast<const SMESH_Hypothesis*>(*h)->IsAuxiliary() ) {
@@ -1218,7 +1218,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   const SMDS_MeshNode *  nLast = SMESH_Algo::VertexNode( VLast,  meshDS );
   if ( !nFirst || !nLast ){
     theMesh.Unlock();
-    std::cout << "exit no node" << std::endl;
+    //std::cout << "exit no node" << std::endl;
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
   }
   // remove elements created by e.g. pattern mapping (PAL21999)
@@ -1265,7 +1265,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     BRepAdaptor_Curve C3d( E );
     if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, reversed, true )) {
       theMesh.Unlock();
-    std::cout << "exit Compute internal failed" << std::endl;
+    //std::cout << "exit Compute internal failed" << std::endl;
 
       return false;
     }
@@ -1358,7 +1358,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     }
   }
   theMesh.Unlock();
-  std::cout << "exit normal" << std::endl;
+  //std::cout << "exit normal" << std::endl;
 
   return true;
 }

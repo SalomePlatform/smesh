@@ -65,7 +65,7 @@ using namespace std;
 //#define PRINT_WHO_COMPUTE_WHAT
 #endif
 
-#define PRINT_WHO_COMPUTE_WHAT
+//#define PRINT_WHO_COMPUTE_WHAT
 //=============================================================================
 /*!
  * \brief Allocate some memory at construction and release it at destruction.
@@ -1519,7 +1519,8 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           break;
         }
         TopoDS_Shape shape = _subShape;
-        algo->SubMeshesToCompute().assign( 1, this );
+        if(!_father->IsParallel())
+          algo->SubMeshesToCompute().assign( 1, this );
         // check submeshes needed
         // In parallel there would be no submesh to check
         if (_father->HasShapeToMesh() && !_father->IsParallel()) {
