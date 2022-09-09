@@ -60,7 +60,7 @@
 #include <vtkUnsignedCharArray.h>
 
 #include <vtkImplicitBoolean.h>
-#include <vtkPassThroughFilter.h>
+#include <vtkPassThrough.h>
 
 #include <vtkRenderer.h>
 
@@ -118,7 +118,7 @@ SMESH_DeviceActor
   myTransformFilter = VTKViewer_TransformFilter::New();
 
   for(int i = 0; i < 6; i++)
-    myPassFilter.push_back(vtkPassThroughFilter::New());
+    myPassFilter.push_back(vtkPassThrough::New());
 
   // Orientation of faces
   myIsFacesOriented = false;
