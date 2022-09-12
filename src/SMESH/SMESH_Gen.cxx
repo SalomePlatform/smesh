@@ -49,6 +49,7 @@
 
 #include "memoire.h"
 #include <chrono>
+#include <functional>
 
 #ifdef WIN32
   #include <windows.h>
@@ -58,6 +59,7 @@
 
 using namespace std;
 #include <boost/filesystem.hpp>
+#include <boost/asio.hpp>
 namespace fs = boost::filesystem;
 
 // Environment variable separator
@@ -247,7 +249,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     // ===============================================
 
     TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
-    std::vector<std::future<void>> pending;
     int nbThreads = aMesh.GetNbThreads();
     auto begin = std::chrono::high_resolution_clock::now();
 
@@ -269,9 +270,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       //DEBUG std::cout << "Shape Type" << shapeType << " previous" << previousShapeType << std::endl;
       if ((aMesh.IsParallel()||nbThreads!=0) && shapeType != previousShapeType) {
         // Waiting for all threads for the previous type to end
-        for(auto &it: pending){
-          it.wait();
-        }
+        aMesh.wait();
 
         std::string file_name;
         switch(previousShapeType){
@@ -298,7 +297,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
         }
         //Resetting threaded pool info
         previousShapeType = shapeType;
-        pending.clear();
       }
 
       // check for preview dimension limitations
@@ -311,9 +309,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       }
       if(aMesh.IsParallel())
       {
-        pending.push_back(aMesh._pool->push(compute_function, smToCompute, computeEvent,
-                             shapeSM, aShapeOnly, allowedSubShapes,
-                             aShapesId));
+        std::cout << "Submitting thread function " << std::endl;
+        boost::asio::post(*(aMesh._pool), [](){std::cerr<< "In Here" << std::endl;});
+        boost::asio::post(*(aMesh._pool), std::bind(compute_function, 1, smToCompute, computeEvent,
+                          shapeSM, aShapeOnly, allowedSubShapes,
+                          aShapesId));
       } else {
         auto begin2 = std::chrono::high_resolution_clock::now();
 
@@ -334,10 +334,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     // TODO: Check error handling in parallel mode
     if(aMesh.IsParallel()){
       // Waiting for the thread for Solids to finish
-      for(auto &it:pending){
-        it.wait();
-      }
-      pending.clear();
+      aMesh.wait();
     }
 
     aMesh.GetMeshDS()->Modified();

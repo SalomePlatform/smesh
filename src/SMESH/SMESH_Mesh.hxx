@@ -43,13 +43,12 @@
 
 #include "MEDCouplingMemArray.hxx"
 
-#include "ctpl.h"
-
 #include <map>
 #include <list>
 #include <vector>
 #include <ostream>
 #include <boost/filesystem.hpp>
+#include <boost/asio/thread_pool.hpp>
 
 #ifdef WIN32
 #pragma warning(disable:4251) // Warning DLL Interface ...
@@ -385,7 +384,7 @@ class SMESH_EXPORT SMESH_Mesh
 
   std::ostream& Dump(std::ostream & save);
 
-  // Data for parallel computation
+  // Parallel computation functions
 
   void Lock() {_my_lock.lock();};
   void Unlock() {_my_lock.unlock();};
@@ -393,15 +392,16 @@ class SMESH_EXPORT SMESH_Mesh
   int GetNbThreads(){return _NbThreads;};
   void SetNbThreads(int nbThreads){_NbThreads=nbThreads;};
 
-  void InitPoolThreads(){_pool = new ctpl::thread_pool(_NbThreads);};
+  void InitPoolThreads(){_pool = new boost::asio::thread_pool(_NbThreads);};
   void DeletePoolThreads(){delete _pool;};
+
+  void wait(){_pool->join(); DeletePoolThreads(); InitPoolThreads(); }
 
   bool IsParallel(){return _NbThreads > 0;}
 
   // Temporary folder used during parallel Computation
   boost::filesystem::path tmp_folder;
-  // TODO: Replace by number of thread
-  ctpl::thread_pool *     _pool = nullptr; //thread pool for computation
+  boost::asio::thread_pool *     _pool = nullptr; //thread pool for computation
 
 
 private:

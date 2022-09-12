@@ -34,8 +34,6 @@
 
 #include "SMESH_Algo.hxx"
 #include "SMESH_ComputeError.hxx"
-#include "ctpl.h"
-
 
 #include <map>
 #include <list>

@@ -90,7 +90,6 @@ SET(SMESHimpl_HEADERS
   SMESH_SMESH.hxx
   MG_ADAPT.hxx
   SMESH_Homard.hxx
-  ctpl.h
   DriverMesh.hxx
   DriverStep.hxx
 )
