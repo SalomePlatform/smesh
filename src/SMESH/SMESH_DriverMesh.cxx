@@ -20,12 +20,12 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  File   : DriverMesh.cxx
+//  File   : SMESH_DriverMesh.cxx
 //  Author : Yoann AUDOUIN, EDF
 //  Module : SMESH
 //
 
-#include "DriverMesh.hxx"
+#include "SMESH_DriverMesh.hxx"
 
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Gen.hxx"
@@ -44,7 +44,7 @@ using namespace MEDCoupling;
  *
  * @return true if the mesh within the files are identical
  */
-bool diff_med_file(const std::string mesh_file1, const std::string mesh_file2, const std::string mesh_name){
+bool diffMEDFile(const std::string mesh_file1, const std::string mesh_file2, const std::string mesh_name){
   MEDFileUMesh* medmesh1 = MEDFileUMesh::New(mesh_file1, mesh_name);
   MEDFileUMesh* medmesh2 = MEDFileUMesh::New(mesh_file2, mesh_name);
   MEDCouplingUMesh *m0_1=medmesh1->getMeshAtLevel(0,false);
@@ -61,7 +61,7 @@ bool diff_med_file(const std::string mesh_file1, const std::string mesh_file2, c
  *
  * @return error code
  */
-int import_mesh(const std::string mesh_file, SMESH_Mesh& aMesh, const std::string mesh_name){
+int importMesh(const std::string mesh_file, SMESH_Mesh& aMesh, const std::string mesh_name){
   // TODO: change that as it depends on the language
   std::cout << "Importing mesh from " << mesh_file << std::endl;
   int ret = aMesh.MEDToMesh(mesh_file.c_str(), mesh_name.c_str());
@@ -77,7 +77,7 @@ int import_mesh(const std::string mesh_file, SMESH_Mesh& aMesh, const std::strin
  *
  * @return error code
  */
-int export_mesh(const std::string mesh_file, SMESH_Mesh& aMesh, const std::string mesh_name){
+int exportMesh(const std::string mesh_file, SMESH_Mesh& aMesh, const std::string mesh_name){
 
   // TODO: See how to get the name of the mesh. Is it usefull ?
   std::cout << "Exporting mesh to " << mesh_file << std::endl;

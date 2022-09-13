@@ -20,22 +20,27 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  File   : DriverStep.hxx
+//  File   : SMESH_DriverMesh.hxx
 //  Author : Yoann AUDOUIN, EDF
 //  Module : SMESH
 //
 
-#ifndef _DRIVERSTEP_HXX_
-#define _DRIVERSTEP_HXX_
+#ifndef _SMESH_DRIVERMESH_HXX_
+#define _SMESH_DRIVERMESH_HXX_
 
 #include <string>
 #include <cassert>
 
-class TopoDS_Shape;
+class SMESH_Mesh;
 
-int import_shape(const std::string shape_file, TopoDS_Shape& aShape);
-int export_shape(const std::string shape_file, const TopoDS_Shape& aShape);
-bool diff_step_file(std::string file1, std::string file2);
-
+bool diffMEDFile(const std::string mesh_file1,
+                   const std::string mesh_file2,
+                   const std::string mesh_name);
+int importMesh(const std::string mesh_file,
+                SMESH_Mesh& aMesh,
+                const std::string meshName);
+int exportMesh(const std::string mesh_file,
+                SMESH_Mesh& aMesh,
+                const std::string meshName);
 
 #endif

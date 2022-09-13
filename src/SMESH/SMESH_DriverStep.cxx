@@ -20,12 +20,12 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  File   : DriverStep.cxx
+//  File   : SMESH_DriverStep.cxx
 //  Author : Yoann AUDOUIN, EDF
 //  Module : SMESH
 //
 
-#include "DriverStep.hxx"
+#include "SMESH_DriverStep.hxx"
 
 #include <STEPControl_Reader.hxx>
 #include <STEPControl_Writer.hxx>
@@ -43,7 +43,7 @@
  *
  * @return true if the files are the same
  */
-bool diff_step_file(std::string file1, std::string file2){
+bool diffStepFile(std::string file1, std::string file2){
   std::ifstream sfile1(file1);
   std::ifstream sfile2(file2);
   std::string line1, line2;
@@ -77,7 +77,7 @@ bool diff_step_file(std::string file1, std::string file2){
  *
  * @return error code
  */
-int import_shape(const std::string shape_file, TopoDS_Shape& aShape){
+int importShape(const std::string shape_file, TopoDS_Shape& aShape){
 
   std::cout << "Importing shape from " << shape_file << std::endl;
   STEPControl_Reader reader;
@@ -105,7 +105,7 @@ int import_shape(const std::string shape_file, TopoDS_Shape& aShape){
  *
  * @return error code
  */
-int export_shape(const std::string shape_file, const TopoDS_Shape& aShape){
+int exportShape(const std::string shape_file, const TopoDS_Shape& aShape){
 
   std::cout << "Exporting shape to " << shape_file << std::endl;
 

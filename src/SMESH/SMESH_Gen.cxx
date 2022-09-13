@@ -30,7 +30,7 @@
 
 #include "SMESH_Gen.hxx"
 
-#include "DriverMesh.hxx"
+#include "SMESH_DriverMesh.hxx"
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -293,7 +293,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
         {
           fs::path mesh_file = fs::path(aMesh.tmp_folder) / fs::path(file_name);
           // TODO: change mesh name
-          export_mesh(mesh_file.string(), aMesh, "Maillage_1");
+          exportMesh(mesh_file.string(), aMesh, "Maillage_1");
 
         }
         //Resetting threaded pool info
