@@ -903,6 +903,12 @@ module SMESH
      * \brief Set Number of Threads
      */
     void SetNbThreads(in long nbThreads);
+    /*!
+
+     * \brief Set Number of Threads for mesher
+     */
+    void SetMesherNbThreads(in long nbThreads);
+
 
     /*!
      * Get mesh description

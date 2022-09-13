@@ -7046,6 +7046,15 @@ void SMESH_Mesh_i::SetNbThreads(int nbThreads){
   _impl->SetNbThreads(nbThreads);
 }
 
+//=============================================================================
+/*!
+ * \brief Set the number of threads for the mesher for a parallel computation
+ */
+//=============================================================================
+void SMESH_Mesh_i::SetMesherNbThreads(int nbThreads){
+  _impl->SetMesherNbThreads(nbThreads);
+}
+
 
 //=============================================================================
 /*!

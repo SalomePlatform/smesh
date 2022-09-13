@@ -1863,7 +1863,7 @@ class Mesh(metaclass = MeshMeta):
                 geom = self.geom
         return self.smeshpyD.Evaluate(self.mesh, geom)
 
-    def ParallelCompute(self, nbThreads, geom=0, discardModifs=False, refresh=False):
+    def ParallelCompute(self, nbThreads, mesherNbThreads=1, geom=0, discardModifs=False, refresh=False):
         """
         Parallel computation of the mesh and return the status of the computation
         The mesh must contains have be constructed using create_parallel_mesh
@@ -1880,7 +1880,11 @@ class Mesh(metaclass = MeshMeta):
                 True or False
         """
         if (nbThreads <= 1):
+            raise ValueError("nbThreads must be strictly greater than 1")
+        if (mesherNbThreads < 1):
             raise ValueError("nbThreads must be greater than 1")
+
+        self.mesh.SetMesherNbThreads(mesherNbThreads)
         self.mesh.SetNbThreads(nbThreads)
         return self.Compute(geom=geom, discardModifs=discardModifs, refresh=refresh)
 

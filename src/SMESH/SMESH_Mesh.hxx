@@ -392,6 +392,9 @@ class SMESH_EXPORT SMESH_Mesh
   int GetNbThreads(){return _NbThreads;};
   void SetNbThreads(int nbThreads){_NbThreads=nbThreads;};
 
+  int GetMesherNbThreads(){return _MesherNbThreads;};
+  void SetMesherNbThreads(int nbThreads){_MesherNbThreads=nbThreads;};
+
   void InitPoolThreads(){_pool = new boost::asio::thread_pool(_NbThreads);};
   void DeletePoolThreads(){delete _pool;};
 
@@ -453,6 +456,7 @@ protected:
   // Mutex for multhitreading write in SMESH_Mesh
   std::mutex _my_lock;
   int _NbThreads=0;
+  int _MesherNbThreads=0;
 
 protected:
   SMESH_Mesh();

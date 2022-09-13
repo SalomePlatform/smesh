@@ -251,6 +251,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
     int nbThreads = aMesh.GetNbThreads();
     auto begin = std::chrono::high_resolution_clock::now();
+    std::cout << "Running mesh with threads: " << nbThreads << " mesher: " << aMesh.GetMesherNbThreads() << std::endl;
 
 
     smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);
@@ -309,8 +310,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
       }
       if(aMesh.IsParallel())
       {
-        std::cout << "Submitting thread function " << std::endl;
-        boost::asio::post(*(aMesh._pool), [](){std::cerr<< "In Here" << std::endl;});
         boost::asio::post(*(aMesh._pool), std::bind(compute_function, 1, smToCompute, computeEvent,
                           shapeSM, aShapeOnly, allowedSubShapes,
                           aShapesId));
@@ -320,8 +319,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
         compute_function(1 ,smToCompute, computeEvent,
                          shapeSM, aShapeOnly, allowedSubShapes,
                          aShapesId);
-
-
 
         if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE &&
            ( shapeType != TopAbs_EDGE || !SMESH_Algo::isDegenerated( TopoDS::Edge( shape ))))

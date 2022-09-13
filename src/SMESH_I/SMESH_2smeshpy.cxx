@@ -2212,7 +2212,8 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
         "GetElemFaceNodes", "GetFaceNormal", "FindElementByNodes",
         "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
-        "Clear", "ConvertToStandalone", "GetMeshOrder", "SetMeshOrder", "SetNbThreads"
+        "Clear", "ConvertToStandalone", "GetMeshOrder", "SetMeshOrder",
+        "SetNbThreads", "SetMesherNbThreads"
         ,"" }; // <- mark of end
     sameMethods.Insert( names );
   }
