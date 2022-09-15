@@ -240,6 +240,9 @@ SMESH_Mesh::~SMESH_Mesh()
     pthread_t thread;
     int result=pthread_create(&thread, NULL, deleteMeshDS, (void*)_meshDS);
 #endif
+
+  fs::remove_all(tmp_folder);
+
   }
 }
 
