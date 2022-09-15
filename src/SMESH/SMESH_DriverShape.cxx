@@ -20,54 +20,28 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  File   : SMESH_DriverStep.cxx
+//  File   : SMESH_DriverShape.cxx
 //  Author : Yoann AUDOUIN, EDF
 //  Module : SMESH
 //
 
-#include "SMESH_DriverStep.hxx"
+#include "SMESH_DriverShape.hxx"
 
+// step include
 #include <STEPControl_Reader.hxx>
 #include <STEPControl_Writer.hxx>
 #include <Interface_Static.hxx>
 
+// Brep include
+#include <BRepTools.hxx>
+#include <BRep_Builder.hxx>
+
 //Occ include
 #include <TopoDS.hxx>
 
-
-/**
- * @brief Compares two shape file (STEP)
- *
- * @param file1 first file
- * @param file2 second file
- *
- * @return true if the files are the same
- */
-bool diffStepFile(std::string file1, std::string file2){
-  std::ifstream sfile1(file1);
-  std::ifstream sfile2(file2);
-  std::string line1, line2;
-  int nb_lines = 0;
-
-  while(!sfile1.eof() && !sfile2.eof()){
-    std::getline(sfile1, line1);
-    std::getline(sfile2, line2);
-    nb_lines++;
-    // Skipping 4th line contain date of creation
-    if (nb_lines==4){
-      std::cout << "Skipping line" << std::endl;
-      continue;
-    }
-
-    // if lines are different end of read
-    if(line1 != line2){
-      return false;
-    }
-
-  }
-  // True if we reached the end of both files
-  return sfile1.eof() && sfile2.eof();
-}
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
+namespace fs = boost::filesystem;
 
 /**
  * @brief Import the content of a shape file (STEP) into a TopDS_Shape object
@@ -77,9 +51,9 @@ bool diffStepFile(std::string file1, std::string file2){
  *
  * @return error code
  */
-int importShape(const std::string shape_file, TopoDS_Shape& aShape){
+int importSTEPShape(const std::string shape_file, TopoDS_Shape& aShape){
 
-  std::cout << "Importing shape from " << shape_file << std::endl;
+  std::cout << "Importing STEP shape from " << shape_file << std::endl;
   STEPControl_Reader reader;
   // Forcing Unit in meter
   Interface_Static::SetCVal("xstep.cascade.unit","M");
@@ -105,9 +79,9 @@ int importShape(const std::string shape_file, TopoDS_Shape& aShape){
  *
  * @return error code
  */
-int exportShape(const std::string shape_file, const TopoDS_Shape& aShape){
+int exportSTEPShape(const std::string shape_file, const TopoDS_Shape& aShape){
 
-  std::cout << "Exporting shape to " << shape_file << std::endl;
+  std::cout << "Exporting STEP shape to " << shape_file << std::endl;
 
   STEPControl_Writer aWriter;
   // Forcing Unit in meter
@@ -125,4 +99,79 @@ int exportShape(const std::string shape_file, const TopoDS_Shape& aShape){
     std::cout << "Writing error for "  << shape_file << std::endl;
 
   return aStat;
+}
+
+/**
+ * @brief Import the content of a shape file (BREP) into a TopDS_Shape object
+ *
+ * @param shape_file the shape file
+ * @param aShape the object
+ *
+ * @return error code
+ */
+int importBREPShape(const std::string shape_file, TopoDS_Shape& aShape){
+
+  std::cout << "Importing BREP shape from " << shape_file << std::endl;
+  BRep_Builder builder;
+  BRepTools::Read(aShape, shape_file.c_str(), builder);
+
+  return true;
+}
+
+/**
+ * @brief Export the content of a TopoDS_Shape into a shape file (BREP)
+ *
+ * @param shape_file the shape file
+ * @param aShape the object
+ *
+ * @return error code
+ */
+int exportBREPShape(const std::string shape_file, const TopoDS_Shape& aShape){
+
+  std::cout << "Exporting BREP shape to " << shape_file << std::endl;
+  BRepTools::Write(aShape, shape_file.c_str());
+
+  return true;
+}
+
+/**
+ * @brief Import the content of a shape file into a TopDS_Shape object
+ *
+ * @param shape_file the shape file
+ * @param aShape the object
+ *
+ * @return error code
+ */
+int importShape(const std::string shape_file, TopoDS_Shape& aShape){
+  std::string type = fs::path(shape_file).extension().string();
+  boost::algorithm::to_lower(type);
+  if (type == ".brep"){
+    return importBREPShape(shape_file, aShape);
+  } else if (type == ".step"){
+    return importSTEPShape(shape_file, aShape);
+  } else {
+    std::cout << "Unknow format: " << type << std::endl;
+    return false;
+  }
+}
+
+/**
+ * @brief Import the content of a shape file into a TopDS_Shape object
+ *
+ * @param shape_file the shape file
+ * @param aShape the object
+ *
+ * @return error code
+ */
+int exportShape(const std::string shape_file, const TopoDS_Shape& aShape){
+  std::string type = fs::path(shape_file).extension().string();
+  boost::algorithm::to_lower(type);
+  if (type == ".brep"){
+    return exportBREPShape(shape_file, aShape);
+  } else if (type == ".step"){
+    return exportSTEPShape(shape_file, aShape);
+  } else {
+    std::cout << "Unknow format: " << type << std::endl;
+    return false;
+  }
 }
