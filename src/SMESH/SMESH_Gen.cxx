@@ -191,7 +191,6 @@ const std::function<void(int,
     sm->SetAllowedSubShapes( nullptr );
   }
 
-  // TODO: Check if this is necessary
   if ( aShapesId )
     aShapesId->insert( sm->GetId() );
 

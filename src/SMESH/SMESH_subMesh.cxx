@@ -1579,7 +1579,6 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           }
           else
           {
-            // TODO: Do switch of compute here instead of within algo
             ret = algo->Compute((*_father), shape);
           }
           // algo can set _computeError of submesh
