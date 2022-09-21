@@ -1507,10 +1507,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
       {
         algo = GetAlgo();
         ASSERT(algo);
-        if(!_father->IsParallel())
-          ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
-        else
-          ret = true;
+        ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
         if (!ret)
         {
           MESSAGE("***** verify compute state *****");
@@ -1519,8 +1516,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           break;
         }
         TopoDS_Shape shape = _subShape;
-        if(!_father->IsParallel())
-          algo->SubMeshesToCompute().assign( 1, this );
+        _father->Lock();
+        algo->SubMeshesToCompute().assign( 1, this );
+        _father->Unlock();
         // check submeshes needed
         // In parallel there would be no submesh to check
         if (_father->HasShapeToMesh() && !_father->IsParallel()) {
@@ -1741,8 +1739,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
             updateDependantsState( SUBMESH_COMPUTED );
         }
         // let algo clear its data gathered while algo->Compute()
-        if(!_father->IsParallel())
-          algo->CheckHypothesis((*_father), _subShape, hyp_status);
+        algo->CheckHypothesis((*_father), _subShape, hyp_status);
       }
       break;
     case COMPUTE_CANCELED:               // nothing to do
