@@ -48,7 +48,6 @@
 #include <TopoDS_Iterator.hxx>
 
 #include "memoire.h"
-#include <chrono>
 #include <functional>
 
 #ifdef WIN32
@@ -249,8 +248,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
 
     TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
     int nbThreads = aMesh.GetNbThreads();
-    auto begin = std::chrono::high_resolution_clock::now();
-    std::cout << "Running mesh with threads: " << nbThreads << " mesher: " << aMesh.GetMesherNbThreads() << std::endl;
+    MESSAGE("Running mesh with threads: " << nbThreads << " mesher: " << aMesh.GetMesherNbThreads());
 
 
     smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);
@@ -267,7 +265,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
         aMesh.SetNbThreads(0);
       else
         aMesh.SetNbThreads(nbThreads);
-      //DEBUG std::cout << "Shape Type" << shapeType << " previous" << previousShapeType << std::endl;
       if ((aMesh.IsParallel()||nbThreads!=0) && shapeType != previousShapeType) {
         // Waiting for all threads for the previous type to end
         aMesh.wait();
@@ -312,8 +309,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
                           shapeSM, aShapeOnly, allowedSubShapes,
                           aShapesId));
       } else {
-        auto begin2 = std::chrono::high_resolution_clock::now();
-
         compute_function(1 ,smToCompute, computeEvent,
                          shapeSM, aShapeOnly, allowedSubShapes,
                          aShapesId);
@@ -333,13 +328,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     }
 
     aMesh.GetMeshDS()->Modified();
-    auto end = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-    std::cout << "Time for All: " << elapsed.count()*1e-9 << std::endl;
-
-    // Pool of thread for computation
-    if(aMesh.IsParallel())
-      aMesh.DeletePoolThreads();
 
     return ret;
   }
@@ -351,7 +339,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     // the most complex shapes and collect sub-meshes with algos that
     // DO support sub-meshes
     // ================================================================
-    auto begin = std::chrono::high_resolution_clock::now();
     list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes[4]; // for each dim
 
     // map to sort sm with same dim algos according to dim of
@@ -547,11 +534,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
             continue;
           sm->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
           setCurrentSubMesh( sm );
-          auto begin = std::chrono::high_resolution_clock::now();
           sm->ComputeStateEngine( computeEvent );
-          auto end = std::chrono::high_resolution_clock::now();
-          auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-          std::cout << "Time for seq:alldim:compute: " << elapsed.count()*1e-9 << std::endl;
 
           setCurrentSubMesh( NULL );
           sm->SetAllowedSubShapes( nullptr );
@@ -565,9 +548,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     // mesh the rest sub-shapes starting from vertices
     // -----------------------------------------------
     ret = Compute( aMesh, aShape, aFlags | UPWARD, aDim, aShapesId, allowedSubShapes );
-    auto end = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-    std::cout << "Time for All: " << elapsed.count()*1e-9 << std::endl;
 
   }
 

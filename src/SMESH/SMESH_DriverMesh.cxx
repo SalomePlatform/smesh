@@ -25,6 +25,8 @@
 //  Module : SMESH
 //
 
+#include "utilities.h"
+
 #include "SMESH_DriverMesh.hxx"
 
 #include "SMESH_Mesh.hxx"
@@ -53,7 +55,8 @@ bool diffMEDFile(const std::string mesh_file1, const std::string mesh_file2, con
 }
 
 std::string getMeshName(std::string mesh_file){
-  std::unique_ptr<MEDFileUMesh> myMedMesh=MEDFileUMesh::New(mesh_file);
+  // TODO: Memory leak but desctructor private check with AG
+  MEDFileUMesh * myMedMesh = MEDFileUMesh::New(mesh_file);
 
   return myMedMesh->getLevel0Mesh()->getName();
 }
@@ -70,7 +73,7 @@ std::string getMeshName(std::string mesh_file){
 int importMesh(const std::string mesh_file, SMESH_Mesh& aMesh){
   // TODO: change that as it depends on the language
   std::string mesh_name = getMeshName(mesh_file);
-  std::cout << "Importing mesh from " << mesh_file << " mesh " << mesh_name2 << std::endl;
+  MESSAGE("Importing mesh from " << mesh_file << " mesh " << mesh_name);
   int ret = aMesh.MEDToMesh(mesh_file.c_str(), mesh_name.c_str());
   return ret;
 }
@@ -86,8 +89,7 @@ int importMesh(const std::string mesh_file, SMESH_Mesh& aMesh){
  */
 int exportMesh(const std::string mesh_file, SMESH_Mesh& aMesh, const std::string mesh_name){
 
-  // TODO: See how to get the name of the mesh. Is it usefull ?
-  std::cout << "Exporting mesh to " << mesh_file << std::endl;
+  MESSAGE("Exporting mesh to " << mesh_file);
   aMesh.ExportMED(mesh_file.c_str(), // theFile
                   mesh_name.c_str(), // theMeshName
                   false, // theAutoGroups

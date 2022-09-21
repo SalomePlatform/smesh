@@ -174,13 +174,11 @@ namespace
 #ifndef WIN32
   void deleteMeshDS(SMESHDS_Mesh* meshDS)
   {
-    //cout << "deleteMeshDS( " << meshDS << endl;
     delete meshDS;
   }
 #else
   static void* deleteMeshDS(void* meshDS)
   {
-    //cout << "deleteMeshDS( " << meshDS << endl;
     SMESHDS_Mesh* m = (SMESHDS_Mesh*)meshDS;
     if(m) {
       delete m;
@@ -240,10 +238,12 @@ SMESH_Mesh::~SMESH_Mesh()
     pthread_t thread;
     int result=pthread_create(&thread, NULL, deleteMeshDS, (void*)_meshDS);
 #endif
-
-  //fs::remove_all(tmp_folder);
-
   }
+
+  if(_pool)
+    DeletePoolThreads();
+  if (!MYDEBUG)
+    fs::remove_all(tmp_folder);
 }
 
 //================================================================================
@@ -541,7 +541,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
   Driver_Mesh::Status status = myReader.Perform();
 #ifdef _DEBUG_
   SMESH_ComputeErrorPtr er = myReader.GetError();
-  if ( er && !er->IsOK() ) std::cout << er->myComment << std::endl;
+  if ( er && !er->IsOK() ) MESSAGE(er->myComment);
 #endif
 
   // Reading groups (sub-meshes are out of scope of MED import functionality)
@@ -1770,7 +1770,6 @@ double SMESH_Mesh::GetComputeProgress() const
         rate = algo->GetProgressByTic();
         computedCost += algoDoneCost + rate * algoNotDoneCost;
       }
-      // cout << "rate: "<<rate << " algoNotDoneCost: " << algoNotDoneCost << endl;
     }
 
   // get cost of already treated sub-meshes
@@ -1791,9 +1790,6 @@ double SMESH_Mesh::GetComputeProgress() const
       }
     }
   }
-  // cout << "Total: " << totalCost
-  //      << " computed: " << computedCost << " progress: " << computedCost / totalCost
-  //      << " nbElems: " << GetMeshDS()->GetMeshInfo().NbElements() << endl;
   return computedCost / totalCost;
 }
 

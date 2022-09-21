@@ -25,6 +25,7 @@
 //  Module : SMESH
 //
 
+#include <utilities.h>
 #include "SMESH_DriverShape.hxx"
 
 // step include
@@ -53,22 +54,24 @@ namespace fs = boost::filesystem;
  */
 int importSTEPShape(const std::string shape_file, TopoDS_Shape& aShape){
 
-  std::cout << "Importing STEP shape from " << shape_file << std::endl;
+  MESSAGE("Importing STEP shape from " << shape_file);
   STEPControl_Reader reader;
   // Forcing Unit in meter
   Interface_Static::SetCVal("xstep.cascade.unit","M");
   Interface_Static::SetIVal("read.step.ideas", 1);
   Interface_Static::SetIVal("read.step.nonmanifold", 1);
   IFSelect_ReturnStatus aStat = reader.ReadFile(shape_file.c_str());
-  if(aStat != IFSelect_RetDone)
-    std::cout << "Reading error for "  << shape_file << std::endl;
+  if(aStat != IFSelect_RetDone){
+    std::cerr << "Reading error for "  << shape_file << std::endl;
+    return true;
+  }
 
   int NbTrans = reader.TransferRoots();
   // There should be only one shape within the file
   assert(NbTrans==1);
   aShape = reader.OneShape();
 
-  return true;
+  return false;
 }
 
 /**
@@ -81,7 +84,7 @@ int importSTEPShape(const std::string shape_file, TopoDS_Shape& aShape){
  */
 int exportSTEPShape(const std::string shape_file, const TopoDS_Shape& aShape){
 
-  std::cout << "Exporting STEP shape to " << shape_file << std::endl;
+  MESSAGE("Exporting STEP shape to " << shape_file);
 
   STEPControl_Writer aWriter;
   // Forcing Unit in meter
@@ -90,14 +93,17 @@ int exportSTEPShape(const std::string shape_file, const TopoDS_Shape& aShape){
   Interface_Static::SetIVal("write.step.nonmanifold", 1);
 
   IFSelect_ReturnStatus aStat = aWriter.Transfer(aShape,STEPControl_AsIs);
-  if(aStat != IFSelect_RetDone)
-    std::cout << "Transfer error for "  << shape_file << std::endl;
+  if(aStat != IFSelect_RetDone){
+    std::cerr << "Transfer error for "  << shape_file << std::endl;
+    return true;
+  }
 
   aStat = aWriter.Write(shape_file.c_str());
 
-  if(aStat != IFSelect_RetDone)
-    std::cout << "Writing error for "  << shape_file << std::endl;
-
+  if(aStat != IFSelect_RetDone){
+    std::cerr << "Writing error for "  << shape_file << std::endl;
+    return true;
+  }
   return aStat;
 }
 
@@ -111,11 +117,11 @@ int exportSTEPShape(const std::string shape_file, const TopoDS_Shape& aShape){
  */
 int importBREPShape(const std::string shape_file, TopoDS_Shape& aShape){
 
-  std::cout << "Importing BREP shape from " << shape_file << std::endl;
+  MESSAGE("Importing BREP shape from " << shape_file);
   BRep_Builder builder;
   BRepTools::Read(aShape, shape_file.c_str(), builder);
 
-  return true;
+  return false;
 }
 
 /**
@@ -128,10 +134,10 @@ int importBREPShape(const std::string shape_file, TopoDS_Shape& aShape){
  */
 int exportBREPShape(const std::string shape_file, const TopoDS_Shape& aShape){
 
-  std::cout << "Exporting BREP shape to " << shape_file << std::endl;
+  MESSAGE("Exporting BREP shape to " << shape_file);
   BRepTools::Write(aShape, shape_file.c_str());
 
-  return true;
+  return false;
 }
 
 /**
@@ -150,8 +156,8 @@ int importShape(const std::string shape_file, TopoDS_Shape& aShape){
   } else if (type == ".step"){
     return importSTEPShape(shape_file, aShape);
   } else {
-    std::cout << "Unknow format: " << type << std::endl;
-    return false;
+    std::cerr << "Unknow format: " << type << std::endl;
+    return true;
   }
 }
 
@@ -171,7 +177,7 @@ int exportShape(const std::string shape_file, const TopoDS_Shape& aShape){
   } else if (type == ".step"){
     return exportSTEPShape(shape_file, aShape);
   } else {
-    std::cout << "Unknow format: " << type << std::endl;
-    return false;
+    std::cerr << "Unknow format: " << type << std::endl;
+    return true;
   }
 }

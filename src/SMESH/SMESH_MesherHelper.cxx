@@ -28,7 +28,7 @@
 
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FaceOfNodes.hxx"
-#include "SMDS_FacePosition.hxx" 
+#include "SMDS_FacePosition.hxx"
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Mesh.hxx"
@@ -100,7 +100,7 @@ SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
 
 //=======================================================================
 //function : ~SMESH_MesherHelper
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH_MesherHelper::~SMESH_MesherHelper()
@@ -425,7 +425,7 @@ bool SMESH_MesherHelper::GetNodeUVneedInFaceNode(const TopoDS_Face& F) const
 
 //=======================================================================
 //function : IsMedium
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESH_MesherHelper::IsMedium(const SMDS_MeshNode*      node,
@@ -583,7 +583,7 @@ bool SMESH_MesherHelper::toCheckPosOnShape(int shapeID ) const
 
 void SMESH_MesherHelper::setPosOnShapeValidity(int shapeID, bool ok ) const
 {
-  std::map< int,bool >::iterator sh_ok = 
+  std::map< int,bool >::iterator sh_ok =
     ((SMESH_MesherHelper*)this)->myNodePosShapesValidity.insert( make_pair( shapeID, ok)).first;
   if ( !ok )
     sh_ok->second = ok;
@@ -591,7 +591,7 @@ void SMESH_MesherHelper::setPosOnShapeValidity(int shapeID, bool ok ) const
 
 //=======================================================================
 //function : ToFixNodeParameters
-//purpose  : Enables fixing node parameters on EDGEs and FACEs in 
+//purpose  : Enables fixing node parameters on EDGEs and FACEs in
 //           GetNodeU(...,check=true), GetNodeUV(...,check=true), CheckNodeUV() and
 //           CheckNodeU() in case if a node lies on a shape set via SetSubShape().
 //           Default is False
@@ -943,7 +943,7 @@ namespace
 {
   gp_XY AverageUV(const gp_XY& uv1, const gp_XY& uv2) { return ( uv1 + uv2 ) / 2.; }
   gp_XY_FunPtr(Added); // define gp_XY_Added pointer to function calling gp_XY::Added(gp_XY)
-  gp_XY_FunPtr(Subtracted); 
+  gp_XY_FunPtr(Subtracted);
 }
 
 //=======================================================================
@@ -967,9 +967,9 @@ gp_XY SMESH_MesherHelper::ApplyIn2D(Handle(Geom_Surface) surface,
     return fun(uv1,uv2);
 
   // move uv2 not far than half-period from uv1
-  double u2 = 
+  double u2 =
     uv2.X()+(isUPeriodic ? ShapeAnalysis::AdjustByPeriod(uv2.X(),uv1.X(),surface->UPeriod()) :0);
-  double v2 = 
+  double v2 =
     uv2.Y()+(isVPeriodic ? ShapeAnalysis::AdjustByPeriod(uv2.Y(),uv1.Y(),surface->VPeriod()) :0);
 
   // execute operation
@@ -1038,8 +1038,8 @@ gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
 //=======================================================================
 
 gp_XY SMESH_MesherHelper::GetCenterUV(const gp_XY& uv1,
-                                      const gp_XY& uv2, 
-                                      const gp_XY& uv3, 
+                                      const gp_XY& uv2,
+                                      const gp_XY& uv3,
                                       const gp_XY& uv12,
                                       const gp_XY& uv23,
                                       const gp_XY& uv31,
@@ -1370,7 +1370,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   TBiQuad keyOfMap(n1,n2,n3,n4);
   std::map<TBiQuad, const SMDS_MeshNode* >::iterator itMapCentralNode;
   itMapCentralNode = myMapWithCentralNode.find( keyOfMap );
-  if ( itMapCentralNode != myMapWithCentralNode.end() ) 
+  if ( itMapCentralNode != myMapWithCentralNode.end() )
   {
     return (*itMapCentralNode).second;
   }
@@ -1385,9 +1385,9 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 
   std::map< int, int > faceId2nbNodes;
   std::map< int, int > ::iterator itMapWithIdFace;
-  
+
   SMESHDS_Mesh* meshDS = GetMeshDS();
-  
+
   // check if a face lies on a FACE, i.e. its all corner nodes lie either on the FACE or
   // on sub-shapes of the FACE
   if ( GetMesh()->HasShapeToMesh() )
@@ -1545,7 +1545,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
   TBiQuad keyOfMap(n1,n2,n3);
   std::map<TBiQuad, const SMDS_MeshNode* >::iterator itMapCentralNode;
   itMapCentralNode = myMapWithCentralNode.find( keyOfMap );
-  if ( itMapCentralNode != myMapWithCentralNode.end() ) 
+  if ( itMapCentralNode != myMapWithCentralNode.end() )
   {
     return (*itMapCentralNode).second;
   }
@@ -1560,9 +1560,9 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetCentralNode(const SMDS_MeshNode* n1,
 
   std::map< int, int > faceId2nbNodes;
   std::map< int, int > ::iterator itMapWithIdFace;
-  
+
   SMESHDS_Mesh* meshDS = GetMeshDS();
-  
+
   // check if a face lies on a FACE, i.e. its all corner nodes lie either on the FACE or
   // on sub-shapes of the FACE
   if ( GetMesh()->HasShapeToMesh() )
@@ -2004,7 +2004,7 @@ SMDS_MeshEdge* SMESH_MesherHelper::AddEdge(const SMDS_MeshNode* n1,
                                            const bool           force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
-  
+
   SMDS_MeshEdge* edge = 0;
   if (myCreateQuadratic) {
     const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
@@ -2467,7 +2467,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n10,
                                                const SMDS_MeshNode* n11,
                                                const SMDS_MeshNode* n12,
-                                               const smIdType id, 
+                                               const smIdType id,
                                                bool /*force3d*/)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
@@ -3206,7 +3206,7 @@ bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape,
 
 //=======================================================================
 //function : IsSubShape
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh )
@@ -3221,7 +3221,7 @@ bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMes
 
 //=======================================================================
 //function : IsBlock
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESH_MesherHelper::IsBlock( const TopoDS_Shape& shape )
@@ -3324,7 +3324,7 @@ double SMESH_MesherHelper::GetAngle( const TopoDS_Edge &   theE1,
       if ( ++nbLoops > 10 )
       {
 #ifdef _DEBUG_
-        cout << "SMESH_MesherHelper::GetAngle(): Captured in a sigularity" << endl;
+        MESSAGE("SMESH_MesherHelper::GetAngle(): Captured in a singularity");
 #endif
         return angle;
       }
@@ -3404,7 +3404,7 @@ TopoDS_Vertex SMESH_MesherHelper::IthVertex( const bool  is2nd,
 
 //================================================================================
 /*!
- * \brief Return type of shape contained in a group 
+ * \brief Return type of shape contained in a group
  *  \param group - a shape of type TopAbs_COMPOUND
  *  \param avoidCompound - not to return TopAbs_COMPOUND
  */
@@ -3464,13 +3464,13 @@ SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
   NbAllEdgsAndFaces = myMesh->NbEdges() + myMesh->NbFaces();
   if ( NbAllEdgsAndFaces == 0 )
     return SMESH_MesherHelper::LINEAR;
-  
+
   //Quadratic faces and edges
   NbQuadFacesAndEdgs = myMesh->NbEdges(ORDER_QUADRATIC) + myMesh->NbFaces(ORDER_QUADRATIC);
 
   //Linear faces and edges
   NbFacesAndEdges = myMesh->NbEdges(ORDER_LINEAR) + myMesh->NbFaces(ORDER_LINEAR);
-  
+
   if (NbAllEdgsAndFaces == NbQuadFacesAndEdgs) {
     //Quadratic mesh
     return SMESH_MesherHelper::QUADRATIC;
@@ -4120,7 +4120,7 @@ namespace { // Structures used by FixQuadraticElements()
       }
     }
     else if ( _sides.size() < 4 )
-      return thePrevLen;      
+      return thePrevLen;
 
     // propagate to adjacent faces till limit step or boundary
     double len1 = thePrevLen + (theLink->MiddlePnt() - _sides[iL1]->MiddlePnt()).Modulus();
@@ -4210,7 +4210,7 @@ namespace { // Structures used by FixQuadraticElements()
   void QLink::SetContinuesFaces() const
   {
     //       x0         x - QLink, [-|] - QFace, v - volume
-    //   v0  |   v1   
+    //   v0  |   v1
     //       |          Between _faces of link x2 two vertical faces are continues
     // x1----x2-----x3  and two horizontal faces are continues. We set vertical faces
     //       |          to _faces[0] and _faces[1] and horizontal faces to
@@ -4317,7 +4317,7 @@ namespace { // Structures used by FixQuadraticElements()
     }
     return isStraight;
   }
-  
+
   //================================================================================
   /*!
    * \brief Move medium nodes of vertical links of pentahedrons adjacent by side faces
@@ -4446,13 +4446,13 @@ namespace { // Structures used by FixQuadraticElements()
     while ( startLink != linksEnd) // loop on columns
     {
       // We suppose we have a rectangular structure like shown here. We have found a
-      //               corner of the rectangle (startCorner) and a boundary link sharing  
-      //    |/  |/  |  the startCorner (startLink). We are going to loop on rows of the   
-      //  --o---o---o  structure making several chains at once. One chain (columnChain)   
-      //    |\  |  /|  starts at startLink and continues upward (we look at the structure 
-      //  \ | \ | / |  from such point that startLink is on the bottom of the structure). 
-      //   \|  \|/  |  While going upward we also fill horizontal chains (rowChains) we   
-      //  --o---o---o  encounter.                                                         
+      //               corner of the rectangle (startCorner) and a boundary link sharing
+      //    |/  |/  |  the startCorner (startLink). We are going to loop on rows of the
+      //  --o---o---o  structure making several chains at once. One chain (columnChain)
+      //    |\  |  /|  starts at startLink and continues upward (we look at the structure
+      //  \ | \ | / |  from such point that startLink is on the bottom of the structure).
+      //   \|  \|/  |  While going upward we also fill horizontal chains (rowChains) we
+      //  --o---o---o  encounter.
       //   /|\  |\  |
       //  / | \ | \ |  startCorner
       //    |  \|  \|,'
@@ -4715,7 +4715,7 @@ namespace { // Structures used by FixQuadraticElements()
                 continue;
               gp_XYZ edgeDir  = SMESH_TNodeXYZ( nOnEdge[0] ) - SMESH_TNodeXYZ( nOnEdge[1] );
               gp_XYZ edgeNorm = faceNorm ^ edgeDir;
-              n = theHelper.GetMediumNode( nOnEdge[0], nOnEdge[1], true ); // find n, not create 
+              n = theHelper.GetMediumNode( nOnEdge[0], nOnEdge[1], true ); // find n, not create
               gp_XYZ pN0     = SMESH_TNodeXYZ( nOnEdge[0] );
               gp_XYZ pMedium = SMESH_TNodeXYZ( n );                   // on-edge node location
               gp_XYZ pFaceN  = SMESH_TNodeXYZ( nOnFace );             // on-face node location
@@ -5440,7 +5440,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       {
         uv[ i ] = GetNodeUV( F, nodes[i], nodes[8], &checkUV );
         // as this method is used after mesh generation, UV of nodes is not
-        // updated according to bending links, so we update 
+        // updated according to bending links, so we update
         if ( i > 3 && nodes[i]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
           CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
       }
@@ -5475,7 +5475,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       {
         uv[ i ] = GetNodeUV( F, nodes[i], nodes[(i+1)%3], &uvOK );
         // as this method is used after mesh generation, UV of nodes is not
-        // updated according to bending links, so we update 
+        // updated according to bending links, so we update
         if ( nodes[i]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
           CheckNodeUV( F, nodes[i], uv[ i ], 2*tol, /*force=*/true );
       }
@@ -5542,16 +5542,16 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       pointsOnShapes[ SMESH_Block::ID_Ex11 ] = SMESH_TNodeXYZ( hexNodes[ 13 ] );
       pointsOnShapes[ SMESH_Block::ID_E0y1 ] = SMESH_TNodeXYZ( hexNodes[ 12 ] );
       pointsOnShapes[ SMESH_Block::ID_E1y1 ] = SMESH_TNodeXYZ( hexNodes[ 14 ] );
-      pointsOnShapes[ SMESH_Block::ID_E00z ] = SMESH_TNodeXYZ( hexNodes[ 16 ] );    
-      pointsOnShapes[ SMESH_Block::ID_E10z ] = SMESH_TNodeXYZ( hexNodes[ 19 ] );    
-      pointsOnShapes[ SMESH_Block::ID_E01z ] = SMESH_TNodeXYZ( hexNodes[ 17 ] );    
+      pointsOnShapes[ SMESH_Block::ID_E00z ] = SMESH_TNodeXYZ( hexNodes[ 16 ] );
+      pointsOnShapes[ SMESH_Block::ID_E10z ] = SMESH_TNodeXYZ( hexNodes[ 19 ] );
+      pointsOnShapes[ SMESH_Block::ID_E01z ] = SMESH_TNodeXYZ( hexNodes[ 17 ] );
       pointsOnShapes[ SMESH_Block::ID_E11z ] = SMESH_TNodeXYZ( hexNodes[ 18 ] );
 
       pointsOnShapes[ SMESH_Block::ID_Fxy0 ] = SMESH_TNodeXYZ( hexNodes[ 20 ] );
       pointsOnShapes[ SMESH_Block::ID_Fxy1 ] = SMESH_TNodeXYZ( hexNodes[ 25 ] );
-      pointsOnShapes[ SMESH_Block::ID_Fx0z ] = SMESH_TNodeXYZ( hexNodes[ 21 ] );   
-      pointsOnShapes[ SMESH_Block::ID_Fx1z ] = SMESH_TNodeXYZ( hexNodes[ 23 ] );   
-      pointsOnShapes[ SMESH_Block::ID_F0yz ] = SMESH_TNodeXYZ( hexNodes[ 24 ] );    
+      pointsOnShapes[ SMESH_Block::ID_Fx0z ] = SMESH_TNodeXYZ( hexNodes[ 21 ] );
+      pointsOnShapes[ SMESH_Block::ID_Fx1z ] = SMESH_TNodeXYZ( hexNodes[ 23 ] );
+      pointsOnShapes[ SMESH_Block::ID_F0yz ] = SMESH_TNodeXYZ( hexNodes[ 24 ] );
       pointsOnShapes[ SMESH_Block::ID_F1yz ] = SMESH_TNodeXYZ( hexNodes[ 22 ] );
 
       gp_XYZ nCenterParams(0.5, 0.5, 0.5), nCenterCoords;
@@ -5588,8 +5588,5 @@ void SMESH_MesherHelper::WriteShape(const TopoDS_Shape& s)
 {
   const char* name = "/tmp/shape.brep";
   BRepTools::Write( s, name );
-#ifdef _DEBUG_
-  std::cout << name << std::endl;
-#endif
 }
 

@@ -1583,7 +1583,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           _computeError = SMESH_ComputeError::Worst( _computeError, algo->GetComputeError() );
         }
         catch ( ::SMESH_ComputeError& comperr ) {
-          cout << " SMESH_ComputeError caught" << endl;
+          MESSAGE(" SMESH_ComputeError caught");
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           *_computeError = comperr;
         }
