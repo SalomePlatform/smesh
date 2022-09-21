@@ -291,8 +291,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
         if(file_name != "")
         {
           fs::path mesh_file = fs::path(aMesh.tmp_folder) / fs::path(file_name);
-          // TODO: change mesh name
-          exportMesh(mesh_file.string(), aMesh, "Maillage_1");
+          exportMesh(mesh_file.string(), aMesh, "MESH");
 
         }
         //Resetting threaded pool info

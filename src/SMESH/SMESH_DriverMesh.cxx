@@ -52,6 +52,12 @@ bool diffMEDFile(const std::string mesh_file1, const std::string mesh_file2, con
   return m0_1->isEqual(m0_2, 1e-12);
 }
 
+std::string getMeshName(std::string mesh_file){
+  std::unique_ptr<MEDFileUMesh> myMedMesh=MEDFileUMesh::New(mesh_file);
+
+  return myMedMesh->getLevel0Mesh()->getName();
+}
+
 /**
  * @brief Import a mesh from a mesh file (MED) into a SMESH_Mesh object
  *
@@ -61,9 +67,10 @@ bool diffMEDFile(const std::string mesh_file1, const std::string mesh_file2, con
  *
  * @return error code
  */
-int importMesh(const std::string mesh_file, SMESH_Mesh& aMesh, const std::string mesh_name){
+int importMesh(const std::string mesh_file, SMESH_Mesh& aMesh){
   // TODO: change that as it depends on the language
-  std::cout << "Importing mesh from " << mesh_file << std::endl;
+  std::string mesh_name = getMeshName(mesh_file);
+  std::cout << "Importing mesh from " << mesh_file << " mesh " << mesh_name2 << std::endl;
   int ret = aMesh.MEDToMesh(mesh_file.c_str(), mesh_name.c_str());
   return ret;
 }

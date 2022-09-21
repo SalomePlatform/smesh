@@ -37,8 +37,7 @@ bool diffMEDFile(const std::string mesh_file1,
                    const std::string mesh_file2,
                    const std::string mesh_name);
 int importMesh(const std::string mesh_file,
-                SMESH_Mesh& aMesh,
-                const std::string meshName);
+                SMESH_Mesh& aMesh);
 int exportMesh(const std::string mesh_file,
                 SMESH_Mesh& aMesh,
                 const std::string meshName);
