@@ -157,6 +157,8 @@ SET(_moc_HEADERS
   SMESHGUI_AddNodeOnSegmentDlg.h
   SMESHGUI_AddNodeOnFaceDlg.h
   SMESHGUI_InteractiveOp.h
+  SMESHGUI_CreateDualMeshDlg.h
+  SMESHGUI_CreateDualMeshOp.h
 )
 
 # header files / no moc processing
@@ -283,6 +285,8 @@ SET(_other_SOURCES
   SMESHGUI_AddNodeOnSegmentDlg.cxx
   SMESHGUI_AddNodeOnFaceDlg.cxx
   SMESHGUI_InteractiveOp.cxx
+  SMESHGUI_CreateDualMeshDlg.cxx
+  SMESHGUI_CreateDualMeshOp.cxx
 )
 
 # sources / to compile

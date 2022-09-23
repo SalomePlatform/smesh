@@ -216,7 +216,7 @@ NO_NAME = "NoName"
 def GetName(obj):
     """
     Return a name of an object
-    
+
     Returns:
         object name
     """
@@ -429,26 +429,26 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
     def init_smesh(self,geompyD = None):
         """
         Set Geometry component
-        """    
+        """
         #print("init_smesh")
         self.UpdateStudy(geompyD)
         notebook.myStudy = salome.myStudy
 
     def Mesh(self, obj=0, name=0):
         """
-        Create a mesh. This mesh can be either 
+        Create a mesh. This mesh can be either
 
         * an empty mesh not bound to geometry, if *obj* == 0
         * an empty mesh bound to geometry, if *obj* is GEOM.GEOM_Object
         * a mesh wrapping a :class:`CORBA mesh <SMESH.SMESH_Mesh>` given as *obj* parameter.
 
         Parameters:
-            obj: either 
+            obj: either
 
                    1. a :class:`CORBA mesh <SMESH.SMESH_Mesh>` got by calling e.g.
                       ::
 
-                        salome.myStudy.FindObjectID("0:1:2:3").GetObject() 
+                        salome.myStudy.FindObjectID("0:1:2:3").GetObject()
 
                    2. a geometrical object for meshing
                    3. none.
@@ -648,7 +648,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         if sc:
             sb.LoadWith(sc, self)
         pass
-    
+
     def SetEnablePublish( self, theIsEnablePublish ):
         """
         Set enable publishing in the study. Calling SetEnablePublish( False ) allows to
@@ -677,7 +677,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Create a Mesh object(s) importing data from the given MED file
 
         Returns:
-                a tuple ( list of class :class:`Mesh` instances, 
+                a tuple ( list of class :class:`Mesh` instances,
                 :class:`SMESH.DriverMED_ReadStatus` )
         """
 
@@ -744,7 +744,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Returns:
                 an instance of class :class:`Mesh`
 
-        See also: 
+        See also:
                 :meth:`Mesh.Append`
         """
 
@@ -773,12 +773,32 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         aMesh = Mesh( self, self.geompyD, aSmeshMesh, name=name )
         return aMesh
 
+    def CreateDualMesh( self, mesh, meshName):
+        """
+        Create a dual of a mesh.
+
+        Parameters:
+                mesh: Tetrahedron mesh
+                        :class:`mesh, <SMESH.SMESH_IDSource>`.
+
+                meshName: a name of the new mesh
+
+        Returns:
+                an instance of class :class:`Mesh`
+        """
+
+        if isinstance( mesh, Mesh ):
+            meshPart = mesh.GetMesh()
+        mesh = SMESH._objref_SMESH_Gen.CreateDualMesh(self, mesh, meshName)
+        return Mesh(self, self.geompyD, mesh)
+
+
     def CopyMesh( self, meshPart, meshName, toCopyGroups=False, toKeepIDs=False):
         """
         Create a mesh by copying a part of another mesh.
 
         Parameters:
-                meshPart: a part of mesh to copy, either 
+                meshPart: a part of mesh to copy, either
                         :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`.
                         To copy nodes or elements not forming any mesh object,
                         pass result of :meth:`Mesh.GetIDSource` as *meshPart*
@@ -810,7 +830,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
                 meshName: an optional name of the new mesh. If omitted, the mesh name is kept.
                 toCopyGroups: to create groups in the new mesh.
                 toReuseHypotheses: to reuse hypotheses of the *sourceMesh*.
-                toCopyElements: to copy mesh elements present on non-modified sub-shapes of 
+                toCopyElements: to copy mesh elements present on non-modified sub-shapes of
                                 *sourceMesh*.
         Returns:
                 tuple ( ok, newMesh, newGroups, newSubMeshes, newHypotheses, invalidEntries )
@@ -1285,7 +1305,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Returns:
                 minimum distance value
 
-        See also: 
+        See also:
                 :meth:`GetMinDistance`
         """
 
@@ -1313,7 +1333,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
 
         Returns:
                 :class:`SMESH.Measure` structure or None if input data is invalid
-        See also: 
+        See also:
                 :meth:`MinDistance`
         """
 
@@ -1360,7 +1380,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Returns:
                 tuple of six values (minX, minY, minZ, maxX, maxY, maxZ)
 
-        See also: 
+        See also:
                :meth:`GetBoundingBox`
         """
 
@@ -1381,7 +1401,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Returns:
                 :class:`SMESH.Measure` structure
 
-        See also: 
+        See also:
                 :meth:`BoundingBox`
         """
 
@@ -1460,14 +1480,14 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
     def GetGravityCenter(self, obj):
         """
         Get gravity center of all nodes of a mesh object.
-        
-        Parameters:            
+
+        Parameters:
                 obj: :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`
 
-        Returns:        
+        Returns:
                 Three components of the gravity center (x,y,z)
 
-        See also: 
+        See also:
                 :meth:`Mesh.BaryCenter`
         """
         if isinstance(obj, Mesh): obj = obj.mesh
@@ -1481,11 +1501,11 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         """
         Computes a radian measure of an angle defined by 3 points: <(p1,p2,p3)
 
-        Parameters:            
-                p1,p2,p3: coordinates of 3 points defined by either SMESH.PointStruct 
+        Parameters:
+                p1,p2,p3: coordinates of 3 points defined by either SMESH.PointStruct
                           or list [x,y,z]
 
-        Returns:        
+        Returns:
             Angle in radians
         """
         if isinstance( p1, list ): p1 = PointStruct(*p1)
@@ -1551,7 +1571,7 @@ class Mesh(metaclass = MeshMeta):
     It also has methods to define groups of mesh elements, to modify a mesh (by addition of
     new nodes and elements and by changing the existing entities), to get information
     about a mesh and to export a mesh in different formats.
-    """    
+    """
 
     geom = 0
     mesh = 0
@@ -2081,12 +2101,12 @@ class Mesh(metaclass = MeshMeta):
     def SetMeshOrder(self, submeshes):
         """
         Set priority of sub-meshes. It works in two ways:
-        
+
         * For sub-meshes with assigned algorithms of same dimension generating mesh of
           *several dimensions*, it sets the order in which the sub-meshes are computed.
         * For the rest sub-meshes, it sets the order in which the sub-meshes are checked
-          when looking for meshing parameters to apply to a sub-shape. To impose the 
-          order in which sub-meshes with uni-dimensional algorithms are computed, 
+          when looking for meshing parameters to apply to a sub-shape. To impose the
+          order in which sub-meshes with uni-dimensional algorithms are computed,
           call **submesh.Compute()** in a desired order.
 
         Parameters:
@@ -2300,23 +2320,23 @@ class Mesh(metaclass = MeshMeta):
             meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`)
                     to export instead of the mesh
             autoDimension: if *True* (default), a space dimension of a MED mesh can be either
-    
+
                     - 1D if all mesh nodes lie on OX coordinate axis, or
                     - 2D if all mesh nodes lie on XOY coordinate plane, or
                     - 3D in the rest cases.
-    
+
                     If *autoDimension* is *False*, the space dimension is always 3.
             fields: list of GEOM fields defined on the shape to mesh.
-            geomAssocFields: each character of this string means a need to export a 
-                    corresponding field; correspondence between fields and characters 
+            geomAssocFields: each character of this string means a need to export a
+                    corresponding field; correspondence between fields and characters
                     is following:
-    
+
                     - 'v' stands for "_vertices_" field;
                     - 'e' stands for "_edges_" field;
                     - 'f' stands for "_faces_" field;
                     - 's' stands for "_solids_" field.
-    
-            zTolerance (float): tolerance in Z direction. If Z coordinate of a node is 
+
+            zTolerance (float): tolerance in Z direction. If Z coordinate of a node is
                             close to zero within a given tolerance, the coordinate is set to zero.
                             If *ZTolerance* is negative (default), the node coordinates are kept as is.
             saveNumbers(boolean) : enable saving numbers of nodes and cells.
@@ -2371,8 +2391,8 @@ class Mesh(metaclass = MeshMeta):
                         the typical use is auto_groups=False.
                 version (int): define the version (xy, where version is x.y.z) of MED file format.
                         For instance med 3.2.1 is coded 3*10+2 = 32, med 4.0.0 is coded 4*10+0 = 40.
-                        The rules of compatibility to write a mesh in an older version than 
-                        the current version depend on the current version. For instance, 
+                        The rules of compatibility to write a mesh in an older version than
+                        the current version depend on the current version. For instance,
                         with med 4.0 it is possible to write/append med files in 4.0.0 (default)
                         or 3.2.1 or 3.3.1 formats.
                         If the version is equal to -1, the version is not changed (default).
@@ -2387,8 +2407,8 @@ class Mesh(metaclass = MeshMeta):
 
                         If *autoDimension* is *False*, the space dimension is always 3.
                 fields: list of GEOM fields defined on the shape to mesh.
-                geomAssocFields: each character of this string means a need to export a 
-                        corresponding field; correspondence between fields and characters 
+                geomAssocFields: each character of this string means a need to export a
+                        corresponding field; correspondence between fields and characters
                         is following:
 
                         - 'v' stands for "_vertices_" field;
@@ -2396,7 +2416,7 @@ class Mesh(metaclass = MeshMeta):
                         - 'f' stands for "_faces_" field;
                         - 's' stands for "_solids_" field.
 
-                zTolerance (float): tolerance in Z direction. If Z coordinate of a node is 
+                zTolerance (float): tolerance in Z direction. If Z coordinate of a node is
                              close to zero within a given tolerance, the coordinate is set to zero.
                              If *ZTolerance* is negative (default), the node coordinates are kept as is.
                 saveNumbers (boolean) : enable saving numbers of nodes and cells.
@@ -2564,7 +2584,7 @@ class Mesh(metaclass = MeshMeta):
 
                         If **autoDimension** is *False*, the space dimension is always 3.
         """
-    
+
         print("WARNING: ExportToMED() is deprecated, use ExportMED() instead")
         # process positional arguments
         #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
@@ -2641,7 +2661,7 @@ class Mesh(metaclass = MeshMeta):
         Create an empty standalone mesh group
 
         Parameters:
-                elementType: the :class:`type <SMESH.ElementType>` of elements in the group; 
+                elementType: the :class:`type <SMESH.ElementType>` of elements in the group;
                         either of (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME)
                 name: the name of the mesh group
 
@@ -2881,7 +2901,7 @@ class Mesh(metaclass = MeshMeta):
 
     def GetGroups(self, elemType = SMESH.ALL):
         """
-        Get the list of groups existing in the mesh in the order of creation 
+        Get the list of groups existing in the mesh in the order of creation
         (starting from the oldest one)
 
         Parameters:
@@ -3592,7 +3612,7 @@ class Mesh(metaclass = MeshMeta):
         Return the type of mesh element or node
 
         Returns:
-            the value from :class:`SMESH.ElementType` enumeration. 
+            the value from :class:`SMESH.ElementType` enumeration.
             Return SMESH.ALL if element or node with the given ID does not exist
         """
 
@@ -3886,7 +3906,7 @@ class Mesh(metaclass = MeshMeta):
         Returns:
             a list of three double values
 
-        See also: 
+        See also:
                 :meth:`smeshBuilder.GetGravityCenter`
         """
 
@@ -4004,7 +4024,7 @@ class Mesh(metaclass = MeshMeta):
         Returns:
             tuple of six values (minX, minY, minZ, maxX, maxY, maxZ)
 
-        See Also: 
+        See Also:
             :meth:`GetBoundingBox()`
         """
 
@@ -4027,7 +4047,7 @@ class Mesh(metaclass = MeshMeta):
         Returns:
             :class:`SMESH.Measure` structure
 
-        See Also: 
+        See Also:
             :meth:`BoundingBox()`
         """
 
@@ -4163,7 +4183,7 @@ class Mesh(metaclass = MeshMeta):
         Returns:
             an object (a new group or a temporary :class:`SMESH.SMESH_IDSource`) holding
             IDs of new and/or found 0D elements. IDs of 0D elements
-            can be retrieved from the returned object by 
+            can be retrieved from the returned object by
             calling :meth:`GetIDs() <SMESH.SMESH_IDSource.GetIDs>`
         """
 
@@ -4537,7 +4557,7 @@ class Mesh(metaclass = MeshMeta):
             edges = self.GetIDSource( edges, SMESH.EDGE )
             unRegister.set( edges )
         return self.editor.Get1DBranches( edges, startNode )
-    
+
     def FindSharpEdges( self, angle, addExisting=False ):
         """
         Return sharp edges of faces and non-manifold ones.
@@ -4604,7 +4624,7 @@ class Mesh(metaclass = MeshMeta):
     def AddNodeOnSegment(self, Node1, Node2, position = 0.5):
         """
         Replace each triangle bound by Node1-Node2 segment with
-        two triangles by connecting a node made on the link with a node 
+        two triangles by connecting a node made on the link with a node
         opposite to the link.
 
         Parameters:
@@ -4874,7 +4894,7 @@ class Mesh(metaclass = MeshMeta):
         a quadrangle.
 
         Parameters:
-                theElements: the faces to be splitted. This can be either 
+                theElements: the faces to be splitted. This can be either
                         :class:`mesh, sub-mesh, group, filter <SMESH.SMESH_IDSource>`
                         or a list of face IDs. By default all quadrangles are split
 
@@ -4943,8 +4963,8 @@ class Mesh(metaclass = MeshMeta):
                         to numerical functors.
 
         Returns:
-            * 1 if 1-3 diagonal is better, 
-            * 2 if 2-4 diagonal is better, 
+            * 1 if 1-3 diagonal is better,
+            * 2 if 2-4 diagonal is better,
             * 0 if error occurs.
 
         Note:
@@ -5096,7 +5116,7 @@ class Mesh(metaclass = MeshMeta):
         This operation uses :doc:`pattern_mapping` functionality for splitting.
 
         Parameters:
-                theObject: the object from which the list of hexahedrons is taken; 
+                theObject: the object from which the list of hexahedrons is taken;
                         this is :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`
                 theNode000,theNode001: within the range [0,7]; gives the orientation of the
                         pattern relatively each hexahedron: the (0,0,0) key-point of the pattern
@@ -5588,7 +5608,7 @@ class Mesh(metaclass = MeshMeta):
                 of all steps, else - size of each step
 
         Returns:
-            the list of created :class:`groups <SMESH.SMESH_GroupBase>` if *MakeGroups* == True, 
+            the list of created :class:`groups <SMESH.SMESH_GroupBase>` if *MakeGroups* == True,
             empty list otherwise
         """
 
@@ -5644,7 +5664,7 @@ class Mesh(metaclass = MeshMeta):
                         - a list of tree components of the point or
                         - a node ID or
                         - a GEOM point
-            angles: list of angles in radians. Nodes at each extrusion step are rotated 
+            angles: list of angles in radians. Nodes at each extrusion step are rotated
                 around *basePoint*, additionally to previous steps.
             anglesVariation: forces the computation of rotation angles as linear
                 variation of the given *angles* along path steps
@@ -5862,13 +5882,13 @@ class Mesh(metaclass = MeshMeta):
             PathShape: optional shape (edge or wire) which defines the sub-mesh of the mesh defined by *PathObject* if the mesh contains not only path segments, else it can be None
             NodeStart: the first or the last node on the path. Defines the direction of extrusion
             HasAngles: not used obsolete
-            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated
                 around *basePoint*, additionally to previous steps.
             LinearVariation: forces the computation of rotation angles as linear
                 variation of the given Angles along path steps
             HasRefPoint: allows using the reference point
             RefPoint: optional scaling and rotation center (mass center of the extruded
-                elements by default). The User can specify any point as the Reference Point. 
+                elements by default). The User can specify any point as the Reference Point.
                 *RefPoint* can be either GEOM Vertex, [x,y,z] or :class:`SMESH.PointStruct`
             MakeGroups: forces the generation of new groups from existing ones
             ScaleFactors: optional scale factors to apply during extrusion
@@ -5876,7 +5896,7 @@ class Mesh(metaclass = MeshMeta):
                 else *scaleFactors* [i] is applied to nodes at the i-th extrusion step
 
         Returns:
-            list of created :class:`groups <SMESH.SMESH_GroupBase>` and 
+            list of created :class:`groups <SMESH.SMESH_GroupBase>` and
             :class:`error code <SMESH.SMESH_MeshEditor.Extrusion_Error>`
         Example: :ref:`tui_extrusion_along_path`
         """
@@ -5896,7 +5916,7 @@ class Mesh(metaclass = MeshMeta):
         Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         ScaleFactors,ScalesParameters,hasVars = ParseParameters(ScaleFactors)
         Parameters = AnglesParameters + var_separator + \
-                     RefPoint.parameters + var_separator + ScalesParameters 
+                     RefPoint.parameters + var_separator + ScalesParameters
         self.mesh.SetParameters(Parameters)
         return self.editor.ExtrusionAlongPathObjects(Nodes, Edges, Faces,
                                                      PathObject, PathShape, NodeStart,
@@ -5917,7 +5937,7 @@ class Mesh(metaclass = MeshMeta):
             Path: 1D mesh or 1D sub-mesh, along which proceeds the extrusion
             NodeStart: the start node from Path. Defines the direction of extrusion
             HasAngles: not used obsolete
-            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated
                 around *basePoint*, additionally to previous steps.
             LinearVariation: forces the computation of rotation angles as linear
                 variation of the given Angles along path steps
@@ -5960,7 +5980,7 @@ class Mesh(metaclass = MeshMeta):
             PathShape: shape (edge) defines the sub-mesh for the path
             NodeStart: the first or the last node on the edge. Defines the direction of extrusion
             HasAngles: not used obsolete
-            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated
                 around *basePoint*, additionally to previous steps.
             HasRefPoint: allows using the reference point
             RefPoint: the reference point around which the shape is rotated (the mass center of the shape by default).
@@ -6001,7 +6021,7 @@ class Mesh(metaclass = MeshMeta):
             PathShape: shape (edge) defines the sub-mesh for the path
             NodeStart: the first or the last node on the edge. Defines the direction of extrusion
             HasAngles: not used obsolete
-            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated
                 around *basePoint*, additionally to previous steps.
             HasRefPoint: allows using the reference point
             RefPoint: the reference point around which the shape is rotated (the mass center of the shape by default).
@@ -6012,7 +6032,7 @@ class Mesh(metaclass = MeshMeta):
                 variation of the given Angles along path steps
 
         Returns:
-            list of created :class:`groups <SMESH.SMESH_GroupBase>` and 
+            list of created :class:`groups <SMESH.SMESH_GroupBase>` and
             :class:`error code <SMESH.SMESH_MeshEditor.Extrusion_Error>` if *MakeGroups* == True,
             only :class:`error code <SMESH.SMESH_MeshEditor.Extrusion_Error>` otherwise
         Example: :ref:`tui_extrusion_along_path`
@@ -6039,7 +6059,7 @@ class Mesh(metaclass = MeshMeta):
             PathShape: shape (edge) defines the sub-mesh for the path
             NodeStart: the first or the last node on the edge. Defines the direction of extrusion
             HasAngles: not used obsolete
-            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated
                 around *basePoint*, additionally to previous steps.
             HasRefPoint: allows using the reference point
             RefPoint:  the reference point around which the shape is rotated (the mass center of the shape by default).
@@ -6050,7 +6070,7 @@ class Mesh(metaclass = MeshMeta):
                 variation of the given Angles along path steps
 
         Returns:
-            list of created :class:`groups <SMESH.SMESH_GroupBase>` and 
+            list of created :class:`groups <SMESH.SMESH_GroupBase>` and
             :class:`error code <SMESH.SMESH_MeshEditor.Extrusion_Error>` if *MakeGroups* == True,
             only :class:`error code <SMESH.SMESH_MeshEditor.Extrusion_Error>` otherwise
         Example: :ref:`tui_extrusion_along_path`
@@ -6077,7 +6097,7 @@ class Mesh(metaclass = MeshMeta):
             PathShape: shape (edge) defines the sub-mesh for the path
             NodeStart: the first or the last node on the edge. Defines the direction of extrusion
             HasAngles: not used obsolete
-            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated
                 around *basePoint*, additionally to previous steps.
             HasRefPoint: allows using the reference point
             RefPoint: the reference point around which the shape is rotated (the mass center of the shape by default).
@@ -6088,7 +6108,7 @@ class Mesh(metaclass = MeshMeta):
                 variation of the given Angles along path steps
 
         Returns:
-            list of created :class:`groups <SMESH.SMESH_GroupBase>` and 
+            list of created :class:`groups <SMESH.SMESH_GroupBase>` and
             :class:`error code <SMESH.SMESH_MeshEditor.Extrusion_Error>` if *MakeGroups* == True,
             only :class:`error code <SMESH.SMESH_MeshEditor.Extrusion_Error>` otherwise
         Example: :ref:`tui_extrusion_along_path`
@@ -6498,7 +6518,7 @@ class Mesh(metaclass = MeshMeta):
             theObject (SMESH.SMESH_IDSource): the source object (mesh, sub-mesh, group or filter)
             theValue (float): signed offset size
             MakeGroups (boolean): forces the generation of new groups from existing ones
-            CopyElements (boolean): if *NewMeshName* is empty, True means to keep original elements, 
+            CopyElements (boolean): if *NewMeshName* is empty, True means to keep original elements,
                           False means to remove original elements.
             NewMeshName (string): the name of a mesh to create. If empty, offset elements are added to this mesh
 
@@ -6879,7 +6899,7 @@ class Mesh(metaclass = MeshMeta):
 
         Parameters:
             theElements: container of elements to duplicate. It can be a
-                :class:`mesh, sub-mesh, group, filter <SMESH.SMESH_IDSource>` 
+                :class:`mesh, sub-mesh, group, filter <SMESH.SMESH_IDSource>`
                 or a list of element IDs. If *theElements* is
                 a :class:`Mesh`, elements of highest dimension are duplicated
             theGroupName: a name of group to contain the generated elements.
@@ -6889,7 +6909,7 @@ class Mesh(metaclass = MeshMeta):
                 in any group.
 
         Returns:
-                a :class:`group <SMESH.SMESH_Group>` where the new elements are added. 
+                a :class:`group <SMESH.SMESH_Group>` where the new elements are added.
                 None if *theGroupName* == "".
         """
 
@@ -7158,7 +7178,7 @@ class Mesh(metaclass = MeshMeta):
         return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
     def MakePolyLine(self, segments, groupName='', isPreview=False ):
-        """    
+        """
         Create a polyline consisting of 1D mesh elements each lying on a 2D element of
         the initial triangle mesh. Positions of new nodes are found by cutting the mesh by the
         plane passing through pairs of points specified by each :class:`SMESH.PolySegment` structure.
@@ -7176,7 +7196,7 @@ class Mesh(metaclass = MeshMeta):
             segments: list of :class:`SMESH.PolySegment` defining positions of cutting planes.
             groupName: optional name of a group where created mesh segments will be added.
 
-        """    
+        """
         editor = self.editor
         if isPreview:
             editor = self.mesh.GetMeshEditPreviewer()
@@ -7331,10 +7351,10 @@ class Mesh(metaclass = MeshMeta):
         """
         Computes a radian measure of an angle defined by 3 nodes: <(node1,node2,node3)
 
-        Parameters:            
+        Parameters:
                 node1,node2,node3: IDs of the three nodes
 
-        Returns:        
+        Returns:
             Angle in radians [0,PI]. -1 if failure case.
         """
         p1 = self.GetNodeXYZ( node1 )

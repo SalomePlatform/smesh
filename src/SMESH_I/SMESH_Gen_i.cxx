@@ -49,6 +49,10 @@
 #include <TopoDS_Wire.hxx>
 #include <gp_Pnt.hxx>
 
+// Have to be included before std headers
+#include <Python.h>
+#include <structmember.h>
+
 #ifdef WIN32
  #include <windows.h>
  #include <process.h>
@@ -2798,6 +2802,114 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
   SetPixMap( meshSO, "ICON_SMESH_TREE_MESH" );
 
   newMeshDS->Modified();
+
+  return newMesh._retn();
+}
+
+
+//================================================================================
+/*!
+ * \brief Create a mesh by copying a part of another mesh
+ *  \param mesh - TetraHedron mesh
+ *  \param meshName Name of the created mesh
+ *  \retval SMESH::SMESH_Mesh_ptr - the new mesh
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh,
+                                                  const char*               meshName)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  TPythonDump* pyDump = new TPythonDump(this); // prevent dump from CreateMesh()
+  std::unique_ptr<TPythonDump> pyDumpDeleter( pyDump );
+
+  // 1. Get source mesh
+
+  if ( CORBA::is_nil( mesh ))
+    THROW_SALOME_CORBA_EXCEPTION( "bad IDSource", SALOME::BAD_PARAM );
+
+  std::cout << mesh << std::endl;
+  SMESH::SMESH_Mesh_var srcMesh = mesh->GetMesh();
+  SMESH_Mesh_i*       srcMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( srcMesh );
+  if ( !srcMesh_i )
+    THROW_SALOME_CORBA_EXCEPTION( "bad mesh of IDSource", SALOME::BAD_PARAM );
+
+  SMESH_Mesh& srcMesh2 = srcMesh_i->GetImpl();
+
+  // TODO: Get it
+  CORBA::String_var mesh_ior=GetORB()->object_to_string(mesh);
+  std::string mesh_id = mesh_ior.in();
+  std::string dual_mesh_file="/tmp/test_dual.med";
+  std::string mesh_name = "MESH";
+
+  std::string python_code;
+  python_code += "import sys\n";
+  python_code += "import salome\n";
+  python_code += "import medcoupling as mc\n";
+  python_code += "from math import pi\n";
+  python_code += "salome.salome_init()\n";
+  python_code += "import GEOM\n";
+  python_code += "from salome.geom import geomBuilder\n";
+  python_code += "geompy = geomBuilder.New()\n";
+  python_code += "import  SMESH, SALOMEDS\n";
+  python_code += "from salome.smesh import smeshBuilder\n";
+  python_code += "smesh = smeshBuilder.New()\n";
+  python_code += "def create_dual_mesh(mesh_ior, output_file):\n";
+  python_code += "    mesh = salome.orb.string_to_object(mesh_ior)\n";
+  python_code += "    shape = mesh.GetShapeToMesh()\n";
+  python_code += "    if not mesh:\n";
+  python_code += "        raise Exception(\"Could not find mesh using id: \", mesh_id)\n";
+  python_code += "    int_ptr = mesh.ExportMEDCoupling(True, True)\n";
+  python_code += "    dab = mc.FromPyIntPtrToDataArrayByte(int_ptr)\n";
+  python_code += "    tetras =  mc.MEDFileMesh.New(dab)[0]\n";
+  python_code += "    tetras = mc.MEDCoupling1SGTUMesh(tetras)\n";
+  python_code += "    polyh = tetras.computeDualMesh()\n";
+  python_code += "    skin = tetras.buildUnstructured().computeSkin()\n";
+  python_code += "    skin_polyh = polyh.buildUnstructured().computeSkin()\n";
+  python_code += "    allNodesOnSkinPolyh = skin_polyh.computeFetchedNodeIds()\n";
+  python_code += "    allNodesOnSkin = skin.computeFetchedNodeIds()\n";
+  python_code += "    ptsAdded = allNodesOnSkinPolyh.buildSubstraction(allNodesOnSkin)\n";
+  python_code += "    ptsAddedMesh = mc.MEDCouplingUMesh.Build0DMeshFromCoords( skin_polyh.getCoords()[ptsAdded] )\n";
+  python_code += "    ptsAddedCoo = ptsAddedMesh.getCoords()\n";
+  python_code += "    ptsAddedCooModified = ptsAddedCoo[:]\n";
+  python_code += "    polyh.setName(\"MESH\")\n";
+  python_code += "    polyh.write(output_file)\n";
+
+  // Running Python script
+  assert(Py_IsInitialized());
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+  PyRun_SimpleString(python_code.c_str());
+  std::string cmd="";
+  cmd += "create_dual_mesh(\"" + mesh_id + "\", \"" + dual_mesh_file + "\")";
+  PyRun_SimpleString(cmd.c_str());
+
+  PyGILState_Release(gstate);
+
+  // Import created MED
+  SMESH::SMESH_Mesh_var newMesh = CreateMesh(GEOM::GEOM_Object::_nil());
+  SMESH_Mesh_i*       newMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( newMesh );
+  if ( !newMesh_i )
+    THROW_SALOME_CORBA_EXCEPTION( "can't create a mesh", SALOME::INTERNAL_ERROR );
+  SALOMEDS::SObject_wrap meshSO = ObjectToSObject( newMesh );
+  if ( !meshSO->_is_nil() )
+  {
+    SetName( meshSO, meshName, "Mesh" );
+    SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
+  }
+
+  SMESH_Mesh& newMesh2 = newMesh_i->GetImpl();
+
+  newMesh2.MEDToMesh(dual_mesh_file.c_str(), "MESH");
+
+  SMESHDS_Mesh* newMeshDS = newMesh_i->GetImpl().GetMeshDS();
+
+  newMeshDS->Modified();
+
+  *pyDump << newMesh << " = " << this
+          << ".CreateDualMesh( " << mesh << ", "
+          << "'" << meshName << "') ";
 
   return newMesh._retn();
 }
@@ -6182,7 +6294,7 @@ CORBA::Long  SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
 {
   if ( myStudyContext && !CORBA::is_nil( theObject )) {
     CORBA::String_var iorString = GetORB()->object_to_string( theObject );
-    string iorStringCpp(iorString.in()); 
+    string iorStringCpp(iorString.in());
     return myStudyContext->findId( iorStringCpp );
   }
   return 0;
