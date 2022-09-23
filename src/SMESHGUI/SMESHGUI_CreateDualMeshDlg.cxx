@@ -39,6 +39,7 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QLabel>
+#include <QLineEdit>
 
 #define SPACING 6
 #define MARGIN  11
@@ -54,6 +55,12 @@ SMESHGUI_CreateDualMeshDlg::SMESHGUI_CreateDualMeshDlg()
   setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
   createObject( tr( "MESH" ), mainFrame(), 0 );
 
+  myMeshNameLabel = new QLabel(QString(tr("DUAL_MESH_NAME")), mainFrame());
+  myMeshName = new QLineEdit(mainFrame());
+
+  myProjShape = new QCheckBox(QString(tr("PROJ_SHAPE")), mainFrame());
+  myProjShape->toggle();
+
   myWarning = new QLabel(QString("<b>%1</b>").arg(tr("NON_TETRA_MESH_WARNING")), mainFrame());
 
   // Fill layout
@@ -65,6 +72,9 @@ SMESHGUI_CreateDualMeshDlg::SMESHGUI_CreateDualMeshDlg()
   aLay->addWidget( objectWg( 0,  Btn ),     0, 1 );
   aLay->addWidget( objectWg( 0,  Control ), 0, 2 );
   aLay->addWidget( myWarning,               3, 0, 1, 3 );
+  aLay->addWidget( myMeshNameLabel,         1, 0 );
+  aLay->addWidget( myMeshName,              1, 2 );
+  aLay->addWidget( myProjShape,              2, 0 );
 
 }
 

@@ -37,6 +37,7 @@ class QRadioButton;
 class QButtonGroup;
 class QGroupBox;
 class QLabel;
+class QLineEdit;
 
 class SMESHGUI_EXPORT SMESHGUI_CreateDualMeshDlg : public SMESHGUI_Dialog
 {
@@ -49,11 +50,16 @@ public:
   void          ShowWarning(bool);
   bool          isWarningShown();
 
+  QLineEdit* myMeshName;
+  QCheckBox* myProjShape;
+
 signals:
   void          onClicked( int );
 
+
 private:
   QLabel* myWarning;
+  QLabel* myMeshNameLabel;
 };
 
 #endif // SMESHGUI_CREATEDUALMESHDLG_H

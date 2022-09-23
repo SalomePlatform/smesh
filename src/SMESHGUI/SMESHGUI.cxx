@@ -4415,6 +4415,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpEditMeshOrSubMesh,    meshId, -1 );
   createMenu( SMESHOp::OpBuildCompoundMesh,    meshId, -1 );
   createMenu( SMESHOp::OpCopyMesh,             meshId, -1 );
+  createMenu( SMESHOp::OpCreateDualMesh,       meshId, -1 );
   createMenu( separator(),                     meshId, -1 );
   createMenu( SMESHOp::OpCompute,              meshId, -1 );
   createMenu( SMESHOp::OpPreCompute,           meshId, -1 );
@@ -4528,7 +4529,6 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( SMESHOp::OpConvertMeshToQuadratic, modifyId, -1 );
   createMenu( SMESHOp::OpCreateBoundaryElements, modifyId, -1 );
-  createMenu( SMESHOp::OpCreateDualMesh,         modifyId, -1 );
   createMenu( SMESHOp::OpExtrusion,              modifyId, -1 );
   createMenu( SMESHOp::OpExtrusionAlongAPath,    modifyId, -1 );
   createMenu( SMESHOp::OpRevolution,             modifyId, -1 );
@@ -4680,7 +4680,6 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   int modifyTb = createTool( tr( "TB_MODIFY" ), QString( "SMESHModificationToolbar" ) ) ;
   createTool( SMESHOp::OpConvertMeshToQuadratic, modifyTb );
-  createTool( SMESHOp::OpCreateDualMesh,         modifyTb );
   createTool( SMESHOp::OpCreateBoundaryElements, modifyTb );
   createTool( SMESHOp::OpExtrusion,              modifyTb );
   createTool( SMESHOp::OpExtrusionAlongAPath,    modifyTb );
@@ -4794,7 +4793,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh_submesh, "&& " + hasElems );
   createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh_group, "&& selcount=1 && dim>=2");
-  createPopupItem( SMESHOp::OpCreateDualMesh,         OB, mesh_submesh, "&& selcount=1 && dim>=2");
 
   // Adaptation - begin
   popupMgr()->insert( separator(), -1, 0 );

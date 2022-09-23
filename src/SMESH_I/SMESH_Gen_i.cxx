@@ -151,6 +151,9 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -2835,54 +2838,23 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
   if ( !srcMesh_i )
     THROW_SALOME_CORBA_EXCEPTION( "bad mesh of IDSource", SALOME::BAD_PARAM );
 
-  SMESH_Mesh& srcMesh2 = srcMesh_i->GetImpl();
+  CORBA::String_var mesh_var=GetORB()->object_to_string(mesh);
+  std::string mesh_ior = mesh_var.in();
 
-  // TODO: Get it
-  CORBA::String_var mesh_ior=GetORB()->object_to_string(mesh);
-  std::string mesh_id = mesh_ior.in();
-  std::string dual_mesh_file="/tmp/test_dual.med";
+  fs::path tmp_folder = fs::unique_path(fs::path("dual_mesh-%%%%-%%%%"));
+  fs::create_directories(tmp_folder);
+  fs::path dual_mesh_file = tmp_folder / fs::path("tmp_dual_mesh.med");
   std::string mesh_name = "MESH";
-
-  std::string python_code;
-  python_code += "import sys\n";
-  python_code += "import salome\n";
-  python_code += "import medcoupling as mc\n";
-  python_code += "from math import pi\n";
-  python_code += "salome.salome_init()\n";
-  python_code += "import GEOM\n";
-  python_code += "from salome.geom import geomBuilder\n";
-  python_code += "geompy = geomBuilder.New()\n";
-  python_code += "import  SMESH, SALOMEDS\n";
-  python_code += "from salome.smesh import smeshBuilder\n";
-  python_code += "smesh = smeshBuilder.New()\n";
-  python_code += "def create_dual_mesh(mesh_ior, output_file):\n";
-  python_code += "    mesh = salome.orb.string_to_object(mesh_ior)\n";
-  python_code += "    shape = mesh.GetShapeToMesh()\n";
-  python_code += "    if not mesh:\n";
-  python_code += "        raise Exception(\"Could not find mesh using id: \", mesh_id)\n";
-  python_code += "    int_ptr = mesh.ExportMEDCoupling(True, True)\n";
-  python_code += "    dab = mc.FromPyIntPtrToDataArrayByte(int_ptr)\n";
-  python_code += "    tetras =  mc.MEDFileMesh.New(dab)[0]\n";
-  python_code += "    tetras = mc.MEDCoupling1SGTUMesh(tetras)\n";
-  python_code += "    polyh = tetras.computeDualMesh()\n";
-  python_code += "    skin = tetras.buildUnstructured().computeSkin()\n";
-  python_code += "    skin_polyh = polyh.buildUnstructured().computeSkin()\n";
-  python_code += "    allNodesOnSkinPolyh = skin_polyh.computeFetchedNodeIds()\n";
-  python_code += "    allNodesOnSkin = skin.computeFetchedNodeIds()\n";
-  python_code += "    ptsAdded = allNodesOnSkinPolyh.buildSubstraction(allNodesOnSkin)\n";
-  python_code += "    ptsAddedMesh = mc.MEDCouplingUMesh.Build0DMeshFromCoords( skin_polyh.getCoords()[ptsAdded] )\n";
-  python_code += "    ptsAddedCoo = ptsAddedMesh.getCoords()\n";
-  python_code += "    ptsAddedCooModified = ptsAddedCoo[:]\n";
-  python_code += "    polyh.setName(\"MESH\")\n";
-  python_code += "    polyh.write(output_file)\n";
 
   // Running Python script
   assert(Py_IsInitialized());
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();
-  PyRun_SimpleString(python_code.c_str());
-  std::string cmd="";
-  cmd += "create_dual_mesh(\"" + mesh_id + "\", \"" + dual_mesh_file + "\")";
+
+  std::string cmd="import salome.smesh.smesh_tools as smt";
+  PyRun_SimpleString(cmd.c_str());
+
+  cmd = "smt.create_dual_mesh(\"" + mesh_ior + "\", \"" + dual_mesh_file.string() + "\", \"" + mesh_name + "\")";
   PyRun_SimpleString(cmd.c_str());
 
   PyGILState_Release(gstate);
@@ -2896,19 +2868,19 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
   if ( !meshSO->_is_nil() )
   {
     SetName( meshSO, meshName, "Mesh" );
-    SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
+    SetPixMap( meshSO, "ICON_SMESH_TREE_MESH");
   }
 
   SMESH_Mesh& newMesh2 = newMesh_i->GetImpl();
 
-  newMesh2.MEDToMesh(dual_mesh_file.c_str(), "MESH");
+  newMesh2.MEDToMesh(dual_mesh_file.c_str(), meshName);
 
   SMESHDS_Mesh* newMeshDS = newMesh_i->GetImpl().GetMeshDS();
 
   newMeshDS->Modified();
 
   *pyDump << newMesh << " = " << this
-          << ".CreateDualMesh( " << mesh << ", "
+          << ".CreateDualMesh("
           << "'" << meshName << "') ";
 
   return newMesh._retn();

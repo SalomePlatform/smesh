@@ -96,6 +96,10 @@
             <translation>mesh_conv_to_quad.png</translation>
         </message>
         <message>
+            <source>ICON_CREATE_DUAL_MESH</source>
+            <translation>mesh_create_dual_mesh.png</translation>
+        </message>
+        <message>
             <source>ICON_CUT</source>
             <translation>mesh_cutGroups.png</translation>
         </message>

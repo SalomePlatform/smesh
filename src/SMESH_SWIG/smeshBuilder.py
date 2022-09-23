@@ -786,11 +786,10 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Returns:
                 an instance of class :class:`Mesh`
         """
-
         if isinstance( mesh, Mesh ):
-            meshPart = mesh.GetMesh()
-        mesh = SMESH._objref_SMESH_Gen.CreateDualMesh(self, mesh, meshName)
-        return Mesh(self, self.geompyD, mesh)
+            mesh = mesh.GetMesh()
+        dualMesh = SMESH._objref_SMESH_Gen.CreateDualMesh(self, mesh, meshName)
+        return Mesh(self, self.geompyD, dualMesh)
 
 
     def CopyMesh( self, meshPart, meshName, toCopyGroups=False, toKeepIDs=False):

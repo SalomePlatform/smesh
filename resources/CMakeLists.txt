@@ -60,6 +60,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_conv_to_quad.png
   mesh_cutGroups.png
   mesh_cutquad.png
+  mesh_create_dual_mesh.png
   mesh_deflection.png
   mesh_deleteGroups.png
   mesh_diagonal.png

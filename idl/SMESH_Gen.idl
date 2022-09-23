@@ -286,7 +286,7 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
     /*!
      * Create a dual mesh of a Tetrahedron mesh
-     *  \param meshPart - TetraHedron mesh to create dual from
+     *  \param mesh - TetraHedron mesh to create dual from
      *  \param meshName - a name of the new mesh
      */
     SMESH_Mesh CreateDualMesh(in SMESH_IDSource mesh,

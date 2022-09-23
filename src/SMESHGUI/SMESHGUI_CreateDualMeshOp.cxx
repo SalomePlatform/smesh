@@ -40,7 +40,11 @@
 #include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>
 #include <SalomeApp_Tools.h>
+#include <SalomeApp_Application.h>
 #include <SALOME_Actor.h>
+
+// Qt includes
+#include <QLineEdit>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -150,6 +154,9 @@ void SMESHGUI_CreateDualMeshOp::selectionDone()
         myDlg->ShowWarning( true );
       }
     }
+    std::string mesh_name = "dual_" + pObj->GetName();
+    myDlg->myMeshName->setText(QString(mesh_name.c_str()));
+
   }
   catch ( const SALOME::SALOME_Exception& S_ex )
   {
@@ -158,6 +165,7 @@ void SMESHGUI_CreateDualMeshOp::selectionDone()
   catch ( ... )
   {
   }
+
 }
 
 //================================================================================
@@ -217,11 +225,9 @@ bool SMESHGUI_CreateDualMeshOp::onApply()
   bool aResult = false;
   SMESH::SMESH_Gen_var gen = SMESHGUI::GetSMESHGen();
   SMESH::SMESH_Mesh_var newMesh;
-  QByteArray newMeshName="MESH_DUAL";
+  QByteArray newMeshName=myDlg->myMeshName->text().toUtf8();
   try
   {
-    // TODO: Call the python script using medcoupling
-    // String to run medcoupling dual
     // TODO: change name as previous name + "_dual"
     newMesh = gen->CreateDualMesh(mesh, newMeshName.constData());
 
@@ -246,10 +252,11 @@ bool SMESHGUI_CreateDualMeshOp::onApply()
   if( aResult )
   {
     SMESHGUI::Modified();
-    update( UF_ObjBrowser | UF_Model | UF_Viewer );
     selectionDone();
-  }
+    update( UF_ObjBrowser | UF_Model | UF_Viewer );
 
+  }
+  SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
 
   // updateObjBrowser(true);
   // SMESHGUI::Modified();
