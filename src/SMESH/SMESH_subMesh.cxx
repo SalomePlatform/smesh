@@ -1651,7 +1651,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         for (subS.ReInit(); subS.More(); subS.Next())
         {
           _father->Lock();
-          const std::list <const SMESHDS_Hypothesis *> hyps =
+          const std::list <const SMESHDS_Hypothesis *> & hyps =
             _algo->GetUsedHypothesis( *_father, _subShape );
           _father->Unlock();
           SMESH_Comment hypStr;
