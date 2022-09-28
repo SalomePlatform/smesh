@@ -184,9 +184,9 @@ const std::function<void(int,
   if (sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
   {
     sm->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
-    //setCurrentSubMesh( sm );
+    setCurrentSubMesh( sm );
     sm->ComputeStateEngine(event);
-    //setCurrentSubMesh( nullptr );
+    setCurrentSubMesh( nullptr );
     sm->SetAllowedSubShapes( nullptr );
   }
 
