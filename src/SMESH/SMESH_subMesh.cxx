@@ -1907,7 +1907,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
     break;
   }
 
-  //notifyListenersOnEvent( event, COMPUTE_EVENT );
+  notifyListenersOnEvent( event, COMPUTE_EVENT );
 
   return ret;
 }

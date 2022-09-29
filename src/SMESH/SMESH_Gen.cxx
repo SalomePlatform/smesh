@@ -160,21 +160,82 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
   return aMesh;
 }
 
+
+
+bool SMESH_Gen::sequentialComputeSubMeshes(
+          SMESH_Mesh & aMesh,
+          const TopoDS_Shape & aShape,
+          const ::MeshDimension       aDim,
+          TSetOfInt*                  aShapesId /*=0*/,
+          TopTools_IndexedMapOfShape* allowedSubShapes,
+          SMESH_subMesh::compute_event &computeEvent,
+          const bool includeSelf,
+          const bool complexShapeFirst,
+          const bool   aShapeOnly)
+{
+  MESSAGE("Compute submeshes sequentialy");
+
+  bool ret = true;
+
+  SMESH_subMeshIteratorPtr smIt;
+  SMESH_subMesh *shapeSM = aMesh.GetSubMesh(aShape);
+
+  smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);
+  while ( smIt->more() )
+  {
+    SMESH_subMesh* smToCompute = smIt->next();
+
+    // do not mesh vertices of a pseudo shape
+    const TopoDS_Shape&        shape = smToCompute->GetSubShape();
+    const TopAbs_ShapeEnum shapeType = shape.ShapeType();
+    if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
+      continue;
+
+    // check for preview dimension limitations
+    if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
+    {
+      // clear compute state not to show previous compute errors
+      //  if preview invoked less dimension less than previous
+      smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      continue;
+    }
+
+    if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+    {
+      if (_compute_canceled)
+        return false;
+      smToCompute->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
+      setCurrentSubMesh( smToCompute );
+      smToCompute->ComputeStateEngine( computeEvent );
+      setCurrentSubMesh( nullptr );
+      smToCompute->SetAllowedSubShapes( nullptr );
+    }
+
+    // we check all the sub-meshes here and detect if any of them failed to compute
+    if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE &&
+        ( shapeType != TopAbs_EDGE || !SMESH_Algo::isDegenerated( TopoDS::Edge( shape ))))
+      ret = false;
+    else if ( aShapesId )
+      aShapesId->insert( smToCompute->GetId() );
+  }
+  //aMesh.GetMeshDS()->Modified();
+  return ret;
+
+};
+
 //=============================================================================
 /*
  * Parallel compute of a submesh
  * This function is used to pass to thread_pool
  */
 //=============================================================================
-const std::function<void(int,
-                         SMESH_subMesh*,
+const std::function<void(SMESH_subMesh*,
                          SMESH_subMesh::compute_event,
                          SMESH_subMesh*,
                          bool,
                          TopTools_IndexedMapOfShape *,
                          TSetOfInt*)>
-     compute_function([&] (int id,
-                          SMESH_subMesh* sm,
+     compute_function([&] (SMESH_subMesh* sm,
                           SMESH_subMesh::compute_event event,
                           SMESH_subMesh *shapeSM,
                           bool aShapeOnly,
@@ -184,9 +245,9 @@ const std::function<void(int,
   if (sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
   {
     sm->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
-    setCurrentSubMesh( sm );
+    //setCurrentSubMesh( sm );
     sm->ComputeStateEngine(event);
-    setCurrentSubMesh( nullptr );
+    //setCurrentSubMesh( nullptr );
     sm->SetAllowedSubShapes( nullptr );
   }
 
@@ -194,6 +255,101 @@ const std::function<void(int,
     aShapesId->insert( sm->GetId() );
 
 });
+
+bool SMESH_Gen::parallelComputeSubMeshes(
+          SMESH_Mesh & aMesh,
+          const TopoDS_Shape & aShape,
+          const ::MeshDimension       aDim,
+          TSetOfInt*                  aShapesId /*=0*/,
+          TopTools_IndexedMapOfShape* allowedSubShapes,
+          SMESH_subMesh::compute_event &computeEvent,
+          const bool includeSelf,
+          const bool complexShapeFirst,
+          const bool   aShapeOnly)
+{
+
+  bool ret = true;
+
+  SMESH_subMeshIteratorPtr smIt;
+  SMESH_subMesh *shapeSM = aMesh.GetSubMesh(aShape);
+
+  // Pool of thread for computation
+  // TODO: move when parallelMesh created
+  aMesh.InitPoolThreads();
+
+  TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
+  int nbThreads = aMesh.GetNbThreads();
+  MESSAGE("Compute submeshes with threads: " << nbThreads << " mesher: " << aMesh.GetMesherNbThreads());
+
+
+  smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);
+  while ( smIt->more() )
+  {
+    SMESH_subMesh* smToCompute = smIt->next();
+
+    // do not mesh vertices of a pseudo shape
+    const TopoDS_Shape&        shape = smToCompute->GetSubShape();
+    const TopAbs_ShapeEnum shapeType = shape.ShapeType();
+    // Not doing in parallel 1D and 2D meshes
+    if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
+      continue;
+    if(shapeType==TopAbs_FACE||shapeType==TopAbs_EDGE)
+      aMesh.SetNbThreads(0);
+    else
+      aMesh.SetNbThreads(nbThreads);
+
+
+    if (shapeType != previousShapeType) {
+      // Waiting for all threads for the previous type to end
+      aMesh.wait();
+
+      std::string file_name;
+      switch(previousShapeType){
+        case TopAbs_FACE:
+          file_name = "Mesh2D.med";
+          break;
+        case TopAbs_EDGE:
+          file_name = "Mesh1D.med";
+          break;
+        case TopAbs_VERTEX:
+          file_name = "Mesh0D.med";
+          break;
+        case TopAbs_SOLID:
+        default:
+          file_name = "";
+          break;
+      }
+      if(file_name != "")
+      {
+        fs::path mesh_file = fs::path(aMesh.tmp_folder) / fs::path(file_name);
+        exportMesh(mesh_file.string(), aMesh, "MESH");
+
+      }
+      //Resetting threaded pool info
+      previousShapeType = shapeType;
+    }
+
+    // check for preview dimension limitations
+    if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
+    {
+      // clear compute state not to show previous compute errors
+      //  if preview invoked less dimension less than previous
+      smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      continue;
+    }
+    boost::asio::post(*(aMesh._pool), std::bind(compute_function, smToCompute, computeEvent,
+                      shapeSM, aShapeOnly, allowedSubShapes,
+                      aShapesId));
+  }
+
+  // Waiting for the thread for Solids to finish
+  aMesh.wait();
+
+  aMesh.GetMeshDS()->Modified();
+
+  return ret;
+};
+
 
 //=============================================================================
 /*
@@ -222,10 +378,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
   const bool complexShapeFirst = true;
   const int  globalAlgoDim = 100;
 
-  // Pool of thread for computation
-  if(aMesh.IsParallel())
-    aMesh.InitPoolThreads();
-
   SMESH_subMeshIteratorPtr smIt;
 
   // Fix of Issue 22150. Due to !BLSURF->OnlyUnaryInput(), BLSURF computes edges
@@ -245,89 +397,22 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     // ===============================================
     // Mesh all the sub-shapes starting from vertices
     // ===============================================
-
-    TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
-    int nbThreads = aMesh.GetNbThreads();
-    MESSAGE("Running mesh with threads: " << nbThreads << " mesher: " << aMesh.GetMesherNbThreads());
-
-
-    smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);
-    while ( smIt->more() )
-    {
-      SMESH_subMesh* smToCompute = smIt->next();
-
-      // do not mesh vertices of a pseudo shape
-      const TopoDS_Shape&        shape = smToCompute->GetSubShape();
-      const TopAbs_ShapeEnum shapeType = shape.ShapeType();
-      if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
-        continue;
-      if(shapeType==TopAbs_FACE||shapeType==TopAbs_EDGE)
-        aMesh.SetNbThreads(0);
-      else
-        aMesh.SetNbThreads(nbThreads);
-      if ((aMesh.IsParallel()||nbThreads!=0) && shapeType != previousShapeType) {
-        // Waiting for all threads for the previous type to end
-        aMesh.wait();
-
-        std::string file_name;
-        switch(previousShapeType){
-          case TopAbs_FACE:
-            file_name = "Mesh2D.med";
-            break;
-          case TopAbs_EDGE:
-            file_name = "Mesh1D.med";
-            break;
-          case TopAbs_VERTEX:
-            file_name = "Mesh0D.med";
-            break;
-          case TopAbs_SOLID:
-          default:
-            file_name = "";
-            break;
-        }
-        if(file_name != "")
-        {
-          fs::path mesh_file = fs::path(aMesh.tmp_folder) / fs::path(file_name);
-          exportMesh(mesh_file.string(), aMesh, "MESH");
-
-        }
-        //Resetting threaded pool info
-        previousShapeType = shapeType;
-      }
-
-      // check for preview dimension limitations
-      if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
-      {
-        // clear compute state not to show previous compute errors
-        //  if preview invoked less dimension less than previous
-        smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-        continue;
-      }
-      if(aMesh.IsParallel())
-      {
-        boost::asio::post(*(aMesh._pool), std::bind(compute_function, 1, smToCompute, computeEvent,
-                          shapeSM, aShapeOnly, allowedSubShapes,
-                          aShapesId));
-      } else {
-        compute_function(1 ,smToCompute, computeEvent,
-                         shapeSM, aShapeOnly, allowedSubShapes,
-                         aShapesId);
-
-        if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE &&
-           ( shapeType != TopAbs_EDGE || !SMESH_Algo::isDegenerated( TopoDS::Edge( shape ))))
-          ret = false;
-        else if ( aShapesId )
-          aShapesId->insert( smToCompute->GetId() );
-      }
-    }
-
-    // TODO: Check error handling in parallel mode
-    if(aMesh.IsParallel()){
-      // Waiting for the thread for Solids to finish
-      aMesh.wait();
-    }
-
-    aMesh.GetMeshDS()->Modified();
+    if (aMesh.IsParallel())
+      ret = parallelComputeSubMeshes(
+              aMesh, aShape, aDim,
+              aShapesId, allowedSubShapes,
+              computeEvent,
+              includeSelf,
+              complexShapeFirst,
+              aShapeOnly);
+    else
+      ret = sequentialComputeSubMeshes(
+              aMesh, aShape, aDim,
+              aShapesId, allowedSubShapes,
+              computeEvent,
+              includeSelf,
+              complexShapeFirst,
+              aShapeOnly);
 
     return ret;
   }

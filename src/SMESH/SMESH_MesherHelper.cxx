@@ -5588,5 +5588,6 @@ void SMESH_MesherHelper::WriteShape(const TopoDS_Shape& s)
 {
   const char* name = "/tmp/shape.brep";
   BRepTools::Write( s, name );
+  MESSAGE(name);
 }
 

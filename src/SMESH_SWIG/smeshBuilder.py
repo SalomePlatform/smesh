@@ -1898,7 +1898,6 @@ class Mesh(metaclass = MeshMeta):
                         a last total re-compute and that may prevent successful partial re-compute,
                         then the mesh is cleaned before Compute()
                 refresh: if *True*, Object Browser is automatically updated (when running in GUI)
-                nbThreads: Number of threads to use for a parallel computation
 
         Returns:
                 True or False
