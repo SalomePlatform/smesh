@@ -100,15 +100,15 @@ def test_netgen3d():
       print(cmd)
       subprocess.check_call(cmd, shell=True)
 
-      meshRead = mc.ReadUMeshFromFile (output_mesh, "Maillage_1", 0)
+      meshRead = mc.ReadUMeshFromFile (output_mesh, "MESH", 0)
 
       nbTetras = meshRead.getNumberOfCellsWithType(mc.NORM_TETRA4)
       nbPoints = meshRead.getNumberOfNodes()
 
-      meshRead = mc.ReadUMeshFromFile (output_mesh, "Maillage_1", -1)
+      meshRead = mc.ReadUMeshFromFile (output_mesh, "MESH", -1)
       nbTriangles = meshRead.getNumberOfCellsWithType(mc.NORM_TRI3)
 
-      meshRead = mc.ReadUMeshFromFile (output_mesh, "Maillage_1", -2)
+      meshRead = mc.ReadUMeshFromFile (output_mesh, "MESH", -2)
       nbSegments = meshRead.getNumberOfCellsWithType(mc.NORM_SEG2)
 
       print("Nb Tetras:", nbTetras)
