@@ -26,6 +26,7 @@
 //
 
 #include <utilities.h>
+#include <Utils_SALOME_Exception.hxx>
 #include "SMESH_DriverShape.hxx"
 
 // step include
@@ -62,8 +63,7 @@ int importSTEPShape(const std::string shape_file, TopoDS_Shape& aShape){
   Interface_Static::SetIVal("read.step.nonmanifold", 1);
   IFSelect_ReturnStatus aStat = reader.ReadFile(shape_file.c_str());
   if(aStat != IFSelect_RetDone){
-    std::cerr << "Reading error for "  << shape_file << std::endl;
-    return true;
+    throw SALOME_Exception("Reading error for " + shape_file);
   }
 
   int NbTrans = reader.TransferRoots();
@@ -94,15 +94,13 @@ int exportSTEPShape(const std::string shape_file, const TopoDS_Shape& aShape){
 
   IFSelect_ReturnStatus aStat = aWriter.Transfer(aShape,STEPControl_AsIs);
   if(aStat != IFSelect_RetDone){
-    std::cerr << "Transfer error for "  << shape_file << std::endl;
-    return true;
+    throw SALOME_Exception("Reading error for " + shape_file);
   }
 
   aStat = aWriter.Write(shape_file.c_str());
 
   if(aStat != IFSelect_RetDone){
-    std::cerr << "Writing error for "  << shape_file << std::endl;
-    return true;
+    throw SALOME_Exception("Writing error for " + shape_file);
   }
   return aStat;
 }
@@ -156,8 +154,7 @@ int importShape(const std::string shape_file, TopoDS_Shape& aShape){
   } else if (type == ".step"){
     return importSTEPShape(shape_file, aShape);
   } else {
-    std::cerr << "Unknow format: " << type << std::endl;
-    return true;
+    throw SALOME_Exception("Unknow format for importShape: " + type);
   }
 }
 
@@ -177,7 +174,6 @@ int exportShape(const std::string shape_file, const TopoDS_Shape& aShape){
   } else if (type == ".step"){
     return exportSTEPShape(shape_file, aShape);
   } else {
-    std::cerr << "Unknow format: " << type << std::endl;
-    return true;
+    throw SALOME_Exception("Unknow format for exportShape: " + type);
   }
 }

@@ -37,6 +37,7 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_MeshLocker.hxx"
 
 #include "utilities.h"
 #include "Basics_Utils.hxx"
@@ -1393,16 +1394,13 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
     else if (( event == COMPUTE || event == COMPUTE_SUBMESH )
              && !_alwaysComputed )
     {
-      // LOCK: Adding node to mesh
-      _father->Lock();
+      SMESH_MeshLocker myLocker(_father);
       const TopoDS_Vertex & V = TopoDS::Vertex( _subShape );
       gp_Pnt P = BRep_Tool::Pnt(V);
       if ( SMDS_MeshNode * n = _father->GetMeshDS()->AddNode(P.X(), P.Y(), P.Z()) ) {
         _father->GetMeshDS()->SetNodeOnVertex(n,_Id);
         _computeState = COMPUTE_OK;
       }
-      _father->Unlock();
-      // UNLOCK
     }
     if ( event == MODIF_ALGO_STATE )
       cleanDependants();
@@ -1516,9 +1514,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           break;
         }
         TopoDS_Shape shape = _subShape;
-        _father->Lock();
-        algo->SubMeshesToCompute().assign( 1, this );
-        _father->Unlock();
+        algo->setSubMeshesToCompute(this);
         // check submeshes needed
         // In parallel there would be no submesh to check
         if (_father->HasShapeToMesh() && !_father->IsParallel()) {
@@ -1650,10 +1646,11 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
 #ifdef PRINT_WHO_COMPUTE_WHAT
         for (subS.ReInit(); subS.More(); subS.Next())
         {
-          _father->Lock();
-          const std::list <const SMESHDS_Hypothesis *> & hyps =
-            _algo->GetUsedHypothesis( *_father, _subShape );
-          _father->Unlock();
+          const std::list <const SMESHDS_Hypothesis *> & hyps
+          {
+            SMESH_MeshLocker myLocker(_father);
+            hyps = _algo->GetUsedHypothesis( *_father, _subShape );
+          }
           SMESH_Comment hypStr;
           if ( !hyps.empty() )
           {

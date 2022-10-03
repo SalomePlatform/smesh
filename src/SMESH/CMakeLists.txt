@@ -92,6 +92,7 @@ SET(SMESHimpl_HEADERS
   SMESH_Homard.hxx
   SMESH_DriverMesh.hxx
   SMESH_DriverShape.hxx
+  SMESH_MeshLocker.hxx
 )
 
 # --- sources ---
@@ -114,6 +115,7 @@ SET(SMESHimpl_SOURCES
   SMESH_Homard.cxx
   SMESH_DriverMesh.cxx
   SMESH_DriverShape.cxx
+  SMESH_MeshLocker.cxx
 )
 
 # --- rules ---

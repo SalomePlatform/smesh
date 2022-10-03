@@ -462,5 +462,4 @@ protected:
   SMESH_Mesh();
   SMESH_Mesh(const SMESH_Mesh&) {};
 };
-
 #endif
