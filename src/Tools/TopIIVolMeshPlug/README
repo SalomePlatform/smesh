@@ -9,7 +9,7 @@ module.
 
 For more information please visit the SALOME platform web site:
 
-  <http://www.salome-platform.org/>
+  <https://www.salome-platform.org/>
 
 =======
 License
@@ -17,10 +17,6 @@ License
 
 SALOME platform is distributed under the GNU Lesser General Public License.
 See COPYING file for more details.
-
-Also, additional information can be found at SALOME platform web site:
-
-  <http://www.salome-platform.org/downloads/license/>
 
 ============
 Installation
