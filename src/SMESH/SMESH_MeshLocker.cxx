@@ -29,11 +29,17 @@
 
 #include "SMESH_Mesh.hxx"
 
+/*
+ * When instanced will run the command Lock from a SMESH_Mesh
+ */
 SMESH_MeshLocker::SMESH_MeshLocker(SMESH_Mesh * aMesh) : _myMesh(aMesh)
 {
   _myMesh->Lock();
 }
 
+/*
+ * When freed will run the command Unlock from the SMESH_Mesh associated
+ */
 SMESH_MeshLocker::~SMESH_MeshLocker()
 {
   _myMesh->Unlock();

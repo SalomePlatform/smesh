@@ -161,6 +161,11 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
 }
 
 
+//=============================================================================
+/*!
+ * Algo to run the computation of all the submeshes of a mesh in sequentila
+ */
+//=============================================================================
 
 bool SMESH_Gen::sequentialComputeSubMeshes(
           SMESH_Mesh & aMesh,
@@ -225,8 +230,8 @@ bool SMESH_Gen::sequentialComputeSubMeshes(
 
 //=============================================================================
 /*
- * Parallel compute of a submesh
- * This function is used to pass to thread_pool
+ * compute of a submesh
+ * This function is passed to the thread pool
  */
 //=============================================================================
 const std::function<void(SMESH_subMesh*,
@@ -255,6 +260,12 @@ const std::function<void(SMESH_subMesh*,
     aShapesId->insert( sm->GetId() );
 
 });
+
+//=============================================================================
+/*!
+ * Algo to run the computation of all the submeshes of a mesh in parallel
+ */
+//=============================================================================
 
 bool SMESH_Gen::parallelComputeSubMeshes(
           SMESH_Mesh & aMesh,
