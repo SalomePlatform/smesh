@@ -64,6 +64,7 @@ SET(BAD_TESTS
   SMESH_test4.py
   SMESH_create_dual_mesh_adapt.py
   netgen_runner.py
+  SMESH_ParallelCompute.py
   )
 IF(NOT WIN32)
   LIST(APPEND BAD_TESTS

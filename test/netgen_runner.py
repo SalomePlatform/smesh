@@ -22,7 +22,7 @@ import medcoupling as mc
 
 def create_param_file(param_file):
     """ Create a parameter file for runner """
-    param="""1
+    param = """1
 34.64
 0.14
 16
@@ -43,8 +43,10 @@ def create_param_file(param_file):
 0
 0
 2
+2
 0
 
+0
 0
 0"""
     with open(param_file, "w") as ffile:
@@ -57,69 +59,71 @@ def test_netgen3d():
     box = geompy.MakeBoxDXDYDZ(200, 200, 200)
 
     geompy.ExtractShapes(box, geompy.ShapeType["FACE"], True)
-    Groupe_1 = geompy.CreateGroup(box, geompy.ShapeType["FACE"])
-    geompy.UnionIDs(Groupe_1, [3, 13, 23, 27, 31, 33])
+    groupe_1 = geompy.CreateGroup(box, geompy.ShapeType["FACE"])
+    geompy.UnionIDs(groupe_1, [3, 13, 23, 27, 31, 33])
 
-    # TODO: useful ?
-    [_, _, _, _, _, _, Groupe_1] = geompy.GetExistingSubObjects(box, False)
+    [_, _, _, _, _, _, groupe_1] = geompy.GetExistingSubObjects(box, False)
 
     # Creating 2D mesh
-    NETGEN_2D_Parameters_1 = smesh.CreateHypothesisByAverageLength(
+    netgen_2d_parameters_1 = smesh.CreateHypothesisByAverageLength(
         'NETGEN_Parameters_2D', 'NETGENEngine', 34.641, 0)
-    Mesh2D = smesh.Mesh(Groupe_1, 'Maillage_1')
-    status = Mesh2D.AddHypothesis(Groupe_1, NETGEN_2D_Parameters_1)
-    NETGEN_1D_2D = Mesh2D.Triangle(algo=smeshBuilder.NETGEN_1D2D)
-    isDone = Mesh2D.Compute()
-    smesh.SetName(Mesh2D, 'Maillage_1')
+    mesh_2d = smesh.Mesh(groupe_1, 'Maillage_1')
+    mesh_2d.AddHypothesis(groupe_1, netgen_2d_parameters_1)
+    mesh_2d.Triangle(algo=smeshBuilder.NETGEN_1D2D)
+    is_done = mesh_2d.Compute()
+    assert is_done
+    smesh.SetName(mesh_2d, 'Maillage_1')
 
-    # tmp_dir = tempfile.mkdtemp()
     with tempfile.TemporaryDirectory() as tmp_dir:
-      mesh_file = path.join(tmp_dir, "mesh.med")
-      shape_file = path.join(tmp_dir, "shape.step")
-      param_file = path.join(tmp_dir, "param.txt")
-      output_mesh = path.join(tmp_dir, "mesh3D.med")
+        mesh_file = path.join(tmp_dir, "mesh.med")
+        shape_file = path.join(tmp_dir, "shape.step")
+        param_file = path.join(tmp_dir, "param.txt")
+        output_mesh = path.join(tmp_dir, "mesh3D.med")
 
-      print("Running in folder: ", tmp_dir)
-      create_param_file(param_file)
+        print("Running in folder: ", tmp_dir)
+        create_param_file(param_file)
 
-      Mesh2D.ExportMED(mesh_file, 0, 41, 1, Mesh2D, 1, [], '', -1, 1)
-      geompy.ExportSTEP(box, shape_file, GEOM.LU_METER)
+        mesh_2d.ExportMED(mesh_file, 0, 41, 1, mesh_2d, 1, [], '', -1, 1)
+        geompy.ExportSTEP(box, shape_file, GEOM.LU_METER)
 
-      runner = path.join("${NETGENPLUGIN_ROOT_DIR}",
-                          "bin",
-                          "salome",
-                          "NETGENPlugin_Runner")
+        runner = path.join("${NETGENPLUGIN_ROOT_DIR}",
+                           "bin",
+                           "salome",
+                           "NETGENPlugin_Runner")
 
-      cmd = "{runner} NETGEN3D {mesh_file} {shape_file} "\
-            "{param_file} NONE 2 NONE {output_mesh}"\
-            .format(runner=runner,
-                    mesh_file=mesh_file,
-                    shape_file=shape_file,
-                    param_file=param_file,
-                    output_mesh=output_mesh)
-      print(cmd)
-      subprocess.check_call(cmd, shell=True)
+        if sys.platform == 'win32':
+            runner += ".exe"
 
-      meshRead = mc.ReadUMeshFromFile (output_mesh, "MESH", 0)
+        cmd = "{runner} NETGEN3D {mesh_file} {shape_file} "\
+              "{param_file} NONE NONE {output_mesh}"\
+              .format(runner=runner,
+                      mesh_file=mesh_file,
+                      shape_file=shape_file,
+                      param_file=param_file,
+                      output_mesh=output_mesh)
+        print(cmd)
+        subprocess.check_call(cmd, shell=True)
 
-      nbTetras = meshRead.getNumberOfCellsWithType(mc.NORM_TETRA4)
-      nbPoints = meshRead.getNumberOfNodes()
+        mesh_read = mc.ReadUMeshFromFile(output_mesh, "MESH", 0)
 
-      meshRead = mc.ReadUMeshFromFile (output_mesh, "MESH", -1)
-      nbTriangles = meshRead.getNumberOfCellsWithType(mc.NORM_TRI3)
+        nb_tetras = mesh_read.getNumberOfCellsWithType(mc.NORM_TETRA4)
+        nb_points = mesh_read.getNumberOfNodes()
 
-      meshRead = mc.ReadUMeshFromFile (output_mesh, "MESH", -2)
-      nbSegments = meshRead.getNumberOfCellsWithType(mc.NORM_SEG2)
+        mesh_read = mc.ReadUMeshFromFile(output_mesh, "MESH", -1)
+        nb_triangles = mesh_read.getNumberOfCellsWithType(mc.NORM_TRI3)
 
-      print("Nb Tetras:", nbTetras)
-      print("Nb Triangles:", nbTriangles)
-      print("Nb Segments:", nbSegments)
-      print("Nb Points:", nbPoints)
+        mesh_read = mc.ReadUMeshFromFile(output_mesh, "MESH", -2)
+        nb_segments = mesh_read.getNumberOfCellsWithType(mc.NORM_SEG2)
 
-      assert(nbPoints > 0)
-      assert(nbSegments > 0)
-      assert(nbTriangles > 0)
-      assert(nbTetras > 0)
+        print("Nb Tetras:", nb_tetras)
+        print("Nb Triangles:", nb_triangles)
+        print("Nb Segments:", nb_segments)
+        print("Nb Points:", nb_points)
+
+        assert nb_points > 0
+        assert nb_segments > 0
+        assert nb_triangles > 0
+        assert nb_tetras > 0
 
 if __name__ == "__main__":
     test_netgen3d()

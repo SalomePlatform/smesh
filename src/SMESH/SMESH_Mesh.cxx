@@ -87,7 +87,7 @@ namespace fs=boost::filesystem;
 #define MAX_MED_GROUP_NAME_LENGTH 80
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 #else
 static int MYDEBUG = 0;
 #endif

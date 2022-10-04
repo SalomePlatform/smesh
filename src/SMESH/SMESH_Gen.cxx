@@ -279,7 +279,7 @@ bool SMESH_Gen::parallelComputeSubMeshes(
 
   TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
   int nbThreads = aMesh.GetNbThreads();
-  MESSAGE("Compute submeshes with threads: " << nbThreads << " mesher: " << aMesh.GetMesherNbThreads());
+  MESSAGE("Compute submeshes with threads: " << nbThreads);
 
 
   smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);

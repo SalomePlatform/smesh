@@ -462,6 +462,21 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             obj,name = name,obj
         return Mesh(self, self.geompyD, obj, name)
 
+    def ParallelMesh(self, obj, param, nbThreads, name=0):
+        """
+        Create a parallel mesh.
+
+        Parameters:
+            obj: geometrical object for meshing
+            name: the name for the new mesh.
+            param: full mesh parameters
+            nbThreads: Number of threads for parallelisation.
+
+        Returns:
+            an instance of class :class:`ParallelMesh`.
+        """
+        return ParallelMesh(self, self.geompyD, obj, param, nbThreads, name)
+
     def RemoveMesh( self, mesh ):
         """
         Delete a mesh
@@ -1862,31 +1877,6 @@ class Mesh(metaclass = MeshMeta):
             else:
                 geom = self.geom
         return self.smeshpyD.Evaluate(self.mesh, geom)
-
-    def ParallelCompute(self, nbThreads, mesherNbThreads=1, geom=0, discardModifs=False, refresh=False):
-        """
-        Parallel computation of the mesh and return the status of the computation
-        The mesh must contains have be constructed using create_parallel_mesh
-
-        Parameters:
-                nbThreads: Number of threads to use for a parallel computation
-                geom: geomtrical shape on which mesh data should be computed
-                discardModifs: if True and the mesh has been edited since
-                        a last total re-compute and that may prevent successful partial re-compute,
-                        then the mesh is cleaned before Compute()
-                refresh: if *True*, Object Browser is automatically updated (when running in GUI)
-
-        Returns:
-                True or False
-        """
-        if (nbThreads <= 1):
-            raise ValueError("nbThreads must be strictly greater than 1")
-        if (mesherNbThreads < 1):
-            raise ValueError("nbThreads must be greater than 1")
-
-        self.mesh.SetMesherNbThreads(mesherNbThreads)
-        self.mesh.SetNbThreads(nbThreads)
-        return self.Compute(geom=geom, discardModifs=discardModifs, refresh=refresh)
 
     def Compute(self, geom=0, discardModifs=False, refresh=False):
         """
@@ -7509,6 +7499,121 @@ class Mesh(metaclass = MeshMeta):
         return None
 
     pass # end of Mesh class
+
+
+def _copy_netgen_param(dim, local_param, global_param):
+    if dim==1:
+        #TODO: Try to identify why we need to substract 1
+        local_param.NumberOfSegments(int(global_param.GetNbSegPerEdge())-1)
+    elif dim==2:
+        local_param.SetMaxSize(global_param.GetMaxSize())
+        local_param.SetMinSize(global_param.GetMinSize())
+        local_param.SetOptimize(global_param.GetOptimize())
+        local_param.SetFineness(global_param.GetFineness())
+        local_param.SetNbSegPerEdge(global_param.GetNbSegPerEdge())
+        local_param.SetNbSegPerRadius(global_param.GetNbSegPerRadius())
+        local_param.SetGrowthRate(global_param.GetGrowthRate()*0.9)
+        local_param.SetChordalError(global_param.GetChordalError())
+        local_param.SetChordalErrorEnabled(global_param.GetChordalErrorEnabled())
+        local_param.SetUseSurfaceCurvature(global_param.GetUseSurfaceCurvature())
+        local_param.SetUseDelauney(global_param.GetUseDelauney())
+        local_param.SetQuadAllowed(global_param.GetQuadAllowed())
+        local_param.SetWorstElemMeasure(global_param.GetWorstElemMeasure())
+        local_param.SetCheckChartBoundary(global_param.GetCheckChartBoundary())
+        local_param.SetNbThreads(global_param.GetNbThreads())
+    else:
+        local_param.SetMaxSize(global_param.GetMaxSize())
+        local_param.SetMinSize(global_param.GetMinSize())
+        local_param.SetOptimize(global_param.GetOptimize())
+        local_param.SetCheckOverlapping(global_param.GetCheckOverlapping())
+        local_param.SetCheckChartBoundary(global_param.GetCheckChartBoundary())
+        local_param.SetFineness(global_param.GetFineness())
+        local_param.SetNbSegPerEdge(global_param.GetNbSegPerEdge())
+        local_param.SetNbSegPerRadius(global_param.GetNbSegPerRadius())
+        local_param.SetGrowthRate(global_param.GetGrowthRate())
+        local_param.SetNbThreads(global_param.GetNbThreads())
+
+class ParallelMesh(Mesh):
+    """
+    Surcharge on Mesh for parallel computation of a mesh
+    """
+
+    def __init__(self, smeshpyD, geompyD, geom, param, nbThreads, name=0):
+        """
+        Create a parallel mesh.
+
+        Parameters:
+            geom: geometrical object for meshing
+            param: full mesh parameters
+            nbThreads: Number of threads for parallelisation.
+            name: the name for the new mesh.
+
+        Returns:
+            an instance of class :class:`ParallelMesh`.
+        """
+
+        if not isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
+            raise ValueError("geom argument must be a geometry")
+
+        if not isinstance(param, NETGENPlugin._objref_NETGENPlugin_Hypothesis):
+            raise ValueError("param must come from NETGENPlugin")
+
+        if nbThreads < 1:
+            raise ValueError("Number of threads must be stricly greater than 1")
+
+        # Splitting geometry into 3D elements and all the 2D/1D into one compound
+        object_solids = geompyD.ExtractShapes(geom, geompyD.ShapeType["SOLID"],
+                                              True)
+
+        solids = []
+        isolid = 0
+        for solid in object_solids:
+            isolid += 1
+            geompyD.addToStudyInFather( geom, solid, 'Solid_{}'.format(isolid) )
+            solids.append(solid)
+
+        faces = []
+        iface = 0
+        for isolid, solid in enumerate(solids):
+            solid_faces = geompyD.ExtractShapes(solid, geompyD.ShapeType["FACE"],
+                                                True)
+            for face in solid_faces:
+                faces.append(face)
+                iface += 1
+                geompyD.addToStudyInFather(solid, face,
+                                           'Face_{}'.format(iface))
+
+        # Creating submesh for edges 1D/2D part
+
+        all_faces = geompyD.MakeCompound(faces)
+        geompyD.addToStudy(all_faces, 'Compound_1')
+        all_faces = geompyD.MakeGlueEdges(all_faces, 1e-07)
+        all_faces = geompyD.MakeGlueFaces(all_faces, 1e-07)
+        geompyD.addToStudy(all_faces, 'global2D')
+
+        super(ParallelMesh, self).__init__(smeshpyD, geompyD, geom, name)
+
+        self.mesh.SetNbThreads(nbThreads)
+
+        self.UseExistingSegments()
+        self.UseExistingFaces()
+
+        algo2d = self.Triangle(geom=all_faces, algo="NETGEN_2D")
+        param2d = algo2d.Parameters()
+
+        _copy_netgen_param(2, param2d, param)
+
+        for solid_id, solid in enumerate(solids):
+            name = "Solid_{}".format(solid_id)
+            self.UseExistingSegments(geom=solid)
+            self.UseExistingFaces(geom=solid)
+            algo3d = self.Tetrahedron(geom=solid, algo="NETGEN_3D_Remote")
+
+            param3d = algo3d.Parameters()
+
+            _copy_netgen_param(3, param3d, param)
+
+    pass # End of ParallelMesh
 
 
 class meshProxy(SMESH._objref_SMESH_Mesh):
