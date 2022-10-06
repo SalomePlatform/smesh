@@ -773,7 +773,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         aMesh = Mesh( self, self.geompyD, aSmeshMesh, name=name )
         return aMesh
 
-    def CreateDualMesh( self, mesh, meshName):
+    def CreateDualMesh( self, mesh, meshName, adaptToShape):
         """
         Create a dual of a mesh.
 
@@ -782,13 +782,15 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
                         :class:`mesh, <SMESH.SMESH_IDSource>`.
 
                 meshName: a name of the new mesh
+                adpatToShape: if true project boundary points on shape
 
         Returns:
                 an instance of class :class:`Mesh`
         """
         if isinstance( mesh, Mesh ):
             mesh = mesh.GetMesh()
-        dualMesh = SMESH._objref_SMESH_Gen.CreateDualMesh(self, mesh, meshName)
+        print("calling createdualmesh from Python")
+        dualMesh = SMESH._objref_SMESH_Gen.CreateDualMesh(self, mesh, meshName, adaptToShape)
         return Mesh(self, self.geompyD, dualMesh)
 
 

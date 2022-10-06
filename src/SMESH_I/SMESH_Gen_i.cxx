@@ -2820,7 +2820,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
 //================================================================================
 
 SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh,
-                                                  const char*               meshName)
+                                                  const char*               meshName,
+                                                  CORBA::Boolean            adapt_to_shape)
 {
   Unexpect aCatch(SALOME_SalomeException);
 
@@ -2841,10 +2842,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
   CORBA::String_var mesh_var=GetORB()->object_to_string(mesh);
   std::string mesh_ior = mesh_var.in();
 
-  fs::path tmp_folder = fs::unique_path(fs::path("dual_mesh-%%%%-%%%%"));
+  //temporary folder for the generation of the med file
+  fs::path tmp_folder = fs::temp_directory_path() / fs::unique_path(fs::path("dual_mesh-%%%%"));
   fs::create_directories(tmp_folder);
   fs::path dual_mesh_file = tmp_folder / fs::path("tmp_dual_mesh.med");
-  std::string mesh_name = "MESH";
+  std::string mesh_name = meshName;
+  MESSAGE("Working in folder" + tmp_folder.string());
 
   // Running Python script
   assert(Py_IsInitialized());
@@ -2853,11 +2856,20 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
 
   std::string cmd="import salome.smesh.smesh_tools as smt";
   PyRun_SimpleString(cmd.c_str());
+  std::string ats;
+  if(adapt_to_shape)
+    ats = "True";
+  else
+    ats = "False";
 
-  cmd = "smt.create_dual_mesh(\"" + mesh_ior + "\", \"" + dual_mesh_file.string() + "\", \"" + mesh_name + "\")";
+  cmd = "smt.smesh_create_dual_mesh(\"" + mesh_ior + "\", \"" +
+        dual_mesh_file.string() + "\", mesh_name=\"" + mesh_name + "\", adapt_to_shape=" + ats + ")";
+  MESSAGE(cmd);
   PyRun_SimpleString(cmd.c_str());
 
   PyGILState_Release(gstate);
+  MESSAGE("Executed python script");
+  MESSAGE("Mesh created in " + dual_mesh_file.string());
 
   // Import created MED
   SMESH::SMESH_Mesh_var newMesh = CreateMesh(GEOM::GEOM_Object::_nil());
@@ -2867,13 +2879,15 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
   SALOMEDS::SObject_wrap meshSO = ObjectToSObject( newMesh );
   if ( !meshSO->_is_nil() )
   {
-    SetName( meshSO, meshName, "Mesh" );
-    SetPixMap( meshSO, "ICON_SMESH_TREE_MESH");
+    SetName( meshSO, meshName, meshName );
+    SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
   }
 
   SMESH_Mesh& newMesh2 = newMesh_i->GetImpl();
 
   newMesh2.MEDToMesh(dual_mesh_file.c_str(), meshName);
+
+  MESSAGE("Imported created MED")
 
   SMESHDS_Mesh* newMeshDS = newMesh_i->GetImpl().GetMeshDS();
 
@@ -2881,7 +2895,9 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
 
   *pyDump << newMesh << " = " << this
           << ".CreateDualMesh("
-          << "'" << meshName << "') ";
+          << mesh << ", "
+          << "'" << meshName << "', "
+          << ats << ") ";
 
   return newMesh._retn();
 }

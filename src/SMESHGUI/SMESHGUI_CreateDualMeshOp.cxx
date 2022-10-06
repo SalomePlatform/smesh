@@ -45,6 +45,7 @@
 
 // Qt includes
 #include <QLineEdit>
+#include <QCheckBox>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -226,10 +227,10 @@ bool SMESHGUI_CreateDualMeshOp::onApply()
   SMESH::SMESH_Gen_var gen = SMESHGUI::GetSMESHGen();
   SMESH::SMESH_Mesh_var newMesh;
   QByteArray newMeshName=myDlg->myMeshName->text().toUtf8();
+  bool adapt_to_shape=myDlg->myProjShape->isChecked();
   try
   {
-    // TODO: change name as previous name + "_dual"
-    newMesh = gen->CreateDualMesh(mesh, newMeshName.constData());
+    newMesh = gen->CreateDualMesh(mesh, newMeshName.constData(), adapt_to_shape);
 
     if ( !newMesh->_is_nil() )
       if ( _PTR(SObject) aSObject = SMESH::ObjectToSObject( newMesh ) )

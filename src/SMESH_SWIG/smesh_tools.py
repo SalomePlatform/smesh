@@ -17,7 +17,7 @@ from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()
 
-def create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True, mesh_name="MESH"):
+def smesh_create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True, mesh_name="MESH"):
     """ Create a dual of the mesh in input_file into output_file
 
     Args:
@@ -25,7 +25,6 @@ def create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True, mesh_name="MESH
         output_file (string): dual mesh file
     """
     # Import mesh from file
-    # mesh = salome.orb.string_to_object(salome.salome_study.myStudy.FindObjectID(mesh_id).GetIOR())
     mesh = salome.orb.string_to_object(mesh_ior)
     if not mesh:
         raise Exception("Could not find mesh using id: ", mesh_ior)
@@ -35,11 +34,14 @@ def create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True, mesh_name="MESH
     # We got a meshProxy so we need to convert pointer to MEDCoupling
     int_ptr = mesh.ExportMEDCoupling(True, True)
     dab = mc.FromPyIntPtrToDataArrayByte(int_ptr)
-    tetras =  mc.MEDFileMesh.New(dab)[0]
+    tetras = mc.MEDFileMesh.New(dab)[0]
     # End of SMESH -> MEDCoupling part for dualmesh
 
     tetras = mc.MEDCoupling1SGTUMesh(tetras)
     polyh = tetras.computeDualMesh()
+    dual_volume_raw = polyh.getMeasureField(True).accumulate()[0]
+
+    # Getting list of new points added on the skin
     skin = tetras.buildUnstructured().computeSkin()
     skin_polyh = polyh.buildUnstructured().computeSkin()
     allNodesOnSkinPolyh = skin_polyh.computeFetchedNodeIds()
@@ -51,24 +53,25 @@ def create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True, mesh_name="MESH
         ptsAddedCoo = ptsAddedMesh.getCoords()
         ptsAddedCooModified = ptsAddedCoo[:]
 
-        # We need the geometry for that
-        # TODO : Loop on faces identify points associated to which face
+        # Matching faces with their ids
         faces = geompy.ExtractShapes(shape, geompy.ShapeType["FACE"], True)
-        #assert( len(faces) == 1 )
-        ## projection des points ajoutés par le dual sur la surface
-        #for i,tup in enumerate(ptsAddedCooModified):
-        #    vertex = geompy.MakeVertex(*tuple(tup))
-        #    prj = geompy.MakeProjection(vertex, faces)
-        #    newCoor = geompy.PointCoordinates( prj )
-        #    ptsAddedCooModified[i] = newCoor
-        ## assign coordinates with projected ones
-        #polyh.getCoords()[ptsAdded] = ptsAddedCooModified
+        id2face = {}
+        for face in faces:
+            id2face[face.GetSubShapeIndices()[0]] = face
+        print(id2face)
 
-    print("Writing dual mesh in ", output_file)
+        ## Projecting each points added by the dual mesh on the surface it is
+        # associated with
+        for i, tup in enumerate(ptsAddedCooModified):
+            vertex = geompy.MakeVertex(*tuple(tup))
+            shapes = geompy.GetShapesNearPoint(shape, vertex,
+                                               geompy.ShapeType["FACE"])
+            prj = geompy.MakeProjection(vertex,
+                                        id2face[shapes.GetSubShapeIndices()[0]])
+            new_coor = geompy.PointCoordinates(prj)
+            ptsAddedCooModified[i] = new_coor
+
+        polyh.getCoords()[ptsAdded] = ptsAddedCooModified
+
     polyh.setName(mesh_name)
     polyh.write(output_file)
-
-
-
-
-

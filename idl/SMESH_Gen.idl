@@ -288,9 +288,11 @@ module SMESH
      * Create a dual mesh of a Tetrahedron mesh
      *  \param mesh - TetraHedron mesh to create dual from
      *  \param meshName - a name of the new mesh
+     *  \param adaptToShape - if True project boundary point on shape
      */
     SMESH_Mesh CreateDualMesh(in SMESH_IDSource mesh,
-                              in string         meshName)
+                              in string         meshName,
+                              in boolean        adaptToShape)
       raises ( SALOME::SALOME_Exception );
 
     /*!
