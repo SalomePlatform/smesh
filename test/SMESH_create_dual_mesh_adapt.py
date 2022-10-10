@@ -80,6 +80,8 @@ isDone = Mesh_1.Compute()
 dual_Mesh_1 = smesh.CreateDualMesh(Mesh_1, 'dual_Mesh_1', True)
 dual_Mesh_raw_1 = smesh.CreateDualMesh(Mesh_1, 'dual_Mesh_1', False)
 
+[ top_2, middle_2, bottom_2 ] = dual_Mesh_1.GetGroups()
+
 #Comparing volumes
 dual_volume = dual_Mesh_1.GetVolume()
 dual_raw_volume = dual_Mesh_raw_1.GetVolume()

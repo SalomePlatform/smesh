@@ -150,9 +150,10 @@ void SMESHGUI_CreateDualMeshOp::selectionDone()
     {
       SMESH::SMESH_subMesh_var subMesh =
         SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( pObj );
-      // TODO: Check that mesh is only tetra
+      // Check that mesh is only tetra
       if (!checkMesh(idSource)){
         myDlg->ShowWarning( true );
+        myDlg->setButtonEnabled(false, QtxDialog::OK|QtxDialog::Apply);
       }
     }
     std::string mesh_name = "dual_" + pObj->GetName();

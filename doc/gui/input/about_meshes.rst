@@ -1,8 +1,8 @@
-.. _about_meshes_page: 
+.. _about_meshes_page:
 
 ************
 About meshes
-************ 
+************
 
 **MESH** represents a discrete approximation of a subset of the three-dimensional space by `elementary geometrical elements`_.
 
@@ -10,7 +10,7 @@ A SALOME study can contain multiple meshes, but they do not implicitly compose o
 
 Mesh module provides several ways to create the mesh:
 
-* The main way is to :ref:`construct the mesh <constructing_meshes_page>` on the basis of the geometrical shape produced in the Geometry module. This way implies selection of 
+* The main way is to :ref:`construct the mesh <constructing_meshes_page>` on the basis of the geometrical shape produced in the Geometry module. This way implies selection of
 
   * a geometrical object (*main shape*) and
   * *meshing parameters* (:ref:`meshing algorithms <basic_meshing_algos_page>` and characteristics (e.g. element size) of a required mesh encapsulated in :ref:`hypothesis <about_hypo_page>` objects).
@@ -20,18 +20,20 @@ Mesh module provides several ways to create the mesh:
 
   .. note::
 	Algorithms and hypotheses used at mesh level are referred to as *global* ones and those used at sub-mesh level are referred to as *local* ones.
-  
+
 * Bottom-up way, using :ref:`mesh modification <modifying_meshes_page>` operations, especially :ref:`extrusion <extrusion_page>` and :ref:`revolution <revolution_page>`. To create an empty mesh not based on geometry, use the same dialog as to :ref:`construct the mesh on geometry <constructing_meshes_page>` but specify neither the geometry nor meshing algorithms.
-  
+
 * The mesh can be :ref:`imported <importing_exporting_meshes_page>` from (and exported to) the file in MED, UNV, STL, CGNS, DAT and GMF formats.
-  
+
 * The 3D mesh can be generated from the 2D mesh not based on geometry, which was either :ref:`imported <importing_exporting_meshes_page>` or created in other way. To setup the meshing parameters of a mesh not based on geometry, just invoke :ref:`Edit mesh / sub-mesh <editing_meshes_page>` command on your 2D mesh.
-  
+
 * Several meshes can be :ref:`combined <building_compounds_page>` into a new mesh.
-  
+
 * The whole mesh or its part (sub-mesh or group) can be :ref:`copied <copy_mesh_page>` into a new mesh.
-  
+
 * A new mesh can be created from a transformed, e.g. :ref:`translated <translation_page>`, part of the mesh.
+
+* A new mesh can be created from the gernation of the :ref:`dual <create_dual_mesh_page>` of a Tetrahedron Mesh.
 
 
 Meshes can be edited using the MESH functions destined for :ref:`modification <modifying_meshes_page>` of meshes.
@@ -82,4 +84,5 @@ Quadratic mesh can be obtained in three ways:
    importing_exporting_meshes.rst
    building_compounds.rst
    copy_mesh.rst
+   create_dual_mesh.rst
    connectivity.rst

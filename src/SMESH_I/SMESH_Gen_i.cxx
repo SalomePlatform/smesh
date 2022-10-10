@@ -2885,6 +2885,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
 
   SMESH_Mesh& newMesh2 = newMesh_i->GetImpl();
 
+  MESSAGE("Loading file: " << dual_mesh_file.string() << " with mesh " << mesh_name);
   newMesh2.MEDToMesh(dual_mesh_file.c_str(), meshName);
 
   MESSAGE("Imported created MED")

@@ -1,8 +1,5 @@
-#!/usr/bin/env python
+# Creating dual Mesh
 
-###
-### This file is generated automatically by SALOME v9.9.0 with dump python functionality
-###
 
 import sys
 import salome
@@ -22,6 +19,7 @@ import math
 import SALOMEDS
 
 
+# Creating a sphere
 geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
@@ -36,20 +34,20 @@ geompy.addToStudy( OY, 'OY' )
 geompy.addToStudy( OZ, 'OZ' )
 geompy.addToStudy( Sphere_1, 'Sphere_1' )
 
-###
-### SMESH component
-###
-
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()
 
+# Meshing sphere in Tetrahedron
 NETGEN_3D_Parameters_1 = smesh.CreateHypothesisByAverageLength( 'NETGEN_Parameters', 'NETGENEngine', 34.641, 0 )
 Mesh_1 = smesh.Mesh(Sphere_1,'Mesh_1')
 status = Mesh_1.AddHypothesis( Sphere_1, NETGEN_3D_Parameters_1 )
 NETGEN_1D_2D_3D = Mesh_1.Tetrahedron(algo=smeshBuilder.NETGEN_1D2D3D)
 isDone = Mesh_1.Compute()
+
+
+# Creating Dual mesh
 dual_Mesh_1 = smesh.CreateDualMesh( Mesh_1, 'dual_Mesh_1', True)
 
 
