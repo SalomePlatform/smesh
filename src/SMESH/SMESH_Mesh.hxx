@@ -47,8 +47,10 @@
 #include <list>
 #include <vector>
 #include <ostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/asio/thread_pool.hpp>
+#include <boost/thread.hpp>
 
 #ifdef WIN32
 #pragma warning(disable:4251) // Warning DLL Interface ...
@@ -451,7 +453,7 @@ protected:
   TCallUp*                    _callUp;
 
   // Mutex for multhitreading write in SMESH_Mesh
-  std::mutex _my_lock;
+  boost::mutex _my_lock;
   int _NbThreads=0;
 
 protected:
