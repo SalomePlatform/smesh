@@ -242,8 +242,9 @@ SMESH_Mesh::~SMESH_Mesh()
 
   if(_pool)
     DeletePoolThreads();
-  if (!MYDEBUG)
+#ifndef _DEBUG_
     fs::remove_all(tmp_folder);
+#endif
 }
 
 //================================================================================

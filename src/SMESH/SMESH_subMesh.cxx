@@ -63,10 +63,9 @@ using namespace std;
 
 #ifdef _DEBUG_
 // enable printing algo + shape id + hypo used while meshing
-//#define PRINT_WHO_COMPUTE_WHAT
+#define PRINT_WHO_COMPUTE_WHAT
 #endif
 
-//#define PRINT_WHO_COMPUTE_WHAT
 //=============================================================================
 /*!
  * \brief Allocate some memory at construction and release it at destruction.
@@ -1646,11 +1645,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
 #ifdef PRINT_WHO_COMPUTE_WHAT
         for (subS.ReInit(); subS.More(); subS.Next())
         {
-          const std::list <const SMESHDS_Hypothesis *> & hyps
-          {
-            SMESH_MeshLocker myLocker(_father);
-            hyps = _algo->GetUsedHypothesis( *_father, _subShape );
-          }
+          SMESH_MeshLocker myLocker(_father);
+          const std::list <const SMESHDS_Hypothesis *> & hyps =
+              _algo->GetUsedHypothesis( *_father, _subShape );
           SMESH_Comment hypStr;
           if ( !hyps.empty() )
           {
