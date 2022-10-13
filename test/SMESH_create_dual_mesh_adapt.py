@@ -77,8 +77,8 @@ isDone = Mesh_1.Compute()
 [ top_1, middle_1, bottom_1 ] = Mesh_1.GetGroups()
 
 
+dual_Mesh_raw_1 = smesh.CreateDualMesh(Mesh_1, 'dual_Mesh_raw_1', False)
 dual_Mesh_1 = smesh.CreateDualMesh(Mesh_1, 'dual_Mesh_1', True)
-dual_Mesh_raw_1 = smesh.CreateDualMesh(Mesh_1, 'dual_Mesh_1', False)
 
 [ top_2, middle_2, bottom_2 ] = dual_Mesh_1.GetGroups()
 

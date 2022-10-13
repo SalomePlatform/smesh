@@ -76,7 +76,7 @@
 #ifndef WIN32
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
-#else 
+#else
 #include <pthread.h>
 #endif
 
@@ -99,7 +99,7 @@ class SMESH_Mesh::SubMeshHolder : public SMESHDS_TSubMeshHolder< SMESH_subMesh >
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -629,7 +629,7 @@ SMESH_ComputeErrorPtr SMESH_Mesh::GMFToMesh(const char* theFileName,
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -724,7 +724,7 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -741,7 +741,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
   if(MYDEBUG) { SCRUTE(anHyp->GetType()); }
 
-  // shape 
+  // shape
 
   bool                     isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
   SMESH_subMesh::algo_event event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
@@ -794,7 +794,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -861,7 +861,7 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const SMESH_subMesh *   aSubM
       const_cast< std::vector< SMESH_subMesh * > & > ( aSubMesh->GetAncestors() );
     SortByMeshOrder( ancestors );
 
-    std::vector<SMESH_subMesh*>::const_iterator smIt = ancestors.begin(); 
+    std::vector<SMESH_subMesh*>::const_iterator smIt = ancestors.begin();
     for ( ; smIt != ancestors.end(); smIt++ )
     {
       const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
@@ -1004,7 +1004,7 @@ SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -1015,7 +1015,7 @@ const std::list<SMESHDS_Command*> & SMESH_Mesh::GetLog()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 void SMESH_Mesh::ClearLog()
@@ -1727,7 +1727,7 @@ double SMESH_Mesh::GetComputeProgress() const
   const SMESH_subMesh* curSM = _gen->GetCurrentSubMesh();
 
   // get progress of a current algo
-  TColStd_MapOfInteger currentSubIds; 
+  TColStd_MapOfInteger currentSubIds;
   if ( curSM )
     if ( SMESH_Algo* algo = curSM->GetAlgo() )
     {
@@ -2035,7 +2035,7 @@ bool SMESH_Mesh::IsNotConformAllowed() const
 
 //=======================================================================
 //function : IsMainShape
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESH_Mesh::IsMainShape(const TopoDS_Shape& theShape) const
@@ -2055,7 +2055,7 @@ TopoDS_Shape SMESH_Mesh::GetShapeByEntry(const std::string& entry) const
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -2169,7 +2169,7 @@ std::list<int> SMESH_Mesh::GetGroupIds() const
   std::map<int, SMESH_Group*>::const_iterator it = _mapGroup.begin();
   for ( ; it != _mapGroup.end(); it++ )
     anIds.push_back( it->first );
-  
+
   return anIds;
 }
 
@@ -2188,7 +2188,7 @@ void SMESH_Mesh::SetCallUp( TCallUp* upCaller )
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -2546,7 +2546,7 @@ bool SMESH_Mesh::IsOrderOK( const SMESH_subMesh* smBefore,
     }
   }
   return true; // no order imposed to given sub-meshes
-} 
+}
 
 //=============================================================================
 /*!

@@ -37,6 +37,7 @@ def smesh_create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True, mesh_name
     shape = mesh.GetShapeToMesh()
 
     # Creating output file
+    logger.debug("Creating file with mesh: "+mesh_name)
     myfile = mc.MEDFileUMesh()
     myfile.setName(mesh_name)
 
@@ -58,7 +59,12 @@ def smesh_create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True, mesh_name
 
 
     for grp_name in mc_mesh_file.getGroupsOnSpecifiedLev(-1):
+        # This group is created by the export
+        if grp_name == "Group_Of_All_Faces":
+            logger.debug("Skipping group: "+ grp_name)
+            continue
         logger.debug("Transferring group: "+ grp_name)
+
         grp_tria = mc_mesh_file.getGroup(-1, grp_name)
         # Retrieve the nodes in group
         grp_nodes = grp_tria.computeFetchedNodeIds()
