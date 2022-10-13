@@ -49,6 +49,10 @@
 #include <TopoDS_Wire.hxx>
 #include <gp_Pnt.hxx>
 
+// Have to be included before std headers
+#include <Python.h>
+#include <structmember.h>
+
 #ifdef WIN32
  #include <windows.h>
  #include <process.h>
@@ -147,6 +151,9 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/filesystem.hpp>
+
+namespace fs = boost::filesystem;
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -2798,6 +2805,133 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
   SetPixMap( meshSO, "ICON_SMESH_TREE_MESH" );
 
   newMeshDS->Modified();
+
+  return newMesh._retn();
+}
+
+
+//================================================================================
+/*!
+ * \brief Create a mesh by copying a part of another mesh
+ *  \param mesh - TetraHedron mesh
+ *  \param meshName Name of the created mesh
+ *  \retval SMESH::SMESH_Mesh_ptr - the new mesh
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh,
+                                                  const char*               meshName,
+                                                  CORBA::Boolean            adapt_to_shape)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  TPythonDump* pyDump = new TPythonDump(this); // prevent dump from CreateMesh()
+  std::unique_ptr<TPythonDump> pyDumpDeleter( pyDump );
+
+  // 1. Get source mesh
+
+  if ( CORBA::is_nil( mesh ))
+    THROW_SALOME_CORBA_EXCEPTION( "bad IDSource", SALOME::BAD_PARAM );
+
+  SMESH::SMESH_Mesh_var srcMesh = mesh->GetMesh();
+  SMESH_Mesh_i*       srcMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( srcMesh );
+  if ( !srcMesh_i )
+    THROW_SALOME_CORBA_EXCEPTION( "bad mesh of IDSource", SALOME::BAD_PARAM );
+
+  CORBA::String_var mesh_var=GetORB()->object_to_string(mesh);
+  std::string mesh_ior = mesh_var.in();
+
+  //temporary folder for the generation of the med file
+  fs::path tmp_folder = fs::temp_directory_path() / fs::unique_path(fs::path("dual_mesh-%%%%"));
+  fs::create_directories(tmp_folder);
+  fs::path dual_mesh_file = tmp_folder / fs::path("tmp_dual_mesh.med");
+  std::string mesh_name(meshName);
+  MESSAGE("Working in folder" + tmp_folder.string());
+
+  // Running Python script
+  assert(Py_IsInitialized());
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+
+  std::string ats;
+  if(adapt_to_shape)
+    ats = "True";
+  else
+    ats = "False";
+
+  std::string cmd="import salome.smesh.smesh_tools as smt\n";
+  cmd +="smt.smesh_create_dual_mesh(\"" + mesh_ior + "\", \"" +
+        dual_mesh_file.string() + "\", mesh_name=\"" + mesh_name + "\", adapt_to_shape=" + ats + ")";
+  MESSAGE(cmd);
+
+  PyObject *py_main = PyImport_AddModule("__main__");
+  PyObject *py_dict = PyModule_GetDict(py_main);
+
+  PyRun_String(cmd.c_str(), Py_file_input, py_dict, py_dict);
+
+  if (PyErr_Occurred()) {
+    // Restrieving python error
+    MESSAGE("Catching error")
+    PyObject *errtype, *errvalue, *traceback;
+    PyErr_Fetch(&errtype, &errvalue, &traceback);
+    if(errvalue != NULL) {
+      MESSAGE("Error has a value")
+      PyObject *s = PyObject_Str(errvalue);
+      Py_ssize_t size;
+      std::string msg = PyUnicode_AsUTF8AndSize(s, &size);
+      msg = "Issue with the execution of create_dual_mesh:\n"+msg;
+      MESSAGE("throwing exception")
+      // We need to deactivate the GIL before throwing the exception
+      PyGILState_Release(gstate);
+      THROW_SALOME_CORBA_EXCEPTION(msg.c_str(), SALOME::INTERNAL_ERROR );
+      Py_DECREF(s);
+    }
+    Py_XDECREF(errvalue);
+    Py_XDECREF(errtype);
+    Py_XDECREF(traceback);
+  }
+
+  PyGILState_Release(gstate);
+
+  MESSAGE("Mesh created in " + dual_mesh_file.string());
+
+  // Import created MED
+  SMESH::SMESH_Mesh_var newMesh = CreateMesh(GEOM::GEOM_Object::_nil());
+  SMESH_Mesh_i*       newMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( newMesh );
+  if ( !newMesh_i )
+    THROW_SALOME_CORBA_EXCEPTION( "can't create a mesh", SALOME::INTERNAL_ERROR );
+  SALOMEDS::SObject_wrap meshSO = ObjectToSObject( newMesh );
+  if ( !meshSO->_is_nil() )
+  {
+    SetName( meshSO, meshName, meshName );
+    SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
+  }
+  int ret = newMesh_i->ImportMEDFile(dual_mesh_file.c_str(), meshName);
+  if(ret)
+    THROW_SALOME_CORBA_EXCEPTION( "Issue when importing mesh", SALOME::INTERNAL_ERROR );
+
+  /*
+  SMESH_Mesh& newMesh2 = newMesh_i->GetImpl();
+
+
+  MESSAGE("Loading file: " << dual_mesh_file.string() << " with mesh " << meshName);
+  int ret = newMesh2.MEDToMesh(dual_mesh_file.c_str(), meshName);
+    */
+
+  newMesh_i->GetImpl().GetMeshDS()->Modified();
+
+  *pyDump << newMesh << " = " << this
+          << ".CreateDualMesh("
+          << mesh << ", "
+          << "'" << mesh_name << "', "
+          << ats << ") ";
+
+  pyDumpDeleter.reset(); // allow dump in GetGroups()
+
+  if ( srcMesh_i->GetImpl().GetGroupIds().size() > 0 ) // dump created groups
+    MESSAGE("Dump of groups");
+    SMESH::ListOfGroups_var groups = newMesh->GetGroups();
 
   return newMesh._retn();
 }
@@ -6182,7 +6316,7 @@ CORBA::Long  SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
 {
   if ( myStudyContext && !CORBA::is_nil( theObject )) {
     CORBA::String_var iorString = GetORB()->object_to_string( theObject );
-    string iorStringCpp(iorString.in()); 
+    string iorStringCpp(iorString.in());
     return myStudyContext->findId( iorStringCpp );
   }
   return 0;

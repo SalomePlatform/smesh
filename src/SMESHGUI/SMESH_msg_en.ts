@@ -293,6 +293,10 @@
         <translation>Copy Mesh</translation>
     </message>
     <message>
+    <source>MEN_CREATE_DUAL_MESH</source>
+        <translation>Create Dual Mesh</translation>
+    </message>
+    <message>
         <source>MEN_CLIP</source>
         <translation>Clipping</translation>
     </message>
@@ -3301,6 +3305,10 @@ Use Display Entity menu command to show them.
         <translation>Copy Mesh</translation>
     </message>
     <message>
+        <source>STB_CREATE_DUAL_MESH</source>
+        <translation>Create Dual Mesh</translation>
+    </message>
+    <message>
         <source>STB_CLIP</source>
         <translation>Clipping</translation>
     </message>
@@ -5677,6 +5685,29 @@ Please specify it and try again</translation>
     <message>
         <source>NON_CONFORM_WARNING</source>
         <translation>Warning: mesh can become non-conformal</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_CreateDualMeshDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Create Dual Mesh</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Mesh or Sub-mesh</translation>
+    </message>
+    <message>
+        <source>NON_TETRA_MESH_WARNING</source>
+        <translation>Warning: mesh must have only Tetrahedron 3D elements</translation>
+    </message>
+    <message>
+        <source>DUAL_MESH_NAME</source>
+        <translation>Name of the dual mesh</translation>
+    </message>
+    <message>
+        <source>PROJ_SHAPE</source>
+        <translation>Project boundary elements on shape</translation>
     </message>
 </context>
 <context>

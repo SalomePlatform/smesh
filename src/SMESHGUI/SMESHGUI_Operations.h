@@ -186,6 +186,7 @@ namespace SMESHOp {
     OpMoveNodeInteractive    = 4516,   // MENU MODIFICATION - MOVE NODE INTERACTIVE
     OpSplitEdgeInteract      = 4517,   // MENU MODIFICATION - INTERACTIVE ADD NODE ON EDGE
     OpSplitFaceInteract      = 4518,   // MENU MODIFICATION - INTERACTIVE ADD NODE ON FACE
+    OpCreateDualMesh         = 4519,   // MENU MODIFICATION - CREATE DUAL MESH
     // Adaptation ---------------------//--------------------------------
     OpMGAdapt                = 8020,   // MENU ADAPTATION - MG-ADAPT
     OpHomardAdapt            = 8021,   // MENU ADAPTATION - HOMARD-ADAPT

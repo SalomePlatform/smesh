@@ -62,6 +62,7 @@ SET(BAD_TESTS
   SMESH_test1.py
   SMESH_test2.py
   SMESH_test4.py
+  SMESH_create_dual_mesh_adapt.py
   )
 IF(NOT WIN32)
   LIST(APPEND BAD_TESTS

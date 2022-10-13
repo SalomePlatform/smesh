@@ -57,7 +57,7 @@ SET(_cmd_smeshBuilder_gen_options ${smesh_merge_file} -o tmp2/smeshBuilder.py sm
 SALOME_GENERATE_ENVIRONMENT_SCRIPT(_cmd_smeshBuilder_gen env_script "${PYTHON_EXECUTABLE}" "${_cmd_smeshBuilder_gen_options}" CONTEXT "SMESH_DOC" ADDITIONAL_VARIABLES ${ADD_VAR})
 
 ADD_CUSTOM_TARGET(pre_usr_docs
-  # 1. Make temporary directories for python modules 
+  # 1. Make temporary directories for python modules
   COMMAND ${CMAKE_COMMAND} -E make_directory tmp1
   COMMAND ${CMAKE_COMMAND} -E make_directory tmp2
 

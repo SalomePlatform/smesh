@@ -70,7 +70,7 @@ Export of a Mesh
 
 :download:`Download this script <../../examples/creating_meshes_ex05.py>`
 
-.. _how_to_mesh_a_cylinder_with_hexahedrons: 
+.. _how_to_mesh_a_cylinder_with_hexahedrons:
 
 How to mesh a cylinder with hexahedrons?
 ========================================
@@ -84,10 +84,10 @@ demonstrates the resulting mesh.
 :download:`Download this script <../../examples/creating_meshes_ex06.py>`
 
 .. image:: ../images/mesh_cylinder_hexa.png
-	:align: center                                                 
+	:align: center
 
 
-.. _tui_building_compound: 
+.. _tui_building_compound:
 
 Building a compound of meshes
 =============================
@@ -106,4 +106,14 @@ Mesh Copying
     :language: python
 
 :download:`Download this script <../../examples/creating_meshes_ex08.py>`
+
+.. _tui_create_dual_mesh:
+
+Creating Dual Mesh
+==================
+
+.. literalinclude:: ../../examples/create_dual_mesh.py
+    :language: python
+
+:download:`Download this script <../../examples/create_dual_mesh.py>`
 

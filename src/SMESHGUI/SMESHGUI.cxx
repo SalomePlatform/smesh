@@ -97,6 +97,8 @@
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
+#include "SMESHGUI_CreateDualMeshDlg.h"
+#include "SMESHGUI_CreateDualMeshOp.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 
@@ -2142,7 +2144,7 @@ SMESHGUI::SMESHGUI() : SalomeApp_Module( "SMESH" )
   {
     CORBA::Boolean anIsEmbeddedMode;
     myComponentSMESH = SMESH_Client::GetSMESHGen(getApp()->orb(),anIsEmbeddedMode);
-     
+
     //MESSAGE("-------------------------------> anIsEmbeddedMode=" << anIsEmbeddedMode);
 
     //  0019923: EDF 765 SMESH : default values of hypothesis
@@ -3051,6 +3053,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   // Adaptation - end
   case SMESHOp::OpSplitBiQuadratic:
   case SMESHOp::OpConvertMeshToQuadratic:
+  case SMESHOp::OpCreateDualMesh:
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh from 3D
   case SMESHOp::OpReorientFaces:
   case SMESHOp::OpCreateGeometryGroup:
@@ -4275,6 +4278,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpRevolution,             "REVOLUTION",      "ICON_REVOLUTION" );
   createSMESHAction( SMESHOp::OpPatternMapping,         "MAP",             "ICON_MAP" );
   createSMESHAction( SMESHOp::OpConvertMeshToQuadratic, "CONV_TO_QUAD",    "ICON_CONV_TO_QUAD" );
+  createSMESHAction( SMESHOp::OpCreateDualMesh,         "CREATE_DUAL_MESH","ICON_CREATE_DUAL_MESH" );
   createSMESHAction( SMESHOp::OpCreateBoundaryElements, "2D_FROM_3D",      "ICON_2D_FROM_3D" );
 
   createSMESHAction( SMESHOp::OpReset,               "RESET" );
@@ -4411,6 +4415,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpEditMeshOrSubMesh,    meshId, -1 );
   createMenu( SMESHOp::OpBuildCompoundMesh,    meshId, -1 );
   createMenu( SMESHOp::OpCopyMesh,             meshId, -1 );
+  createMenu( SMESHOp::OpCreateDualMesh,       meshId, -1 );
   createMenu( separator(),                     meshId, -1 );
   createMenu( SMESHOp::OpCompute,              meshId, -1 );
   createMenu( SMESHOp::OpPreCompute,           meshId, -1 );
@@ -6024,6 +6029,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     break;
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh as boundary on 3D
     op = new SMESHGUI_Make2DFrom3DOp();
+    break;
+  case SMESHOp::OpCreateDualMesh:
+    op = new SMESHGUI_CreateDualMeshOp();
     break;
   case SMESHOp::OpReorientFaces:
     op = new SMESHGUI_ReorientFacesOp();

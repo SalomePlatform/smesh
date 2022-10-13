@@ -159,12 +159,12 @@ module SMESH
       Update the study
      */
     void UpdateStudy();
-    
+
     /*!
       Set enable publishing in the study
      */
     void SetEnablePublish( in boolean theIsEnablePublish );
-    
+
     /*!
       Get enable publishing in the study
      */
@@ -284,6 +284,16 @@ module SMESH
                                     in boolean              theMakeRequiredGroups,
                                     out SMESH::ComputeError theError)
       raises ( SALOME::SALOME_Exception );
+    /*!
+     * Create a dual mesh of a Tetrahedron mesh
+     *  \param mesh - TetraHedron mesh to create dual from
+     *  \param meshName - a name of the new mesh
+     *  \param adaptToShape - if True project boundary point on shape
+     */
+    SMESH_Mesh CreateDualMesh(in SMESH_IDSource mesh,
+                              in string         meshName,
+                              in boolean        adaptToShape)
+      raises ( SALOME::SALOME_Exception );
 
     /*!
      * Create a mesh by copying a part of another mesh
@@ -305,7 +315,7 @@ module SMESH
      *  \param newGeometry - a new geometry
      *  \param meshName - a name of the new mesh
      *  \param toCopyGroups - to create groups in the new mesh
-     *  \param toReuseHypotheses - if True, existing hypothesis will be used by the new mesh, 
+     *  \param toReuseHypotheses - if True, existing hypothesis will be used by the new mesh,
      *         otherwise new hypotheses with the same parameters will be created for the new mesh.
      *  \param toCopyElements - to copy mesh elements of same sub-shapes of the two geometries
      *  \param newMesh - return a new mesh
@@ -526,10 +536,10 @@ module SMESH
      */
     long_array GetInsideSphere( in SMESH_IDSource theSource,
 				in ElementType    theElemType,
-				in double theX, 
-				in double theY, 
+				in double theX,
+				in double theY,
 				in double theZ,
-				in double theR );    
+				in double theR );
 
     /*!
      * Return indices of elements, which are located inside the box
@@ -544,12 +554,12 @@ module SMESH
      */
     long_array GetInsideBox( in SMESH_IDSource theSource,
 			     in ElementType    theElemType,
-			     in double theX1, 
-			     in double theY1, 
+			     in double theX1,
+			     in double theY1,
 			     in double theZ1,
 			     in double theX2,
 			     in double theY2,
-			     in double theZ2);    
+			     in double theZ2);
     /*!
      * Return indices of elements, which are located inside the box
      *  \param theSource - mesh, sub-mesh or group
@@ -565,14 +575,14 @@ module SMESH
      */
     long_array GetInsideCylinder( in SMESH_IDSource theSource,
 				  in ElementType    theElemType,
-				  in double theX, 
-				  in double theY, 
+				  in double theX,
+				  in double theY,
 				  in double theZ,
 				  in double theDX,
 				  in double theDY,
 				  in double theDZ,
 				  in double theH,
-				  in double theR );    
+				  in double theR );
     /*!
      * Return indices of elements, which are located inside the geometry
      *  \param theSource - mesh, sub-mesh or group
@@ -583,7 +593,7 @@ module SMESH
     long_array GetInside( in SMESH_IDSource theSource,
 			  in ElementType    theElemType,
 			  in GEOM::GEOM_Object theGeom,
-			  in double theTolerance );    
+			  in double theTolerance );
 
     MG_ADAPT CreateMG_ADAPT();
     SMESHHOMARD::HOMARD_Gen CreateHOMARD_ADAPT() raises ( SALOME::SALOME_Exception );
