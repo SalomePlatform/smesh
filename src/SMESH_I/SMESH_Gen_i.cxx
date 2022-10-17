@@ -2907,7 +2907,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
     SetName( meshSO, meshName, meshName );
     SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
   }
-  int ret = newMesh_i->ImportMEDFile(dual_mesh_file.c_str(), meshName);
+  int ret = newMesh_i->ImportMEDFile(dual_mesh_file.string().c_str(), meshName);
   if(ret)
     THROW_SALOME_CORBA_EXCEPTION( "Issue when importing mesh", SALOME::INTERNAL_ERROR );
 
