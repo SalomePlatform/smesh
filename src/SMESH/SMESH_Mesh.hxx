@@ -48,6 +48,10 @@
 #include <vector>
 #include <ostream>
 
+#include <boost/filesystem.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/thread.hpp>
+
 #ifdef WIN32
 #pragma warning(disable:4251) // Warning DLL Interface ...
 #pragma warning(disable:4290) // Warning Exception ...
@@ -127,20 +131,20 @@ class SMESH_EXPORT SMESH_Mesh
   int UNVToMesh(const char* theFileName);
 
   int MEDToMesh(const char* theFileName, const char* theMeshName);
-  
+
   std::string STLToMesh(const char* theFileName);
 
   int CGNSToMesh(const char* theFileName, const int theMeshIndex, std::string& theMeshName);
-  
+
   SMESH_ComputeErrorPtr GMFToMesh(const char* theFileName,
                                   bool        theMakeRequiredGroups = true );
 
   SMESH_Hypothesis::Hypothesis_Status
   AddHypothesis(const TopoDS_Shape & aSubShape, int anHypId, std::string* error=0);
-  
+
   SMESH_Hypothesis::Hypothesis_Status
   RemoveHypothesis(const TopoDS_Shape & aSubShape, int anHypId);
-  
+
   const std::list <const SMESHDS_Hypothesis * >&
   GetHypothesisList(const TopoDS_Shape & aSubShape) const;
 
@@ -148,7 +152,7 @@ class SMESH_EXPORT SMESH_Mesh
                                          const SMESH_HypoFilter& aFilter,
                                          const bool              andAncestors,
                                          TopoDS_Shape*           assignedTo=0) const;
-  
+
   int GetHypotheses(const TopoDS_Shape &                     aSubShape,
                     const SMESH_HypoFilter&                  aFilter,
                     std::list< const SMESHDS_Hypothesis * >& aHypList,
@@ -159,7 +163,7 @@ class SMESH_EXPORT SMESH_Mesh
                                          const SMESH_HypoFilter& aFilter,
                                          const bool              andAncestors,
                                          TopoDS_Shape*           assignedTo=0) const;
-  
+
   int GetHypotheses(const SMESH_subMesh *                    aSubMesh,
                     const SMESH_HypoFilter&                  aFilter,
                     std::list< const SMESHDS_Hypothesis * >& aHypList,
@@ -169,25 +173,25 @@ class SMESH_EXPORT SMESH_Mesh
   SMESH_Hypothesis * GetHypothesis(const int aHypID) const;
 
   const std::list<SMESHDS_Command*> & GetLog();
-  
+
   void ClearLog();
-  
+
   int GetId() const          { return _id; }
-  
+
   bool MeshExists( int meshId ) const;
-  
+
   SMESH_Mesh* FindMesh( int meshId ) const;
 
   SMESHDS_Mesh * GetMeshDS() { return _meshDS; }
 
   const SMESHDS_Mesh * GetMeshDS() const { return _meshDS; }
-  
+
   SMESH_Gen *GetGen()        { return _gen; }
 
   SMESH_subMesh *GetSubMesh(const TopoDS_Shape & aSubShape);
-  
+
   SMESH_subMesh *GetSubMeshContaining(const TopoDS_Shape & aSubShape) const;
-  
+
   SMESH_subMesh *GetSubMeshContaining(const int aShapeID) const;
   /*!
    * \brief Return submeshes of groups containing the given subshape
@@ -209,7 +213,7 @@ class SMESH_EXPORT SMESH_Mesh
    * \brief check if a hypothesis allowing notconform mesh is present
    */
   bool IsNotConformAllowed() const;
-  
+
   bool IsMainShape(const TopoDS_Shape& theShape) const;
 
   TopoDS_Shape GetShapeByEntry(const std::string& entry) const;
@@ -303,20 +307,20 @@ class SMESH_EXPORT SMESH_Mesh
                  bool                withRequiredGroups = true );
 
   double GetComputeProgress() const;
-  
+
   smIdType NbNodes() const;
   smIdType Nb0DElements() const;
   smIdType NbBalls() const;
-  
+
   smIdType NbEdges(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  
+
   smIdType NbFaces(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   smIdType NbTriangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   smIdType NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   smIdType NbBiQuadQuadrangles() const;
   smIdType NbBiQuadTriangles() const;
   smIdType NbPolygons(SMDSAbs_ElementOrder order = ORDER_ANY) const;
-  
+
   smIdType NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   smIdType NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   smIdType NbHexas(SMDSAbs_ElementOrder order = ORDER_ANY) const;
@@ -327,9 +331,9 @@ class SMESH_EXPORT SMESH_Mesh
   smIdType NbBiQuadPrisms() const;
   smIdType NbHexagonalPrisms() const;
   smIdType NbPolyhedrons() const;
-  
+
   smIdType NbSubMesh() const;
-  
+
   size_t NbGroup() const { return _mapGroup.size(); }
 
   int NbMeshes() const; // nb meshes in the Study
@@ -344,9 +348,9 @@ class SMESH_EXPORT SMESH_Mesh
 
   typedef boost::shared_ptr< SMDS_Iterator<SMESH_Group*> > GroupIteratorPtr;
   GroupIteratorPtr GetGroups() const;
-  
+
   std::list<int> GetGroupIds() const;
-  
+
   SMESH_Group* GetGroup (const int theGroupID) const;
 
   bool RemoveGroup (const int theGroupID);
@@ -381,7 +385,27 @@ class SMESH_EXPORT SMESH_Mesh
                   const SMESH_subMesh* smAfter ) const;
 
   std::ostream& Dump(std::ostream & save);
-  
+
+  // Parallel computation functions
+
+  void Lock() {_my_lock.lock();};
+  void Unlock() {_my_lock.unlock();};
+
+  int GetNbThreads(){return _NbThreads;};
+  void SetNbThreads(int nbThreads){_NbThreads=nbThreads;};
+
+  void InitPoolThreads(){_pool = new boost::asio::thread_pool(_NbThreads);};
+  void DeletePoolThreads(){delete _pool;};
+
+  void wait(){_pool->join(); DeletePoolThreads(); InitPoolThreads(); }
+
+  bool IsParallel(){return _NbThreads > 0;}
+
+  // Temporary folder used during parallel Computation
+  boost::filesystem::path tmp_folder;
+  boost::asio::thread_pool *     _pool = nullptr; //thread pool for computation
+
+
 private:
 
   void exportMEDCommmon(DriverMED_W_SMESHDS_Mesh& myWriter,
@@ -397,7 +421,7 @@ private:
   void fillAncestorsMap(const TopoDS_Shape& theShape);
   void getAncestorsSubMeshes(const TopoDS_Shape&            theSubShape,
                              std::vector< SMESH_subMesh* >& theSubMeshes) const;
-  
+
 protected:
   int                        _id;           // id given by creator (unique within the creator instance)
   int                        _groupId;      // id generator for group objects
@@ -410,12 +434,12 @@ protected:
 
   class SubMeshHolder;
   SubMeshHolder*             _subMeshHolder;
-  
+
   bool                       _isAutoColor;
   bool                       _isModified; //!< modified since last total re-compute, issue 0020693
 
   double                     _shapeDiagonal; //!< diagonal size of bounding box of shape to mesh
-  
+
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 
   mutable std::vector<SMESH_subMesh*> _ancestorSubMeshes; // to speed up GetHypothes[ei]s()
@@ -428,9 +452,12 @@ protected:
   // 2) to forget not loaded mesh data at hyp modification
   TCallUp*                    _callUp;
 
+  // Mutex for multhitreading write in SMESH_Mesh
+  boost::mutex _my_lock;
+  int _NbThreads=0;
+
 protected:
   SMESH_Mesh();
   SMESH_Mesh(const SMESH_Mesh&) {};
 };
-
 #endif
