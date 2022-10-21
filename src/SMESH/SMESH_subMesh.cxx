@@ -37,6 +37,7 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_MeshLocker.hxx"
 
 #include "utilities.h"
 #include "Basics_Utils.hxx"
@@ -62,7 +63,7 @@ using namespace std;
 
 #ifdef _DEBUG_
 // enable printing algo + shape id + hypo used while meshing
-//#define PRINT_WHO_COMPUTE_WHAT
+#define PRINT_WHO_COMPUTE_WHAT
 #endif
 
 //=============================================================================
@@ -256,7 +257,7 @@ bool SMESH_subMesh::IsMeshComputed() const
       TopExp_Explorer exp( _subShape, (TopAbs_ShapeEnum) type );
       for ( ; exp.More(); exp.Next() )
       {
-        if ( SMESHDS_SubMesh * smDS = meshDS->MeshElements( exp.Current() ))
+        if ( SMESHDS_SubMesh * smDS = meshDS->MeshElements( exp.Current() ) )
         {
           bool computed = (dim > 0) ? smDS->NbElements() : smDS->NbNodes();
           if ( computed )
@@ -609,7 +610,7 @@ bool SMESH_subMesh::IsApplicableHypothesis(const SMESH_Hypothesis* theHypothesis
  *  \param [in] event - what happens
  *  \param [in] anHyp - a hypothesis
  *  \return SMESH_Hypothesis::Hypothesis_Status - a treatment result.
- * 
+ *
  * Optional description of a problematic situation (if any) can be retrieved
  * via GetComputeError().
  */
@@ -1033,8 +1034,8 @@ SMESH_Hypothesis::Hypothesis_Status
 
   // detect algorithm hiding
   //
-  if ( ret == SMESH_Hypothesis::HYP_OK && 
-       ( event == ADD_ALGO || event == ADD_FATHER_ALGO ) && algo && 
+  if ( ret == SMESH_Hypothesis::HYP_OK &&
+       ( event == ADD_ALGO || event == ADD_FATHER_ALGO ) && algo &&
        algo->GetName() == anHyp->GetName() )
   {
     // is algo hidden?
@@ -1392,6 +1393,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
     else if (( event == COMPUTE || event == COMPUTE_SUBMESH )
              && !_alwaysComputed )
     {
+      SMESH_MeshLocker myLocker(_father);
       const TopoDS_Vertex & V = TopoDS::Vertex( _subShape );
       gp_Pnt P = BRep_Tool::Pnt(V);
       if ( SMDS_MeshNode * n = _father->GetMeshDS()->AddNode(P.X(), P.Y(), P.Z()) ) {
@@ -1511,9 +1513,10 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           break;
         }
         TopoDS_Shape shape = _subShape;
-        algo->SubMeshesToCompute().assign( 1, this );
+        algo->setSubMeshesToCompute(this);
         // check submeshes needed
-        if (_father->HasShapeToMesh() ) {
+        // In parallel there would be no submesh to check
+        if (_father->HasShapeToMesh() && !_father->IsParallel()) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {
             //  --- commented for bos#22320 to compute all sub-shapes at once if possible;
@@ -1575,7 +1578,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           _computeError = SMESH_ComputeError::Worst( _computeError, algo->GetComputeError() );
         }
         catch ( ::SMESH_ComputeError& comperr ) {
-          cout << " SMESH_ComputeError caught" << endl;
+          MESSAGE(" SMESH_ComputeError caught");
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           *_computeError = comperr;
         }
@@ -1642,8 +1645,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
 #ifdef PRINT_WHO_COMPUTE_WHAT
         for (subS.ReInit(); subS.More(); subS.Next())
         {
+          SMESH_MeshLocker myLocker(_father);
           const std::list <const SMESHDS_Hypothesis *> & hyps =
-            _algo->GetUsedHypothesis( *_father, _subShape );
+              _algo->GetUsedHypothesis( *_father, _subShape );
           SMESH_Comment hypStr;
           if ( !hyps.empty() )
           {
@@ -2097,7 +2101,7 @@ void SMESH_subMesh::updateDependantsState(const compute_event theEvent)
 
 //=======================================================================
 //function : cleanDependants
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_subMesh::cleanDependants()
@@ -2121,7 +2125,7 @@ void SMESH_subMesh::cleanDependants()
 
 //=======================================================================
 //function : removeSubMeshElementsAndNodes
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_subMesh::removeSubMeshElementsAndNodes()
@@ -2297,7 +2301,7 @@ SMESH_subMesh::OwnListenerData::OwnListenerData( SMESH_subMesh* sm, EventListene
  * \param listener - the listener to store
  * \param data - the listener data to store
  * \param where - the submesh to store the listener and it's data
- * 
+ *
  * It remembers the submesh where it puts the listener in order to delete
  * them when HYP_OK algo_state is lost
  * After being set, event listener is notified on each event of where submesh.
@@ -2319,7 +2323,7 @@ void SMESH_subMesh::SetEventListener(EventListener*     listener,
  * \brief Sets an event listener and its data to a submesh
  * \param listener - the listener to store
  * \param data - the listener data to store
- * 
+ *
  * After being set, event listener is notified on each event of a submesh.
  */
 //================================================================================
@@ -2529,7 +2533,7 @@ void SMESH_subMesh::loadDependentMeshes()
  * \param subMesh - the submesh where the event occurs
  * \param data - listener data stored in the subMesh
  * \param hyp - hypothesis, if eventType is algo_event
- * 
+ *
  * The base implementation translates CLEAN event to the subMesh
  * stored in listener data. Also it sends SUBMESH_COMPUTED event in case of
  * successful COMPUTE event.

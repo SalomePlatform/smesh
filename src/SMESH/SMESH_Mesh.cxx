@@ -80,6 +80,11 @@
 #include <pthread.h>
 #endif
 
+#ifndef WIN32
+#include <boost/filesystem.hpp>
+namespace fs=boost::filesystem;
+#endif
+
 // maximum stored group name length in MED file
 #define MAX_MED_GROUP_NAME_LENGTH 80
 
@@ -162,13 +167,11 @@ namespace
 #ifndef WIN32
   void deleteMeshDS(SMESHDS_Mesh* meshDS)
   {
-    //cout << "deleteMeshDS( " << meshDS << endl;
     delete meshDS;
   }
 #else
   static void* deleteMeshDS(void* meshDS)
   {
-    //cout << "deleteMeshDS( " << meshDS << endl;
     SMESHDS_Mesh* m = (SMESHDS_Mesh*)meshDS;
     if(m) {
       delete m;
@@ -229,6 +232,8 @@ SMESH_Mesh::~SMESH_Mesh()
     int result=pthread_create(&thread, NULL, deleteMeshDS, (void*)_meshDS);
 #endif
   }
+  if(_pool)
+    DeletePoolThreads();
 }
 
 //================================================================================
@@ -1756,7 +1761,6 @@ double SMESH_Mesh::GetComputeProgress() const
         rate = algo->GetProgressByTic();
         computedCost += algoDoneCost + rate * algoNotDoneCost;
       }
-      // cout << "rate: "<<rate << " algoNotDoneCost: " << algoNotDoneCost << endl;
     }
 
   // get cost of already treated sub-meshes
@@ -1777,9 +1781,6 @@ double SMESH_Mesh::GetComputeProgress() const
       }
     }
   }
-  // cout << "Total: " << totalCost
-  //      << " computed: " << computedCost << " progress: " << computedCost / totalCost
-  //      << " nbElems: " << GetMeshDS()->GetMeshInfo().NbElements() << endl;
   return computedCost / totalCost;
 }
 
@@ -2562,4 +2563,31 @@ void SMESH_Mesh::getAncestorsSubMeshes (const TopoDS_Shape&            theSubSha
 
   // sort submeshes according to stored mesh order
   SortByMeshOrder( theSubMeshes );
+}
+
+
+//=============================================================================
+/*!
+ * \brief Build folder for parallel computation
+ */
+//=============================================================================
+void SMESH_Mesh::CreateTmpFolder()
+{
+#ifndef WIN32
+  // Temporary folder that will be used by parallel computation
+  tmp_folder = fs::temp_directory_path()/fs::unique_path(fs::path("SMESH_%%%%-%%%%"));
+  fs::create_directories(tmp_folder);
+#endif
+}
+//
+//=============================================================================
+/*!
+ * \brief Delete temporary folder used for parallel computation
+ */
+//=============================================================================
+void SMESH_Mesh::DeleteTmpFolder()
+{
+#ifndef WIN32
+    fs::remove_all(tmp_folder);
+#endif
 }

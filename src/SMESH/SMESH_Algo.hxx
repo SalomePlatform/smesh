@@ -198,15 +198,15 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
 
   /*!
    * \brief Return a list of compatible hypotheses used to mesh a shape
-    * \param aMesh - the mesh 
+    * \param aMesh - the mesh
     * \param aShape - the shape
     * \param ignoreAuxiliary - do not include auxiliary hypotheses in the list
     * \retval const std::list <const SMESHDS_Hypothesis*> - hypotheses list
-   * 
+   *
    *  List the hypothesis used by the algorithm associated to the shape.
    *  Hypothesis associated to father shape -are- taken into account (see
    *  GetAppliedHypothesis). Relevant hypothesis have a name (type) listed in
-   *  the algorithm. This method could be surcharged by specific algorithms, in 
+   *  the algorithm. This method could be surcharged by specific algorithms, in
    *  case of several hypothesis simultaneously applicable.
    */
   virtual const std::list <const SMESHDS_Hypothesis *> &
@@ -277,10 +277,13 @@ public:
   // 6 - if algo !NeedDiscreteBoundary() but requires presence of
   // hypotheses of dimension <dim> to generate all-dimensional mesh.
   // This info is used not to issue warnings on hiding of lower global algos.
+  //
+
+  virtual void setSubMeshesToCompute(SMESH_subMesh * aSubMesh) {SubMeshesToCompute().assign( 1, aSubMesh );}
 
 public:
   // ==================================================================
-  // Methods to track non hierarchical dependencies between submeshes 
+  // Methods to track non hierarchical dependencies between submeshes
   // ==================================================================
 
   /*!
@@ -292,7 +295,7 @@ public:
    * By default none listener is set
    */
   virtual void SetEventListener(SMESH_subMesh* subMesh);
-  
+
   /*!
    * \brief Allow algo to do something after persistent restoration
     * \param subMesh - restored submesh
@@ -300,7 +303,7 @@ public:
    * This method is called only if a submesh has HYP_OK algo_state.
    */
   virtual void SubmeshRestored(SMESH_subMesh* subMesh);
-  
+
 public:
   // ==================================================================
   // Common algo utilities
@@ -398,7 +401,7 @@ public:
   enum EMeshError { MEr_OK = 0, MEr_HOLES, MEr_BAD_ORI, MEr_EMPTY };
 
   /*!
-   * \brief Finds topological errors of a sub-mesh 
+   * \brief Finds topological errors of a sub-mesh
    */
   static EMeshError GetMeshError(SMESH_subMesh* subMesh);
 
@@ -434,7 +437,7 @@ protected:
   std::vector<std::string>              _compatibleHypothesis;
   std::list<const SMESHDS_Hypothesis *> _usedHypList;
   std::list<TopoDS_Shape>               _assigedShapeList; // _usedHypList assigned to
-  
+
 
   // Algo features influencing which Compute() and how is called:
   // in what turn and with what input shape.

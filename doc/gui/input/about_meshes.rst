@@ -52,7 +52,7 @@ The mesh can include the following entities:
 * **Node** - a mesh entity defining a position in 3D space with coordinates (x, y, z).
 * **Edge** (or segment) - 1D mesh element linking two nodes.
 * **Face** - 2D mesh element representing a part of surface bound by links between face nodes. A face can be a triangle, quadrangle or polygon.
-* **Volume** - 3D mesh element representing a part of 3D space bound by volume facets. Nodes of a volume describing each facet are defined by the :ref:`connectivity convention <connectivity_page>`. A volume can be a tetrahedron, hexahedron, pentahedron, pyramid, hexagonal prism or polyhedron.
+* **Volume** - 3D mesh element representing a part of 3D space bound by volume facets. Nodes of a volume describing each facet are defined by the :ref:`connectivity convention <connectivity_page>`. A volume can be a tetrahedron, hexahedron, pentahedron, pyramid, hexagonal  or polyhedron.
 * **0D** element - mesh element defined by one node.
 * **Ball** element - discrete mesh element defined by a node and a diameter.
 

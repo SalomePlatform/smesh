@@ -169,7 +169,7 @@ const SMESH_Algo::Features& SMESH_Algo::GetFeatures( const std::string& algoType
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -186,7 +186,7 @@ SMESH_Algo::SMESH_Algo (int hypId, SMESH_Gen * gen)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -198,7 +198,7 @@ SMESH_Algo::~SMESH_Algo()
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -238,7 +238,7 @@ istream & SMESH_Algo::LoadFrom(istream & load) { return load; }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -252,7 +252,7 @@ const vector < string > &SMESH_Algo::GetCompatibleHypothesis()
  *  List the hypothesis used by the algorithm associated to the shape.
  *  Hypothesis associated to father shape -are- taken into account (see
  *  GetAppliedHypothesis). Relevant hypothesis have a name (type) listed in
- *  the algorithm. This method could be surcharged by specific algorithms, in 
+ *  the algorithm. This method could be surcharged by specific algorithms, in
  *  case of several hypothesis simultaneously applicable.
  */
 //=============================================================================
@@ -264,7 +264,7 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
 {
   SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
 
-  std::list<const SMESHDS_Hypothesis *> savedHyps; // don't delete the list if 
+  std::list<const SMESHDS_Hypothesis *> savedHyps; // don't delete the list if
   savedHyps.swap( me->_usedHypList );              // it does not change (#16578)
 
   me->_usedHypList.clear();
@@ -565,7 +565,7 @@ bool SMESH_Algo::IsStraight( const TopoDS_Edge & E,
     return false; // E seems closed
 
   double edgeTol = 10 * curve.Tolerance();
-  double lenTol2 = lineLen2 * 1e-4; 
+  double lenTol2 = lineLen2 * 1e-4;
   double tol2 = Min( edgeTol * edgeTol, lenTol2 );
 
   const double nbSamples = 7;
@@ -816,7 +816,7 @@ SMESH_Algo::EMeshError SMESH_Algo::GetMeshError(SMESH_subMesh* subMesh)
 /*!
  * \brief Sets event listener to submeshes if necessary
  * \param subMesh - submesh where algo is set
- * 
+ *
  * After being set, event listener is notified on each event of a submesh.
  * By default non listener is set
  */
@@ -1020,7 +1020,7 @@ void SMESH_Algo::addBadInputElements(const SMESHDS_SubMesh* sm,
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -1034,7 +1034,7 @@ void SMESH_Algo::addBadInputElements(const SMESHDS_SubMesh* sm,
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 

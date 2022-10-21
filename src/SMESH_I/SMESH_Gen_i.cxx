@@ -6643,8 +6643,6 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
 
   SMESH_CATCH( SMESH::doNothing );
 
-  if (SALOME::VerbosityActivated())
-    cout << "SMESH_Gen_i::IsApplicable(): exception in " << ( theAlgoType ? theAlgoType : "") << endl;
-
+  MESSAGE("SMESH_Gen_i::IsApplicable(): exception in " << ( theAlgoType ? theAlgoType : ""));
   return true;
 }
