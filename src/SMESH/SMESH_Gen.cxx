@@ -28,6 +28,7 @@
 
 //#define CHRONODEF
 
+#include <boost/asio.hpp>
 #include "SMESH_Gen.hxx"
 
 #include "SMESH_DriverMesh.hxx"
@@ -58,7 +59,6 @@
 
 using namespace std;
 #include <boost/filesystem.hpp>
-#include <boost/asio.hpp>
 namespace fs = boost::filesystem;
 
 // Environment variable separator
@@ -240,7 +240,7 @@ const std::function<void(SMESH_subMesh*,
                          bool,
                          TopTools_IndexedMapOfShape *,
                          TSetOfInt*)>
-     compute_function([&] (SMESH_subMesh* sm,
+     compute_function([] (SMESH_subMesh* sm,
                           SMESH_subMesh::compute_event event,
                           SMESH_subMesh *shapeSM,
                           bool aShapeOnly,

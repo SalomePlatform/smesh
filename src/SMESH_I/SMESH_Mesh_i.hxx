@@ -674,7 +674,6 @@ private:
                         const bool                  theIsDump);
 
   void SetNbThreads(int nbThreads);
-  void SetMesherNbThreads(int nbThreads);
 
   /*!
    * \brief Finds concurrent sub-meshes
