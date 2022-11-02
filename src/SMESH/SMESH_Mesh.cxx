@@ -80,9 +80,6 @@
 #include <pthread.h>
 #endif
 
-#include <boost/filesystem.hpp>
-namespace fs=boost::filesystem;
-
 // maximum stored group name length in MED file
 #define MAX_MED_GROUP_NAME_LENGTH 80
 
@@ -124,9 +121,6 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _callUp        = NULL;
   _meshDS->ShapeToMesh( PseudoShape() );
   _subMeshHolder = new SubMeshHolder;
-  // Temporary folder that will be used by parallel computation
-  tmp_folder = fs::temp_directory_path()/fs::unique_path(fs::path("SMESH_%%%%-%%%%"));
-  fs::create_directories(tmp_folder);
 
   // assure unique persistent ID
   if ( _document->NbMeshes() > 1 )
@@ -174,11 +168,13 @@ namespace
 #ifndef WIN32
   void deleteMeshDS(SMESHDS_Mesh* meshDS)
   {
+    //cout << "deleteMeshDS( " << meshDS << endl;
     delete meshDS;
   }
 #else
   static void* deleteMeshDS(void* meshDS)
   {
+    //cout << "deleteMeshDS( " << meshDS << endl;
     SMESHDS_Mesh* m = (SMESHDS_Mesh*)meshDS;
     if(m) {
       delete m;
@@ -239,12 +235,6 @@ SMESH_Mesh::~SMESH_Mesh()
     int result=pthread_create(&thread, NULL, deleteMeshDS, (void*)_meshDS);
 #endif
   }
-
-  if(_pool)
-    DeletePoolThreads();
-#ifndef _DEBUG_
-    fs::remove_all(tmp_folder);
-#endif
 }
 
 //================================================================================
@@ -542,7 +532,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
   Driver_Mesh::Status status = myReader.Perform();
 #ifdef _DEBUG_
   SMESH_ComputeErrorPtr er = myReader.GetError();
-  if ( er && !er->IsOK() ) MESSAGE(er->myComment);
+  if ( er && !er->IsOK() ) std::cout << er->myComment << std::endl;
 #endif
 
   // Reading groups (sub-meshes are out of scope of MED import functionality)
@@ -1771,6 +1761,7 @@ double SMESH_Mesh::GetComputeProgress() const
         rate = algo->GetProgressByTic();
         computedCost += algoDoneCost + rate * algoNotDoneCost;
       }
+      // cout << "rate: "<<rate << " algoNotDoneCost: " << algoNotDoneCost << endl;
     }
 
   // get cost of already treated sub-meshes
@@ -1791,6 +1782,9 @@ double SMESH_Mesh::GetComputeProgress() const
       }
     }
   }
+  // cout << "Total: " << totalCost
+  //      << " computed: " << computedCost << " progress: " << computedCost / totalCost
+  //      << " nbElems: " << GetMeshDS()->GetMeshInfo().NbElements() << endl;
   return computedCost / totalCost;
 }
 

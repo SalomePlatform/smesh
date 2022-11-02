@@ -90,9 +90,6 @@ SET(SMESHimpl_HEADERS
   SMESH_SMESH.hxx
   MG_ADAPT.hxx
   SMESH_Homard.hxx
-  SMESH_DriverMesh.hxx
-  SMESH_DriverShape.hxx
-  SMESH_MeshLocker.hxx
 )
 
 # --- sources ---
@@ -113,9 +110,6 @@ SET(SMESHimpl_SOURCES
   SMESH_MesherHelper.cxx
   MG_ADAPT.cxx
   SMESH_Homard.cxx
-  SMESH_DriverMesh.cxx
-  SMESH_DriverShape.cxx
-  SMESH_MeshLocker.cxx
 )
 
 # --- rules ---
@@ -123,7 +117,7 @@ SET(SMESHimpl_SOURCES
 ADD_LIBRARY(SMESHimpl ${SMESHimpl_SOURCES})
 IF(WIN32)
   TARGET_COMPILE_OPTIONS(SMESHimpl PRIVATE /bigobj)
-  ADD_DEFINITIONS(-DNOMINMAX)
+  ADD_DEFINITIONS(-DNOMINMAX) 
 ENDIF(WIN32)
 
 TARGET_LINK_LIBRARIES(SMESHimpl ${_link_LIBRARIES} )

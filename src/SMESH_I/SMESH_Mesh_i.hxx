@@ -226,7 +226,7 @@ public:
                  const char*               file,
                  CORBA::Boolean            withRequiredGroups);
 
-
+    
   template<class SPECLS>
     void ExportPartToMEDCommon(SPECLS&                   speCls,
                                SMESH::SMESH_IDSource_ptr meshPart,
@@ -571,7 +571,7 @@ public:
    * Persistence of geometry tick
    */
   int& MainShapeTick() { return _mainShapeTick; }
-
+  
 
   /*!
    * Sets list of notebook variables used for Mesh operations separated by ":" symbol
@@ -672,9 +672,6 @@ private:
   void convertMeshOrder(const TListOfListOfInt&     theIdsOrder,
                         SMESH::submesh_array_array& theSubMeshOrder,
                         const bool                  theIsDump);
-
-  void SetNbThreads(int nbThreads);
-  void SetMesherNbThreads(int nbThreads);
 
   /*!
    * \brief Finds concurrent sub-meshes
