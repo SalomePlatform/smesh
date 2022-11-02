@@ -34,14 +34,12 @@
 
 #include "SMESH_Algo.hxx"
 #include "SMESH_ComputeError.hxx"
-#include "SMESH_subMesh.hxx"
 
 #include <map>
 #include <list>
 #include <set>
 #include <vector>
 #include <string>
-
 
 #include <TopoDS_Shape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
@@ -50,7 +48,7 @@ class SMESHDS_Document;
 class SMESH_Algo;
 class SMESH_Mesh;
 class TopoDS_Shape;
-
+class SMESH_subMesh;
 
 typedef SMESH_Hypothesis::Hypothesis_Status TAlgoStateErrorName;
 
@@ -79,7 +77,7 @@ public:
     SHAPE_ONLY_UPWARD = 3  // SHAPE_ONLY | UPWARD
   };
   /*!
-   * \brief Computes aMesh on aShape
+   * \brief Computes aMesh on aShape 
    *  \param aMesh - the mesh.
    *  \param aShape - the shape.
    *  \param aFlags - ComputeFlags. By default compute the whole mesh and compact at the end.
@@ -103,7 +101,7 @@ public:
   const SMESH_subMesh* GetCurrentSubMesh() const;
 
   /*!
-   * \brief evaluates size of prospective mesh on a shape
+   * \brief evaluates size of prospective mesh on a shape 
    * \param aMesh - the mesh
    * \param aShape - the shape
    * \param aResMap - map for prospective numbers of elements
@@ -169,28 +167,6 @@ public:
 
 private:
 
-
-  bool parallelComputeSubMeshes(
-          SMESH_Mesh & aMesh,
-          const TopoDS_Shape & aShape,
-          const ::MeshDimension       aDim,
-          TSetOfInt*                  aShapesId,
-          TopTools_IndexedMapOfShape* allowedSubShapes,
-          SMESH_subMesh::compute_event &computeEvent,
-          const bool includeSelf,
-          const bool complexShapeFirst,
-          const bool   aShapeOnly);
-
-  bool sequentialComputeSubMeshes(
-          SMESH_Mesh & aMesh,
-          const TopoDS_Shape & aShape,
-          const ::MeshDimension       aDim,
-          TSetOfInt*                  aShapesId /*=0*/,
-          TopTools_IndexedMapOfShape* allowedSubShapes,
-          SMESH_subMesh::compute_event &computeEvent,
-          const bool includeSelf,
-          const bool complexShapeFirst,
-          const bool aShapeOnly);
   int _localId;                         // unique Id of created objects, within SMESH_Gen entity
   StudyContextStruct* _studyContext;
 

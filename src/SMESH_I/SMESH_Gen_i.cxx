@@ -6645,6 +6645,8 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
 
   SMESH_CATCH( SMESH::doNothing );
 
-  MESSAGE("SMESH_Gen_i::IsApplicable(): exception in " << ( theAlgoType ? theAlgoType : ""));
+#ifdef _DEBUG_
+  cout << "SMESH_Gen_i::IsApplicable(): exception in " << ( theAlgoType ? theAlgoType : "") << endl;
+#endif
   return true;
 }
