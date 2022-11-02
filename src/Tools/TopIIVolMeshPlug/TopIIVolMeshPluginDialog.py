@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2022  EDF R&D
+# Copyright (C) 2013-2022 CEA/DES, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -60,7 +60,6 @@ class TopIIVolMeshPluginDialog(Ui_TopIIVolMeshMainFrame,QWidget):
       self.qleTmpDir.setText(os.path.join('/tmp',getpass.getuser(),'top-ii-vol'))
     except:
       self.qleTmpDir.setText('/tmp')
-    self.resize(800, 500)
     self.outputMesh = ''
 
   def OnQpbHelpClicked(self):
