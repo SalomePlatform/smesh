@@ -73,18 +73,18 @@ def smesh_create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True, mesh_name
 
         grp_poly = mesh2d[id_grp_poly]
 
-        # We use the interpolation to remove the element that are not really in
-        # the group (the ones that are next to a nodes nut not in the group
-        # will have the sum of their column in the enterpolation matrix equal
-        # to zero)
-        rem = mc.MEDCouplingRemapper()
+        # find the extra face cells, on the border of the group (lying on nodes, but outside the group)
+        id_poly_border = grp_poly.findCellIdsOnBoundary()
 
-        rem.prepare(grp_poly, grp_tria, "P0P0")
-        m = rem.getCrudeCSRMatrix()
-        _, id_to_keep = np.where(m.sum(dtype=np.int64, axis=0) >= 1e-07)
+        # ids of the cells in grp_poly
+        id_poly=mc.DataArrayInt64.New(grp_poly.getNumberOfCells(), 1)
+        id_poly.iota()
 
-        id_grp_poly = id_grp_poly[id_to_keep.tolist()]
-        id_grp_poly.setName(grp_name)
+        # cells that are really in the group
+        id_to_keep = id_poly.buildSubstraction(id_poly_border)
+
+        id_grp_poly = id_grp_poly[id_to_keep]
+        id_grp_poly.setName(grp_name.strip())
 
         myfile.addGroup(-1, id_grp_poly)
 
