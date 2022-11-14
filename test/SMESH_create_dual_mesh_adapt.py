@@ -85,6 +85,8 @@ dual_Mesh_1 = smesh.CreateDualMesh(Mesh_1, 'dual_Mesh_1', True)
 #Comparing volumes
 dual_volume = dual_Mesh_1.GetVolume()
 dual_raw_volume = dual_Mesh_raw_1.GetVolume()
+tetra_volume = Mesh_1.GetVolume()
+print("tetra_volume: ", tetra_volume)
 print("dual_volume: ", dual_volume)
 print("dual_raw_volume: ", dual_raw_volume)
 
