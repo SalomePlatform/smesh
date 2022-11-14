@@ -2859,14 +2859,15 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
     ats = "False";
 
   std::string cmd="import salome.smesh.smesh_tools as smt\n";
-  cmd +="smt.smesh_create_dual_mesh(\"" + mesh_ior + "\", \"" +
+  cmd +="smt.smesh_create_dual_mesh(\"" + mesh_ior + "\", r\"" +
         dual_mesh_file.string() + "\", mesh_name=\"" + mesh_name + "\", adapt_to_shape=" + ats + ")";
   MESSAGE(cmd);
 
   PyObject *py_main = PyImport_AddModule("__main__");
   PyObject *py_dict = PyModule_GetDict(py_main);
+  PyObject *local_dict = PyDict_New();
 
-  PyRun_String(cmd.c_str(), Py_file_input, py_dict, py_dict);
+  PyRun_String(cmd.c_str(), Py_file_input, py_dict, local_dict);
 
   if (PyErr_Occurred()) {
     // Restrieving python error
@@ -2930,6 +2931,10 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
   if ( srcMesh_i->GetImpl().GetGroupIds().size() > 0 ) // dump created groups
     MESSAGE("Dump of groups");
     SMESH::ListOfGroups_var groups = newMesh->GetGroups();
+
+#ifndef _DEBUG_
+  fs::remove_all(tmp_folder);
+#endif
 
   return newMesh._retn();
 }

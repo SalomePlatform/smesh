@@ -804,7 +804,6 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         """
         if isinstance( mesh, Mesh ):
             mesh = mesh.GetMesh()
-        print("calling createdualmesh from Python")
         dualMesh = SMESH._objref_SMESH_Gen.CreateDualMesh(self, mesh, meshName, adaptToShape)
         return Mesh(self, self.geompyD, dualMesh)
 
