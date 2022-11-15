@@ -24,14 +24,6 @@
 #include "MED_Wrapper.hxx"
 #include "MED_Utilities.hxx"
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-static int MYVALUEDEBUG = 0;
-#else
-// static int MYDEBUG = 0;
-// static int MYVALUEDEBUG = 0;
-#endif
-
 namespace MED
 {
   //---------------------------------------------------------------
@@ -40,7 +32,7 @@ namespace MED
                            const PMeshInfo& theMeshInfo,
                            const MED::TEntityInfo& theEntityInfo)
   {
-    MSG(MYDEBUG,"GetElemsByEntity(...)");
+    MSG("GetElemsByEntity(...)");
     TEntity2TGeom2ElemInfo anEntity2TGeom2ElemInfo;
     MED::TEntityInfo::const_iterator anIter = theEntityInfo.begin();
     PElemInfo anElemInfo;
@@ -61,7 +53,7 @@ namespace MED
         aGeom2ElemInfo[aGeom] = theWrapper->GetPElemInfo(theMeshInfo,anEntity,aGeom,MED::eNOD,&anErr);
       }
     }
-    ADDMSG(MYDEBUG,"\n");
+    ADDMSG("\n");
     return anEntity2TGeom2ElemInfo;
   }
 
@@ -70,17 +62,17 @@ namespace MED
   GetFamilyInfoSet(const PWrapper& theWrapper,
                    const PMeshInfo& theMeshInfo)
   {
-    MSG(MYDEBUG,"GetFamilies(...)");
+    MSG("GetFamilies(...)");
     TErr anErr;
     TFamilyInfoSet aFamilyInfoSet;
     TInt aNbFam = theWrapper->GetNbFamilies(*theMeshInfo);
-    INITMSG(MYDEBUG,"GetNbFamilies() = "<<aNbFam<<"\n");
+    INITMSG("GetNbFamilies() = "<<aNbFam<<"\n");
     for(TInt iFam = 1; iFam <= aNbFam; iFam++){
       PFamilyInfo aFamilyInfo = theWrapper->GetPFamilyInfo(theMeshInfo,iFam,&anErr);
       if(anErr >= 0)
         aFamilyInfoSet.insert(aFamilyInfo);
     }
-    ADDMSG(MYDEBUG,"\n");
+    ADDMSG("\n");
     return aFamilyInfoSet;
   }
 
@@ -88,7 +80,7 @@ namespace MED
   TGroupInfo
   GetGroupInfo(const TFamilyInfoSet& theFamilyInfoSet)
   {
-    MSG(MYDEBUG,"GetFamiliesByGroup(...)");
+    MSG("GetFamiliesByGroup(...)");
     TGroupInfo aGroup;
     TFamilyInfoSet::const_iterator anIter = theFamilyInfoSet.begin();
     for(; anIter != theFamilyInfoSet.end(); anIter++){
@@ -99,22 +91,20 @@ namespace MED
       }
     }
 
-#ifdef _DEBUG_
-    if(MYDEBUG){
+    if(SALOME::VerbosityActivated()){
       TGroupInfo::const_iterator anIter = aGroup.begin();
       for(; anIter != aGroup.end(); anIter++){
         const std::string& aName = anIter->first;
-        INITMSG(MYDEBUG,"aGroupName = '"<<aName<<"'\n");
+        INITMSG("aGroupName = '"<<aName<<"'\n");
         const TFamilyInfoSet& aFamilyInfoSet = anIter->second;
         TFamilyInfoSet::const_iterator anFamIter = aFamilyInfoSet.begin();
         for(; anFamIter != aFamilyInfoSet.end(); anFamIter++){
           const PFamilyInfo& aFamilyInfo = *anFamIter;
-          INITMSG(MYDEBUG,"aFamilyName = '"<<aFamilyInfo->GetName()<<"'\n");
+          INITMSG("aFamilyName = '"<<aFamilyInfo->GetName()<<"'\n");
         }
       }
-      ADDMSG(MYDEBUG,"\n");
+      ADDMSG("\n");
     }
-#endif
 
     return aGroup;
   }
@@ -125,28 +115,26 @@ namespace MED
                                 const PMeshInfo& theMeshInfo,
                                 const MED::TEntityInfo& theEntityInfo)
   {
-    MSG(MYDEBUG,"GetFieldsByEntity(...)");
+    MSG("GetFieldsByEntity(...)");
     TFieldInfo2TimeStampInfoSet aFieldInfo2TimeStampInfoSet;
     TInt aNbFields = theWrapper->GetNbFields();
-    INITMSG(MYDEBUG,"GetNbFields() = "<<aNbFields<<"\n");
+    INITMSG("GetNbFields() = "<<aNbFields<<"\n");
     for(TInt iField = 1; iField <= aNbFields; iField++){
       PFieldInfo aFieldInfo = theWrapper->GetPFieldInfo(theMeshInfo,iField);
-      INITMSG(MYDEBUG,"aFieldName = '"<<aFieldInfo->GetName()<<
+      INITMSG("aFieldName = '"<<aFieldInfo->GetName()<<
               "'; aNbComp = "<<aFieldInfo->GetNbComp()<<"; ");
       TGeom2Size aGeom2Size;
       EEntiteMaillage anEntity = EEntiteMaillage(-1);
       TInt aNbTimeStamps = theWrapper->GetNbTimeStamps(aFieldInfo,theEntityInfo,anEntity,aGeom2Size);
-      ADDMSG(MYDEBUG,"anEntity = "<<anEntity<<"; GetNbTimeStamps = "<<aNbTimeStamps<<"\n");
+      ADDMSG("anEntity = "<<anEntity<<"; GetNbTimeStamps = "<<aNbTimeStamps<<"\n");
       for(TInt iTimeStamp = 1; iTimeStamp <= aNbTimeStamps; iTimeStamp++){
         PTimeStampInfo aTimeStamp =
           theWrapper->GetPTimeStampInfo(aFieldInfo,anEntity,aGeom2Size,iTimeStamp);
         aFieldInfo2TimeStampInfoSet[aFieldInfo].insert(aTimeStamp);
-        INITMSG(MYDEBUG,
-                "aDt = "<<aTimeStamp->GetDt()<<
-                ", Unit = \'"<<aTimeStamp->GetUnitDt()<<"\n");
+        INITMSG("aDt = "<<aTimeStamp->GetDt()<<", Unit = \'"<<aTimeStamp->GetUnitDt()<<"\n");
       }
     }
-    ADDMSG(MYDEBUG,"\n");
+    ADDMSG("\n");
     return aFieldInfo2TimeStampInfoSet;
   }
 
@@ -182,7 +170,7 @@ namespace MED
                       const TEntity2TGeom2ElemInfo& theEntity2TGeom2ElemInfo,
                       const TFamilyInfoSet& theFamilyInfoSet)
   {
-    MSG(MYDEBUG,"GetFamiliesByEntity(...)");
+    MSG("GetFamiliesByEntity(...)");
     TEntity2FamilySet anEntity2FamilySet;
 
     typedef std::map<TInt,PFamilyInfo> TId2Family;
@@ -220,7 +208,7 @@ namespace MED
         TEntity2FamilyID::const_iterator anIter = anEntity2FamilyID.begin();
         for(; anIter != anEntity2FamilyID.end(); anIter++){
           const EEntiteMaillage& anEntity = anIter->first;
-          INITMSG(MYDEBUG,"anEntity = "<<anEntity<<":\n");
+          INITMSG("anEntity = "<<anEntity<<":\n");
           const TFamilyID2Size& aFamilyID2Size = anIter->second;
           TFamilyID2Size::const_iterator anIter2 = aFamilyID2Size.begin();
           for(; anIter2 != aFamilyID2Size.end(); anIter2++){
@@ -230,15 +218,14 @@ namespace MED
             if(anIter3 != anId2Family.end()){
               const PFamilyInfo& aFamilyInfo = anIter3->second;
               anEntity2FamilySet[anEntity].insert(TFamilyTSize(aFamilyInfo,aSize));
-              INITMSG(MYDEBUG,
-                      "aFamilyName = '"<<aFamilyInfo->GetName()<<
+              INITMSG("aFamilyName = '"<<aFamilyInfo->GetName()<<
                       "' anId = "<<aFamilyInfo->GetId()<<"\n");
             }
           }
         }
       }
     }
-    ADDMSG(MYDEBUG,"\n");
+    ADDMSG("\n");
     return anEntity2FamilySet;
   }
 
@@ -248,7 +235,7 @@ namespace MED
                TErr* theErr,
                EModeSwitch theMode)
   {
-    INITMSG(MYDEBUG,"GetKey2Gauss - theMode = "<<theMode<<std::endl);
+    INITMSG("GetKey2Gauss - theMode = "<<theMode<<std::endl);
     TKey2Gauss aKey2Gauss;
     TInt aNbGauss = theWrapper->GetNbGauss(theErr);
     for(TInt anId = 1; anId <= aNbGauss; anId++){
@@ -258,16 +245,14 @@ namespace MED
       TGaussInfo::TKey aKey = boost::get<0>(aPreInfo);
       aKey2Gauss[aKey] = anInfo;
 
-#ifdef _DEBUG_
-      const EGeometrieElement& aGeom = boost::get<0>(aKey);
-      const std::string& aName = boost::get<1>(aKey);
-      INITMSG(MYDEBUG,
-              "- aGeom = "<<aGeom<<
-              "; aName = '"<<aName<<"'"<<
-              std::endl);
-#endif
-
+      if (SALOME::VerbosityActivated())
+      {
+        const EGeometrieElement& aGeom = boost::get<0>(aKey);
+        const std::string& aName = boost::get<1>(aKey);
+        INITMSG("- aGeom = "<<aGeom<<"; aName = '"<<aName<<"'"<<std::endl);
+      }
     }
+    
     return aKey2Gauss;
   }
 
@@ -295,7 +280,7 @@ namespace MED
                   TErr* theErr,
                   EModeProfil theMode)
   {
-    INITMSG(MYDEBUG,"GetMKey2Profile - theMode = "<<theMode<<std::endl);
+    INITMSG("GetMKey2Profile - theMode = "<<theMode<<std::endl);
     TKey2Profile aKey2Profile;
     TInt aNbProfiles = theWrapper->GetNbProfiles(theErr);
     for(TInt anId = 1; anId <= aNbProfiles; anId++){
@@ -304,18 +289,16 @@ namespace MED
       const std::string& aName = boost::get<0>(aPreInfo);
       aKey2Profile[aName] = anInfo;
 
-#ifdef _DEBUG_
-      INITMSG(MYDEBUG,
-              "- aName = '"<<aName<<"'"<<
-              " : "<<
-              std::endl);
-      TInt aNbElem = anInfo->GetSize();
-      for(TInt iElem = 0; iElem < aNbElem; iElem++){
-        ADDMSG(MYVALUEDEBUG,anInfo->GetElemNum(iElem)<<", ");
-      }
-      ADDMSG(MYVALUEDEBUG, std::endl);
-#endif
+      if(SALOME::VerbosityActivated()){
+        INITMSG("- aName = '"<<aName<<"'"<<" : "<<std::endl);
+        TInt aNbElem = anInfo->GetSize();
 
+        for(TInt iElem = 0; iElem < aNbElem; iElem++){
+          ADDMSG(anInfo->GetElemNum(iElem)<<", ");
+        }
+
+        ADDMSG(std::endl);
+      }
     }
     return TMKey2Profile(theMode,aKey2Profile);
   }

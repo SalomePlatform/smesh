@@ -1148,7 +1148,9 @@ void StdMeshers_FaceSide::reverseProxySubmesh( const TopoDS_Edge& E )
 
 void StdMeshers_FaceSide::dump(const char* msg) const
 {
-#ifdef _DEBUG_
+  if (!SALOME::VerbosityActivated())
+    return;
+
   if (msg) MESSAGE ( std::endl << msg );
   MESSAGE_BEGIN ("NB EDGES: "<< myEdge.size() );
   MESSAGE_ADD ( "nbPoints: "<<myNbPonits<<" vecSize: " << myPoints.size()<<" "<<myFalsePoints.size() );
@@ -1176,9 +1178,6 @@ void StdMeshers_FaceSide::dump(const char* msg) const
     MESSAGE_ADD ( "\tF: "<<myFirst[i]<< " L: "<< myLast[i] );
     MESSAGE_END ( "\tnormPar: "<<myNormPar[i]<<endl );
   }
-#else
-  (void)msg; // unused in release mode
-#endif
 }
 
 //================================================================================

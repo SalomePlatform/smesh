@@ -81,12 +81,6 @@
  #define env_sep ":"
 #endif // WIN32
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 namespace SMESH
 {
   typedef IMap<QString,HypothesisData*> THypothesisDataMap;
@@ -497,7 +491,7 @@ namespace SMESH
 
   SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const QString& aHypType)
   {
-    if(MYDEBUG) MESSAGE("Get HypothesisCreator for " << aHypType.toLatin1().data());
+    MESSAGE("Get HypothesisCreator for " << aHypType.toLatin1().data());
 
     SMESHGUI_GenericHypothesisCreator* aCreator = 0;
 
@@ -522,7 +516,7 @@ namespace SMESH
       // 3. Load Client Plugin Library
       try {
         // load plugin library
-        if(MYDEBUG) MESSAGE("Loading client meshers plugin library ...");
+        MESSAGE("Loading client meshers plugin library ...");
 #ifdef WIN32
 #ifdef UNICODE
         LPTSTR path = new TCHAR[aClientLibName.length() + 1];
@@ -552,21 +546,21 @@ namespace SMESH
         }
         else {
           // get method, returning hypothesis creator
-          if(MYDEBUG) MESSAGE("Find GetHypothesisCreator() method ...");
+          MESSAGE("Find GetHypothesisCreator() method ...");
           typedef SMESHGUI_GenericHypothesisCreator* (*GetHypothesisCreator) \
             ( const QString& );
           GetHypothesisCreator procHandle =
             (GetHypothesisCreator)GetProc(libHandle, "GetHypothesisCreator");
           if (!procHandle) {
-            if(MYDEBUG) MESSAGE("bad hypothesis client plugin library");
+            MESSAGE("bad hypothesis client plugin library");
             UnLoadLib(libHandle);
           }
           else {
             // get hypothesis creator
-            if(MYDEBUG) MESSAGE("Get Hypothesis Creator for " << aHypType.toLatin1().data());
+            MESSAGE("Get Hypothesis Creator for " << aHypType.toLatin1().data());
             aCreator = procHandle( aHypType );
             if (!aCreator) {
-              if(MYDEBUG) MESSAGE("no such a hypothesis in this plugin");
+              MESSAGE("no such a hypothesis in this plugin");
             }
             else {
               // map hypothesis creator to a hypothesis name
@@ -595,7 +589,7 @@ namespace SMESH
                                                const QString& aHypName,
                                                const bool /*isAlgo*/)
   {
-    if(MYDEBUG) MESSAGE("Create " << aHypType.toLatin1().data() <<
+    MESSAGE("Create " << aHypType.toLatin1().data() <<
                         " with name " << aHypName.toLatin1().data());
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
@@ -641,7 +635,7 @@ namespace SMESH
 
   bool AddHypothesisOnMesh (SMESH::SMESH_Mesh_ptr aMesh, SMESH::SMESH_Hypothesis_ptr aHyp)
   {
-    if(MYDEBUG) MESSAGE ("SMESHGUI::AddHypothesisOnMesh");
+    MESSAGE ("SMESHGUI::AddHypothesisOnMesh");
     int res = SMESH::HYP_UNKNOWN_FATAL;
     SUIT_OverrideCursor wc;
 
@@ -669,7 +663,7 @@ namespace SMESH
 
   bool AddHypothesisOnSubMesh (SMESH::SMESH_subMesh_ptr aSubMesh, SMESH::SMESH_Hypothesis_ptr aHyp)
   {
-    if(MYDEBUG) MESSAGE("SMESHGUI::AddHypothesisOnSubMesh() ");
+    MESSAGE("SMESHGUI::AddHypothesisOnSubMesh() ");
     int res = SMESH::HYP_UNKNOWN_FATAL;
     SUIT_OverrideCursor wc;
 
@@ -797,7 +791,7 @@ namespace SMESH
       if (SO_Hypothesis) {
         SObjectList listSO = SMESH::getStudy()->FindDependances(SO_Hypothesis);
 
-        if(MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency number ="<<listSO.size());
+        MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency number ="<<listSO.size());
         for (unsigned int i = 0; i < listSO.size(); i++) {
           _PTR(SObject) SO = listSO[i];
           if (SO) {
@@ -805,7 +799,7 @@ namespace SMESH
             if (aFather) {
               _PTR(SObject) SOfatherFather = aFather->GetFather();
               if (SOfatherFather) {
-                if(MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency added to list");
+                MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency added to list");
                 index++;
                 listSOmesh.resize(index);
                 listSOmesh[index - 1] = SOfatherFather;
@@ -815,7 +809,7 @@ namespace SMESH
         }
       }
     }
-    if (MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): completed");
+    MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): completed");
     return listSOmesh;
   }
 

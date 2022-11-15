@@ -1557,23 +1557,26 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
                           theEdges.begin(), ++theEdges.begin());
           TopExp::Vertices( theEdges.front(), vv[0], vv[1], true );
           if ( iE++ > theNbEdgesInWires.back() ) {
-#ifdef _DEBUG_
-            gp_Pnt p = BRep_Tool::Pnt( theFirstVertex );
-            MESSAGE ( " : Warning : vertex "<< theFirstVertex.TShape().operator->()
-                   << " ( " << p.X() << " " << p.Y() << " " << p.Z() << " )" 
-                   << " not found in outer wire of face "<< theFace.TShape().operator->()
-                   << " with vertices: " );
-            wExp.Init( *wlIt, theFace );
-            for ( int i = 0; wExp.More(); wExp.Next(), i++ )
+
+            if (SALOME::VerbosityActivated())
             {
-              TopoDS_Edge edge = wExp.Current();
-              edge = TopoDS::Edge( edge.Oriented( wExp.Orientation() ));
-              TopoDS_Vertex v = TopExp::FirstVertex( edge, true );
-              gp_Pnt p = BRep_Tool::Pnt( v );
-              MESSAGE_ADD ( i << " " << v.TShape().operator->() << " "
-                            << p.X() << " " << p.Y() << " " << p.Z() << " " << std::endl );
+              gp_Pnt p = BRep_Tool::Pnt( theFirstVertex );
+              MESSAGE ( " : Warning : vertex "<< theFirstVertex.TShape().operator->()
+                    << " ( " << p.X() << " " << p.Y() << " " << p.Z() << " )" 
+                    << " not found in outer wire of face "<< theFace.TShape().operator->()
+                    << " with vertices: " );
+              wExp.Init( *wlIt, theFace );
+              for ( int i = 0; wExp.More(); wExp.Next(), i++ )
+              {
+                TopoDS_Edge edge = wExp.Current();
+                edge = TopoDS::Edge( edge.Oriented( wExp.Orientation() ));
+                TopoDS_Vertex v = TopExp::FirstVertex( edge, true );
+                gp_Pnt p = BRep_Tool::Pnt( v );
+                MESSAGE_ADD ( i << " " << v.TShape().operator->() << " "
+                              << p.X() << " " << p.Y() << " " << p.Z() << " " << std::endl );
+              }
             }
-#endif
+
             break; // break infinite loop
           }
         }

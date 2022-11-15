@@ -42,13 +42,6 @@
 
 //#include <stdlib.h>
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-//#define _DEXCEPT_
-#else
-static int MYDEBUG = 0;
-#endif
-
 #define _EDF_NODE_IDS_
 
 using namespace MED;
@@ -110,7 +103,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
   try {
 #endif
     myFamilies.clear();
-    if(MYDEBUG) MESSAGE("Perform - myFile : "<<myFile);
+    MESSAGE("Perform - myFile : "<<myFile);
     PWrapper aMed = CrWrapperR(myFile);
 
     aResult = DRS_EMPTY;
@@ -125,7 +118,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
       if (myMeshId != -1) aMeshName = SMESH_Comment( myMeshId );
       else                aMeshName = myMeshName;
 
-      if(MYDEBUG) MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
+      MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
       if ( aMeshName != aMeshInfo->GetName() ) continue;
       aResult = DRS_OK;
 
@@ -133,18 +126,18 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
       //------------------------------------------------
       TErr anErr;
       TInt aNbFams = aMed->GetNbFamilies(aMeshInfo);
-      if(MYDEBUG) MESSAGE("Read " << aNbFams << " families");
+      MESSAGE("Read " << aNbFams << " families");
       for (TInt iFam = 0; iFam < aNbFams; iFam++)
       {
         PFamilyInfo aFamilyInfo = aMed->GetPFamilyInfo(aMeshInfo,iFam+1,&anErr);
         if(anErr >= 0){
           TInt aFamId = aFamilyInfo->GetId();
-          if(MYDEBUG) MESSAGE("Family " << aFamId << " :");
+          MESSAGE("Family " << aFamId << " :");
 
           DriverMED_FamilyPtr aFamily (new DriverMED_Family);
 
           TInt aNbGrp = aFamilyInfo->GetNbGroup();
-          if(MYDEBUG) MESSAGE("belong to " << aNbGrp << " groups");
+          MESSAGE("belong to " << aNbGrp << " groups");
           bool isAttrOk = false;
           if(aFamilyInfo->GetNbAttr() == aNbGrp)
             isAttrOk = true;
@@ -155,7 +148,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
               TInt anAttrVal = aFamilyInfo->GetAttrVal(iGr);
               aFamily->SetGroupAttributVal(anAttrVal);
             }
-            if(MYDEBUG) MESSAGE(aGroupName);
+            MESSAGE(aGroupName);
             if ( strncmp( aGroupName.c_str(), NIG_GROUP_PREFIX, strlen(NIG_GROUP_PREFIX) ) != 0 )
               aFamily->AddGroupName( fixUTF8( aGroupName ));
           }
@@ -182,7 +175,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 
       EBooleen anIsNodeNum = aNodeInfo->IsElemNum();
       TInt aNbElems = aNodeInfo->GetNbElem();
-      if(MYDEBUG) MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
+      MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
       DriverMED_FamilyPtr aFamily;
       for ( TInt iElem = 0; iElem < aNbElems; iElem++ )
       {
@@ -475,8 +468,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
             PCellInfo aCellInfo = aMed->GetPCellInfo(aMeshInfo,anEntity,aGeom);
             EBooleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : eFAUX;
             TInt aNbElems = aCellInfo->GetNbElem();
-            if(MYDEBUG) MESSAGE("Perform - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
-            if(MYDEBUG) MESSAGE("Perform - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
+            MESSAGE("Perform - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
+            MESSAGE("Perform - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
 
             TInt aNbNodes = -1;
             switch(aGeom){
@@ -1046,7 +1039,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
     aResult = DRS_WARN_DESCENDING;
   }
 
-  if(MYDEBUG) MESSAGE("Perform - aResult status = "<<aResult);
+  MESSAGE("Perform - aResult status = "<<aResult);
   return aResult;
 }
 
@@ -1055,7 +1048,7 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames(Status& theStatus)
   list<string> aMeshNames;
 
   try {
-    if(MYDEBUG) MESSAGE("GetMeshNames - myFile : " << myFile);
+    MESSAGE("GetMeshNames - myFile : " << myFile);
     theStatus = DRS_OK;
     PWrapper aMed = CrWrapperR(myFile);
 
@@ -1132,7 +1125,7 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
   }
 
   const char* aGroupName = theGroup->GetStoreName();
-  if(MYDEBUG) MESSAGE("Get Group " << aGroupName);
+  MESSAGE("Get Group " << aGroupName);
 
   if (( famVecPtr = myGroups2FamiliesMap.ChangeSeek( aGroupName )))
   {

@@ -46,11 +46,6 @@
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkUnsignedCharArray.h>
 
-//#ifdef _DEBUG_
-//static int MYDEBUG = 1;
-//#else
-//static int MYDEBUG = 0;
-//#endif
 
 namespace SMESH
 {

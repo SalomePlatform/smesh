@@ -932,11 +932,13 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           "Geom_POLYHEDRA", "Geom_BALL" };
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
-#ifdef _DEBUG_
-        // is types complete? (compilation failure means that enum GeometryType changed)
-        static_assert( sizeof(types) / sizeof(const char*) == nbTypes,
-                       "Update names of GeometryType's!!!" );
-#endif
+
+        if (SALOME::VerbosityActivated())
+        {
+          // is types complete? (compilation failure means that enum GeometryType changed)
+          static_assert( sizeof(types) / sizeof(const char*) == nbTypes,
+                        "Update names of GeometryType's!!!" );
+        }
       }
       if (Type == "SMESH.FT_EntityType")
       {
@@ -953,11 +955,13 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           "Entity_Polyhedra", "Entity_Quad_Polyhedra", "Entity_Ball" };
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
-#ifdef _DEBUG_
-        // is 'types' complete? (compilation failure means that enum EntityType changed)
-        static_assert( sizeof(types) / sizeof(const char*) == nbTypes,
-                       "Update names of EntityType's!!!" );
-#endif
+
+        if (SALOME::VerbosityActivated())
+        {
+          // is 'types' complete? (compilation failure means that enum EntityType changed)
+          static_assert( sizeof(types) / sizeof(const char*) == nbTypes,
+                        "Update names of EntityType's!!!" );
+        }
       }
     }
     if ( ThresholdID.Length() != 2 ) // neither '' nor ""

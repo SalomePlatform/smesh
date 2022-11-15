@@ -36,14 +36,6 @@
 
 #include <boost/version.hpp>
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-static int MYVALUEDEBUG = 0;
-#else
-// static int MYDEBUG = 0;      // unused in release mode
-// static int MYVALUEDEBUG = 0; // unused in release mode
-#endif
-
 namespace MED
 {
   //---------------------------------------------------------------
@@ -56,13 +48,13 @@ namespace MED
 #else
     boost::detail::thread::lock_ops<TWrapper::TMutex>::lock(myWrapper->myMutex);
 #endif
-    INITMSG(MYDEBUG, "TLockProxy() - this -"<<this<<"; myWrapper = "<<myWrapper<<std::endl);
+    INITMSG("TLockProxy() - this -"<<this<<"; myWrapper = "<<myWrapper<<std::endl);
   }
 
   TLockProxy
   ::~TLockProxy()
   {
-    INITMSG(MYDEBUG, "~TLockProxy() - this -"<<this<<"; myWrapper = "<<myWrapper<<std::endl);
+    INITMSG("~TLockProxy() - this -"<<this<<"; myWrapper = "<<myWrapper<<std::endl);
 #if BOOST_VERSION >= 103500
     myWrapper->myMutex.unlock();
 #else
@@ -168,7 +160,7 @@ namespace MED
   void
   Print(SharedPtr<TimeStampValueType> theTimeStampValue)
   {
-    INITMSG(MYDEBUG,"Print - TimeStampValue\n");
+    INITMSG("Print - TimeStampValue\n");
     typename TimeStampValueType::TTGeom2Value& aGeom2Value = theTimeStampValue->myGeom2Value;
     typename TimeStampValueType::TTGeom2Value::const_iterator anIter = aGeom2Value.begin();
     for (; anIter != aGeom2Value.end(); anIter++) {
@@ -177,22 +169,22 @@ namespace MED
       TInt aNbElem = aMeshValue.myNbElem;
       TInt aNbGauss = aMeshValue.myNbGauss;
       TInt aNbComp = aMeshValue.myNbComp;
-      INITMSG(MYDEBUG, "aGeom = "<<aGeom<<" - "<<aNbElem<<": ");
+      INITMSG("aGeom = "<<aGeom<<" - "<<aNbElem<<": ");
       for (TInt iElem = 0; iElem < aNbElem; iElem++) {
         typename TimeStampValueType::TTMeshValue::TCValueSliceArr aValueSliceArr =
           aMeshValue.GetGaussValueSliceArr(iElem);
-        ADDMSG(MYVALUEDEBUG, "{");
+        ADDMSG("{");
         for (TInt iGauss = 0; iGauss < aNbGauss; iGauss++) {
           const typename TimeStampValueType::TTMeshValue::TCValueSlice& aValueSlice =
             aValueSliceArr[iGauss];
           for (TInt iComp = 0; iComp < aNbComp; iComp++) {
-            ADDMSG(MYVALUEDEBUG, aValueSlice[iComp]<<" ");
+            ADDMSG(aValueSlice[iComp]<<" ");
           }
-          ADDMSG(MYVALUEDEBUG, "| ");
+          ADDMSG("| ");
         }
-        ADDMSG(MYVALUEDEBUG, "} ");
+        ADDMSG("} ");
       }
-      ADDMSG(MYDEBUG, "\n");
+      ADDMSG("\n");
     }
   }
 
@@ -341,7 +333,7 @@ namespace MED
     //if (aRet == 0)
     //  aRet = MEDunvCr(myFile->Id(),&aMeshName);
 
-    INITMSG(MYDEBUG, "TWrapper::SetMeshInfo - MED_MODE_ACCES = "<<theMode<<"; aRet = "<<aRet<<std::endl);
+    INITMSG("TWrapper::SetMeshInfo - MED_MODE_ACCES = "<<theMode<<"; aRet = "<<aRet<<std::endl);
 
     if (theErr)
       *theErr = aRet;
@@ -529,7 +521,7 @@ namespace MED
                             aNbGroup,
                             &aGroupNames);
 
-    INITMSG(MYDEBUG, "TWrapper::SetFamilyInfo - MED_MODE_ACCES = "<<theMode<<"; aRet = "<<aRet<<std::endl);
+    INITMSG("TWrapper::SetFamilyInfo - MED_MODE_ACCES = "<<theMode<<"; aRet = "<<aRet<<std::endl);
 
     if (theErr)
       *theErr = aRet;
@@ -602,17 +594,18 @@ namespace MED
     PFamilyInfo anInfo = CrFamilyInfo(theMeshInfo, aNbGroup, aNbAttr);
     GetFamilyInfo(theId, *anInfo, theErr);
 
-#ifdef _DEBUG_
-    std::string aName = anInfo->GetName();
-    INITMSG(MYDEBUG, "GetPFamilyInfo - aFamilyName = '"<<aName<<
-            "'; andId = "<<anInfo->GetId()<<
-            "; aNbAttr = "<<aNbAttr<<
-            "; aNbGroup = "<<aNbGroup<<"\n");
-    for (TInt iGroup = 0; iGroup < aNbGroup; iGroup++) {
-      aName = anInfo->GetGroupName(iGroup);
-      INITMSG(MYDEBUG, "aGroupName = '"<<aName<<"'\n");
+    if (SALOME::VerbosityActivated())
+    {
+      std::string aName = anInfo->GetName();
+      INITMSG("GetPFamilyInfo - aFamilyName = '"<<aName<<
+              "'; andId = "<<anInfo->GetId()<<
+              "; aNbAttr = "<<aNbAttr<<
+              "; aNbGroup = "<<aNbGroup<<"\n");
+      for (TInt iGroup = 0; iGroup < aNbGroup; iGroup++) {
+        aName = anInfo->GetGroupName(iGroup);
+        INITMSG("aGroupName = '"<<aName<<"'\n");
+      }
     }
-#endif
 
     return anInfo;
   }
@@ -1163,37 +1156,38 @@ namespace MED
     PNodeInfo anInfo = CrNodeInfo(theMeshInfo, aNbElems);
     GetNodeInfo(*anInfo, theErr);
 
-#ifdef _DEBUG_
-    TInt aDim = theMeshInfo->myDim;
-    TInt aNbElem = anInfo->GetNbElem();
-    INITMSG(MYDEBUG, "GetPNodeInfo: ");
+    if (SALOME::VerbosityActivated())
     {
-      INITMSG(MYDEBUG, "aCoords: "<<aNbElem<<": ");
-      TNodeCoord& aCoord = anInfo->myCoord;
-      for (TInt iElem = 0; iElem < aNbElem; iElem++) {
-        for (TInt iDim = 0, anId = iElem*aDim; iDim < aDim; iDim++, anId++) {
-          ADDMSG(MYVALUEDEBUG, aCoord[anId]<<",");
-        }
-        ADDMSG(MYVALUEDEBUG, " ");
-      }
-      ADDMSG(MYDEBUG, std::endl);
-
-      BEGMSG(MYVALUEDEBUG, "GetFamNum: ");
-      for (TInt iElem = 0; iElem < aNbElem; iElem++) {
-        ADDMSG(MYVALUEDEBUG, anInfo->GetFamNum(iElem)<<", ");
-      }
-      ADDMSG(MYVALUEDEBUG, std::endl);
-
-      if (anInfo->IsElemNum()) {
-        BEGMSG(MYVALUEDEBUG, "GetElemNum: ");
+      TInt aDim = theMeshInfo->myDim;
+      TInt aNbElem = anInfo->GetNbElem();
+      INITMSG("GetPNodeInfo: ");
+      {
+        INITMSG("aCoords: "<<aNbElem<<": ");
+        TNodeCoord& aCoord = anInfo->myCoord;
         for (TInt iElem = 0; iElem < aNbElem; iElem++) {
-          ADDMSG(MYVALUEDEBUG, anInfo->GetElemNum(iElem)<<", ");
+          for (TInt iDim = 0, anId = iElem*aDim; iDim < aDim; iDim++, anId++) {
+            ADDMSG(aCoord[anId]<<",");
+          }
+          ADDMSG(" ");
         }
-        ADDMSG(MYVALUEDEBUG, std::endl);
+        ADDMSG(std::endl);
+
+        BEGMSG("GetFamNum: ");
+        for (TInt iElem = 0; iElem < aNbElem; iElem++) {
+          ADDMSG(anInfo->GetFamNum(iElem)<<", ");
+        }
+        ADDMSG(std::endl);
+
+        if (anInfo->IsElemNum()) {
+          BEGMSG("GetElemNum: ");
+          for (TInt iElem = 0; iElem < aNbElem; iElem++) {
+            ADDMSG(anInfo->GetElemNum(iElem)<<", ");
+          }
+          ADDMSG(std::endl);
+        }
       }
+      ADDMSG(std::endl);
     }
-    ADDMSG(MYDEBUG, std::endl);
-#endif
 
     return anInfo;
   }
@@ -1548,20 +1542,21 @@ namespace MED
     PPolygoneInfo anInfo = CrPolygoneInfo(theMeshInfo, theEntity, theGeom, aNbElem, aConnSize, theConnMode);
     GetPolygoneInfo(anInfo);
 
-#ifdef _DEBUG_
-    INITMSG(MYDEBUG, "GetPPolygoneInfo"<<
-            " - theGeom = "<<theGeom<<
-            "; aNbElem = "<<aNbElem<<": ");
-    for (TInt iElem = 1; iElem < aNbElem; iElem++) {
-      TCConnSlice aConnSlice = anInfo->GetConnSlice(iElem);
-      TInt aConnDim = aConnSlice.size();
-      for (TInt iConn = 0; iConn < aConnDim; iConn++) {
-        ADDMSG(MYVALUEDEBUG, aConnSlice[iConn]<<",");
+    if (SALOME::VerbosityActivated())
+    {
+      INITMSG("GetPPolygoneInfo"<<
+              " - theGeom = "<<theGeom<<
+              "; aNbElem = "<<aNbElem<<": ");
+      for (TInt iElem = 1; iElem < aNbElem; iElem++) {
+        TCConnSlice aConnSlice = anInfo->GetConnSlice(iElem);
+        TInt aConnDim = aConnSlice.size();
+        for (TInt iConn = 0; iConn < aConnDim; iConn++) {
+          ADDMSG(aConnSlice[iConn]<<",");
+        }
+        ADDMSG(" ");
       }
-      ADDMSG(MYDEBUG, " ");
+      ADDMSG(std::endl);
     }
-    ADDMSG(MYDEBUG, std::endl);
-#endif
 
     return anInfo;
   }
@@ -1858,27 +1853,28 @@ namespace MED
     PPolyedreInfo anInfo = CrPolyedreInfo(theMeshInfo, theEntity, theGeom, aNbElem, aNbFaces, aConnSize, theConnMode);
     GetPolyedreInfo(anInfo);
 
-#ifdef _DEBUG_
-    INITMSG(MYDEBUG, "GetPPolyedreInfo"<<
-            " - theGeom = "<<theGeom<<
-            "; aNbElem = "<<aNbElem<<": ");
-    for (TInt iElem = 0; iElem < aNbElem; iElem++) {
-      TCConnSliceArr aConnSliceArr = anInfo->GetConnSliceArr(iElem);
-      TInt aNbFaces = aConnSliceArr.size();
-      ADDMSG(MYDEBUG, "{");
-      for (TInt iFace = 0; iFace < aNbFaces; iFace++) {
-        TCConnSlice aConnSlice = aConnSliceArr[iFace];
-        TInt aNbConn = aConnSlice.size();
-        ADDMSG(MYDEBUG, "[");
-        for (TInt iConn = 0; iConn < aNbConn; iConn++) {
-          ADDMSG(MYVALUEDEBUG, aConnSlice[iConn]<<",");
+    if (SALOME::VerbosityActivated())
+    {
+      INITMSG("GetPPolyedreInfo"<<
+              " - theGeom = "<<theGeom<<
+              "; aNbElem = "<<aNbElem<<": ");
+      for (TInt iElem = 0; iElem < aNbElem; iElem++) {
+        TCConnSliceArr aConnSliceArr = anInfo->GetConnSliceArr(iElem);
+        TInt aNbFaces = aConnSliceArr.size();
+        ADDMSG("{");
+        for (TInt iFace = 0; iFace < aNbFaces; iFace++) {
+          TCConnSlice aConnSlice = aConnSliceArr[iFace];
+          TInt aNbConn = aConnSlice.size();
+          ADDMSG("[");
+          for (TInt iConn = 0; iConn < aNbConn; iConn++) {
+            ADDMSG(aConnSlice[iConn]<<",");
+          }
+          ADDMSG("] ");
         }
-        ADDMSG(MYDEBUG, "] ");
+        ADDMSG("} ");
       }
-      ADDMSG(MYDEBUG, "} ");
+      ADDMSG(std::endl);
     }
-    ADDMSG(MYDEBUG, std::endl);
-#endif
 
     return anInfo;
   }
@@ -2279,34 +2275,35 @@ namespace MED
     PCellInfo anInfo = CrCellInfo(theMeshInfo, theEntity, theGeom, aNbElem, theConnMode);
     GetCellInfo(anInfo, theErr);
 
-#ifdef _DEBUG_
-    TInt aConnDim = anInfo->GetConnDim();
-    INITMSG(MYDEBUG, "GetPCellInfo - theEntity = "<<theEntity<<"; theGeom = "<<theGeom<<"; aConnDim: "<<aConnDim<<"\n");
-    BEGMSG(MYDEBUG, "GetPCellInfo - aNbElem: "<<aNbElem<<": ");
-    for (TInt iElem = 0; iElem < aNbElem; iElem++) {
-      TCConnSlice aConnSlice = anInfo->GetConnSlice(iElem);
-      for (TInt iConn = 0; iConn < aConnDim; iConn++) {
-        ADDMSG(MYVALUEDEBUG, aConnSlice[iConn]<<",");
-      }
-      ADDMSG(MYVALUEDEBUG, " ");
-    }
-    ADDMSG(MYDEBUG, std::endl);
-
-    BEGMSG(MYVALUEDEBUG, "GetPCellInfo - GetFamNum: ");
-    for (TInt iElem = 0; iElem < aNbElem; iElem++) {
-      ADDMSG(MYVALUEDEBUG, anInfo->GetFamNum(iElem)<<", ");
-    }
-    ADDMSG(MYVALUEDEBUG, std::endl);
-
-    if (anInfo->IsElemNum()) {
-      BEGMSG(MYVALUEDEBUG, "GetPCellInfo - GetElemNum: ");
+    if (SALOME::VerbosityActivated())
+    {
+      TInt aConnDim = anInfo->GetConnDim();
+      INITMSG("GetPCellInfo - theEntity = "<<theEntity<<"; theGeom = "<<theGeom<<"; aConnDim: "<<aConnDim<<"\n");
+      BEGMSG("GetPCellInfo - aNbElem: "<<aNbElem<<": ");
       for (TInt iElem = 0; iElem < aNbElem; iElem++) {
-        ADDMSG(MYVALUEDEBUG, anInfo->GetElemNum(iElem)<<", ");
+        TCConnSlice aConnSlice = anInfo->GetConnSlice(iElem);
+        for (TInt iConn = 0; iConn < aConnDim; iConn++) {
+          ADDMSG(aConnSlice[iConn]<<",");
+        }
+        ADDMSG(" ");
       }
-      ADDMSG(MYVALUEDEBUG, std::endl);
+      ADDMSG(std::endl);
+
+      BEGMSG("GetPCellInfo - GetFamNum: ");
+      for (TInt iElem = 0; iElem < aNbElem; iElem++) {
+        ADDMSG(anInfo->GetFamNum(iElem)<<", ");
+      }
+      ADDMSG(std::endl);
+
+      if (anInfo->IsElemNum()) {
+        BEGMSG("GetPCellInfo - GetElemNum: ");
+        for (TInt iElem = 0; iElem < aNbElem; iElem++) {
+          ADDMSG(anInfo->GetElemNum(iElem)<<", ");
+        }
+        ADDMSG(std::endl);
+      }
+      ADDMSG(std::endl);
     }
-    ADDMSG(MYDEBUG, std::endl);
-#endif
 
     return anInfo;
   }
@@ -2687,14 +2684,14 @@ namespace MED
     PFieldInfo anInfo = CrFieldInfo(theMeshInfo, aNbComp);
     GetFieldInfo(theId, *anInfo, theErr);
 
-#ifdef _DEBUG_
-    INITMSG(MYDEBUG,
-            "GetPFieldInfo "<<
-            "- aName = '"<<anInfo->GetName()<<"'"<<
-            "; aType = "<<anInfo->GetType()<<
-            "; aNbComp = "<<aNbComp<<
-            std::endl);
-#endif
+    if (SALOME::VerbosityActivated())
+    {
+      INITMSG("GetPFieldInfo "<<
+              "- aName = '"<<anInfo->GetName()<<"'"<<
+              "; aType = "<<anInfo->GetType()<<
+              "; aNbComp = "<<aNbComp<<
+              std::endl);
+    }
 
     return anInfo;
   }
@@ -2896,14 +2893,12 @@ namespace MED
           }
         bool anIsSatisfied =(nval > 0);
         if (anIsSatisfied) {
-          INITMSG(MYDEBUG,
-                  "GetNbTimeStamps aNbTimeStamps = "<<aNbStamps<<
+          INITMSG("GetNbTimeStamps aNbTimeStamps = "<<aNbStamps<<
                   "; aGeom = "<<aGeom<<"; anEntity = "<<anEntity<<"\n");
           if (anIsPerformAdditionalCheck) {
             anIsSatisfied = !strcmp(&aMeshName[0], &aMeshInfo.myName[0]);
             if (!anIsSatisfied) {
-              INITMSG(MYDEBUG,
-                      "GetNbTimeStamps aMeshName = '"<<&aMeshName[0]<<"' != "<<
+              INITMSG("GetNbTimeStamps aMeshName = '"<<&aMeshName[0]<<"' != "<<
                       "; aMeshInfo.myName = '"<<&aMeshInfo.myName[0]<<"'\n");
             }
           }
@@ -3062,15 +3057,16 @@ namespace MED
     PTimeStampInfo anInfo = CrTimeStampInfo(theFieldInfo, theEntity, theGeom2Size);
     GetTimeStampInfo(theId, *anInfo, theErr);
 
-#ifdef _DEBUG_
-    INITMSG(MYDEBUG, "GetPTimeStampInfo - anEntity = "<<anInfo->GetEntity()<<"\n");
-    TGeom2NbGauss& aGeom2NbGauss = anInfo->myGeom2NbGauss;
-    TGeom2NbGauss::const_iterator anIter = aGeom2NbGauss.begin();
-    for (; anIter != aGeom2NbGauss.end(); anIter++) {
-      const EGeometrieElement& aGeom = anIter->first;
-      INITMSG(MYDEBUG, "aGeom = "<<aGeom<<" - "<<aGeom2NbGauss[aGeom]<<";\n");
+    if (SALOME::VerbosityActivated())
+    {
+      INITMSG("GetPTimeStampInfo - anEntity = "<<anInfo->GetEntity()<<"\n");
+      TGeom2NbGauss& aGeom2NbGauss = anInfo->myGeom2NbGauss;
+      TGeom2NbGauss::const_iterator anIter = aGeom2NbGauss.begin();
+      for (; anIter != aGeom2NbGauss.end(); anIter++) {
+        const EGeometrieElement& aGeom = anIter->first;
+        INITMSG("aGeom = "<<aGeom<<" - "<<aGeom2NbGauss[aGeom]<<";\n");
+      }
     }
-#endif
 
     return anInfo;
   }
@@ -3285,8 +3281,7 @@ namespace MED
                                        aNbComp);
       TInt aValueSize = theTimeStampValue->GetValueSize(aGeom);
 
-      INITMSG(MYDEBUG,
-              "TWrapper::GetTimeStampValue - aGeom = "<<aGeom<<
+      INITMSG("TWrapper::GetTimeStampValue - aGeom = "<<aGeom<<
               "; aNbVal = "<<aNbVal<<
               "; aNbValue = "<<aNbValue<<
               "; aNbGauss = "<<aNbGauss<<
@@ -3476,7 +3471,7 @@ namespace MED
 
     }
 
-    INITMSG(MYDEBUG, "TWrapper::SetTimeStampValue - MED_MODE_ACCES = "<<theMode<<"; aRet = "<<aRet<<std::endl);
+    INITMSG("TWrapper::SetTimeStampValue - MED_MODE_ACCES = "<<theMode<<"; aRet = "<<aRet<<std::endl);
   }
 
   //----------------------------------------------------------------------------
@@ -3559,12 +3554,13 @@ namespace MED
                       theMKey2Profile,
                       theKey2Gauss,
                       theErr);
-#ifdef _DEBUG_
-    if (aFieldInfo->GetType() == eFLOAT64)
-      Print<TFloatTimeStampValue>(anInfo);
-    else
-      Print<TIntTimeStampValue>(anInfo);
-#endif
+    if (SALOME::VerbosityActivated())
+    {
+      if (aFieldInfo->GetType() == eFLOAT64)
+        Print<TFloatTimeStampValue>(anInfo);
+      else
+        Print<TIntTimeStampValue>(anInfo);
+    }
     return anInfo;
   }
 
@@ -3694,33 +3690,32 @@ namespace MED
     GetGrilleInfo(anInfo);
     anInfo->SetGrilleType(type);
 
-#ifdef _DEBUG_
-    INITMSG(MYDEBUG, "GetPGrilleInfo: ");
+    if (SALOME::VerbosityActivated())
     {
+      INITMSG("GetPGrilleInfo: ");
+
       TInt aNbElem = anInfo->GetNbNodes();
-      BEGMSG(MYVALUEDEBUG, "GetFamNumNode: ");
+      BEGMSG("GetFamNumNode: ");
       for (TInt iElem = 0; iElem < aNbElem; iElem++) {
-        ADDMSG(MYVALUEDEBUG, anInfo->GetFamNumNode(iElem)<<", ");
+        ADDMSG(anInfo->GetFamNumNode(iElem)<<", ");
       }
       TInt aNbCells = anInfo->GetNbCells();
-      BEGMSG(MYVALUEDEBUG, "GetFamNum: ");
+      BEGMSG("GetFamNum: ");
       for (TInt iElem = 0; iElem < aNbCells; iElem++) {
-        ADDMSG(MYVALUEDEBUG, anInfo->GetFamNum(iElem)<<", ");
+        ADDMSG(anInfo->GetFamNum(iElem)<<", ");
       }
-      ADDMSG(MYVALUEDEBUG, std::endl);
-      BEGMSG(MYVALUEDEBUG, "GetCoordName: ");
+      ADDMSG(std::endl);
+      BEGMSG("GetCoordName: ");
       for (TInt iElem = 0; iElem < theMeshInfo->GetDim(); iElem++) {
-        ADDMSG(MYVALUEDEBUG, anInfo->GetCoordName(iElem)<<", ");
+        ADDMSG(anInfo->GetCoordName(iElem)<<", ");
       }
-      ADDMSG(MYVALUEDEBUG, std::endl);
-      BEGMSG(MYVALUEDEBUG, "GetCoordUnit: ");
+      ADDMSG(std::endl);
+      BEGMSG("GetCoordUnit: ");
       for (TInt iElem = 0; iElem < theMeshInfo->GetDim(); iElem++) {
-        ADDMSG(MYVALUEDEBUG, anInfo->GetCoordUnit(iElem)<<", ");
+        ADDMSG(anInfo->GetCoordUnit(iElem)<<", ");
       }
-      ADDMSG(MYVALUEDEBUG, std::endl);
-
+      ADDMSG(std::endl);
     }
-#endif
 
     return anInfo;
   }

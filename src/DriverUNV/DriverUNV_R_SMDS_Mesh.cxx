@@ -37,13 +37,6 @@
 
 using namespace std;
 
-
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 namespace
 {
   /*!
@@ -123,7 +116,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
       using namespace UNV2411;
       TDataSet aDataSet2411;
       UNV2411::Read(in_stream,aDataSet2411);
-      if(MYDEBUG) MESSAGE("Perform - aDataSet2411.size() = "<<aDataSet2411.size());
+      MESSAGE("Perform - aDataSet2411.size() = "<<aDataSet2411.size());
 
       // Move nodes in a global CS
       if ( !aCoordSysDataSet.empty() )
@@ -168,7 +161,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
       TDataSet aDataSet2412;
       UNV2412::Read(in_stream,aDataSet2412);
       TDataSet::const_iterator anIter = aDataSet2412.begin();
-      if(MYDEBUG) MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
+      MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       for(; anIter != aDataSet2412.end(); anIter++)
       {
         SMDS_MeshElement* anElement = NULL;
@@ -404,7 +397,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
       using namespace UNV2417;
       TDataSet aDataSet2417;
       UNV2417::Read(in_stream,aDataSet2417);
-      if(MYDEBUG) MESSAGE("Perform - aDataSet2417.size() = "<<aDataSet2417.size());
+      MESSAGE("Perform - aDataSet2417.size() = "<<aDataSet2417.size());
       if (aDataSet2417.size() > 0)
       {
         TDataSet::const_iterator anIter = aDataSet2417.begin();

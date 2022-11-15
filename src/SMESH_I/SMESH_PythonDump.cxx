@@ -46,12 +46,6 @@
 
 #include <cstring>
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 #include "SMESH_TryCatch.hxx"
 
 namespace SMESH
@@ -92,7 +86,7 @@ namespace SMESH
         if ( !objEntry.empty() )
           aCollection += (TVar::ObjPrefix() + objEntry ).c_str();
         aSMESHGen->AddToPythonScript(aCollection);
-        if(MYDEBUG) MESSAGE(aString);
+        MESSAGE(aString);
         // prevent misuse of already treated variables
         aSMESHGen->UpdateParameters(CORBA::Object_var().in(),"");
       }
@@ -693,11 +687,8 @@ namespace SMESH
 
   void printException( const char* text )
   {
-#ifdef _DEBUG_
-    std::cout << "Exception in SMESH_Gen_i::DumpPython(): " << text << std::endl;
-#else
-    (void)text; // unused in release mode
-#endif
+    if (SALOME::VerbosityActivated())
+      std::cout << "Exception in SMESH_Gen_i::DumpPython(): " << text << std::endl;
   }
 
 //=======================================================================

@@ -96,12 +96,6 @@
 
 #include "SMESH_TryCatch.hxx" // include after OCCT headers!
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 using namespace std;
 using SMESH::TPythonDump;
 using SMESH::TVar;
@@ -664,7 +658,7 @@ SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
     if ( prevNbMeshEnt > 0 /*newNbMeshEnt != prevNbMeshEnt*/ )
       _gen_i->UpdateIcons( mesh );
   }
-  if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
+  MESSAGE( " AddHypothesis(): status = " << status );
 
   // Update Python script
   TPythonDump() << "status = " << mesh << ".AddHypothesis( "
@@ -684,7 +678,7 @@ SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
                             SMESH::SMESH_Hypothesis_ptr anHyp,
                             std::string*                anErrorText)
 {
-  if(MYDEBUG) MESSAGE("addHypothesis");
+  MESSAGE("addHypothesis");
 
   if (CORBA::is_nil( aSubShape ) && HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference",SALOME::BAD_PARAM);
@@ -770,7 +764,7 @@ SMESH_Hypothesis::Hypothesis_Status
 SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
                                SMESH::SMESH_Hypothesis_ptr anHyp)
 {
-  if(MYDEBUG) MESSAGE("removeHypothesis()");
+  MESSAGE("removeHypothesis()");
 
   if (CORBA::is_nil( aSubShape ) && HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
@@ -816,7 +810,7 @@ SMESH::ListOfHypothesis *
 SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if (MYDEBUG) MESSAGE("GetHypothesisList");
+  MESSAGE("GetHypothesisList");
   if (_impl->HasShapeToMesh() && CORBA::is_nil(aSubShape))
     THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
 
@@ -856,7 +850,7 @@ SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape)
 SMESH::submesh_array* SMESH_Mesh_i::GetSubMeshes()
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if (MYDEBUG) MESSAGE("GetSubMeshes");
+  MESSAGE("GetSubMeshes");
 
   SMESH::submesh_array_var aList = new SMESH::submesh_array();
 
@@ -1220,7 +1214,7 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
 SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups()
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if (MYDEBUG) MESSAGE("GetGroups");
+  MESSAGE("GetGroups");
 
   SMESH::ListOfGroups_var aList = new SMESH::ListOfGroups();
 
@@ -3122,7 +3116,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
 
 SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject )
 {
-  if(MYDEBUG) MESSAGE( "createSubMesh" );
+  MESSAGE( "createSubMesh" );
   TopoDS_Shape  myLocSubShape = _gen_i->GeomObjectToShape(theSubShapeObject);
   ::SMESH_subMesh * mySubMesh = _impl->GetSubMesh(myLocSubShape);
   int               subMeshId = 0;
@@ -3154,8 +3148,7 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theS
 
   // register CORBA object for persistence
   int nextId = _gen_i->RegisterObject( subMesh );
-  if(MYDEBUG) { MESSAGE( "Add submesh to map with id = "<< nextId); }
-  else        { (void)nextId; } // avoid "unused variable" warning
+  MESSAGE( "Add submesh to map with id = "<< nextId);
 
   // to track changes of GEOM groups
   if ( subMeshId > 0 )
@@ -3291,8 +3284,7 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        
 
     // register CORBA object for persistence
     int nextId = _gen_i->RegisterObject( aGroup );
-    if(MYDEBUG) { MESSAGE( "Add group to map with id = "<< nextId); }
-    else        { nextId = ( nextId > 0 ); } // avoid "unused variable" warning in release mode
+    MESSAGE( "Add group to map with id = "<< nextId);
 
     // to track changes of GEOM groups
     if ( !theShape.IsNull() ) {
@@ -3313,7 +3305,7 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        
 
 void SMESH_Mesh_i::removeGroup( const int theId )
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh_i::removeGroup()" );
+  MESSAGE("SMESH_Mesh_i::removeGroup()");
   if ( _mapGroups.find( theId ) != _mapGroups.end() ) {
     SMESH::SMESH_GroupBase_var group = _mapGroups[theId];
     _mapGroups.erase( theId );
@@ -3480,7 +3472,7 @@ void SMESH_Mesh_i::onHypothesisModified(int theHypID, bool theUpdateIcons)
 
 void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh_i::SetImpl");
+  MESSAGE("SMESH_Mesh_i::SetImpl");
   _impl = impl;
   if ( _impl )
     _impl->SetCallUp( new TCallUp_i(this));
@@ -3494,7 +3486,7 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 
 ::SMESH_Mesh & SMESH_Mesh_i::GetImpl()
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh_i::GetImpl()");
+  MESSAGE("SMESH_Mesh_i::GetImpl()");
   return *_impl;
 }
 
@@ -5189,7 +5181,7 @@ CORBA::LongLong SMESH_Mesh_i::GetMeshPtr()
     _preMeshInfo->FullLoadFromFile();
 
   CORBA::LongLong pointeur = CORBA::LongLong(_impl);
-  if ( MYDEBUG ) MESSAGE("CORBA::LongLong SMESH_Mesh_i::GetMeshPtr() "<<pointeur);
+  MESSAGE("CORBA::LongLong SMESH_Mesh_i::GetMeshPtr() "<<pointeur);
   return pointeur;
 }
 
@@ -5931,8 +5923,7 @@ void SMESH_Mesh_i::CreateGroupServants()
 
     // register CORBA object for persistence
     int nextId = _gen_i->RegisterObject( groupVar );
-    if(MYDEBUG) { MESSAGE( "Add group to map with id = "<< nextId); }
-    else        { (void)nextId; } // avoid "unused variable" warning in release mode
+    MESSAGE( "Add group to map with id = "<< nextId);
 
     // publishing the groups in the study
     GEOM::GEOM_Object_var shapeVar = _gen_i->ShapeToGeomObject( shape );

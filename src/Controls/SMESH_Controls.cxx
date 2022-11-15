@@ -4425,9 +4425,10 @@ Predicate* ElementsOnShape::clone() const
     size += sizeof( myWorkClassifiers[0] ) * myWorkClassifiers.size();
   if ( size > 1e+9 ) // 1G
   {
-#ifdef _DEBUG_
+
+  if (SALOME::VerbosityActivated())
     std::cout << "Avoid ElementsOnShape::clone(), too large: " << size << " bytes " << std::endl;
-#endif
+
     return 0;
   }
 

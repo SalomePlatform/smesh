@@ -68,11 +68,6 @@
 
 #include "utilities.h"
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
 
 using namespace std;
 
@@ -83,7 +78,7 @@ vtkStandardNewMacro(SMESH_DeviceActor)
 SMESH_DeviceActor
 ::SMESH_DeviceActor()
 {
-  if(MYDEBUG) MESSAGE("SMESH_DeviceActor - "<<this);
+  MESSAGE("SMESH_DeviceActor - "<<this);
 
   myIsShrinkable = false;
   myIsShrunk = false;
@@ -140,7 +135,7 @@ SMESH_DeviceActor
 SMESH_DeviceActor
 ::~SMESH_DeviceActor()
 {
-  if(MYDEBUG) MESSAGE("~SMESH_DeviceActor - "<<this);
+  MESSAGE("~SMESH_DeviceActor - "<<this);
 
   myMapper->Delete();
   // myPlaneCollection->Delete(); -- it is vtkSmartPointer
@@ -851,7 +846,7 @@ SMESH_DeviceActor
     anID = myExtractGeometry->GetNodeObjId(theVtkID);
 
   vtkIdType aRetID = myVisualObj->GetNodeObjId(anID);
-  if(MYDEBUG) MESSAGE("GetNodeObjId - theVtkID = "<<theVtkID<<"; anID = "<<anID<<"; aRetID = "<<aRetID);
+  MESSAGE("GetNodeObjId - theVtkID = "<<theVtkID<<"; anID = "<<anID<<"; aRetID = "<<aRetID);
   return aRetID;
 }
 
@@ -862,7 +857,7 @@ SMESH_DeviceActor
   vtkDataSet* aDataSet = myMergeFilter->GetOutput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
   double* aCoord = (anID >=0 && anID < aDataSet->GetNumberOfPoints()) ? aDataSet->GetPoint(anID) : NULL;
-  if(MYDEBUG) MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
+  MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
   return aCoord;
 }
 
@@ -892,8 +887,8 @@ SMESH_DeviceActor
     return -1;
 
   vtkIdType aRetID = myVisualObj->GetElemObjId(anId3);
-  if(MYDEBUG) 
-     MESSAGE("GetElemObjId - theVtkID = "<<theVtkID<<"; anId2 = "<<anId2<<"; anId3 = "<<anId3<<"; aRetID = "<<aRetID);
+
+  MESSAGE("GetElemObjId - theVtkID = "<<theVtkID<<"; anId2 = "<<anId2<<"; anId3 = "<<anId3<<"; aRetID = "<<aRetID);
   return aRetID;
 }
 
@@ -904,8 +899,8 @@ SMESH_DeviceActor
   vtkDataSet* aDataSet = myVisualObj->GetUnstructuredGrid();
   vtkIdType aGridID = myVisualObj->GetElemVTKId(theObjID);
   vtkCell* aCell = (aGridID >= 0 ) ? aDataSet->GetCell(aGridID) : NULL;
-  if(MYDEBUG) 
-    MESSAGE("GetElemCell - theObjID = "<<theObjID<<"; aGridID = "<<aGridID);
+
+  MESSAGE("GetElemCell - theObjID = "<<theObjID<<"; aGridID = "<<aGridID);
   return aCell;
 }
 

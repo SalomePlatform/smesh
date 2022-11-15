@@ -712,15 +712,14 @@ namespace
 
   void pointsToPython(const std::vector<gp_XYZ>& p)
   {
-#ifdef _DEBUG_
-    for ( size_t i = SMESH_Block::ID_V000; i < p.size(); ++i )
+    if (SALOME::VerbosityActivated())
     {
-      cout << "mesh.AddNode( " << p[i].X() << ", "<< p[i].Y() << ", "<< p[i].Z() << ") # " << i <<" " ;
-      SMESH_Block::DumpShapeID( i, cout ) << endl;
+      for ( size_t i = SMESH_Block::ID_V000; i < p.size(); ++i )
+      {
+        cout << "mesh.AddNode( " << p[i].X() << ", "<< p[i].Y() << ", "<< p[i].Z() << ") # " << i <<" " ;
+        SMESH_Block::DumpShapeID( i, cout ) << endl;
+      }
     }
-#else
-    (void)p; // unused in release mode
-#endif
   }
 
 } // namespace
@@ -3283,10 +3282,12 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
         continue;
       }
     }
-#ifdef _DEBUG_
-    TopTools_IndexedMapOfShape allShapes; // usage: allShapes.FindIndex( s )
-    TopExp::MapShapes( shape, allShapes );
-#endif
+
+    if (SALOME::VerbosityActivated())
+    {
+      TopTools_IndexedMapOfShape allShapes; // usage: allShapes.FindIndex( s )
+      TopExp::MapShapes( shape, allShapes );
+    }
 
     TopTools_IndexedDataMapOfShapeListOfShape facesOfEdge;
     TopTools_ListIteratorOfListOfShape faceIt;
@@ -3475,9 +3476,11 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
         if ( iLoop > allFaces.Extent() * 10 )
         {
           isOK = false;
-#ifdef _DEBUG_
-          cerr << "BUG: infinite loop in StdMeshers_Prism_3D::IsApplicable()" << endl;
-#endif
+
+          if(SALOME::VerbosityActivated())
+          {
+            cerr << "BUG: infinite loop in StdMeshers_Prism_3D::IsApplicable()" << endl;
+          }
         }
       } // while hasAdvanced
 
@@ -4342,7 +4345,9 @@ bool StdMeshers_PrismAsBlock::IsForwardEdge(SMESHDS_Mesh*           meshDS,
 void StdMeshers_PrismAsBlock::faceGridToPythonDump(const SMESH_Block::TShapeID face,
                                                    const int                   nb)
 {
-#ifdef _DEBUG_
+  if(!SALOME::VerbosityActivated())
+    return;
+
   gp_XYZ pOnF[6] = { gp_XYZ(0,0,0), gp_XYZ(0,0,1),
                      gp_XYZ(0,0,0), gp_XYZ(0,1,0),
                      gp_XYZ(0,0,0), gp_XYZ(1,0,0) };
@@ -4378,10 +4383,6 @@ void StdMeshers_PrismAsBlock::faceGridToPythonDump(const SMESH_Block::TShapeID f
            << n << ", " << n+1 << ", "
            << n+nb+2 << ", " << n+nb+1 << "]) " << endl;
     }
-#else
-  (void)face; // unused in release mode
-  (void)nb;   // unused in release mode
-#endif
 }
 
 //================================================================================
@@ -4989,7 +4990,9 @@ int StdMeshers_PrismAsBlock::TSideFace::InsertSubShapes(TBlockShapes& shapeMap) 
 
 void StdMeshers_PrismAsBlock::TSideFace::dumpNodes(int nbNodes) const
 {
-#ifdef _DEBUG_
+  if (!SALOME::VerbosityActivated())
+    return;
+
   cout << endl << "NODES OF FACE "; SMESH_Block::DumpShapeID( myID, cout ) << endl;
   THorizontalEdgeAdaptor* hSize0 = (THorizontalEdgeAdaptor*) HorizCurve(0);
   cout << "Horiz side 0: "; hSize0->dumpNodes(nbNodes); cout << endl;
@@ -5000,9 +5003,6 @@ void StdMeshers_PrismAsBlock::TSideFace::dumpNodes(int nbNodes) const
   TVerticalEdgeAdaptor* vSide1 = (TVerticalEdgeAdaptor*) VertiCurve(1);
   cout << "Verti side 1: "; vSide1->dumpNodes(nbNodes); cout << endl;
   delete hSize0; delete hSize1; delete vSide0; delete vSide1;
-#else
-  (void)nbNodes; // unused in release mode
-#endif
 }
 
 //================================================================================
@@ -5043,14 +5043,13 @@ gp_Pnt StdMeshers_PrismAsBlock::TVerticalEdgeAdaptor::Value(const Standard_Real 
 
 void StdMeshers_PrismAsBlock::TVerticalEdgeAdaptor::dumpNodes(int nbNodes) const
 {
-#ifdef _DEBUG_
+  if (!SALOME::VerbosityActivated())
+    return;
+
   for ( int i = 0; i < nbNodes && i < (int)myNodeColumn->size(); ++i )
     cout << (*myNodeColumn)[i]->GetID() << " ";
   if ( nbNodes < (int) myNodeColumn->size() )
     cout << myNodeColumn->back()->GetID();
-#else
-  (void)nbNodes; // unused in release mode
-#endif
 }
 
 //================================================================================
@@ -5074,7 +5073,9 @@ gp_Pnt StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::Value(const Standard_Rea
 
 void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) const
 {
-#ifdef _DEBUG_
+  if (!SALOME::VerbosityActivated())
+    return;
+    
   // Not bedugged code. Last node is sometimes incorrect
   const TSideFace* side = mySide;
   double u = 0;
@@ -5108,9 +5109,6 @@ void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) con
   side->GetColumns( u , col, col2 );
   if ( n != col->second[ i ] )
     cout << col->second[ i ]->GetID();
-#else
-  (void)nbNodes; // unused in release mode
-#endif
 }
 
 //================================================================================

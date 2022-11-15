@@ -31,9 +31,7 @@
 #include <valarray>
 #include <stdexcept>
 
-//#if defined(_DEBUG_)
 #  define MED_TCSLICE_CHECK_RANGE
-//#endif
 
 namespace MED
 {

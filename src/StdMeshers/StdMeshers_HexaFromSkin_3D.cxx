@@ -38,25 +38,13 @@
 
 using namespace std;
 
-// Define error message and _MYDEBUG_ if needed
-#ifdef _DEBUG_
+// Define error message
 #define BAD_MESH_ERR \
   error(SMESH_Comment("Can't detect block-wise structure of the input 2D mesh.\n" \
                       __FILE__ ":" )<<__LINE__)
-//#define _MYDEBUG_
-#else
-#define BAD_MESH_ERR \
-  error(SMESH_Comment("Can't detect block-wise structure of the input 2D mesh"))
-#endif
-
 
 // Debug output
-#ifdef _MYDEBUG_
 #define _DUMP_(msg) cout << msg << endl
-#else
-#define _DUMP_(msg)
-#endif
-
 
 namespace
 {
@@ -68,12 +56,12 @@ namespace
     {
       B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, NB_BLOCK_SIDES
     };
-#ifdef _MYDEBUG_
+
   const char* SBoxSides[] = //!< names of block sides -- needed for DEBUG only
     {
       "BOTTOM", "RIGHT", "TOP", "LEFT", "FRONT", "BACK", "UNDEFINED"
     };
-#endif
+
   enum EQuadEdge //!< edges of quadrangle side
     {
       Q_BOTTOM = 0, Q_RIGHT, Q_TOP, Q_LEFT, NB_QUAD_SIDES

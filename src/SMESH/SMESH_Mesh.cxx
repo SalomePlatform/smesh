@@ -83,12 +83,6 @@
 // maximum stored group name length in MED file
 #define MAX_MED_GROUP_NAME_LENGTH 80
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 #define cSMESH_Hyp(h) static_cast<const SMESH_Hypothesis*>(h)
 
 typedef SMESH_HypoFilter THypType;
@@ -109,7 +103,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
                        SMESHDS_Document* theDocument):
   _groupId( 0 ), _nbSubShapes( 0 )
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
+  MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
   _id            = theLocalId;
   _gen           = theGen;
   _document    = theDocument;
@@ -192,7 +186,7 @@ namespace
 
 SMESH_Mesh::~SMESH_Mesh()
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh::~SMESH_Mesh");
+  MESSAGE("SMESH_Mesh::~SMESH_Mesh");
 
   if ( _document ) // avoid destructing _meshDS from ~SMESH_Gen()
     _document->RemoveMesh( _id );
@@ -276,7 +270,7 @@ SMESH_Mesh* SMESH_Mesh::FindMesh( int meshId ) const
 
 void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh::ShapeToMesh");
+  MESSAGE("SMESH_Mesh::ShapeToMesh");
 
   if ( !aShape.IsNull() && _isShapeToMesh ) {
     if ( aShape.ShapeType() != TopAbs_COMPOUND && // group contents is allowed to change
@@ -530,10 +524,12 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
   myReader.SetFile(theFileName);
   myReader.SetMeshName(theMeshName);
   Driver_Mesh::Status status = myReader.Perform();
-#ifdef _DEBUG_
-  SMESH_ComputeErrorPtr er = myReader.GetError();
-  if ( er && !er->IsOK() ) std::cout << er->myComment << std::endl;
-#endif
+
+  if (SALOME::VerbosityActivated())
+  {
+    SMESH_ComputeErrorPtr er = myReader.GetError();
+    if ( er && !er->IsOK() ) std::cout << er->myComment << std::endl;
+  }
 
   // Reading groups (sub-meshes are out of scope of MED import functionality)
   std::list<TNameAndType> aGroupNames = myReader.GetGroupNamesAndTypes();
@@ -638,7 +634,7 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
                           int                  anHypId,
                           std::string*         anError  )
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh::AddHypothesis");
+  MESSAGE("SMESH_Mesh::AddHypothesis");
 
   if ( anError )
     anError->clear();
@@ -662,7 +658,7 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
     std::string hypName = anHyp->GetName();
     if ( hypName == "NotConformAllowed" )
     {
-      if(MYDEBUG) MESSAGE( "Hypothesis <NotConformAllowed> can be only global" );
+      MESSAGE( "Hypothesis <NotConformAllowed> can be only global" );
       return SMESH_Hypothesis::HYP_INCOMPATIBLE;
     }
   }
@@ -717,8 +713,8 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
   HasModificationsToDiscard(); // to reset _isModified flag if a mesh becomes empty
   GetMeshDS()->Modified();
 
-  if(MYDEBUG) subMesh->DumpAlgoState(true);
-  if(MYDEBUG) SCRUTE(ret);
+  if(SALOME::VerbosityActivated()) subMesh->DumpAlgoState(true);
+  SCRUTE(ret);
   return ret;
 }
 
@@ -732,14 +728,14 @@ SMESH_Hypothesis::Hypothesis_Status
 SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
                              int                    anHypId)
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh::RemoveHypothesis");
+  MESSAGE("SMESH_Mesh::RemoveHypothesis");
 
   StudyContextStruct *sc = _gen->GetStudyContext();
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
     throw SALOME_Exception(LOCALIZED("hypothesis does not exist"));
 
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
-  if(MYDEBUG) { SCRUTE(anHyp->GetType()); }
+  SCRUTE(anHyp->GetType());
 
   // shape
 
@@ -787,8 +783,8 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
   HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
   GetMeshDS()->Modified();
 
-  if(MYDEBUG) subMesh->DumpAlgoState(true);
-  if(MYDEBUG) SCRUTE(ret);
+  if(SALOME::VerbosityActivated()) subMesh->DumpAlgoState(true);
+  SCRUTE(ret);
   return ret;
 }
 
@@ -1748,9 +1744,8 @@ double SMESH_Mesh::GetComputeProgress() const
         rate = algo->GetProgress();
       }
       catch (...) {
-#ifdef _DEBUG_
-        std::cerr << "Exception in " << algo->GetName() << "::GetProgress()" << std::endl;
-#endif
+        if (SALOME::VerbosityActivated())
+          std::cerr << "Exception in " << algo->GetName() << "::GetProgress()" << std::endl;
       }
       if ( 0. < rate && rate < 1.001 )
       {
@@ -2027,7 +2022,7 @@ int SMESH_Mesh::NbMeshes() const // nb meshes in the Study
 
 bool SMESH_Mesh::IsNotConformAllowed() const
 {
-  if(MYDEBUG) MESSAGE("SMESH_Mesh::IsNotConformAllowed");
+  MESSAGE("SMESH_Mesh::IsNotConformAllowed");
 
   static SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( "NotConformAllowed" ));
   return GetHypothesis( _meshDS->ShapeToMesh(), filter, false );

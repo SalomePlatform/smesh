@@ -3323,9 +3323,9 @@ double SMESH_MesherHelper::GetAngle( const TopoDS_Edge &   theE1,
       vecRef = du ^ dv;
       if ( ++nbLoops > 10 )
       {
-#ifdef _DEBUG_
-        cout << "SMESH_MesherHelper::GetAngle(): Captured in a sigularity" << endl;
-#endif
+        if (SALOME::VerbosityActivated())
+          cout << "SMESH_MesherHelper::GetAngle(): Captured in a sigularity" << endl;
+
         return angle;
       }
     }
@@ -3745,9 +3745,7 @@ namespace { // Structures used by FixQuadraticElements()
     mutable vector< const QLink* >  _sides;
     mutable bool                    _sideIsAdded[4]; // added in chain of links
     gp_Vec                          _normal;
-#ifdef _DEBUG_
     mutable const SMDS_MeshElement* _face;
-#endif
 
     QFace( const vector< const QLink*>& links, const SMDS_MeshElement* face=0 );
 
@@ -3861,11 +3859,8 @@ namespace { // Structures used by FixQuadraticElements()
     else
       _normal.SetCoord(1e-33,0,0);
 
-#ifdef _DEBUG_
-    _face = face;
-#else
-    (void)face; // unused in release mode
-#endif
+    if (SALOME::VerbosityActivated())
+      _face = face;
   }
   //================================================================================
   /*!
@@ -4963,12 +4958,11 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
     if ( !myMesh->HasShapeToMesh() ) return;
     SetSubShape( myMesh->GetShapeToMesh() );
 
-#ifdef _DEBUG_
     int nbSolids = 0;
     TopTools_IndexedMapOfShape solids;
     TopExp::MapShapes(myShape,TopAbs_SOLID,solids);
     nbSolids = solids.Extent();
-#endif
+
     TopTools_MapOfShape faces; // faces not in solid or in not meshed solid
     for ( TopExp_Explorer f(myShape,TopAbs_FACE,TopAbs_SOLID); f.More(); f.Next() ) {
       faces.Add( f.Current() ); // not in solid
@@ -4979,9 +4973,8 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
           faces.Add( f.Current() ); // in not meshed solid
       }
       else { // fix nodes in the solid and its faces
-#ifdef _DEBUG_
         MSG("FIX SOLID " << nbSolids-- << " #" << GetMeshDS()->ShapeToIndex(s.Current()));
-#endif
+
         SMESH_MesherHelper h(*myMesh);
         h.SetSubShape( s.Current() );
         h.ToFixNodeParameters(true);
@@ -4996,10 +4989,9 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       }
     }
     // fix nodes on geom faces
-#ifdef _DEBUG_
-    int nbfaces = nbSolids;
-    nbfaces = faces.Extent(); /*avoid "unused varianbles": */ nbfaces++, nbfaces--;
-#endif
+
+    int nbfaces = faces.Extent();
+    
     for ( TopTools_MapIteratorOfMapOfShape fIt( faces ); fIt.More(); fIt.Next() ) {
       MESSAGE("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
       MSG("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
@@ -5102,13 +5094,15 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
 //         hasRectFaces = hasRectFaces ||
 //           ( volTool.GetVolumeType() == SMDS_VolumeTool::QUAD_HEXA ||
 //             volTool.GetVolumeType() == SMDS_VolumeTool::QUAD_PENTA );
-#ifdef _DEBUG_
-        if ( nbN == 6 )
-          pFace->_face = GetMeshDS()->FindFace(faceNodes[0],faceNodes[2],faceNodes[4]);
-        else
-          pFace->_face = GetMeshDS()->FindFace(faceNodes[0],faceNodes[2],
-                                               faceNodes[4],faceNodes[6] );
-#endif
+
+        if (SALOME::VerbosityActivated())
+        {
+          if ( nbN == 6 )
+            pFace->_face = GetMeshDS()->FindFace(faceNodes[0],faceNodes[2],faceNodes[4]);
+          else
+            pFace->_face = GetMeshDS()->FindFace(faceNodes[0],faceNodes[2],
+                                                faceNodes[4],faceNodes[6] );
+        }
       }
       // collect pyramid apexes for further correction
       if ( vol->NbCornerNodes() == 5 )
@@ -5340,20 +5334,22 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
               move = gp_Vec( XYZ((*link1)->_mediumNode), newPnt.Transformed(loc) );
               if ( SMDS_FacePositionPtr nPos = (*link1)->_mediumNode->GetPosition())
                 nPos->SetParameters( newUV.X(), newUV.Y() );
-#ifdef _DEBUG_
-              if ( (XYZ((*link1)->node1()) - XYZ((*link1)->node2())).SquareModulus() <
-                   move.SquareMagnitude())
+
+              if (SALOME::VerbosityActivated())
               {
-                gp_XY uv0 = faceHlp.GetNodeUV( face, (*link0)->_mediumNode, 0, &checkUV );
-                gp_XY uv2 = faceHlp.GetNodeUV( face, (*link2)->_mediumNode, 0, &checkUV );
-                MSG( "TOO LONG MOVE \t" <<
-                     "uv0: "<<uv0.X()<<", "<<uv0.Y()<<" \t" <<
-                     "uv2: "<<uv2.X()<<", "<<uv2.Y()<<" \t" <<
-                     "uvOld: "<<oldUV.X()<<", "<<oldUV.Y()<<" \t" <<
-                     "newUV: "<<newUV.X()<<", "<<newUV.Y()<<" \t");
-                uv0.SetX( uv2.X() ); // avoid warning: variable set but not used
+                if ( (XYZ((*link1)->node1()) - XYZ((*link1)->node2())).SquareModulus() <
+                    move.SquareMagnitude())
+                {
+                  gp_XY uv0 = faceHlp.GetNodeUV( face, (*link0)->_mediumNode, 0, &checkUV );
+                  gp_XY uv2 = faceHlp.GetNodeUV( face, (*link2)->_mediumNode, 0, &checkUV );
+                  MSG( "TOO LONG MOVE \t" <<
+                      "uv0: "<<uv0.X()<<", "<<uv0.Y()<<" \t" <<
+                      "uv2: "<<uv2.X()<<", "<<uv2.Y()<<" \t" <<
+                      "uvOld: "<<oldUV.X()<<", "<<oldUV.Y()<<" \t" <<
+                      "newUV: "<<newUV.X()<<", "<<newUV.Y()<<" \t");
+                  uv0.SetX( uv2.X() ); // avoid warning: variable set but not used
+                }
               }
-#endif
               (*link1)->Move( move, /*sum=*/false, /*is2dFixed=*/true );
             }
             MSG( "Move " << (*link1)->_mediumNode->GetID() << " following "
@@ -5588,8 +5584,7 @@ void SMESH_MesherHelper::WriteShape(const TopoDS_Shape& s)
 {
   const char* name = "/tmp/shape.brep";
   BRepTools::Write( s, name );
-#ifdef _DEBUG_
-  std::cout << name << std::endl;
-#endif
+  if (SALOME::VerbosityActivated())
+    std::cout << name << std::endl;
 }
 

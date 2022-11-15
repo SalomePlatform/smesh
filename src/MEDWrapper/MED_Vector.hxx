@@ -26,9 +26,7 @@
 #include <vector>
 #include <stdexcept>
 
-//#if defined(_DEBUG_)
 #  define MED_TVECTOR_CHECK_RANGE
-//#endif
 
 namespace MED
 {

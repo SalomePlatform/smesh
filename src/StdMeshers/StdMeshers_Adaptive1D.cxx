@@ -1317,9 +1317,9 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
 
           if ( iLoop > 20 )
           {
-#ifdef _DEBUG_
-            cout << "Infinite loop in AdaptiveAlgo::Compute()" << endl;
-#endif
+            if(SALOME::VerbosityActivated())
+              cout << "Infinite loop in AdaptiveAlgo::Compute()" << endl;
+
             sizeDecreased = false;
             break;
           }

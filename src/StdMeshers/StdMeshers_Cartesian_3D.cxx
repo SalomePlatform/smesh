@@ -977,10 +977,7 @@ namespace
     int         _origNodeInd; // index of _hexNodes[0] node within the _grid
     size_t      _i,_j,_k;
     bool        _hasTooSmall;
-
-#ifdef _DEBUG_
     int         _cellID;
-#endif
 
   public:
     Hexahedron(Grid* grid);
@@ -2429,11 +2426,9 @@ namespace
         tgtLink._link    = _hexLinks + ( srcLink._link - other._hexLinks );
       }
     }
-#ifdef _DEBUG_
-    _cellID = cellID;
-#else
-    (void)cellID; // unused in release mode
-#endif
+    
+    if (SALOME::VerbosityActivated())
+      _cellID = cellID;
   }
 
   //================================================================================
@@ -4249,11 +4244,10 @@ namespace
         h->_eIntPoints.reserve(2);
         h->_eIntPoints.push_back( ip );
         added = true;
-#ifdef _DEBUG_
+
         // check if ip is really inside the hex
-        if ( h->isOutParam( ip->_uvw ))
+        if (SALOME::VerbosityActivated() && h->isOutParam( ip->_uvw ))
           throw SALOME_Exception("ip outside a hex");
-#endif
       }
     }
     return added;
@@ -4816,11 +4810,13 @@ namespace
             helper.GetMeshDS()->RemoveFreeElement( v, /*sm=*/nullptr, /*fromGroups=*/false );
             v = nullptr;
             //_hasTooSmall = true;
-#ifdef _DEBUG_
-            std::cout << "Remove INVALID polyhedron, _cellID = " << _cellID
-                      << " ijk = ( " << _i << " " << _j << " " << _k << " ) "
-                      << " solid " << volDef->_solidID << std::endl;
-#endif
+
+            if (SALOME::VerbosityActivated())
+            {
+              std::cout << "Remove INVALID polyhedron, _cellID = " << _cellID
+                        << " ijk = ( " << _i << " " << _j << " " << _k << " ) "
+                        << " solid " << volDef->_solidID << std::endl;
+            }
           }
         }
       }
@@ -5253,14 +5249,14 @@ namespace
    */
   bool Hexahedron::debugDumpLink( Hexahedron::_Link* link )
   {
-#ifdef _DEBUG_
-    gp_Pnt p1 = link->_nodes[0]->Point(), p2 = link->_nodes[1]->Point();
-    cout << "BUG: not shared link. IKJ = ( "<< _i << " " << _j << " " << _k << " )" << endl
-         << "n1 (" << p1.X() << ", "<< p1.Y() << ", "<< p1.Z() << " )" << endl
-         << "n2 (" << p2.X() << ", "<< p2.Y() << ", "<< p2.Z() << " )" << endl;
-#else
-    (void)link; // unused in release mode
-#endif
+    if (SALOME::VerbosityActivated())
+    {
+      gp_Pnt p1 = link->_nodes[0]->Point(), p2 = link->_nodes[1]->Point();
+      cout << "BUG: not shared link. IKJ = ( "<< _i << " " << _j << " " << _k << " )" << endl
+          << "n1 (" << p1.X() << ", "<< p1.Y() << ", "<< p1.Z() << " )" << endl
+          << "n2 (" << p2.X() << ", "<< p2.Y() << ", "<< p2.Z() << " )" << endl;
+    }
+
     return false;
   }
   //================================================================================

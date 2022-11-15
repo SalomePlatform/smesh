@@ -36,12 +36,6 @@
 #include <vector>
 #include <string>
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 using namespace std;
 
 
@@ -242,7 +236,7 @@ void SMESH_NoteBook::ReplaceVariables()
     TCollection_AsciiString aMethod      = aCmd->GetMethod();
     TCollection_AsciiString aObject      = aCmd->GetObject();
     TCollection_AsciiString aResultValue = aCmd->GetResultValue();
-    if(MYDEBUG) {
+    if(SALOME::VerbosityActivated()) {
       cout<<"Command before : "<< aCmd->GetString()<<endl;
       cout<<"Method : "<< aMethod<<endl;
       cout<<"Object : "<< aObject<<endl;
@@ -329,7 +323,7 @@ void SMESH_NoteBook::ReplaceVariables()
     }
 
     if(it != _objectMap.end()) {
-      if(MYDEBUG)
+      if(SALOME::VerbosityActivated())
         cout << "Found object : " << (*it).first << endl;
       SMESH_ObjectStates *aStates = (*it).second;
       // Case for LocalLength hypothesis
@@ -384,7 +378,7 @@ void SMESH_NoteBook::ReplaceVariables()
         if(aMethod == "SetLayerDistribution"){
           LayerDistributionStates* aLDStates = (LayerDistributionStates*)(aStates);
           aLDStates->AddDistribution(aCmd->GetArg(1));
-          if(MYDEBUG)
+          if(SALOME::VerbosityActivated())
             cout<<"Add Distribution :"<<aCmd->GetArg(1)<<endl;
         }
       }
@@ -723,10 +717,10 @@ void SMESH_NoteBook::ReplaceVariables()
       }
     }
     else {
-      if(MYDEBUG)
+      if(SALOME::VerbosityActivated())
         cout << "Object not found" << endl;
     }
-    if(MYDEBUG) {
+    if(SALOME::VerbosityActivated()) {
       cout<<"Command after: "<< aCmd->GetString()<<endl;
     }
   }
@@ -766,7 +760,7 @@ void SMESH_NoteBook::InitObjectMap()
       std::vector< std::string >     allVars = aGen->GetAllParameters( anID.in() );
       SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters.in());
       _entry2VarsMap[ TCollection_AsciiString( anID.in() )] = allVars;
-      if(MYDEBUG) {
+      if(SALOME::VerbosityActivated()) {
         cout<<"Entry : "<< anID<<endl;
         cout<<"aParameters : "<<aParameters<<endl;
       }
@@ -781,7 +775,7 @@ void SMESH_NoteBook::InitObjectMap()
       else if (!aMesh->_is_nil() ) {
         anObjType = "Mesh";
       }
-      if(MYDEBUG)
+      if(SALOME::VerbosityActivated())
         cout<<"The object Type : "<<anObjType<<endl;
       SMESH_ObjectStates *aState = NULL;
       if(anObjType == "LayerDistribution")
@@ -800,7 +794,7 @@ void SMESH_NoteBook::InitObjectMap()
             aVar.InsertAfter(aVar.Length(), SMESH::TVar::Quote() );
           }
           aVars.push_back(aVar);
-          if(MYDEBUG) {
+          if(SALOME::VerbosityActivated()) {
             cout<<"Variable: '"<<aVar<<"'"<<endl;
           }
         }
@@ -826,7 +820,7 @@ void SMESH_NoteBook::InitObjectMap()
 //================================================================================
 void SMESH_NoteBook::AddCommand(const TCollection_AsciiString& theString)
 {
-  if(MYDEBUG)
+  if(SALOME::VerbosityActivated())
     cout<<theString<<endl;
   Handle(_pyCommand) aCommand = new _pyCommand( theString, -1);
   _commands.push_back(aCommand);

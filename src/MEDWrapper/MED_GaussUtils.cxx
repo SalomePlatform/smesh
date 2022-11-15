@@ -23,14 +23,6 @@
 #include "MED_GaussUtils.hxx"
 #include "MED_Utilities.hxx"
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-static int MYVALUEDEBUG = 0;
-#else
-// static int MYDEBUG = 0;      // unused in release mode
-// static int MYVALUEDEBUG = 0; // unused in release mode
-#endif
-
 namespace MED
 {
   //---------------------------------------------------------------
@@ -209,7 +201,7 @@ namespace MED
   {
     TInt aNbRef = theRefCoord.size();
     TInt aNbRef2 = GetNbRef();
-    INITMSG(MYDEBUG,"TShapeFun::IsSatisfy "<<
+    INITMSG("TShapeFun::IsSatisfy "<<
             "- aNbRef("<<aNbRef<<")"<<
             "; aNbRef2("<<aNbRef2<<")\n");
     bool anIsSatisfy = (aNbRef == aNbRef2);
@@ -227,27 +219,26 @@ namespace MED
           }
         }
         if(!anIsEqual){
-#ifdef _DEBUG_
-          TCCoordSlice aCoord = GetCoord(aRefId);
-          INITMSG(MYDEBUG,aRefId + 1<<": aCoord = {");
-          TInt aDim = aCoord.size();
-          for(TInt anId = 0; anId < aDim; anId++)
-            ADDMSG(MYDEBUG,"\t"<<aCoord[anId]);
-          const TCCoordSlice& aCoord2 = theRefCoord[aRefId];
-          ADDMSG(MYDEBUG,"}\t!=\taCoord2 = {");
-          for(TInt anId = 0; anId < aDim; anId++)
-            ADDMSG(MYDEBUG,"\t"<<aCoord2[anId]);
-          ADDMSG(MYDEBUG,"}\n");
-#endif
-#ifndef _DEBUG_
-          BEGMSG(MYDEBUG,"anIsSatisfy = "<<anIsSatisfy<<"\n");
+          if(SALOME::VerbosityActivated()){
+            TCCoordSlice aCoord = GetCoord(aRefId);
+            INITMSG(aRefId + 1<<": aCoord = {");
+            TInt aDim = aCoord.size();
+            for(TInt anId = 0; anId < aDim; anId++)
+              ADDMSG("\t"<<aCoord[anId]);
+            const TCCoordSlice& aCoord2 = theRefCoord[aRefId];
+            ADDMSG("}\t!=\taCoord2 = {");
+            for(TInt anId = 0; anId < aDim; anId++)
+              ADDMSG("\t"<<aCoord2[anId]);
+            ADDMSG("}\n");
+          }
+
+          BEGMSG("anIsSatisfy = "<<anIsSatisfy<<"\n");
           return anIsSatisfy;
-#endif
         }
       }
     }
 
-    BEGMSG(MYDEBUG,"anIsSatisfy = "<<anIsSatisfy<<"\n");
+    BEGMSG("anIsSatisfy = "<<anIsSatisfy<<"\n");
     return anIsSatisfy;
   }
 
@@ -260,7 +251,7 @@ namespace MED
                   TGaussCoord&           theGaussCoord,
                   EModeSwitch            theMode)
   {
-    INITMSG(MYDEBUG,"TShapeFun::Eval"<<std::endl);
+    INITMSG("TShapeFun::Eval"<<std::endl);
 
     if(IsSatisfy(theRef)){
       const PMeshInfo& aMeshInfo = theCellInfo.GetMeshInfo();
@@ -280,7 +271,7 @@ namespace MED
       InitFun(theRef,theGauss,aFun);
       TInt aConnDim = theCellInfo.GetConnDim();
 
-      INITMSG(MYDEBUG,"aDim = "<<aDim<<
+      INITMSG("aDim = "<<aDim<<
               "; aNbGauss = "<<aNbGauss<<
               "; aNbElem = "<<aNbElem<<
               "; aNbNodes = "<<theNodeInfo.GetNbElem()<<
@@ -306,33 +297,34 @@ namespace MED
         }
       }
 
-#ifdef _DEBUG_
+      if (SALOME::VerbosityActivated())
       {
-        INITMSG(MYVALUEDEBUG,"theGauss: ");
+        INITMSG("theGauss: ");
         for(TInt aGaussId = 0; aGaussId < aNbGauss; aGaussId++){
           TCCoordSlice aCoordSlice = theGauss[aGaussId];
-          ADDMSG(MYVALUEDEBUG,"{");
+          ADDMSG("{");
           for(TInt aDimId = 0; aDimId < aDim; aDimId++){
-            ADDMSG(MYVALUEDEBUG,aCoordSlice[aDimId]<<" ");
+            ADDMSG(aCoordSlice[aDimId]<<" ");
           }
-          ADDMSG(MYVALUEDEBUG,"} ");
+          ADDMSG("} ");
         }
-        ADDMSG(MYVALUEDEBUG,std::endl);
-      }
-      for(TInt anElemId = 0; anElemId < aNbElem; anElemId++){
-        TCCoordSliceArr aCoordSliceArr = theGaussCoord.GetCoordSliceArr(anElemId);
-        INITMSG(MYVALUEDEBUG,"");
-        for(TInt aGaussId = 0; aGaussId < aNbGauss; aGaussId++){
-          TCCoordSlice aCoordSlice = aCoordSliceArr[aGaussId];
-          ADDMSG(MYVALUEDEBUG,"{");
-          for(TInt aDimId = 0; aDimId < aDim; aDimId++){
-            ADDMSG(MYVALUEDEBUG,aCoordSlice[aDimId]<<" ");
+        ADDMSG(std::endl);
+
+        for(TInt anElemId = 0; anElemId < aNbElem; anElemId++){
+          TCCoordSliceArr aCoordSliceArr = theGaussCoord.GetCoordSliceArr(anElemId);
+          INITMSG("");
+          for(TInt aGaussId = 0; aGaussId < aNbGauss; aGaussId++){
+            TCCoordSlice aCoordSlice = aCoordSliceArr[aGaussId];
+            ADDMSG("{");
+            for(TInt aDimId = 0; aDimId < aDim; aDimId++){
+              ADDMSG(aCoordSlice[aDimId]<<" ");
+            }
+            ADDMSG("} ");
           }
-          ADDMSG(MYVALUEDEBUG,"} ");
+          ADDMSG(std::endl);
         }
-        ADDMSG(MYVALUEDEBUG,std::endl);
       }
-#endif
+
       return true;
     }
 
@@ -1727,7 +1719,7 @@ namespace MED
                   const TElemNum& theElemNum,
                   EModeSwitch theMode)
   {
-    INITMSG(MYDEBUG,"GetGaussCoord3D\n");
+    INITMSG("GetGaussCoord3D\n");
 
     if(theGaussInfo.myGeom == theCellInfo.myGeom){
       EGeometrieElement aGeom = theGaussInfo.myGeom;
@@ -1744,7 +1736,7 @@ namespace MED
 
       switch(aGeom){
       case eSEG2: {
-        INITMSG(MYDEBUG,"eSEG2"<<std::endl);
+        INITMSG("eSEG2"<<std::endl);
 
         if(TSeg2a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1752,7 +1744,7 @@ namespace MED
         break;
       }
       case eSEG3: {
-        INITMSG(MYDEBUG,"eSEG3"<<std::endl);
+        INITMSG("eSEG3"<<std::endl);
 
         if(TSeg3a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1760,7 +1752,7 @@ namespace MED
         break;
       }
       case eTRIA3: {
-        INITMSG(MYDEBUG,"eTRIA3"<<std::endl);
+        INITMSG("eTRIA3"<<std::endl);
 
         if(TTria3a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1771,7 +1763,7 @@ namespace MED
         break;
       }
       case eTRIA6: {
-        INITMSG(MYDEBUG,"eTRIA6"<<std::endl);
+        INITMSG("eTRIA6"<<std::endl);
 
         if(TTria6a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1782,7 +1774,7 @@ namespace MED
         break;
       }
       case eQUAD4: {
-        INITMSG(MYDEBUG,"eQUAD4"<<std::endl);
+        INITMSG("eQUAD4"<<std::endl);
 
         if(TQuad4a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1793,7 +1785,7 @@ namespace MED
         break;
       }
       case eQUAD8: {
-        INITMSG(MYDEBUG,"eQUAD8"<<std::endl);
+        INITMSG("eQUAD8"<<std::endl);
 
         if(TQuad8a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1804,7 +1796,7 @@ namespace MED
         break;
       }
       case eQUAD9: {
-        INITMSG(MYDEBUG,"eQUAD9"<<std::endl);
+        INITMSG("eQUAD9"<<std::endl);
 
         if(TQuad9a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1815,7 +1807,7 @@ namespace MED
         break;
       }
       case eTETRA4: {
-        INITMSG(MYDEBUG,"eTETRA4"<<std::endl);
+        INITMSG("eTETRA4"<<std::endl);
 
         if(TTetra4a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1826,7 +1818,7 @@ namespace MED
         break;
       }
       case ePYRA5: {
-        INITMSG(MYDEBUG,"ePYRA5"<<std::endl);
+        INITMSG("ePYRA5"<<std::endl);
 
         if(TPyra5a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1837,7 +1829,7 @@ namespace MED
         break;
       }
       case ePENTA6: {
-        INITMSG(MYDEBUG,"ePENTA6"<<std::endl);
+        INITMSG("ePENTA6"<<std::endl);
 
         if(TPenta6a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1848,7 +1840,7 @@ namespace MED
         break;
       }
       case eHEXA8: {
-        INITMSG(MYDEBUG,"eHEXA8"<<std::endl);
+        INITMSG("eHEXA8"<<std::endl);
 
         if(THexa8a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1859,7 +1851,7 @@ namespace MED
         break;
       }
       case eTETRA10: {
-        INITMSG(MYDEBUG,"eTETRA10"<<std::endl);
+        INITMSG("eTETRA10"<<std::endl);
 
         if(TTetra10a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1870,7 +1862,7 @@ namespace MED
         break;
       }
       case ePYRA13: {
-        INITMSG(MYDEBUG,"ePYRA13"<<std::endl);
+        INITMSG("ePYRA13"<<std::endl);
 
         if(TPyra13a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1881,7 +1873,7 @@ namespace MED
         break;
       }
       case ePENTA15: {
-        INITMSG(MYDEBUG,"ePENTA15"<<std::endl);
+        INITMSG("ePENTA15"<<std::endl);
 
         if(TPenta15a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1892,7 +1884,7 @@ namespace MED
         break;
       }
       case eHEXA20: {
-        INITMSG(MYDEBUG,"eHEXA20"<<std::endl);
+        INITMSG("eHEXA20"<<std::endl);
 
         if(THexa20a().Eval(theCellInfo,theNodeInfo,theElemNum,aRefSlice,aGaussSlice,theGaussCoord,theMode))
           return true;
@@ -1903,7 +1895,7 @@ namespace MED
         break;
       }
       default:
-        INITMSG(MYDEBUG,"eNONE"<<std::endl);
+        INITMSG("eNONE"<<std::endl);
         return false;
       }
     }
@@ -1919,7 +1911,7 @@ namespace MED
                 const TElemNum& theElemNum,
                 EModeSwitch theMode)
   {
-    INITMSG(MYDEBUG,"GetBaryCenter\n");
+    INITMSG("GetBaryCenter\n");
     const PMeshInfo& aMeshInfo = theCellInfo.GetMeshInfo();
     TInt aDim = aMeshInfo->GetDim();
     static TInt aNbGauss = 1;
@@ -1935,7 +1927,7 @@ namespace MED
 
     TInt aConnDim = theCellInfo.GetConnDim();
 
-    INITMSGA(MYDEBUG,0,
+    INITMSGA(0,
              "- aDim = "<<aDim<<
              "; aNbGauss = "<<aNbGauss<<
              "; aNbElem = "<<aNbElem<<
@@ -1965,21 +1957,22 @@ namespace MED
       }
     }
 
-#ifdef _DEBUG_
-    for(TInt anElemId = 0; anElemId < aNbElem; anElemId++){
-      TCoordSliceArr aCoordSliceArr = theGaussCoord.GetCoordSliceArr(anElemId);
-      INITMSG(MYVALUEDEBUG,"");
-      for(TInt aGaussId = 0; aGaussId < aNbGauss; aGaussId++){
-        TCoordSlice& aCoordSlice = aCoordSliceArr[aGaussId];
-        ADDMSG(MYVALUEDEBUG,"{");
-        for(TInt aDimId = 0; aDimId < aDim; aDimId++){
-          ADDMSG(MYVALUEDEBUG,aCoordSlice[aDimId]<<" ");
+    if (SALOME::VerbosityActivated())
+    {
+      for(TInt anElemId = 0; anElemId < aNbElem; anElemId++){
+        TCoordSliceArr aCoordSliceArr = theGaussCoord.GetCoordSliceArr(anElemId);
+        INITMSG("");
+        for(TInt aGaussId = 0; aGaussId < aNbGauss; aGaussId++){
+          TCoordSlice& aCoordSlice = aCoordSliceArr[aGaussId];
+          ADDMSG("{");
+          for(TInt aDimId = 0; aDimId < aDim; aDimId++){
+            ADDMSG(aCoordSlice[aDimId]<<" ");
+          }
+          ADDMSG("} ");
         }
-        ADDMSG(MYVALUEDEBUG,"} ");
+        ADDMSG(std::endl);
       }
-      ADDMSG(MYVALUEDEBUG,std::endl);
     }
-#endif
 
     return true;
   }
@@ -1992,7 +1985,7 @@ namespace MED
                 const TElemNum& theElemNum,
                 EModeSwitch theMode)
   {
-    INITMSG(MYDEBUG,"GetBaryCenter\n");
+    INITMSG("GetBaryCenter\n");
     const PMeshInfo& aMeshInfo = thePolygoneInfo.GetMeshInfo();
     TInt aDim = aMeshInfo->GetDim();
     static TInt aNbGauss = 1;
@@ -2006,7 +1999,7 @@ namespace MED
 
     theGaussCoord.Init(aNbElem,aNbGauss,aDim,theMode);
 
-    INITMSGA(MYDEBUG,0,
+    INITMSGA(0,
              "- aDim = "<<aDim<<
              "; aNbGauss = "<<aNbGauss<<
              "; aNbElem = "<<aNbElem<<
@@ -2050,7 +2043,7 @@ namespace MED
                 const TElemNum& theElemNum,
                 EModeSwitch theMode)
   {
-    INITMSG(MYDEBUG,"GetBaryCenter\n");
+    INITMSG("GetBaryCenter\n");
     const PMeshInfo& aMeshInfo = thePolyedreInfo.GetMeshInfo();
     TInt aDim = aMeshInfo->GetDim();
     static TInt aNbGauss = 1;
@@ -2064,7 +2057,7 @@ namespace MED
 
     theGaussCoord.Init(aNbElem,aNbGauss,aDim,theMode);
 
-    INITMSGA(MYDEBUG,0,
+    INITMSGA(0,
              "- aDim = "<<aDim<<
              "; aNbGauss = "<<aNbGauss<<
              "; aNbElem = "<<aNbElem<<

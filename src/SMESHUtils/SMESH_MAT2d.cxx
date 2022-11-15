@@ -46,11 +46,9 @@
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
 
-#ifdef _DEBUG_
-//#define _MYDEBUG_
 #include "SMESH_File.hxx"
 #include "SMESH_Comment.hxx"
-#endif
+#include "utilities.h"
 
 using namespace std;
 using boost::polygon::x;
@@ -155,12 +153,13 @@ namespace
   // }
 
   // -------------------------------------------------------------------------------------
-#ifdef _MYDEBUG_
+
   // writes segments into a txt file readable by voronoi_visualizer
   void inSegmentsToFile( vector< InSegment>& inSegments)
   {
-    if ( inSegments.size() > 1000 )
+    if (inSegments.size() > 1000 || !SALOME::VerbosityActivated())
       return;
+      
     const char* fileName = "/misc/dn25/salome/eap/salome/misc/Code/C++/MAdebug.txt";
     const char*     user = getenv("USER");
     if ( !user || strcmp( user, "eap" )) return;
@@ -219,11 +218,6 @@ namespace
       } while (edge != cell->incident_edge());
     }
   }
-#else
-  #define inSegmentsToFile(arg) {}
-  //void dumpEdge( const TVDEdge* edge ) {}
-  //void dumpCell( const TVDCell* cell ) {}
-#endif
 }
 // -------------------------------------------------------------------------------------
 
@@ -420,9 +414,9 @@ namespace
 
   void bndSegsToMesh( const vector< vector< BndSeg > >& bndSegsPerEdge )
   {
-    if ( bndSegsPerEdge.empty() )
+    if (bndSegsPerEdge.empty() || !SALOME::VerbosityActivated())
       return;
-#ifdef _MYDEBUG_
+
     if ( !getenv("bndSegsToMesh")) return;
     map< const TVDVertex *, int > v2Node;
     map< const TVDVertex *, int >::iterator v2n;
@@ -472,7 +466,6 @@ namespace
     text << "\n";
     file.write( text.c_str(), text.size() );
     cout << fileName << endl;
-#endif
   }
 
   //================================================================================

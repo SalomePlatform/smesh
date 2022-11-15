@@ -4644,7 +4644,9 @@ void _Simplex::SortSimplices(vector<_Simplex>& simplices)
 
 void _ViscousBuilder::makeGroupOfLE()
 {
-#ifdef _DEBUG_
+  if (!SALOME::VerbosityActivated())
+    return;
+
   for ( size_t i = 0 ; i < _sdVec.size(); ++i )
   {
     if ( _sdVec[i]._n2eMap.empty() ) continue;
@@ -4700,7 +4702,6 @@ void _ViscousBuilder::makeGroupOfLE()
              << "'%s-%s' % (faceId1+1, faceId2))");
     dumpFunctionEnd();
   }
-#endif
 }
 
 //================================================================================
@@ -5835,27 +5836,26 @@ void _ViscousBuilder::putOnOffsetSurface( _EdgesOnShape&            eos,
     }
   }
 
-
-
-#ifdef _DEBUG_
-  // dumpMove() for debug
-  size_t i = 0;
-  for ( ; i < eos._edges.size(); ++i )
-    if ( eos._edges[i]->Is( _LayerEdge::MARKED ))
-      break;
-  if ( i < eos._edges.size() )
+  if (SALOME::VerbosityActivated())
   {
-    dumpFunction(SMESH_Comment("putOnOffsetSurface_") << eos.ShapeTypeLetter() << eos._shapeID
-                 << "_InfStep" << infStep << "_" << Abs( smooStep ));
+    // dumpMove() for debug
+    size_t i = 0;
     for ( ; i < eos._edges.size(); ++i )
+      if ( eos._edges[i]->Is( _LayerEdge::MARKED ))
+        break;
+    if ( i < eos._edges.size() )
     {
-      if ( eos._edges[i]->Is( _LayerEdge::MARKED )) {
-        dumpMove( eos._edges[i]->_nodes.back() );
+      dumpFunction(SMESH_Comment("putOnOffsetSurface_") << eos.ShapeTypeLetter() << eos._shapeID
+                  << "_InfStep" << infStep << "_" << Abs( smooStep ));
+      for ( ; i < eos._edges.size(); ++i )
+      {
+        if ( eos._edges[i]->Is( _LayerEdge::MARKED )) {
+          dumpMove( eos._edges[i]->_nodes.back() );
+        }
       }
+      dumpFunctionEnd();
     }
-    dumpFunctionEnd();
   }
-#endif
 
   _ConvexFace* cnvFace;
   if ( moveAll != _LayerEdge::UPD_NORMAL_CONV &&

@@ -309,7 +309,7 @@ namespace
       buffer[length] = '\0';
       infile.read(const_cast<char *>( buffer.get() ),length);
 
-      MESSAGE( buffer.get() )
+      MESSAGE( buffer.get() );
     }
     {
       SMESH_File redirectFile( redirect, /*open=*/false );

@@ -1194,10 +1194,8 @@ namespace
 
       theVariants.insert( *this );
 
-#ifndef _DEBUG_
-      if ( theVariants.size() > 1 ) // erase a worse variant
+      if (SALOME::VerbosityActivated() && theVariants.size() > 1 ) // erase a worse variant
         theVariants.erase( ++theVariants.begin() );
-#endif
     };
 
     // first criterion - equality of nbSeg of opposite sides

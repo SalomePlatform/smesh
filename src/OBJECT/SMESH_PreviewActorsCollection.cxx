@@ -44,23 +44,17 @@
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 
 SMESH_PreviewActorsCollection::SMESH_PreviewActorsCollection() :
   mySelector( 0 ), myRenderer( 0 ), myCurrentChunk( 0 ), myChunkSize( 0 ), myIsShown( true )
 {
-  if(MYDEBUG) MESSAGE("SMESH_PreviewActorsCollection - "<<this);
+  MESSAGE("SMESH_PreviewActorsCollection - "<<this);
 }
 
 
 SMESH_PreviewActorsCollection::~SMESH_PreviewActorsCollection()
 {
-  if(MYDEBUG) MESSAGE("~SMESH_PreviewActorsCollection - "<<this);
+  MESSAGE("~SMESH_PreviewActorsCollection - "<<this);
   clearActors();
 }
 

@@ -82,11 +82,6 @@
 
 #include "utilities.h"
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
 
 SMESH_ActorDef* SMESH_ActorDef::New(){
   return new SMESH_ActorDef();
@@ -114,7 +109,7 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
 
 SMESH_ActorDef::SMESH_ActorDef()
 {
-  if(MYDEBUG) MESSAGE("SMESH_ActorDef - "<<this);
+  MESSAGE("SMESH_ActorDef - "<<this);
 
   SALOME_Actor::SetVisibility(false); // avoid update of pipelines
 
@@ -589,7 +584,7 @@ SMESH_ActorDef::SMESH_ActorDef()
 
 SMESH_ActorDef::~SMESH_ActorDef()
 {
-  if(MYDEBUG) MESSAGE("~SMESH_ActorDef - "<<this);
+  MESSAGE("~SMESH_ActorDef - "<<this);
 
   // Please keep the order same as one in the header file
 
@@ -1927,7 +1922,7 @@ void SMESH_ActorDef::Render(vtkRenderer* /*ren*/)
 
 void SMESH_ActorDef::Update()
 {
-  if(MYDEBUG) MESSAGE("SMESH_ActorDef::Update");
+  MESSAGE("SMESH_ActorDef::Update");
 
   myVisualObj->Update();
 
@@ -2657,7 +2652,7 @@ void SMESH_ActorDef::UpdateFilter()
   }
   if ( GetVisibility() )
     aFilter->Update();
-  if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());
+  MESSAGE(aFilter->GetOutput()->GetNumberOfCells());
 }
 
 #ifndef DISABLE_PLOT2DVIEWER

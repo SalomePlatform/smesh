@@ -29,9 +29,7 @@
 #include <sys/sysinfo.h>
 #endif
 
-#ifdef _DEBUG_
 #include <iostream>
-#endif
 
 int main ()
 {
@@ -59,9 +57,9 @@ int main ()
     }
   } catch (...) {}
 
-// #ifdef _DEBUG_
-//   std::cout << freeRamKb / 1024 << std::endl;
-// #endif
+// if (SALOME::VerbosityActivated())
+//  std::cout << freeRamKb / 1024 << std::endl;
+
   return freeRamKb / 1024;
 
 #endif

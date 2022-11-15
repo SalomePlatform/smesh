@@ -22,7 +22,7 @@
 // File      : DriverCGNS_Read.cxx
 // Created   : Thu Jun 30 10:33:31 2011
 // Author    : Edward AGAPOV (eap)
-//#define _DEBUG_
+
 #include <utilities.h>
 
 #include "DriverCGNS_Read.hxx"

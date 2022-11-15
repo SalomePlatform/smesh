@@ -286,10 +286,8 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
     TElementBoxPool& elBoPool = getLimitAndPool()->_elBoPool;
 
-#ifdef _DEBUG_
-    if ( theElemIt && !theElemIt->more() )
+    if (SALOME::VerbosityActivated() && theElemIt && !theElemIt->more() )
       std::cout << "WARNING: ElementBndBoxTree constructed on empty iterator!" << std::endl;
-#endif
 
     SMDS_ElemIteratorPtr elemIt = theElemIt ? theElemIt : mesh.elementsIterator( elemType );
     while ( elemIt->more() )

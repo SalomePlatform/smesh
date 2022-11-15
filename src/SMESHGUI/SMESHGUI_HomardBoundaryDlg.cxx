@@ -540,7 +540,7 @@ void SMESH_CreateBoundaryAn::SetNewName()
 void SMESH_CreateBoundaryAn::SetCylinder()
 // ------------------------------------------------------------------------
 {
-  MESSAGE("Debut de SetCylinder")
+  MESSAGE("Debut de SetCylinder");
   gBCylindre->setVisible(1);
   gBSphere->setVisible(0);
   gBCone->setVisible(0);
@@ -555,7 +555,7 @@ void SMESH_CreateBoundaryAn::SetCylinder()
 void SMESH_CreateBoundaryAn::SetSphere()
 // ------------------------------------------------------------------------
 {
-  MESSAGE("Debut de SetSphere")
+  MESSAGE("Debut de SetSphere");
   gBCylindre->setVisible(0);
   gBSphere->setVisible(1);
   gBCone->setVisible(0);
@@ -570,7 +570,7 @@ void SMESH_CreateBoundaryAn::SetSphere()
 void SMESH_CreateBoundaryAn::SetConeR()
 // ------------------------------------------------------------------------
 {
-  MESSAGE("Debut de SetConeR")
+  MESSAGE("Debut de SetConeR");
 //
 // Stockage et conversion des valeurs si elles ont change
   if ((_BoundaryAnXaxisCone != SpinBox_Cone_X1->value())  ||
@@ -581,7 +581,7 @@ void SMESH_CreateBoundaryAn::SetConeR()
       (_BoundaryAnZorigCone != SpinBox_Cone_Z2->value())  ||
       (_BoundaryAngle       != SpinBox_Cone_V1->value()) )
   {
-    MESSAGE("Stockage et conversion")
+    MESSAGE("Stockage et conversion");
     _BoundaryAnXaxisCone = SpinBox_Cone_X1->value() ;
     _BoundaryAnYaxisCone = SpinBox_Cone_Y1->value() ;
     _BoundaryAnZaxisCone = SpinBox_Cone_Z1->value() ;
@@ -624,7 +624,7 @@ void SMESH_CreateBoundaryAn::SetConeR()
 void SMESH_CreateBoundaryAn::SetConeA()
 // ------------------------------------------------------------------------
 {
-  MESSAGE("Debut de SetConeA")
+  MESSAGE("Debut de SetConeA");
 // Stockage et conversion des valeurs si elles ont change
   if ((_BoundaryAnXcone1 != SpinBox_Cone_X1->value())  ||
       (_BoundaryAnYcone1 != SpinBox_Cone_Y1->value())  ||
@@ -635,7 +635,7 @@ void SMESH_CreateBoundaryAn::SetConeA()
       (_BoundaryAnZcone2 != SpinBox_Cone_Z2->value())  ||
       (_BoundaryAnRayon2 != SpinBox_Cone_V2->value()) )
   {
-    MESSAGE("Stockage et conversion")
+    MESSAGE("Stockage et conversion");
     _BoundaryAnXcone1 = SpinBox_Cone_X1->value() ;
     _BoundaryAnYcone1 = SpinBox_Cone_Y1->value() ;
     _BoundaryAnZcone1 = SpinBox_Cone_Z1->value() ;
@@ -678,7 +678,7 @@ void SMESH_CreateBoundaryAn::SetConeA()
 void SMESH_CreateBoundaryAn::SetCone()
 // ------------------------------------------------------------------------
 {
-  MESSAGE("Debut de SetCone")
+  MESSAGE("Debut de SetCone");
   gBCylindre->setVisible(0);
   gBSphere->setVisible(0);
   gBCone->setVisible(1);
@@ -700,7 +700,7 @@ void SMESH_CreateBoundaryAn::SetCone()
 void SMESH_CreateBoundaryAn::SetTore()
 // ------------------------------------------------------------------------
 {
-  MESSAGE("Debut de SetTore")
+  MESSAGE("Debut de SetTore");
   gBCylindre->setVisible(0);
   gBSphere->setVisible(0);
   gBCone->setVisible(0);
@@ -718,7 +718,7 @@ void SMESH_CreateBoundaryAn::convertRayonAngle(int option)
 // par deux rayons ou avec un axe et un angle.
 // Voir sfcoi1 de HOMARD
 {
-  MESSAGE("Debut de convertRayonAngle, option = "<<option)
+  MESSAGE("Debut de convertRayonAngle, option = "<<option);
 //
 //         o
 //         !    .
@@ -814,7 +814,7 @@ SMESH_CreateBoundaryCAO::SMESH_CreateBoundaryCAO(SMESHGUI_HomardAdaptDlg* parent
     _parent(parent), _aName(aName),
     myHomardGen(SMESHHOMARD::HOMARD_Gen::_duplicate(myHomardGen0))
     {
-      MESSAGE("Constructeur") ;
+      MESSAGE("Constructeur");
       setupUi(this);
       setModal(modal);
       InitConnect();

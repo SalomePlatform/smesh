@@ -67,14 +67,7 @@ using namespace std;
 }
 #endif
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
 static int MYDEBUGWITHFILES = 0;//1;
-#else
-static int MYDEBUG = 0;
-static int MYDEBUGWITHFILES = 0;
-#endif
-
 
 /*
   Class       : SMESH_VisualObjDef
@@ -86,7 +79,7 @@ static int MYDEBUGWITHFILES = 0;
 //=================================================================================
 SMESH_VisualObjDef::SMESH_VisualObjDef()
 {
-  if ( MYDEBUG ) MESSAGE("-------------------------------SMESH_VisualObjDef::SMESH_VisualObjDef");
+  MESSAGE("-------------------------------SMESH_VisualObjDef::SMESH_VisualObjDef");
   myGrid = vtkUnstructuredGrid::New();
   myLocalGrid = false;
   ClearEntitiesFlags();
@@ -94,8 +87,8 @@ SMESH_VisualObjDef::SMESH_VisualObjDef()
 }
 SMESH_VisualObjDef::~SMESH_VisualObjDef()
 {
-  if ( MYDEBUG ) MESSAGE("--------------------------------SMESH_VisualObjDef::~SMESH_VisualObjDef");
-  if ( MYDEBUG ) MESSAGE( "myGrid->GetReferenceCount() = " << myGrid->GetReferenceCount() );
+  MESSAGE("--------------------------------SMESH_VisualObjDef::~SMESH_VisualObjDef");
+  MESSAGE( "myGrid->GetReferenceCount() = " << myGrid->GetReferenceCount() );
   myGrid->Delete();
 }
 
@@ -200,7 +193,7 @@ void SMESH_VisualObjDef::createPoints( vtkPoints* thePoints )
 //=================================================================================
 void SMESH_VisualObjDef::buildPrs(bool buildGrid)
 {
-  if ( MYDEBUG ) MESSAGE("---------------------------SMESH_VisualObjDef::buildPrs " << buildGrid);
+  MESSAGE("---------------------------SMESH_VisualObjDef::buildPrs " << buildGrid);
   if (buildGrid)
   {
     myLocalGrid = true;
@@ -234,7 +227,7 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
     if (!GetMesh()->IsCompacted())
     {
       NulData(); // detach from the SMDS grid to allow immediate memory de-allocation in compactMesh()
-      if ( MYDEBUG ) MESSAGE("*** buildPrs ==> compactMesh!");
+      MESSAGE("*** buildPrs ==> compactMesh!");
       GetMesh()->CompactMesh();
       if ( SMESHDS_Mesh* m = dynamic_cast<SMESHDS_Mesh*>( GetMesh() )) // IPAL53915
         m->GetScript()->SetModified(false); // drop IsModified set in compactMesh()
@@ -309,8 +302,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   myGrid->SetPoints( aPoints );
   aPoints->Delete();
 
-  if ( MYDEBUG )
-    MESSAGE("Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints());
+  MESSAGE("Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints());
 
   // Calculate cells size
 
@@ -361,8 +353,8 @@ void SMESH_VisualObjDef::buildElemPrs()
       }
     }
   }
-  if ( MYDEBUG )
-    MESSAGE( "Update - aNbCells = "<<aNbCells<<"; aCellsSize = "<<aCellsSize );
+
+  MESSAGE( "Update - aNbCells = "<<aNbCells<<"; aCellsSize = "<<aCellsSize );
 
   // Create cells
 
@@ -628,8 +620,8 @@ SMESH_MeshObj::SMESH_MeshObj(SMESH::SMESH_Mesh_ptr theMesh):
   myClient(SalomeApp_Application::orb(),theMesh)
 {
         myEmptyGrid = 0;
-  if ( MYDEBUG ) 
-    MESSAGE("SMESH_MeshObj - this = "<<this<<"; theMesh->_is_nil() = "<<theMesh->_is_nil());
+
+  MESSAGE("SMESH_MeshObj - this = "<<this<<"; theMesh->_is_nil() = "<<theMesh->_is_nil());
 }
 
 //=================================================================================
@@ -638,8 +630,7 @@ SMESH_MeshObj::SMESH_MeshObj(SMESH::SMESH_Mesh_ptr theMesh):
 //=================================================================================
 SMESH_MeshObj::~SMESH_MeshObj()
 {
-  if ( MYDEBUG ) 
-    MESSAGE("SMESH_MeshObj - this = "<<this<<"\n");
+  MESSAGE("SMESH_MeshObj - this = "<<this<<"\n");
   if ( myEmptyGrid )
     myEmptyGrid->Delete();
 }
@@ -651,9 +642,9 @@ SMESH_MeshObj::~SMESH_MeshObj()
 bool SMESH_MeshObj::Update( int theIsClear )
 {
   // Update SMDS_Mesh on client part
-  if ( MYDEBUG ) MESSAGE("SMESH_MeshObj::Update " << this);
+  MESSAGE("SMESH_MeshObj::Update " << this);
   if ( myClient.Update(theIsClear) || GetUnstructuredGrid()->GetNumberOfPoints()==0) {
-    if ( MYDEBUG ) MESSAGE("buildPrs");
+    MESSAGE("buildPrs");
     buildPrs();  // Fill unstructured grid
     return true;
   }
@@ -662,7 +653,7 @@ bool SMESH_MeshObj::Update( int theIsClear )
 
 bool SMESH_MeshObj::NulData()
 {
-  if ( MYDEBUG ) MESSAGE ("SMESH_MeshObj::NulData() =============================================");
+  MESSAGE ("SMESH_MeshObj::NulData() =============================================");
   if (!myEmptyGrid)
   {
     myEmptyGrid = SMDS_UnstructuredGrid::New();
@@ -821,7 +812,7 @@ bool SMESH_MeshObj::IsNodePrs() const
 //=================================================================================
 SMESH_SubMeshObj::SMESH_SubMeshObj( SMESH_MeshObj* theMeshObj )
 {
-  if ( MYDEBUG ) MESSAGE( "SMESH_SubMeshObj - theMeshObj = " << theMeshObj );
+  MESSAGE( "SMESH_SubMeshObj - theMeshObj = " << theMeshObj );
   
   myMeshObj = theMeshObj;
 }
@@ -855,7 +846,7 @@ void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunc
 //=================================================================================
 bool SMESH_SubMeshObj::Update( int theIsClear )
 {
-  if ( MYDEBUG ) MESSAGE("SMESH_SubMeshObj::Update " << this)
+  MESSAGE("SMESH_SubMeshObj::Update " << this);
   bool changed = myMeshObj->Update( theIsClear );
   buildPrs(true);
   return changed;
@@ -876,13 +867,13 @@ SMESH_GroupObj::SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr theGroup,
 : SMESH_SubMeshObj( theMeshObj ),
   myGroupServer( SMESH::SMESH_GroupBase::_duplicate(theGroup) )
 {
-  if ( MYDEBUG ) MESSAGE("SMESH_GroupObj - theGroup->_is_nil() = "<<theGroup->_is_nil());
+  MESSAGE("SMESH_GroupObj - theGroup->_is_nil() = "<<theGroup->_is_nil());
   myGroupServer->Register();
 }
 
 SMESH_GroupObj::~SMESH_GroupObj()
 {
-  if ( MYDEBUG ) MESSAGE("~SMESH_GroupObj");
+  MESSAGE("~SMESH_GroupObj");
   myGroupServer->UnRegister();
 }
 
@@ -1011,14 +1002,14 @@ SMESH_subMeshObj::SMESH_subMeshObj( SMESH::SMESH_subMesh_ptr theSubMesh,
 : SMESH_SubMeshObj( theMeshObj ),
   mySubMeshServer( SMESH::SMESH_subMesh::_duplicate( theSubMesh ) )
 {
-  if ( MYDEBUG ) MESSAGE( "SMESH_subMeshObj - theSubMesh->_is_nil() = " << theSubMesh->_is_nil() );
+  MESSAGE( "SMESH_subMeshObj - theSubMesh->_is_nil() = " << theSubMesh->_is_nil() );
   
   mySubMeshServer->Register();
 }
 
 SMESH_subMeshObj::~SMESH_subMeshObj()
 {
-  if ( MYDEBUG ) MESSAGE( "~SMESH_subMeshObj" );
+  MESSAGE( "~SMESH_subMeshObj" );
   mySubMeshServer->UnRegister();
 }
 

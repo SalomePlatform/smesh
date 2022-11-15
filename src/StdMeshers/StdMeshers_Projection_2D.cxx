@@ -2507,9 +2507,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       TAssocTool::Morph morph( srcWires );
       morph.Perform( helper, tgtWires, helper.GetSurface( tgtFace ),
                      _src2tgtNodes, /*moveAll=*/true );
-#ifdef _DEBUG_
-      cout << "StdMeshers_Projection_2D: Projection mesh IsDistorted2D() ==> do morph" << endl;
-#endif
+      if(SALOME::VerbosityActivated())
+        cout << "StdMeshers_Projection_2D: Projection mesh IsDistorted2D() ==> do morph" << endl;
 
       if ( !fixDistortedFaces( helper, tgtWires )) // smooth and check
         return error("Invalid mesh generated");

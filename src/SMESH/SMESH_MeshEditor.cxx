@@ -5219,13 +5219,12 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
               srcEdges.push_back(aMesh->FindEdge (commonNodes[0],commonNodes[1],commonNodes[2]));
             else
               srcEdges.push_back(aMesh->FindEdge (commonNodes[0],commonNodes[1]));
-#ifdef _DEBUG_
-            if ( !srcEdges.back() )
+
+            if (SALOME::VerbosityActivated() && !srcEdges.back())
             {
               cout << "SMESH_MeshEditor::makeWalls(), no source edge found for a free face #"
-                   << iF << " of volume #" << vTool.ID() << endl;
+                  << iF << " of volume #" << vTool.ID() << endl;
             }
-#endif
           }
         }
         if ( freeInd.empty() )
@@ -6816,9 +6815,8 @@ SMESH_MeshEditor::PGroupIDs SMESH_MeshEditor::Offset( TIDSortedElemSet & theElem
   for ( size_t i = 0; i < new2OldNodes.size(); ++i )
     if ( const SMDS_MeshNode* n = new2OldNodes[ i ].first )
     {
-#ifndef _DEBUG_
-      if ( n->NbInverseElements() > 0 )
-#endif
+
+      if (!SALOME::VerbosityActivated() || n->NbInverseElements() > 0 )
       {
         const SMDS_MeshNode* n2 =
           tgtMeshDS->AddNodeWithID( n->X(), n->Y(), n->Z(), idShift + n->GetID() );

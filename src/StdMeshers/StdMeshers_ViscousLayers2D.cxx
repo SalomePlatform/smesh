@@ -240,9 +240,7 @@ namespace VISCOUS_2D
 
     bool SetNewLength( const double length );
 
-#ifdef _DEBUG_
-    int           _ID;
-#endif
+    int           _ID; // debug
   };
   //--------------------------------------------------------------------------------
   /*!
@@ -674,9 +672,10 @@ bool _ViscousBuilder2D::error(const string& text )
       _error->myAlgo = smError->myAlgo;
     smError = _error;
   }
-#ifdef _DEBUG_
-  cout << "_ViscousBuilder2D::error " << text << endl;
-#endif
+
+  if (SALOME::VerbosityActivated())
+    cout << "_ViscousBuilder2D::error " << text << endl;
+
   return false;
 }
 
@@ -1339,9 +1338,9 @@ void _ViscousBuilder2D::setLayerEdgeData( _LayerEdge&                 lEdge,
   lEdge._ray.SetDirection( lEdge._normal2D );
   lEdge._isBlocked = false;
   lEdge._length2D  = 0;
-#ifdef _DEBUG_
-  lEdge._ID        = _nbLE++;
-#endif
+
+  if (SALOME::VerbosityActivated())
+    lEdge._ID        = _nbLE++;
 }
 
 //================================================================================

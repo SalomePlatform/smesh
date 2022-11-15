@@ -1575,9 +1575,9 @@ MgAdapt::Status MgAdapt::addMessage(const std::string& msg,
   _errorMessages.push_back( msg );
 
   //~MESSAGE(msg);
-#ifdef _DEBUG_
-  std::cout << msg << std::endl;
-#endif
+  if (SALOME::VerbosityActivated())
+    std::cout << msg << std::endl;
+
   return ( _status = isFatal ? MgAdapt::DRS_FAIL : MgAdapt::DRS_WARN_SKIP_ELEM );
 }
 

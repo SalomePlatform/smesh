@@ -2019,12 +2019,15 @@ namespace SMESH_MeshAlgos
         {
           if ( nodes[i] == nodes[i+1] || nodes[i] == nodes[i+2] || nodes[i+1] == nodes[i+2] )
           {
-#ifdef _DEBUG_
-            std::cerr << "BAD tria" << std::endl;
-            cf.Dump();
-#else
-            if ( i < 0 ) cf.Dump(); // avoid "CutFace::Dump() unused in release mode"
-#endif
+            if (SALOME::VerbosityActivated())
+            {
+              std::cerr << "BAD tria" << std::endl;
+              cf.Dump();
+            }
+            else
+            {
+              if ( i < 0 ) cf.Dump(); // avoid "CutFace::Dump() unused in release mode"
+            }
             continue;
           }
           if (!( tria = myMesh->FindFace( nodes[i], nodes[i+1], nodes[i+2] )))

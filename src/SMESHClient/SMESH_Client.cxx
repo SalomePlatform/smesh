@@ -59,12 +59,6 @@
 }
 #endif
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 namespace
 {
   using std::runtime_error;
@@ -829,19 +823,19 @@ SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
   mySMESHDSMesh(NULL),
   mySMDSMesh(NULL)
 {
-  if ( MYDEBUG ) MESSAGE("SMESH_Client::SMESH_Client");
+  MESSAGE("SMESH_Client::SMESH_Client");
   myMeshServer->Register();
 
   CORBA::Boolean anIsEmbeddedMode;
   GetSMESHGen(theORB,anIsEmbeddedMode);
   if(anIsEmbeddedMode){
-    if ( MYDEBUG ) MESSAGE("Info: The same process, update mesh by pointer ");
+    MESSAGE("Info: The same process, update mesh by pointer ");
     // just set client mesh pointer to server mesh pointer
     //SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*>(theMesh->GetMeshPtr());
     CORBA::LongLong pointeur = theMesh->GetMeshPtr();
-    if( MYDEBUG ) MESSAGE("SMESH_Client::SMESH_Client pointeur "<<pointeur);
+    MESSAGE("SMESH_Client::SMESH_Client pointeur "<<pointeur);
     SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*> (pointeur);
-    if ( MYDEBUG ) MESSAGE("SMESH_Client::SMESH_Client aMesh "<<aMesh);
+    MESSAGE("SMESH_Client::SMESH_Client aMesh "<<aMesh);
     //if(aMesh->GetMeshDS()->IsEmbeddedMode()){
     if(anIsEmbeddedMode){
       mySMESHDSMesh = aMesh->GetMeshDS();
@@ -899,18 +893,18 @@ SMESH_Client::Update(bool theIsClear)
   bool anIsModified = true;
   if(mySMESHDSMesh)
   {
-    if ( MYDEBUG ) MESSAGE("Update mySMESHDSMesh");
+    MESSAGE("Update mySMESHDSMesh");
     SMESHDS_Script* aScript = mySMESHDSMesh->GetScript();
     anIsModified = aScript->IsModified();
     aScript->SetModified(false);
   }
   else
   {
-    if ( MYDEBUG ) MESSAGE("Update CORBA");
+    MESSAGE("Update CORBA");
     SMESH::log_array_var aSeq = myMeshServer->GetLog( theIsClear );
     CORBA::Long aLength = aSeq->length();
     anIsModified = aLength > 0;
-    if ( MYDEBUG ) MESSAGE( "Update: length of the script is "<<aLength );
+    MESSAGE( "Update: length of the script is "<<aLength );
 
     if ( !anIsModified )
       return false;
@@ -1021,7 +1015,7 @@ SMESH_Client::Update(bool theIsClear)
       INFOS("Unknown exception was cought !!!");
     }
 
-    if ( MYDEBUG && mySMDSMesh )
+    if (mySMDSMesh )
     {
       MESSAGE("Update - mySMDSMesh->NbNodes() = "<<mySMDSMesh->NbNodes());
       MESSAGE("Update - mySMDSMesh->Nb0DElements() = "<<mySMDSMesh->Nb0DElements());

@@ -23,12 +23,6 @@
 #include "MED_Utilities.hxx"
 #include "MED_Common.hxx"
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-//static int MYDEBUG = 0; // unused in release mode
-#endif
-
 int MED::PrefixPrinter::myCounter = 0;
 
 MED::PrefixPrinter::PrefixPrinter(bool theIsActive):
@@ -36,7 +30,8 @@ MED::PrefixPrinter::PrefixPrinter(bool theIsActive):
 {
   if(myIsActive)
     myCounter++;
-  MSG(MYDEBUG,"MED::PrefixPrinter::PrefixPrinter(...)- "<<myCounter);
+    
+  MSG("MED::PrefixPrinter::PrefixPrinter(...)- "<<myCounter);
 }
 
 MED::PrefixPrinter::~PrefixPrinter() noexcept(false)

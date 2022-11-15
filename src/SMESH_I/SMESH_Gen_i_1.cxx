@@ -46,12 +46,6 @@
 
 #include <cctype>
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
 using namespace std;
 
 //=============================================================================
@@ -162,7 +156,7 @@ long SMESH_Gen_i::GetBallElementsGroupsTag()
 
 bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 {
-  if(MYDEBUG) MESSAGE("CanPublishInStudy - "<<!CORBA::is_nil(getStudyServant()));
+  MESSAGE("CanPublishInStudy - "<<!CORBA::is_nil(getStudyServant()));
   
   if ( !myIsEnablePublish )
     return false;
@@ -183,7 +177,7 @@ bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
   if( !aGroup->_is_nil() )
     return true;
 
-  if(MYDEBUG) MESSAGE("CanPublishInStudy--CANT");
+  MESSAGE("CanPublishInStudy--CANT");
   return false;
 }
 
@@ -501,7 +495,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr /*theSOb
     return aSO._retn();
   if ( CORBA::is_nil( theIOR ))
     return aSO._retn();
-  if(MYDEBUG) MESSAGE("PublishInStudy");
+  MESSAGE("PublishInStudy");
 
   // Publishing a mesh
   SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( theIOR );
@@ -528,7 +522,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr /*theSOb
     aMesh = aGroup->GetMesh();
     aSO = PublishGroup( aMesh, aGroup, aShapeObject, theName );
   }
-  if(MYDEBUG) MESSAGE("PublishInStudy_END");
+  MESSAGE("PublishInStudy_END");
 
   return aSO._retn();
 }
@@ -540,7 +534,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr /*theSOb
 
 SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
 {
-  if(MYDEBUG) MESSAGE("PublishComponent");
+  MESSAGE("PublishComponent");
   if ( !myIsEnablePublish )
     return SALOMEDS::SComponent::_nil();
 
@@ -602,7 +596,7 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
   // (to support tree representation customization and drag-n-drop)
   useCaseBuilder->SetRootCurrent();
   useCaseBuilder->Append( father ); // component object is added as the top level item
-  if(MYDEBUG) MESSAGE("PublishComponent--END");
+  MESSAGE("PublishComponent--END");
 
   return father._retn();
 }
@@ -619,7 +613,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
     return SALOMEDS::SObject::_nil();
   if ( CORBA::is_nil( theMesh ))
     return SALOMEDS::SObject::_nil();
-  if(MYDEBUG) MESSAGE("PublishMesh--IN");
+  MESSAGE("PublishMesh--IN");
 
   // find or publish a mesh
 
@@ -690,7 +684,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
     }
   }
 
-  if(MYDEBUG) MESSAGE("PublishMesh_END");
+  MESSAGE("PublishMesh_END");
   return aMeshSO._retn();
 }
 
@@ -900,7 +894,7 @@ SALOMEDS::SObject_ptr
 SMESH_Gen_i::PublishHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp,
                                 const char*                 theName)
 {
-  if(MYDEBUG) MESSAGE("PublishHypothesis");
+  MESSAGE("PublishHypothesis");
   if ( !myIsEnablePublish )
     return SALOMEDS::SObject::_nil();
   if (theHyp->_is_nil())
@@ -935,7 +929,7 @@ SMESH_Gen_i::PublishHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp,
 
   SetName( aHypSO, theName, hypType.in() );
 
-  if(MYDEBUG) MESSAGE("PublishHypothesis--END")
+  MESSAGE("PublishHypothesis--END");
   return aHypSO._retn();
 }
 
@@ -1097,7 +1091,7 @@ SALOMEDS::SObject_ptr
 SMESH_Gen_i::GetMeshOrSubmeshByShape (SMESH::SMESH_Mesh_ptr theMesh,
                                       GEOM::GEOM_Object_ptr theShape)
 {
-  if(MYDEBUG) MESSAGE("GetMeshOrSubmeshByShape")
+  MESSAGE("GetMeshOrSubmeshByShape");
   SALOMEDS::SObject_wrap aMeshOrSubMesh;
   if (theMesh->_is_nil() || ( theShape->_is_nil() && theMesh->HasShapeToMesh()))
     return aMeshOrSubMesh._retn();
@@ -1121,7 +1115,7 @@ SMESH_Gen_i::GetMeshOrSubmeshByShape (SMESH::SMESH_Mesh_ptr theMesh,
         aMeshOrSubMesh = ObjectToSObject( aSubMesh );
     }
   }
-  if(MYDEBUG) MESSAGE("GetMeshOrSubmeshByShape--END")
+  MESSAGE("GetMeshOrSubmeshByShape--END");
   return aMeshOrSubMesh._retn();
 }
 
@@ -1134,7 +1128,7 @@ bool SMESH_Gen_i::AddHypothesisToShape(SMESH::SMESH_Mesh_ptr       theMesh,
                                        GEOM::GEOM_Object_ptr       theShape,
                                        SMESH::SMESH_Hypothesis_ptr theHyp)
 {
-  if(MYDEBUG) MESSAGE("AddHypothesisToShape")
+  MESSAGE("AddHypothesisToShape");
   if (theMesh->_is_nil() ||
       theHyp->_is_nil() || (theShape->_is_nil()
                             && theMesh->HasShapeToMesh()) )
@@ -1175,7 +1169,7 @@ bool SMESH_Gen_i::AddHypothesisToShape(SMESH::SMESH_Mesh_ptr       theMesh,
 
   addReference( AHR, theHyp );
 
-  if(MYDEBUG) MESSAGE("AddHypothesisToShape--END")
+  MESSAGE("AddHypothesisToShape--END");
   return true;
 }
 
