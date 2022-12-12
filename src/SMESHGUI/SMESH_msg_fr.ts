@@ -293,6 +293,10 @@
         <translation>Copier le maillage</translation>
     </message>
     <message>
+    <source>MEN_CREATE_DUAL_MESH</source>
+        <translation>Création du maillage Dual</translation>
+    </message>
+    <message>
         <source>MEN_CLIP</source>
         <translation>Plan de coupe</translation>
     </message>
@@ -3300,6 +3304,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Copie le maillage</translation>
     </message>
     <message>
+        <source>STB_CREATE_DUAL_MESH</source>
+        <translation>Création du maillage Dual</translation>
+    </message>
+    <message>
         <source>STB_CLIP</source>
         <translation>Pan de coupe</translation>
     </message>
@@ -5683,6 +5691,29 @@ Sélectionner des éléments et essayer encore</translation>
     <message>
         <source>NON_CONFORM_WARNING</source>
         <translation>Attention: le maillage généré sera a priori non-conforme</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_CreateDualMeshDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Create Dual Mesh</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Maillage ou Sous-maillage</translation>
+    </message>
+    <message>
+        <source>NON_TETRA_MESH_WARNING</source>
+        <translation>Attention : Le maillage ne doit contenir que des tétrahédres</translation>
+    </message>
+    <message>
+        <source>DUAL_MESH_NAME</source>
+        <translation>Nom du maillage Dual</translation>
+    </message>
+    <message>
+        <source>PROJ_SHAPE</source>
+        <translation>Projection des élements de bord sur la géométrie</translation>
     </message>
 </context>
 <context>
