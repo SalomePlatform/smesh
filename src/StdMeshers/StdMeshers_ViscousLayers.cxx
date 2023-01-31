@@ -2431,7 +2431,14 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
         break;
       }
       default:
-        return error("Not yet supported case", _sdVec[i]._index);
+        std::ostringstream msg;
+        msg << "Not yet supported case: vertex bounded by ";
+        msg << facesWOL.size();
+        msg << " faces without layer at coordinates (";
+        TopoDS_Vertex v = TopoDS::Vertex(vertex);
+        gp_Pnt p = BRep_Tool::Pnt(v);
+        msg << p.X() << ", " << p.Y() << ", " << p.Z() << ")";
+        return error(msg.str().c_str(), _sdVec[i]._index);
       }
     }
   }
