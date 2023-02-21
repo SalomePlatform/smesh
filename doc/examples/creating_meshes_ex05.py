@@ -24,7 +24,7 @@ tetra.Triangle()
 tetra.Tetrahedron()
 
 # compute the mesh
-tetra.Compute()
+if not tetra.Compute(): raise Exception("Error when computing Mesh")
 
 # export the mesh in a MED file
 medFile = tempfile.NamedTemporaryFile(suffix=".med").name

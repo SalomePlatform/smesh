@@ -33,7 +33,7 @@ geom_builder.addToStudyInFather( boxes[1], midFace1, "middle Face")
 srcMesh = smesh_builder.Mesh(boxes[0], "source mesh") # box coloser to CS origin
 nSeg1 = srcMesh.Segment().NumberOfSegments(4)
 srcMesh.Quadrangle()
-srcMesh.Compute()
+if not srcMesh.Compute(): raise Exception("Error when computing Mesh")
 srcFaceGroup = srcMesh.GroupOnGeom( midFace0, "src faces", SMESH.FACE )
 
 # Import faces from midFace0 to the target mesh
@@ -43,8 +43,8 @@ importAlgo = tgtMesh.UseExisting2DElements(midFace1)
 import2hyp = importAlgo.SourceFaces( [srcFaceGroup] )
 tgtMesh.Segment().NumberOfSegments(3)
 tgtMesh.Quadrangle()
-tgtMesh.Compute()
+if not tgtMesh.Compute(): raise Exception("Error when computing Mesh")
 
 # Import the whole source mesh with groups
 import2hyp.SetCopySourceMesh(True,True)
-tgtMesh.Compute()
+if not tgtMesh.Compute(): raise Exception("Error when computing Mesh")

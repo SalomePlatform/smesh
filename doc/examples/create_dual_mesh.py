@@ -45,15 +45,14 @@ Mesh_1 = smesh.Mesh(Sphere_1,'Mesh_1')
 status = Mesh_1.AddHypothesis( Sphere_1, NETGEN_3D_Parameters_1 )
 NETGEN_1D_2D_3D = Mesh_1.Tetrahedron(algo=smeshBuilder.NETGEN_1D2D3D)
 isDone = Mesh_1.Compute()
-
+if not isDone:
+  raise Exception("Error when computing Mesh")
 
 # Creating Dual mesh
 dual_Mesh_1 = smesh.CreateDualMesh( Mesh_1, 'dual_Mesh_1', True)
 
-
 assert(dual_Mesh_1.NbPolyhedrons() > 0)
 assert(dual_Mesh_1.NbTetras() == 0)
-
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()

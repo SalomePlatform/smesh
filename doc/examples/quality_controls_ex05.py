@@ -18,7 +18,7 @@ idbox = geom_builder.addToStudy(box, "box")
 mesh = smesh_builder.Mesh(box, "Mesh_free_nodes")
 mesh.Segment().NumberOfSegments(10)
 mesh.Triangle().MaxElementArea(150.)
-mesh.Compute() 
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # Remove some elements to obtain free nodes
 # Criterion : AREA < 80.

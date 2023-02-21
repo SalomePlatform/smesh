@@ -32,11 +32,11 @@ Regular_1D_1_1 = tetra.Segment(geom=Face_1)
 Nb_Segments_1 = Regular_1D_1_1.NumberOfSegments(5)
 Nb_Segments_1.SetDistrType( 0 )
 Quadrangle_2D = tetra.Quadrangle(geom=Face_1)
-isDone = tetra.Compute()
+if not tetra.Compute(): raise Exception("Error when computing Mesh")
 submesh = Regular_1D_1_1.GetSubMesh()
 
 # compute the mesh
-tetra.Compute()
+if not tetra.Compute(): raise Exception("Error when computing Mesh")
 
 # Creation of group
 group = tetra.CreateEmptyGroup( SMESH.FACE, 'Group' )

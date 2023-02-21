@@ -39,7 +39,7 @@ algo_local.Arithmetic1D(1, 4)
 algo_local.Propagation()
 
 # compute the mesh which contains prisms
-hexa.Compute()
+if not hexa.Compute(): raise Exception("Error when computing Mesh")
 
 # create another mesh on the box
 mesh = smesh_builder.Mesh(box, "Propagation of distribution of nodes")
@@ -60,4 +60,4 @@ algo_local.Arithmetic1D(1, 4)
 algo_local.PropagationOfDistribution()
 
 # compute the mesh which contains hexahedra only
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

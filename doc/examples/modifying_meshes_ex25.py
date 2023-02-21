@@ -28,7 +28,7 @@ algo1D.NumberOfSegments(3)
 Mesh_1.Quadrangle()
 
 isDone = Mesh_1.Compute()
-if not isDone: print('Mesh Mesh_1 : computation failed')
+if not isDone: raise Exception('Mesh Mesh_1 : computation failed')
 
 # build a triangle mesh on Face_2
 Mesh_2 = smesh_builder.Mesh(Face_2)
@@ -39,7 +39,7 @@ algo2D = Mesh_2.Triangle()
 algo2D.MaxElementArea(240)
 
 isDone = Mesh_2.Compute()
-if not isDone: print('Mesh Mesh_2 : computation failed')
+if not isDone: raise Exception('Mesh Mesh_2 : computation failed')
 
 # create a 2d pattern
 pattern = smesh_builder.GetPattern()
@@ -60,7 +60,7 @@ Mesh_3.Segment().NumberOfSegments(1)
 Mesh_3.Quadrangle()
 Mesh_3.Hexahedron()
 isDone = Mesh_3.Compute()
-if not isDone: print('Mesh Mesh_3 : computation failed')
+if not isDone: raise Exception('Mesh Mesh_3 : computation failed')
 
 # create a 3d pattern (hexahedrons)
 pattern_hexa = smesh_builder.GetPattern()
@@ -103,7 +103,7 @@ Mesh_4.Segment().NumberOfSegments(1)
 Mesh_4.Quadrangle()
 Mesh_4.Hexahedron()
 isDone = Mesh_4.Compute()
-if not isDone: print('Mesh Mesh_4 : computation failed')
+if not isDone: raise Exception('Mesh Mesh_4 : computation failed')
 
 # create another 3d pattern (pyramids)
 pattern_pyra = smesh_builder.GetPattern()

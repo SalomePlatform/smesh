@@ -34,7 +34,9 @@ from SMESH_test1 import *
 
 # Compute the mesh created in SMESH_test1
 
-mesh.Compute()
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Create geometry groups on plane:
 aGeomGroup1 = geompy.CreateGroup(face , geompy.ShapeType["FACE"])
@@ -70,7 +72,10 @@ print("aGroupOnShell ids :", aGroupOnShell.GetListOfID())
 print(" ")
 
 print("Re-compute mesh, contents of aGroupOnShell changes again:")
-mesh.Compute()
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
+
 print("aGroupOnShell size =", aGroupOnShell.Size())
 print("aGroupOnShell ids :", aGroupOnShell.GetListOfID())
 

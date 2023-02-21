@@ -143,7 +143,9 @@ hexa.Hexahedron()
 # Mesh calculus
 # -------------
 
-hexa.Compute()
+isDone = hexa.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 t3= time.time()
 

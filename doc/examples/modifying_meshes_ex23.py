@@ -46,7 +46,7 @@ def Mesh1D(shape1d, nbSeg, name):
   algo = mesh1d_tool.Segment()
   hyp  = algo.NumberOfSegments(nbSeg)
   isDone = mesh1d_tool.Compute()
-  if not isDone: print('Mesh ', name, ': computation failed')
+  if not isDone: raise Exception('Mesh %s: computation failed' % name)
   return mesh1d_tool
 
 # Create a mesh with six nodes, seven edges and two quadrangle faces

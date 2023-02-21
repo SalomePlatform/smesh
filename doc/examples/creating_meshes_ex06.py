@@ -113,7 +113,7 @@ algo.Propagation()
 hexa.Quadrangle()
 hexa.Hexahedron()
 
-hexa.Compute()
+if not hexa.Compute(): raise Exception("Error when computing Mesh")
 
 hexa.Group(group_a)
 hexa.Group(group_b)

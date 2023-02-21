@@ -44,7 +44,8 @@ smesh.SetEnablePublish( True ) # Set to False to avoid publish in study if not n
 Mesh_1 = smesh.Mesh(Box_1)
 NETGEN_1D_2D_3D = Mesh_1.Tetrahedron(algo=smeshBuilder.NETGEN_1D2D3D)
 isDone = Mesh_1.Compute()
-
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 ## Set names of Mesh objects
 smesh.SetName(NETGEN_1D_2D_3D.GetAlgorithm(), 'NETGEN 1D-2D-3D')

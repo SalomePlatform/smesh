@@ -28,4 +28,4 @@ mesh.Hexahedron()
 # define refinement near vertices
 algo1d.LengthNearVertex( 0.2 )
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

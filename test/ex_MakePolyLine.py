@@ -18,7 +18,9 @@ smesh = smeshBuilder.New()
 Mesh_1 = smesh.Mesh( Box_1 )
 Mesh_1.Segment().NumberOfSegments(15)
 Mesh_1.Triangle()
-Mesh_1.Compute()
+isDone = Mesh_1.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # define arguments for MakePolyLine
 

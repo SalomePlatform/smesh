@@ -33,6 +33,9 @@ Regular_1D = Mesh_1.Segment()
 Number_of_Segments_1 = Regular_1D.NumberOfSegments(6)
 Quadrangle_2D = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 isDone = Mesh_1.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
+
 aMaxElementLength2D0x5d7fdf0 = aFilterManager.CreateMaxElementLength2D()
 isDone = Mesh_1.QuadToTriObject( Mesh_1,  )
 Mesh_1.ExtrusionSweepObjects( [ Mesh_1 ], [ Mesh_1 ], [ Mesh_1 ], [ 0, 0, 50 ], 3, 1 )

@@ -39,7 +39,9 @@ def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
 #Example
 from SMESH_test1 import *
 
-mesh.Compute()
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # First way
 BuildGroupLyingOn(mesh.GetMesh(), SMESH.FACE, "Group of faces lying on edge #1", edge )

@@ -76,6 +76,8 @@ class SMESHExportOfFieldsInMemory(unittest.TestCase):
     Quadrangle_2D = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
     Hexa_3D = Mesh_1.Hexahedron(algo=smeshBuilder.Hexa)
     isDone = Mesh_1.Compute()
+    if not isDone:
+      raise Exception("Error when computing Mesh")
     smesh.SetName(Mesh_1, 'Mesh_1')
 
     #### Mesh_1.ExportMED( r'Mesh_with_one_field_on_cells.med', 0, 41, 1, Mesh_1.GetMesh(), 1, [ Field_1_1 ], '',-1 )
@@ -165,6 +167,8 @@ class SMESHExportOfFieldsInMemory(unittest.TestCase):
     Quadrangle_2D = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
     Hexa_3D = Mesh_1.Hexahedron(algo=smeshBuilder.Hexa)
     isDone = Mesh_1.Compute()
+    if not isDone:
+      raise Exception("Error when computing Mesh")
     smesh.SetName(Mesh_1, 'Mesh_1')
 
     # 23th of june 2021 : Bug both in ExportMED and in ExportMEDCoupling

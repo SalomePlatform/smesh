@@ -113,14 +113,18 @@ def run_test(nbox=2, boxsize=100):
     print("Starting sequential compute")
     start = time.monotonic()
     is_done = seq_mesh.Compute()
-    assert is_done
+    if not is_done:
+        raise Exception("Error when computing Mesh")
+
     stop = time.monotonic()
     time_seq = stop-start
 
     print("Starting parallel compute")
     start = time.monotonic()
     is_done = par_mesh.Compute()
-    assert is_done
+    if not is_done:
+        raise Exception("Error when computing Mesh")
+
     stop = time.monotonic()
     time_par = stop-start
 

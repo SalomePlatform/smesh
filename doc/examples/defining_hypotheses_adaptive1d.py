@@ -31,4 +31,4 @@ deflection = 0.05
 mesh = smesh_builder.Mesh( shape )
 mesh.Segment().Adaptive( minSize, maxSize, deflection )
 mesh.Triangle().MaxElementArea( 300 )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

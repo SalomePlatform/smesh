@@ -40,7 +40,7 @@ algo1D.NumberOfSegments(6)
 algo2D = trias.Triangle()
 algo2D.LengthFromEdges()
 
-trias.Compute()
+if not trias.Compute(): raise Exception("Error when computing Mesh")
 
 # create a group of all triangles currently present in the mesh
 faceTriGroup = trias.Group( face1, "face triangles" )
@@ -49,7 +49,7 @@ faceTriGroup = trias.Group( face1, "face triangles" )
 circlemesh = smesh_builder.Mesh(circle, "Path mesh")
 algo = circlemesh.Segment()
 algo.NumberOfSegments(10)
-circlemesh.Compute()
+if not circlemesh.Compute(): raise Exception("Error when computing Mesh")
 
 # extrusion of the mesh
 trias.ExtrusionAlongPath([], circlemesh, circle, 1, MakeGroups=True )

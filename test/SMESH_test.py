@@ -94,6 +94,9 @@ face = salome.IDToObject(idf)
 
 ret = mesh.Compute(face)
 print(ret)
+if not ret:
+    raise Exception("Error when computing Mesh")
+
 log = [] #mesh.GetLog(0) # 0 - GetLog without ClearLog after, else if 1 - ClearLog after
 for a in log:
     print("-------")

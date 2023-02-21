@@ -31,6 +31,9 @@ from SMESH_test1 import *
 print("-------------------------- compute box")
 ret = mesh.Compute()
 print(ret)
+if not ret:
+    raise Exception("Error when computing Mesh")
+
 log = mesh.GetLog(0); # no erase trace
 # for linelog in log:
 #     print(linelog)

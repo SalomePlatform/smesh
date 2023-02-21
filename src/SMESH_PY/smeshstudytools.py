@@ -203,6 +203,8 @@ def TEST_createBoxMesh():
     Hexa_3D = smesh.CreateHypothesis('Hexa_3D')
     status = boxmesh.AddHypothesis(Hexa_3D)
     isDone = boxmesh.Compute()
+    if not isDone:
+      raise Exception("Error when computing Mesh")
 
     smesh.SetName(boxmesh.GetMesh(), 'boxmesh')
     if salome.sg.hasDesktop():

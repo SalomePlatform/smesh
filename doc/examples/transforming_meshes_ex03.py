@@ -18,7 +18,7 @@ Regular_1D = Mesh1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(3)
 Nb_Segments_1.SetDistrType( 0 )
 Quadrangle_2D = Mesh1.Quadrangle()
-isDone = Mesh1.Compute()
+if not Mesh1.Compute(): raise Exception("Error when computing Mesh")
 
 #Perform scale operation for the whole mesh and creation of a new mesh
 newMesh = Mesh1.ScaleMakeMesh(Mesh1,SMESH.PointStruct(100,100,200),[0.5,0.3,0.7],True,"ScaledMesh")

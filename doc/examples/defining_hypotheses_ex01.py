@@ -40,4 +40,4 @@ hexa.Quadrangle()
 hexa.Hexahedron()
 
 # compute the mesh
-hexa.Compute()
+if not hexa.Compute(): raise Exception("Error when computing Mesh")

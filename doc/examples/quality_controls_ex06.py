@@ -42,7 +42,7 @@ Mesh_1 = smesh_builder.Mesh(Partition_1)
 Mesh_1.Segment().MaxSize(34.641)
 Mesh_1.Triangle()
 Mesh_1.Tetrahedron()
-Mesh_1.Compute()
+if not Mesh_1.Compute(): raise Exception("Error when computing Mesh")
 
 # create a group of free faces
 aFilter = smesh_builder.GetFilter(SMESH.FACE, SMESH.FT_FreeFaces )

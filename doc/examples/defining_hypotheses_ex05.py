@@ -40,4 +40,4 @@ algo = tria_mesh.Triangle()
 algo.MaxElementArea(100)
 
 # compute the mesh
-tria_mesh.Compute()
+if not tria_mesh.Compute(): raise Exception("Error when computing Mesh")

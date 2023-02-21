@@ -16,7 +16,7 @@ box = geom_builder.MakeBoxDXDYDZ(100,100,100)
 # Create a mesh
 mesh = smesh_builder.Mesh(box,"Mesh")
 mesh.AutomaticHexahedralization()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # Create a point
 x,y,z = 0, 0, 1

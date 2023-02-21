@@ -37,7 +37,7 @@ algo3D = tetra.Tetrahedron()
 algo3D.MaxElementVolume("MaxElementVolume")
 
 # compute the mesh
-ret = tetra.Compute()
+if not tetra.Compute(): raise Exception("Error when computing Mesh")
 
 # translate the mesh
 point = SMESH.PointStruct("Offset", 0., 0.)

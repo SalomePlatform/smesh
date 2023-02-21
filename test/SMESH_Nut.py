@@ -147,7 +147,9 @@ smesh.SetName(hVolume, "MaxElementVolume_"+str(theMaxElementVolume))
 
 
 print("-------------------------- compute the mesh of the mechanic piece")
-mesh.Compute()
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 print("Information about the Nut:")
 print("Number of nodes       : ", mesh.NbNodes())

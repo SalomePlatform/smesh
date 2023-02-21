@@ -34,7 +34,7 @@ v000 = geom_builder.MakeVertex( 100,100,0, theName='v000' ) # can use box sub-ve
 v001 = geom_builder.GetVertexNearPoint( box1, geom_builder.MakeVertex(100,100,100), theName='v001')
 ijkAlgo.Renumber([ smeshBuilder.BlockCS( box1, v000, v001 ) ])
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # Create filters with FT_ConnectedElements criterion by pointing a domain in different ways:
 

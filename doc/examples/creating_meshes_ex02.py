@@ -52,11 +52,11 @@ mesh.Hexahedron()
 surfaces = geom_builder.SubShapeAll(box, geom_builder.ShapeType["FACE"])
 
 # method 1: no sub-mesh is created
-mesh.Compute( surfaces[0] )
+if not mesh.Compute( surfaces[0] ): raise Exception("Error when computing Mesh")
 
 # method 2: a sub-mesh is created
 submesh = mesh.GetSubMesh( surfaces[2], "submesh 2" )
-submesh.Compute()
+if not submesh.Compute(): raise Exception("Error when computing Mesh")
 
 # compute the whole mesh
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

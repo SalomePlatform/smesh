@@ -174,6 +174,8 @@ def createMesh(algo):
   algo_1d_sub.Propagation()
 
   isDone = Mesh_1.Compute()
+  if not isDone:
+    raise Exception("Error when computing Mesh")
 
   nb_nodes = Mesh_1.NbNodes()
   # Create 2 cracks by two calls of DoubleNodeElemGroups

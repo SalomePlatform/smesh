@@ -144,7 +144,9 @@ local(gx+g_dx, gy-g_dy, gz     , 21)
 # Mesh calculus
 # -------------
 
-hexa.Compute()
+isDone = hexa.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Update object browser
 # ---------------------

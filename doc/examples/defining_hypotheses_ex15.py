@@ -36,8 +36,8 @@ Regular_1D_1 = Mesh_1.Segment(geom=Edge_2)
 Nb_Segments_2 = Regular_1D_1.NumberOfSegments(10)
 
 # Compute mesh (with Quadrangle Preference type)
-isDone = Mesh_1.Compute()
+if not Mesh_1.Compute(): raise Exception("Error when computing Mesh")
 
 # Change type to Reduced and compute again
 Quadrangle_Parameters_1.SetQuadType( smeshBuilder.QUAD_REDUCED )
-isDone = Mesh_1.Compute()
+if not Mesh_1.Compute(): raise Exception("Error when computing Mesh")

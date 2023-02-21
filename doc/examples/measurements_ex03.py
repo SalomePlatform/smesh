@@ -19,7 +19,7 @@ submesh_1d = mesh.Segment().NumberOfSegments(5)
 submesh_2d = mesh.Quadrangle()
 submesh_3d = mesh.Hexahedron()
 submesh_2d_face = mesh.Triangle(face)
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # create a group
 

@@ -16,7 +16,7 @@ mesh = smesh_builder.Mesh(box, 'box')
 mesh.Segment().NumberOfSegments(10)
 mesh.Triangle().MaxElementArea(5)
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("After Compute(): %s nodes, %s faces" % ( mesh.NbNodes(), mesh.NbFaces()))
 
 # remove nodes #246 and #255

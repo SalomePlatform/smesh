@@ -105,7 +105,6 @@ PolygonPerFace_2D = Mesh_1.Polygon()
 PolyhedronPerSolid_3D = Mesh_1.Polyhedron()
 
 ok = Mesh_1.Compute()
-
 if not ok:
   raise Exception("Error when computing Mesh")
 

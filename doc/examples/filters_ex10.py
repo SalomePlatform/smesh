@@ -16,7 +16,7 @@ geom_builder.addToStudy( face, "quadrangle" )
 mesh = smesh_builder.Mesh(face)
 mesh.Segment().NumberOfSegments(10)
 mesh.Triangle().MaxElementArea(25)
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # get all faces with free edges
 filter = smesh_builder.GetFilter(SMESH.FACE, SMESH.FT_FreeEdges)

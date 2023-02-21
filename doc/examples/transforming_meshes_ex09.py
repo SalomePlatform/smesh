@@ -24,7 +24,7 @@ mesh = smesh_builder.Mesh(shape, "Two faces : quadrangle mesh")
 mesh.Segment().Arithmetic1D( 0.1, 0.4 )
 mesh.Segment(q1).NumberOfSegments( 5 )
 mesh.Quadrangle()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # sew free borders
 

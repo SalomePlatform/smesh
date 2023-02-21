@@ -169,19 +169,18 @@ smesh.SetName(hypVolume, "MaxElementVolume_" + str(maxElementVolume))
 
 print("-------------------------- compute the mesh of alveole ")
 ret = mesh.Compute()
+if not ret:
+    raise Exception("Error when computing Mesh")
 
-if ret != 0:
-    log=mesh.GetLog(0) # no erase trace
-    # for linelog in log:
-    #     print(linelog)
-    print("Information about the Mesh_mechanic:")
-    print("Number of nodes       : ", mesh.NbNodes())
-    print("Number of edges       : ", mesh.NbEdges())
-    print("Number of faces       : ", mesh.NbFaces())
-    print("Number of triangles   : ", mesh.NbTriangles())
-    print("Number of volumes     : ", mesh.NbVolumes())
-    print("Number of tetrahedrons: ", mesh.NbTetras())
-else:
-    print("problem when computing the mesh")
+log = mesh.GetLog(0) # no erase trace
+# for linelog in log:
+#     print(linelog)
+print("Information about the Mesh_mechanic:")
+print("Number of nodes       : ", mesh.NbNodes())
+print("Number of edges       : ", mesh.NbEdges())
+print("Number of faces       : ", mesh.NbFaces())
+print("Number of triangles   : ", mesh.NbTriangles())
+print("Number of volumes     : ", mesh.NbVolumes())
+print("Number of tetrahedrons: ", mesh.NbTetras())
 
 salome.sg.updateObjBrowser()

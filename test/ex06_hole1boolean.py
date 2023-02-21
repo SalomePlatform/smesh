@@ -164,7 +164,9 @@ algo4.Propagation()
 # Mesh calculus
 # -------------
 
-hexa.Compute()
+isDone = hexa.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Update object browser
 # ---------------------

@@ -64,16 +64,15 @@ netgen.SetFineness( smeshBuilder.Fine )
 print("-------------------------- compute mesh")
 ret = mesh.Compute()
 print(ret)
-if ret != 0:
-    print("Information about the MeshcompShel:")
-    print("Number of nodes        : ", mesh.GetMesh().NbNodes())
-    print("Number of edges        : ", mesh.GetMesh().NbEdges())
-    print("Number of faces        : ", mesh.GetMesh().NbFaces())
-    print("Number of triangles    : ", mesh.GetMesh().NbTriangles())
-    print("Number of volumes      : ", mesh.GetMesh().NbVolumes())
-    print("Number of tetrahedrons : ", mesh.GetMesh().NbTetras())
-    
-else:
-    print("problem when computing the mesh")
+if not ret:
+    raise Exception("Error when computing Mesh")
+
+print("Information about the MeshcompShel:")
+print("Number of nodes        : ", mesh.GetMesh().NbNodes())
+print("Number of edges        : ", mesh.GetMesh().NbEdges())
+print("Number of faces        : ", mesh.GetMesh().NbFaces())
+print("Number of triangles    : ", mesh.GetMesh().NbTriangles())
+print("Number of volumes      : ", mesh.GetMesh().NbVolumes())
+print("Number of tetrahedrons : ", mesh.GetMesh().NbTetras())
 
 salome.sg.updateObjBrowser()

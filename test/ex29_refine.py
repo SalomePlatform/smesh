@@ -170,7 +170,9 @@ refine(MyMesh, P2, P3, 12, 14, "Haut"  )
 algo2D = MyMesh.Triangle()
 algo2D.MaxElementArea(0.07)
 
-MyMesh.Compute()
+isDone = MyMesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 MyMesh.ExportMED(path+"110_triangles.med", 0)
 

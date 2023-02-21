@@ -83,6 +83,8 @@ algo3d = Mesh_1.Tetrahedron(algo=smeshBuilder.NETGEN_3D)
 algo3d.MaxElementVolume(0.0002)
 
 isDone = Mesh_1.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Create groups
 d_geom_groups = {}

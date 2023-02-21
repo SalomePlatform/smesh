@@ -86,8 +86,13 @@ smesh.SetName(hypNbSeg2, "NumberOfSegments_" + str(numberOfSegments2))
 
 
 # compute meshes
-mesh1.Compute()
-mesh2.Compute()
+isDone = mesh1.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
+
+isDone = mesh2.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # ---- update object browser
 salome.sg.updateObjBrowser()

@@ -23,7 +23,7 @@ algo = mesh.Segment()
 algo.NumberOfSegments(5)
 algo = mesh.Triangle()
 algo.MaxElementArea(20.)
-mesh.Compute() 
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # Criterion : Length > 3.
 length_margin = 3.

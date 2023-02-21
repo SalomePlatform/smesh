@@ -40,4 +40,4 @@ algo_local.LocalLength(2.)
 algo_local.Propagation()
 
 # compute the mesh
-hexa.Compute()
+if not hexa.Compute(): raise Exception("Error when computing Mesh")

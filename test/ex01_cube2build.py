@@ -318,7 +318,9 @@ algo.Propagation()
 # Compute the mesh
 # ----------------
 
-hexa.Compute()
+isDone = hexa.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Update object browser
 # ---------------------

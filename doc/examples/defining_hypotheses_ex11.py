@@ -29,9 +29,9 @@ geom_builder.addToStudyInFather( box, Face_2, 'Face_2' )
 src_mesh = smesh_builder.Mesh(Face_1, "Source mesh")
 src_mesh.Segment().NumberOfSegments(15)
 src_mesh.Triangle()
-src_mesh.Compute()
+if not src_mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # Mesh the target mesh using the algorithm Projection1D2D
 tgt_mesh = smesh_builder.Mesh(Face_2, "Target mesh")
 tgt_mesh.Projection1D2D().SourceFace(Face_1,src_mesh)
-tgt_mesh.Compute()
+if not tgt_mesh.Compute(): raise Exception("Error when computing Mesh")

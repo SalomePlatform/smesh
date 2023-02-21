@@ -23,7 +23,7 @@ Mesh.Tetrahedron()
 
 # compute mesh
 
-Mesh.Compute()
+if not Mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # convert to quadratic
 # theForce3d = 1; this results in the medium node lying at the

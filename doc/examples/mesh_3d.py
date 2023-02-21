@@ -73,7 +73,7 @@ algo3d = tetra.Tetrahedron()
 algo3d.MaxElementVolume(100) 
 
 # Compute the mesh
-tetra.Compute() 
+if not tetra.Compute(): raise Exception("Error when computing Mesh")
 
 # Create a mesh group of all triangles generated on geom faces present in faces_group
 group = tetra.Group(faces_group)

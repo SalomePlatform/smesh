@@ -14,7 +14,7 @@ box = geom_builder.MakeBoxDXDYDZ(200, 200, 200)
 mesh = smesh_builder.Mesh( box )
 mesh.Segment().AutomaticLength(0.1)
 mesh.Quadrangle()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # find node at (0,0,0) which is located on a geom vertex
 node000 = None

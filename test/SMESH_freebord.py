@@ -59,8 +59,9 @@ algoMef = mesh.Triangle()
 hypArea = algoMef.MaxElementArea(20)
 
 
-mesh.Compute()
-
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Criterion : Free edges. Create group.
 
