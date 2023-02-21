@@ -73,6 +73,8 @@ top_1 = Mesh_1.GroupOnGeom(top,'top',SMESH.FACE)
 middle_1 = Mesh_1.GroupOnGeom(middle,'middle',SMESH.FACE)
 bottom_1 = Mesh_1.GroupOnGeom(bottom,'bottom',SMESH.FACE)
 isDone = Mesh_1.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 [ top_1, middle_1, bottom_1 ] = Mesh_1.GetGroups()
 

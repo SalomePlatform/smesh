@@ -64,7 +64,8 @@ NETGEN_3D_Parameters_1.SetFuseEdges( 1 )
 NETGEN_3D_Parameters_1.SetQuadAllowed( 0 )
 NETGEN_3D_Parameters_1.SetCheckChartBoundary( 152 )
 isDone = Mesh_1.Compute()
-
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 ## Set names of Mesh objects
 smesh.SetName(NETGEN_1D_2D_3D.GetAlgorithm(), 'NETGEN 1D-2D-3D')

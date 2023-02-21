@@ -73,7 +73,9 @@ algo1D_1=Mesh_inf.Segment()
 algo1D_1.NumberOfSegments(10)
 algo2D_1=Mesh_inf.Quadrangle()
 algo3D_1=Mesh_inf.Hexahedron()
-Mesh_inf.Compute()
+isDone = Mesh_inf.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # create a group on the top face
 Gsup1=Mesh_inf.Group(Fsup1, "Sup")
@@ -86,7 +88,9 @@ algo1D_2=Mesh_sup.Segment()
 algo1D_2.NumberOfSegments(5)
 algo2D_2=Mesh_sup.Quadrangle()
 algo3D_2=Mesh_sup.Hexahedron()
-Mesh_sup.Compute()
+isDone = Mesh_sup.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # create a group on the top face
 Gsup2=Mesh_sup.Group(Fsup2, "Sup")

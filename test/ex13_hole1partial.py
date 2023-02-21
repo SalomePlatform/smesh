@@ -256,7 +256,9 @@ local(cyl_x+d, cyl_y+d, box_dz, 10)
 # Compute the mesh
 # ----------------
 
-hexa.Compute()
+isDone = hexa.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Update object browser
 # ---------------------

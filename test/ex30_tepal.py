@@ -81,6 +81,8 @@ algo3d.SetKeepFiles(False)
 # --------------
 
 status = m.Compute()
+if not status:
+    raise Exception("Error when computing Mesh")
 
 # Test if ok
 # ----------

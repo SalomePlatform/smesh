@@ -85,18 +85,18 @@ hexa3D.SetName("Hexa_3D")
 print("-------------------------- compute compshell")
 ret = mesh.Compute()
 print(ret)
-if ret != 0:
-    log = mesh.GetLog(0) # no erase trace
-    # for linelog in log:
-    #     print(linelog)
-    print("Information about the MeshcompShel:")
-    print("Number of nodes       : ", mesh.NbNodes())
-    print("Number of edges       : ", mesh.NbEdges())
-    print("Number of faces       : ", mesh.NbFaces())
-    print("Number of quadrangles : ", mesh.NbQuadrangles())
-    print("Number of volumes     : ", mesh.NbVolumes())
-    print("Number of hexahedrons : ", mesh.NbHexas())
-else:
-    print("problem when Computing the mesh")
+if not ret:
+    raise Exception("Error when computing Mesh")
+
+log = mesh.GetLog(0) # no erase trace
+# for linelog in log:
+#     print(linelog)
+print("Information about the MeshcompShel:")
+print("Number of nodes       : ", mesh.NbNodes())
+print("Number of edges       : ", mesh.NbEdges())
+print("Number of faces       : ", mesh.NbFaces())
+print("Number of quadrangles : ", mesh.NbQuadrangles())
+print("Number of volumes     : ", mesh.NbVolumes())
+print("Number of hexahedrons : ", mesh.NbHexas())
 
 salome.sg.updateObjBrowser()

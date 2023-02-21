@@ -70,8 +70,10 @@ def test_netgen3d():
     mesh_2d = smesh.Mesh(groupe_1, 'Maillage_1')
     mesh_2d.AddHypothesis(groupe_1, netgen_2d_parameters_1)
     mesh_2d.Triangle(algo=smeshBuilder.NETGEN_1D2D)
-    is_done = mesh_2d.Compute()
-    assert is_done
+    isDone = mesh_2d.Compute()
+    if not isDone:
+        raise Exception("Error when computing Mesh")
+
     smesh.SetName(mesh_2d, 'Maillage_1')
 
     with tempfile.TemporaryDirectory() as tmp_dir:

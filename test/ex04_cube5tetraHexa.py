@@ -112,7 +112,9 @@ localMesh(box_tetra2, 0)
 # Mesh calculus
 # -------------
 
-mixed.Compute()
+isDone = mixed.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Update object browser
 # ---------------------

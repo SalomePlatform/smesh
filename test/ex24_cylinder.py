@@ -125,7 +125,9 @@ discretize(        +radius,       0, height/2,  20)
 hexa.Quadrangle()
 hexa.Hexahedron()
 
-hexa.Compute()
+isDone = hexa.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 hexa.Group(group_a)
 hexa.Group(group_b)

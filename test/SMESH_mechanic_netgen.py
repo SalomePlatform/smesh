@@ -122,17 +122,16 @@ netgen.SetQuadAllowed( 1 )
 print("-------------------------- compute mesh")
 ret = mesh.Compute()
 print(ret)
-if ret != 0:
-    print("Information about the MeshcompShel:")
-    print("Number of nodes        : ", mesh.NbNodes())
-    print("Number of edges        : ", mesh.NbEdges())
-    print("Number of faces        : ", mesh.NbFaces())
-    print("Number of triangles    : ", mesh.NbTriangles())
-    print("Number of quadrangles  : ", mesh.NbQuadrangles())
-    print("Number of volumes      : ", mesh.NbVolumes())
-    print("Number of tetrahedrons : ", mesh.NbTetras())
-    
-else:
-    print("problem when computing the mesh")
+if not ret:
+    raise Exception("Error when computing Mesh")
+
+print("Information about the MeshcompShel:")
+print("Number of nodes        : ", mesh.NbNodes())
+print("Number of edges        : ", mesh.NbEdges())
+print("Number of faces        : ", mesh.NbFaces())
+print("Number of triangles    : ", mesh.NbTriangles())
+print("Number of quadrangles  : ", mesh.NbQuadrangles())
+print("Number of volumes      : ", mesh.NbVolumes())
+print("Number of tetrahedrons : ", mesh.NbTetras())
 
 salome.sg.updateObjBrowser()

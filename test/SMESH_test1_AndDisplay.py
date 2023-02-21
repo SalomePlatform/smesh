@@ -109,7 +109,9 @@ print(hypArea2.GetId())
 print(hypArea2.GetMaxElementArea())
 smesh.SetName(hypArea2, "MaxElementArea_500")
 
-mesh.Compute()
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 salome.sg.updateObjBrowser()
 

@@ -102,13 +102,17 @@ def run_test(nbox=2, boxsize=100):
 
     start = time.monotonic()
     is_done = seq_mesh.Compute()
-    assert is_done
+    if not is_done:
+        raise Exception("Error when computing Mesh")
+
     stop = time.monotonic()
     time_seq = stop-start
 
     start = time.monotonic()
     is_done = par_mesh.Compute()
-    assert is_done
+    if not is_done:
+        raise Exception("Error when computing Mesh")
+
     stop = time.monotonic()
     time_par = stop-start
 

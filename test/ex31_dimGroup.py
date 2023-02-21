@@ -42,6 +42,8 @@ Nb_Segments_1.SetDistrType( 0 )
 Quadrangle_2D = Mesh_1.Quadrangle()
 Hexa_3D = Mesh_1.Hexahedron()
 isDone = Mesh_1.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 ### CreateDimGroup()
 

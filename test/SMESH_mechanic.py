@@ -177,7 +177,9 @@ smesh.SetName(algo.GetSubMesh(), "SubMeshFace4")
 
 print("-------------------------- compute the mesh of the mechanic piece")
 
-mesh.Compute()
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 print("Information about the Mesh_mechanic:")
 print("Number of nodes       : ", mesh.NbNodes())

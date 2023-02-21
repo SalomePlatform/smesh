@@ -126,7 +126,9 @@ algo3d.MaxElementVolume(100)
 # Compute the mesh
 # ----------------
 
-tetra.Compute()
+isDone = tetra.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Create a groupe of faces
 # ------------------------

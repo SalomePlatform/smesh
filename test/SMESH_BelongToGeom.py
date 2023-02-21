@@ -29,7 +29,8 @@ def CheckBelongToGeomFilterOld(theMeshGen, theMesh, theShape, theSubShape, theEl
         aName = str(theSubShape)
         geompy.addToStudyInFather(theShape,theSubShape,aName)
 
-    theMeshGen.Compute(theMesh,theShape)
+    if not theMeshGen.Compute(theMesh,theShape):
+        raise Exception("Error when computing Mesh")
 
     aFilterMgr = theMeshGen.CreateFilterManager()
     aFilter = aFilterMgr.CreateFilter()
@@ -48,7 +49,9 @@ def CheckBelongToGeomFilter(theMesh, theShape, theSubShape, theElemType):
         aName = str(theSubShape)
         geompy.addToStudyInFather(theShape,theSubShape,aName)
 
-    theMesh.Compute()
+    if not theMesh.Compute():
+        raise Exception("Error when computing Mesh")
+
     aFilter = smesh.GetFilter(theElemType, SMESH.FT_BelongToGeom, theSubShape)
     return aFilter.GetElementsId(theMesh.GetMesh())
     

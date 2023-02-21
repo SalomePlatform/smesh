@@ -116,6 +116,8 @@ algo = my_hexa.Segment()
 algo.NumberOfSegments(NbSeg)
 my_hexa.Quadrangle()
 my_hexa.Hexahedron()
-my_hexa.Compute()
+isDone = my_hexa.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 salome.sg.updateObjBrowser()

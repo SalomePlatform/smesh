@@ -66,7 +66,9 @@ algo4.MaxElementArea(100)
 submesh = algo4.GetSubMesh()
 smesh.SetName(submesh, "SubMeshFace")
 
-mesh.Compute()
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 faces = submesh.GetElementsByType(SMESH.FACE)
 if len(faces) > 1:

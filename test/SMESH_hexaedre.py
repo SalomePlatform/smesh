@@ -87,15 +87,15 @@ for edges in edgeGroups: # loop on groups of logically parallel edges
 # ---- compute mesh
 print("-------------------------- compute mesh")
 ok = mesh.Compute()
-if ok:
-    print("Information about the Mesh:")
-    print("Number of nodes       : ", mesh.NbNodes())
-    print("Number of edges       : ", mesh.NbEdges())
-    print("Number of faces       : ", mesh.NbFaces())
-    print("Number of quadrangles : ", mesh.NbQuadrangles())
-    print("Number of volumes     : ", mesh.NbVolumes())
-    print("Number of hexahedrons : ", mesh.NbHexas())
-else:
-    print("problem when Computing the mesh")
+if not ok:
+    raise Exception("Error when computing Mesh")
+
+print("Information about the Mesh:")
+print("Number of nodes       : ", mesh.NbNodes())
+print("Number of edges       : ", mesh.NbEdges())
+print("Number of faces       : ", mesh.NbFaces())
+print("Number of quadrangles : ", mesh.NbQuadrangles())
+print("Number of volumes     : ", mesh.NbVolumes())
+print("Number of hexahedrons : ", mesh.NbHexas())
 
 salome.sg.updateObjBrowser()

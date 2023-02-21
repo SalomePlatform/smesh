@@ -76,8 +76,13 @@ hypNbSeg2 = algoReg2.NumberOfSegments(34)
 smesh.SetName(hypNbSeg2, "NumberOfSegments 2")
 
 # compute meshes
-mesh1.Compute()
-mesh2.Compute()
+isDone = mesh1.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
+
+isDone = mesh2.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 
 # ---- udate object browser

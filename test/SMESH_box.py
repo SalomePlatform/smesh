@@ -68,6 +68,8 @@ alg3D.SetName("algo3D")
 
 # compute mesh
 
-box_mesh.Compute()
+isDone = box_mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 sg.updateObjBrowser()

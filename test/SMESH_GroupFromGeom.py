@@ -28,7 +28,9 @@ from SMESH_test1 import *
 
 # Compute the mesh created in SMESH_test1
 
-mesh.Compute()
+isDone = mesh.Compute()
+if not isDone:
+    raise Exception("Error when computing Mesh")
 
 # Create geometry groups on plane:
 aGeomGroup1 = geompy.CreateGroup(face , geompy.ShapeType["FACE"])
