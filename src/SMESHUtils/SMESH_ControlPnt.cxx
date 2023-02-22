@@ -163,23 +163,15 @@ void SMESHUtils::createPointsSampleFromFace( const TopoDS_Face&       theFace,
   // Get the transformation associated to the face location
   gp_Trsf aTrsf = aLocation.Transformation();
 
-  // Get triangles
-  int nbTriangles = aTri->NbTriangles();
-  const Poly_Array1OfTriangle& triangles = aTri->Triangles();
-
-  // GetNodes
-  int nbNodes = aTri->NbNodes();
-  TColgp_Array1OfPnt nodes(1,nbNodes);
-  nodes = aTri->Nodes();
-
   // Iterate on triangles and subdivide them
+  int nbTriangles = aTri->NbTriangles();
   thePoints.reserve( thePoints.size() + nbTriangles );
   for ( int i = 1; i <= nbTriangles; i++ )
   {
-    const Poly_Triangle& aTriangle = triangles.Value(i);
-    gp_Pnt p1 = nodes.Value(aTriangle.Value(1));
-    gp_Pnt p2 = nodes.Value(aTriangle.Value(2));
-    gp_Pnt p3 = nodes.Value(aTriangle.Value(3));
+    const Poly_Triangle& aTriangle = aTri->Triangle(i);
+    gp_Pnt p1 = aTri->Node(aTriangle.Value(1));
+    gp_Pnt p2 = aTri->Node(aTriangle.Value(2));
+    gp_Pnt p3 = aTri->Node(aTriangle.Value(3));
 
     p1.Transform(aTrsf);
     p2.Transform(aTrsf);

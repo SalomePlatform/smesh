@@ -52,7 +52,14 @@
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "StdMeshers_ViscousLayers2D.hxx"
 
+#include <Basics_OCCTVersion.hxx>
+
+#if OCC_VERSION_LARGE < 0x07070000
 #include <Adaptor3d_HSurface.hxx>
+#else
+#include <Adaptor3d_Surface.hxx>
+#endif
+
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Curve2d.hxx>
 #include <BRepAdaptor_Surface.hxx>
@@ -1818,8 +1825,13 @@ namespace VISCOUS_3D
     //case GeomAbs_SurfaceOfExtrusion:
     case GeomAbs_OffsetSurface:
     {
+#if OCC_VERSION_LARGE < 0x07070000
       Handle(Adaptor3d_HSurface) base = surface.BasisSurface();
       return getRovolutionAxis( base->Surface(), axis );
+#else
+      Handle(Adaptor3d_Surface) base = surface.BasisSurface();
+      return getRovolutionAxis( *base, axis );
+#endif
     }
     default: return false;
     }

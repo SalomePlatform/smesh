@@ -62,9 +62,15 @@
 #include <GeomAPI_ExtremaCurveCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <GeomAdaptor_Curve.hxx>
+#include <GeomAdaptor_Surface.hxx>
+
+#include <Basics_OCCTVersion.hxx>
+
+#if OCC_VERSION_LARGE < 0x07070000
 #include <GeomAdaptor_HCurve.hxx>
 #include <GeomAdaptor_HSurface.hxx>
-#include <GeomAdaptor_Surface.hxx>
+#endif
+
 #include <GeomLib_IsPlanarSurface.hxx>
 #include <Geom_Line.hxx>
 #include <IntCurveSurface_HInter.hxx>
@@ -1883,8 +1889,13 @@ namespace {
     SMESHDS_Mesh* tgtMeshDS = tgtMesh->GetMeshDS();
 
     Handle(Geom_Surface)             tgtSurface = BRep_Tool::Surface( theTgtFace );
+#if OCC_VERSION_LARGE < 0x07070000
     Handle(GeomAdaptor_HSurface) tgtSurfAdaptor = new GeomAdaptor_HSurface( tgtSurface );
     Handle(GeomAdaptor_HCurve)    piercingCurve = new GeomAdaptor_HCurve( thePiercingLine );
+#else
+    Handle(GeomAdaptor_Surface) tgtSurfAdaptor = new GeomAdaptor_Surface( tgtSurface );
+    Handle(GeomAdaptor_Curve)    piercingCurve = new GeomAdaptor_Curve( thePiercingLine );
+#endif
     IntCurveSurface_HInter intersect;
 
     SMESH_MesherHelper* srcHelper = theSrcWires[0]->FaceHelper();

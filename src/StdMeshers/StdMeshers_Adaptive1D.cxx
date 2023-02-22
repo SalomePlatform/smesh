@@ -241,15 +241,14 @@ namespace // internal utils
     BBox                         myBBox;
     BRepAdaptor_Surface          mySurface;
     ElementBndBoxTree*           myTree;
-    const Poly_Array1OfTriangle* myPolyTrias;
-    const TColgp_Array1OfPnt*    myNodes;
-    bool                         myOwnNodes;
+    TColgp_Array1OfPnt           myNodes;
 
     typedef vector<int> IntVec;
     IntVec                       myFoundTriaIDs;
 
     TriaTreeData( const TopoDS_Face& face, ElementBndBoxTree* triaTree );
-    ~TriaTreeData() { if ( myOwnNodes ) delete myNodes; myNodes = NULL; }
+    ~TriaTreeData() {
+    }
     virtual const Bnd_B3d* GetBox(int elemID) const { return &myTrias[elemID].myBox; }
     void PrepareToTriaSearch();
     void SetSizeByTrias( SegSizeTree& sizeTree, double deflection ) const;
@@ -311,7 +310,7 @@ namespace // internal utils
 
   TriaTreeData::TriaTreeData( const TopoDS_Face& face, ElementBndBoxTree* triaTree )
     : myTriasDeflection(0), mySurface( face ),
-      myTree(NULL), myPolyTrias(NULL), myNodes(NULL), myOwnNodes(false)
+      myTree(NULL)
   {
     TopLoc_Location loc;
     Handle(Poly_Triangulation) tr = BRep_Tool::Triangulation( face, loc );
@@ -319,21 +318,19 @@ namespace // internal utils
     {
       myFaceTol         = SMESH_MesherHelper::MaxTolerance( face );
       myTree            = triaTree;
-      myNodes           = & tr->Nodes();
-      myPolyTrias       = & tr->Triangles();
+      myNodes           = TColgp_Array1OfPnt( 1, tr->NbNodes() );
+      for (int ii = 1; ii <= tr->NbNodes(); ++ii) {
+        myNodes(ii) = tr->Node(ii);
+      }
       myTriasDeflection = tr->Deflection();
       if ( !loc.IsIdentity() ) // transform nodes if necessary
       {
-        TColgp_Array1OfPnt* trsfNodes = new TColgp_Array1OfPnt( myNodes->Lower(), myNodes->Upper() );
-        trsfNodes->Assign( *myNodes );
-        myNodes    = trsfNodes;
-        myOwnNodes = true;
         const gp_Trsf& trsf = loc;
-        for ( int i = trsfNodes->Lower(); i <= trsfNodes->Upper(); ++i )
-          trsfNodes->ChangeValue(i).Transform( trsf );
+        for ( int i = myNodes.Lower(); i <= myNodes.Upper(); ++i )
+          myNodes(i).Transform( trsf );
       }
-      for ( int i = myNodes->Lower(); i <= myNodes->Upper(); ++i )
-        myBBox.Add( myNodes->Value(i).XYZ() );
+      for ( int i = myNodes.Lower(); i <= myNodes.Upper(); ++i )
+        myBBox.Add( myNodes.Value(i).XYZ() );
     }
   }
   //================================================================================
@@ -345,14 +342,16 @@ namespace // internal utils
   void TriaTreeData::PrepareToTriaSearch()
   {
     if ( !myTrias.empty() ) return; // already done
-    if ( !myPolyTrias ) return;
+
+    TopLoc_Location loc;
+    Handle(Poly_Triangulation) tr = BRep_Tool::Triangulation( mySurface.Face(), loc );
+
+    if ( tr.IsNull() || !tr->NbTriangles() ) return;
 
     // get all boundary links and nodes on VERTEXes
     map< NLink, Segment* > linkToSegMap;
     map< NLink, Segment* >::iterator l2s;
     set< int > vertexNodes;
-    TopLoc_Location loc;
-    Handle(Poly_Triangulation) tr = BRep_Tool::Triangulation( mySurface.Face(), loc );
     if ( !tr.IsNull() )
     {
       TopTools_IndexedMapOfShape edgeMap;
@@ -377,21 +376,21 @@ namespace // internal utils
       {
         const NLink& link = (*l2s).first;
         (*l2s).second = & mySegments[ iS ];
-        mySegments[ iS ].Init( myNodes->Value( link.N1() ),
-                               myNodes->Value( link.N2() ));
+        mySegments[ iS ].Init( myNodes( link.N1() ),
+                               myNodes( link.N2() ));
       }
     }
 
     // initialize myTrias
-    myTrias.resize( myPolyTrias->Length() );
+    myTrias.resize( tr->NbTriangles() );
     Standard_Integer n1,n2,n3;
-    for ( int i = 1; i <= myPolyTrias->Upper(); ++i )
+    for ( int i = 1; i <= tr->NbTriangles(); ++i )
     {
       Triangle & t = myTrias[ i-1 ];
-      myPolyTrias->Value( i ).Get( n1,n2,n3 );
-      t.Init( myNodes->Value( n1 ),
-              myNodes->Value( n2 ),
-              myNodes->Value( n3 ));
+      tr->Triangle( i ).Get( n1,n2,n3 );
+      t.Init( myNodes.Value( n1 ),
+              myNodes.Value( n2 ),
+              myNodes.Value( n3 ));
       int nbSeg = 0;
       if (( l2s = linkToSegMap.find( NLink( n1, n2 ))) != linkToSegMap.end())
         t.mySegments[ nbSeg++ ] = l2s->second;
@@ -445,15 +444,16 @@ namespace // internal utils
     double size = -1., maxLinkLen;
     int    jLongest = 0;
 
-    //int nbLinks = 0;
-    for ( int i = 1; i <= myPolyTrias->Upper(); ++i )
+    TopLoc_Location loc;
+    Handle(Poly_Triangulation) tr = BRep_Tool::Triangulation( mySurface.Face(), loc );
+    for ( int i = 1; i <= tr->NbTriangles(); ++i )
     {
       // get corners of a triangle
-      myPolyTrias->Value( i ).Get( n[0],n[1],n[2] );
+      tr->Triangle( i ).Get( n[0],n[1],n[2] );
       n[3] = n[0];
-      p[0] = myNodes->Value( n[0] );
-      p[1] = myNodes->Value( n[1] );
-      p[2] = myNodes->Value( n[2] );
+      p[0] = myNodes.Value( n[0] );
+      p[1] = myNodes.Value( n[1] );
+      p[2] = myNodes.Value( n[2] );
       p[3] = p[0];
       // get length of links and find the longest one
       maxLinkLen = 0;
@@ -493,7 +493,7 @@ namespace // internal utils
       }
       //cout << "SetSizeByTrias, i="<< i << " " << sz * factor << endl;
     }
-    // cout << "SetSizeByTrias, nn tria="<< myPolyTrias->Upper()
+    // cout << "SetSizeByTrias, nn tria="<< tr->NbTriangles()
     //      << " nb links" << nbLinks << " isConstSize="<<isConstSize
     //      << " " << size * factor << endl;
   }
@@ -520,6 +520,9 @@ namespace // internal utils
     if ( myFoundTriaIDs.empty() )
       return minDist2;
 
+    TopLoc_Location loc;
+    Handle(Poly_Triangulation) tr = BRep_Tool::Triangulation( mySurface.Face(), loc );
+
     Standard_Integer n[ 3 ];
     for ( size_t i = 0; i < myFoundTriaIDs.size(); ++i )
     {
@@ -529,13 +532,13 @@ namespace // internal utils
       t.myIsChecked = true;
 
       double d, minD2 = minDist2;
-      myPolyTrias->Value( myFoundTriaIDs[i]+1 ).Get( n[0],n[1],n[2] );
+      tr->Triangle( myFoundTriaIDs[i]+1 ).Get( n[0],n[1],n[2] );
       if ( avoidPnt && t.myHasNodeOnVertex )
       {
         bool avoidTria = false;
         for ( int i = 0; i < 3; ++i )
         {
-          const gp_Pnt& pn = myNodes->Value(n[i]);
+          const gp_Pnt& pn = myNodes.Value(n[i]);
           if (( avoidTria = ( pn.SquareDistance( *avoidPnt ) <= tol2 )))
             break;
           if ( !projectedOnly )
@@ -556,7 +559,7 @@ namespace // internal utils
       else
       {
         for ( int i = 0; i < 3; ++i )
-          minD2 = Min( minD2, p.SquareDistance( myNodes->Value(n[i]) ));
+          minD2 = Min( minD2, p.SquareDistance( myNodes.Value(n[i]) ));
         if ( minD2 < t.myMaxSize2  && ( t.DistToProjection( p, d ) || t.DistToSegment( p, d )))
           minD2 = Min( minD2, d*d );
         minDist2 = Min( minDist2, minD2 );
