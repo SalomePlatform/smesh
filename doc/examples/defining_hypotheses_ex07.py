@@ -33,4 +33,4 @@ algo2D = tria.Triangle()
 algo2D.LengthFromEdges()
 
 # compute the mesh
-tria.Compute()
+if not tria.Compute(): raise Exception("Error when computing Mesh")

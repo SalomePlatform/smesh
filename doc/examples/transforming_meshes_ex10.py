@@ -30,7 +30,7 @@ algo_local = mesh.Segment(EdgesList[8])
 algo_local.NumberOfSegments(4)
 algo_local.Propagation()
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # sew side elements
 

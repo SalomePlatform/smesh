@@ -44,7 +44,7 @@ Mesh_1 = smesh_builder.Mesh(Partition_1)
 Mesh_1.Segment().NumberOfSegments(15)
 Mesh_1.Triangle().LengthFromEdges()
 Mesh_1.Tetrahedron()
-Mesh_1.Compute()
+if not Mesh_1.Compute(): raise Exception("Error when computing Mesh")
 
 # relevant groups of volumes and faces
 

@@ -83,4 +83,4 @@ mesh.Quadrangle(sub_face4)
 
 # finally compute whole mesh
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

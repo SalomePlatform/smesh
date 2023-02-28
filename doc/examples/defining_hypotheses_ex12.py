@@ -37,4 +37,4 @@ Mesh_1.AddHypothesis(Fixed_points_1D_1)
 Regular_1D = Mesh_1.Segment()
 Quadrangle_2D = Mesh_1.Quadrangle()
 # Compute mesh
-Mesh_1.Compute()
+if not Mesh_1.Compute(): raise Exception("Error when computing Mesh")

@@ -24,7 +24,7 @@ mesh = smesh_builder.Mesh( shape )
 mesh.Segment().NumberOfSegments(1)
 mesh.Quadrangle()
 mesh.Triangle( ff[1] )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # make group of quadrangles and extrude them into a hexahedron
 quadGroup = mesh.Group( ff[0], "quads")

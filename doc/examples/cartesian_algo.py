@@ -25,7 +25,7 @@ coords = list(range(-100,100,10))
 cartHyp = cartAlgo.SetGrid( coords,coords,coords, 1000000)
 
 # compute the mesh
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("nb hexahedra",mesh.NbHexas())
 print("nb tetrahedra",mesh.NbTetras())
 print("nb polyhedra",mesh.NbPolyhedrons())
@@ -34,7 +34,7 @@ print()
 # define the grid by setting constant spacing
 cartHyp = cartAlgo.SetGrid( "10","10","10", 1000000)
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("nb hexahedra",mesh.NbHexas())
 print("nb tetrahedra",mesh.NbTetras())
 print("nb polyhedra",mesh.NbPolyhedrons())
@@ -44,7 +44,7 @@ print()
 # activate creation of faces
 cartHyp.SetToCreateFaces( True )
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("nb hexahedra",mesh.NbHexas())
 print("nb tetrahedra",mesh.NbTetras())
 print("nb polyhedra",mesh.NbPolyhedrons())
@@ -53,7 +53,7 @@ print()
 
 # enable consideration of shared faces
 cartHyp.SetToConsiderInternalFaces( True )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("nb hexahedra",mesh.NbHexas())
 print("nb tetrahedra",mesh.NbTetras())
 print("nb polyhedra",mesh.NbPolyhedrons())
@@ -64,7 +64,7 @@ print()
 spaceFuns = ["5","10+10*t"]
 cartAlgo.SetGrid( [spaceFuns, [0.5]], [spaceFuns, [0.5]], [spaceFuns, [0.25]], 10 )
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("nb hexahedra",mesh.NbHexas())
 print("nb tetrahedra",mesh.NbTetras())
 print("nb polyhedra",mesh.NbPolyhedrons())
@@ -85,24 +85,24 @@ spc = "0.1" # spacing
 mesh = smesh_builder.Mesh( box, "custom axes")
 algo = mesh.BodyFitted()
 algo.SetGrid( spc, spc, spc, 10000 )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("Default axes")
 print("   nb hex:",mesh.NbHexas())
 
 # set axes using edges of the box
 algo.SetAxesDirs( xDir, [-0.1,1,0], zDir )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("Manual axes")
 print("   nb hex:",mesh.NbHexas())
 
 # set optimal orthogonal axes
 algo.SetOptimalAxesDirs( isOrthogonal=True )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("Optimal orthogonal axes")
 print("   nb hex:",mesh.NbHexas())
 
 # set optimal non-orthogonal axes
 algo.SetOptimalAxesDirs( isOrthogonal=False )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("Optimal non-orthogonal axes")
 print("   nb hex:",mesh.NbHexas())

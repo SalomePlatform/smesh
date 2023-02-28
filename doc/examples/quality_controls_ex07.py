@@ -16,7 +16,7 @@ geom_builder.addToStudy( box, "box" )
 mesh = smesh_builder.Mesh(box)
 mesh.Segment().NumberOfSegments(3)
 mesh.Quadrangle()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # remove 2 faces
 allFaces = mesh.GetElementsByType(SMESH.FACE)

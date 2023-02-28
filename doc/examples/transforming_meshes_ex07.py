@@ -35,7 +35,7 @@ algo_local = mesh.Segment(edge1)
 algo_local.Arithmetic1D(1, 4)
 algo_local.Propagation()
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # sew border to side
 # FirstNodeIDOnFreeBorder, SecondNodeIDOnFreeBorder, LastNodeIDOnFreeBorder,

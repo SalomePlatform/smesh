@@ -35,14 +35,17 @@ mesh.Triangle(geom=Face_3)
 # get existing sub-mesh priority order: F1 -> F2 -> F3
 [[SubMesh_F1, SubMesh_F3, SubMesh_F2]] = mesh.GetMeshOrder()
 isDone = mesh.Compute()
+if not isDone: raise Exception("Error when computing Mesh")
 print("Nb elements at initial order of sub-meshes:", mesh.NbElements())
 
 # set new sub-mesh order: F2 -> F1 -> F3
 isDone = mesh.SetMeshOrder([[SubMesh_F2, SubMesh_F1, SubMesh_F3]])
 isDone = mesh.Compute()
+if not isDone: raise Exception("Error when computing Mesh")
 print("Nb elements at new order of sub-meshes:", mesh.NbElements())
 
 # compute with other sub-mesh order: F3 -> F2 -> F1
 isDone = mesh.SetMeshOrder([[SubMesh_F3, SubMesh_F2, SubMesh_F1]])
 isDone = mesh.Compute()
+if not isDone: raise Exception("Error when computing Mesh")
 print("Nb elements at another order of sub-meshes:", mesh.NbElements())

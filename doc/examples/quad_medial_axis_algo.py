@@ -29,4 +29,4 @@ algo1d.NumberOfSegments( circNbSeg ) # division of circle edges
 algo2d = mesh.Quadrangle( smeshBuilder.QUAD_MA_PROJ )
 algo2d.StartEndLength( circleLen2 / circNbSeg, circleLen1 / circNbSeg ) # radial division
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

@@ -33,4 +33,4 @@ mesh.Projection1D2D( faces[1] ).SourceFace( faces[0] ) # projection faces[0] -> 
 prism_algo.NumberOfSegments( 4, 5. )
 
 # compute the mesh
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

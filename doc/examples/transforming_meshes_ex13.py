@@ -25,7 +25,7 @@ mesh = smesh_builder.Mesh( shape, "test_Reorient2D")
 mesh.AutomaticHexahedralization(0.5)
 localAlgo = mesh.Segment(faces[0])
 localAlgo.NumberOfSegments( 11 )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 group = mesh.Group( faces[1] )
 
 vec = geom_builder.MakeVectorDXDYDZ( 1, 1, 1 )

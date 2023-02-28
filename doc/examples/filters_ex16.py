@@ -16,7 +16,7 @@ mesh = smesh_builder.Mesh( box, "Box" )
 mesh.Segment().NumberOfSegments(10)
 mesh.Quadrangle()
 mesh.Hexahedron()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 # copy all elements with translation and Merge nodes
 mesh.TranslateObject( mesh, smesh_builder.MakeDirStruct( 10,0,0), Copy=True )
 mesh.MergeNodes( mesh.FindCoincidentNodes(1e-7) )

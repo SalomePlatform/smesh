@@ -40,7 +40,7 @@ smeshhomard.SetLogInFile(True)
 smeshhomard.SetLogFile(log_file_1)
 smeshhomard.SetRemoveLogOnSuccess(False)
 smeshhomard.SetVerboseLevel(3)
-smeshhomard.Compute()
+if not smeshhomard.Compute(): raise Exception("Error when computing Mesh")
 
 if osp.isfile(output_med_1):
   os.remove(output_med_1)
@@ -79,7 +79,7 @@ smeshhomard.SetLogInFile(True)
 smeshhomard.SetLogFile(log_file_2)
 smeshhomard.SetRemoveLogOnSuccess(True)
 smeshhomard.SetVerboseLevel(0)
-smeshhomard.Compute()
+if not smeshhomard.Compute(): raise Exception("Error when computing Mesh")
 
 if osp.isfile(output_med_2):
   print("Test Uniform refinement Case 2: Error: output med file has not been removed")

@@ -101,7 +101,7 @@ geom_builder.addToStudy( f2, "f2" )
 # compute 1D mesh
 mesh = smesh_builder.Mesh( box )
 mesh.Segment().NumberOfSegments( 5 )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # compute 2D mesh
 mesh.Quadrangle()
@@ -109,8 +109,8 @@ mesh.UseExistingFaces(f1) # UseExistingFaces() allows using my2DMeshing();
 mesh.UseExistingFaces(f2) # assign UseExistingFaces() BEFORE calling my2DMeshing()!
 my2DMeshing(f1, mesh)
 my2DMeshing(f2, mesh)
-assert mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # compute 3D mesh
 mesh.Prism()
-assert mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

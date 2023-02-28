@@ -16,7 +16,7 @@ mesh = smesh_builder.Mesh( box, "Box" )
 mesh.Segment().NumberOfSegments(10)
 mesh.Quadrangle()
 mesh.Hexahedron()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 # copy all elements with translation
 mesh.TranslateObject( mesh, [10,0,0], Copy=True )
 # create  a filter to find nodes equal within tolerance of 1e-5

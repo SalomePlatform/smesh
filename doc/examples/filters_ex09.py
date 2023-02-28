@@ -15,7 +15,7 @@ face = geom_builder.MakeFaceHW(100, 100, 1, theName="quadrangle")
 mesh = smesh_builder.Mesh(face)
 mesh.Segment().NumberOfSegments(10)
 mesh.Triangle().MaxElementArea(25)
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # get all free borders
 filter = smesh_builder.GetFilter(SMESH.EDGE, SMESH.FT_FreeBorders)

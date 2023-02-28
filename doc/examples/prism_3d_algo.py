@@ -72,4 +72,4 @@ mesh.Segment(bigQuad).LocalLength( 3 )
 mesh.Triangle(bigQuad)
 
 # compute the mesh
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")

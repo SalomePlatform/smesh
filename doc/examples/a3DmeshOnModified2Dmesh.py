@@ -56,7 +56,9 @@ isDone = Mesh_1.SplitQuadObject( Mesh_1, Diag13=True )
 Mesh_1.Tetrahedron()
 
 # 5) Compute 3D mesh
-Mesh_1.Compute()
+isDone = Mesh_1.Compute()
+if not isDone:
+  raise Exception("Error when computing Mesh")
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()

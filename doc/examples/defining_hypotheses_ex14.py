@@ -28,4 +28,4 @@ Nb_Segments_1 = Regular_1D.NumberOfSegments(10)
 Quadrangle_2D = Mesh_1.Quadrangle().TriangleVertex( triaVertex )
 
 # Compute the mesh
-Mesh_1.Compute()
+if not Mesh_1.Compute(): raise Exception("Error when computing Mesh")

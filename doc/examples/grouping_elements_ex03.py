@@ -16,7 +16,7 @@ box = geom_builder.MakeBoxDXDYDZ(10,10,10)
 mesh = smesh_builder.Mesh(box,"Quad mesh")
 hyp1D = mesh.Segment().StartEndLength( 1, 4 )
 mesh.Quadrangle()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # create a group on filter selecting faces of medium size
 critaria = [ \
@@ -30,7 +30,7 @@ print("Group on filter contains %s elements" % filtGroup.Size())
 # group on filter is updated if the mesh is modified
 hyp1D.SetStartLength( 2.5 )
 hyp1D.SetEndLength( 2.5 )
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 print("After mesh change, group on filter contains %s elements" % filtGroup.Size())
 
 # set a new filter defining the group

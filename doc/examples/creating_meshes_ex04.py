@@ -41,19 +41,19 @@ hyp3 = algo_local.Arithmetic1D(1, 6)
 hyp4 = algo_local.Propagation()
 
 # compute the mesh
-tria.Compute()
+if not tria.Compute(): raise Exception("Error when computing Mesh")
 PrintMeshInfo(tria)
 
 # remove a local hypothesis
 tria.RemoveHypothesis(hyp4, edge)
 
 # compute the mesh
-tria.Compute()
+if not tria.Compute(): raise Exception("Error when computing Mesh")
 PrintMeshInfo(tria)
 
 # change the value of the 2D hypothesis
 hyp2.SetMaxElementArea(2.)
 
 # compute the mesh
-tria.Compute()
+if not tria.Compute(): raise Exception("Error when computing Mesh")
 PrintMeshInfo(tria)

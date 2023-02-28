@@ -20,7 +20,7 @@ mesh = smesh_builder.Mesh( Fuse, "Deflection_2D")
 algo = mesh.Segment()
 algo.LocalLength(35)
 algo = mesh.Triangle()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # get min and max deflection
 minMax = mesh.GetMinMax( SMESH.FT_Deflection2D )

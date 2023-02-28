@@ -33,7 +33,7 @@ quadra.Quadrangle()
 algo1D.NumberOfSegments(7) 
 
 # compute the mesh
-quadra.Compute()
+if not quadra.Compute(): raise Exception("Error when computing Mesh")
 
 # create SMESH group on the face with name "SMESHGroup1"
 aSmeshGroup1 = quadra.GroupOnGeom(face, "SMESHGroup1")

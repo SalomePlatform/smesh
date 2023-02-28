@@ -21,7 +21,7 @@ mesh.Quadrangle()
 mesh.Hexahedron()
 
 # Compute mesh
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # Duplicate nodes only
 

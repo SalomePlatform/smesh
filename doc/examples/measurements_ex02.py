@@ -27,8 +27,8 @@ mesh2 = smesh_builder.Mesh(box2, 'box2')
 mesh2.Segment().NumberOfSegments(5)
 mesh2.Triangle().MaxElementArea(20)
 
-mesh1.Compute()
-mesh2.Compute()
+if not mesh1.Compute(): raise Exception("Error when computing Mesh")
+if not mesh2.Compute(): raise Exception("Error when computing Mesh")
 
 # compute bounding box for mesh1
 mesh1.BoundingBox()

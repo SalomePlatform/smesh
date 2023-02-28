@@ -20,7 +20,7 @@ localAlgo = mesh.Triangle(face)
 mesh.Segment().NumberOfSegments( 3 )
 mesh.Quadrangle()
 mesh.Prism()
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # objects to copy
 fGroup = mesh.GroupOnGeom( face, "2D on face")
@@ -56,4 +56,4 @@ smallBox = geom_builder.MakeScaleAlongAxes( box, None, 1, 0.5, 0.5 )
 cutBox = geom_builder.MakeCut( box, smallBox, theName="box - smallBox" )
 
 ok, newMesh, groups, submehses, hyps, invIDs = smesh_builder.CopyMeshWithGeom( mesh, cutBox, "cutBox" )
-newMesh.Compute()
+if not newMesh.Compute(): raise Exception("Error when computing Mesh")

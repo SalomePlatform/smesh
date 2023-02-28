@@ -29,7 +29,7 @@ algo3D = hexa.Hexahedron()
 algo1D.Arithmetic1D(1, 4)
 
 # compute the mesh
-hexa.Compute()
+if not hexa.Compute(): raise Exception("Error when computing Mesh")
 
 # 2. Create a tetrahedral mesh on the box
 tetra = smesh_builder.Mesh(box, "Box : tetrahedrical mesh")
@@ -48,4 +48,4 @@ algo1D.Arithmetic1D(1, 4)
 algo2D.LengthFromEdges()
 
 # compute the mesh
-tetra.Compute()
+if not tetra.Compute(): raise Exception("Error when computing Mesh")

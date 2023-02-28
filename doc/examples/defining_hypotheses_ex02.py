@@ -43,4 +43,4 @@ algo_local = hexa.Segment(e_arc)
 algo_local.Deflection1D(1.0)
 
 # compute the mesh
-hexa.Compute()
+if not hexa.Compute(): raise Exception("Error when computing Mesh")

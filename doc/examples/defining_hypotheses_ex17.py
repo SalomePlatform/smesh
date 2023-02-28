@@ -43,7 +43,7 @@ layersHyp = algo3D.ViscousLayers(thickness,numberOfLayers,stretchFactor,
                                  ignoreFaces,           # optional
                                  groupName = groupName) # optional
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # retrieve boundary prisms created by mesh.Compute()
 boundaryGroup = mesh.GetGroupByName( layersHyp.GetGroupName() )[0]
@@ -65,7 +65,7 @@ mesh.Segment().NumberOfSegments( 5 )
 vlHyp = mesh.Triangle().ViscousLayers2D( 2, 3, 1.5,
                                          edgeIds, isEdgesToIgnore=True, # optional
                                          groupName=groupName)           # optional
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
 
 # retrieve boundary elements created by mesh.Compute()
 quadrangles = mesh.GetGroupByName( vlHyp.GetGroupName() )[0]
@@ -74,4 +74,4 @@ print( "Nb boundary quadrangles", quadrangles.Size() )
 # viscous layers will be created on 3 edges, as we pass isEdgesToIgnore=False
 vlHyp.SetEdges( edgeIds, False )
 
-mesh.Compute()
+if not mesh.Compute(): raise Exception("Error when computing Mesh")
