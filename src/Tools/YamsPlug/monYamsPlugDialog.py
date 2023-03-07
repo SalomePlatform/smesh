@@ -548,9 +548,10 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
     import SMeshHelper
     key = SMeshHelper.GetMGLicenseKey( self.fichierIn )
-    self.commande+=' --key ' + key
-    
-    print(self.commande)
+    if key != "0":
+      self.commande+=' --key ' + key
+
+    if verbose: print("INFO: MG-SurfOpt command:\n  %s" % self.commande)
     return True
 
   def clean(self):

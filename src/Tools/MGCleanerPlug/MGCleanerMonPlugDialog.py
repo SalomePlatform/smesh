@@ -568,9 +568,10 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
     import SMeshHelper
     key = SMeshHelper.GetMGLicenseKey( self.fichierIn )
-    self.commande+=' --key ' + key
+    if key != "0":
+      self.commande+=' --key ' + key
 
-    if verbose: print(("INFO: MGCCleaner command:\n  %s" % self.commande))
+    if verbose: print("INFO: MG-Cleaner command:\n  %s" % self.commande)
     return True
 
   def clean(self):

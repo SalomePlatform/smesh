@@ -27,16 +27,21 @@
 
 #include <string>
 
+#define MESHGEMS_215 (2 << 16 | 15 << 8 | 0)
+
 /*!
  * \brief Manage loading libSalomeMeshGemsKeyGenerator.[so|dll] and sing MeshGems CAD or mesh
  */
 
 namespace SMESHUtils_MGLicenseKeyGen
 {
+  // MeshGems 2.13, 2.14 (for CADSurf)
   SMESHUtils_EXPORT bool        SignCAD( void* meshgems_cad, std::string& error );
 
+  // MeshGems 2.13, 2.14 (for products launched as library)
   SMESHUtils_EXPORT bool        SignMesh( void* meshgems_mesh, std::string& error );
 
+  // MeshGems 2.13, 2.14 and 2.15 (for products launched as executables)
   SMESHUtils_EXPORT std::string GetKey(const std::string& gmfFile,
                                        int                nbVertex,
                                        int                nbEdge,
@@ -44,9 +49,16 @@ namespace SMESHUtils_MGLicenseKeyGen
                                        int                nbVol,
                                        std::string&       error);
 
+  // MeshGems 2.15 (for products launched as library)
+  SMESHUtils_EXPORT std::string GetKey( std::string& error );
+
   SMESHUtils_EXPORT bool        CheckKeyGenLibrary( std::string& error );
 
   SMESHUtils_EXPORT std::string GetLibraryName();
+
+  SMESHUtils_EXPORT int         GetMGVersionHex(std::string& error);
+  SMESHUtils_EXPORT bool        NeedsMGSpatialEnvLicense(std::string& error);
+  SMESHUtils_EXPORT bool        SetMGSpatialEnvLicense(std::string& error);
 }
 
 #endif

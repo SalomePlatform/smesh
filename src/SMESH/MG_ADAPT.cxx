@@ -1036,14 +1036,19 @@ std::string MgAdapt::getCommandToRun()
     if ( key.empty() )
       return ToComment( "Problem with library SalomeMeshGemsKeyGenerator: " + errorTxt );
 
-    cmd += " --key " + key;
+    if ( key!="0" )
+      cmd += " --key " + key;
   }
 
 #ifdef WIN32
   cmd += " < NUL";
 #endif
-  //   std::cout << "--- cmd :"<< std::endl;
-  //   std::cout << cmd << std::endl;
+
+  if (SALOME::VerbosityActivated())
+    {
+      std::cout << "--- cmd :"<< std::endl;
+      std::cout << cmd << std::endl;
+    }
 
   return cmd;
 }
