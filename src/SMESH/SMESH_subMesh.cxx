@@ -1517,7 +1517,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         // check submeshes needed
         // When computing in parallel mode we do not have a additional layer of submesh
         // The check should not be done in parallel as that check is not thread-safe
-        if (_father->HasShapeToMesh() && !_father->IsParallel()) {
+        if (_father->HasShapeToMesh() && (!_father->IsParallel() || shape.ShapeType() != TopAbs_SOLID )) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {
             //  --- commented for bos#22320 to compute all sub-shapes at once if possible;
@@ -2188,10 +2188,13 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * /*theGen*/,
   {
     SMESH_subMesh* subMesh = smIt->next();
     const TopoDS_Shape&  S = subMesh->_subShape;
-    if ( S.ShapeType() != this->_subShape.ShapeType() )
+
+    if ( S.ShapeType() != this->_subShape.ShapeType() ){
       continue;
-    if ( _allowedSubShapes && !_allowedSubShapes->IsEmpty() && !_allowedSubShapes->Contains( S ))
+    }
+    if ( _allowedSubShapes && !_allowedSubShapes->IsEmpty() && !_allowedSubShapes->Contains( S )){
       continue;
+    }
     if ( subMesh == this )
     {
       aBuilder.Add( aCompound, S );
@@ -2200,6 +2203,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * /*theGen*/,
     else if ( subMesh->GetComputeState() == READY_TO_COMPUTE )
     {
       SMESH_Algo* anAlgo = subMesh->GetAlgo();
+
       if (( anAlgo->IsSameName( *theAlgo )) && // same algo
           ( anAlgo->GetUsedHypothesis( *_father, S, skipAuxHyps ) == usedHyps ) && // same hyps
           ( anAlgo->GetAssignedShapes() == assiShapes ) && // on same sub-shapes

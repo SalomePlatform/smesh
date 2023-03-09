@@ -900,17 +900,6 @@ module SMESH
     boolean SetMeshOrder(in submesh_array_array theSubMeshArray);
 
     /*!
-     * \brief Set Number of Threads
-     */
-    void SetNbThreads(in long nbThreads);
-    /*!
-    /*!
-     * \brief Get Number of Threads
-     */
-    long GetNbThreads();
-    /*!
-
-    /*!
      * Get mesh description
      */
     string Dump();
@@ -1114,7 +1103,32 @@ module SMESH
   };
 
   interface SMESH_SequentialMesh:SMESH_Mesh{};
-  interface SMESH_ParallelMesh:SMESH_Mesh{};
+  interface SMESH_ParallelMesh:SMESH_Mesh{
+
+    // Parallism method
+    long GetParallelismMethod();
+    void SetParallelismMethod(in long aMethod);
+
+    // Parameters for MutliThreading
+    long GetNbThreads();
+    void SetNbThreads(in long nbThreads);
+
+    // Parameters for MultiNode
+    string GetResource();
+    void SetResource(in string aResource);
+
+    long GetNbProc();
+    void SetNbProc(in long nbProc);
+
+    long GetNbProcPerNode();
+    void SetNbProcPerNode(in long nbProcPerNode);
+
+    long GetNbNode();
+    void SetNbNode(in long nbNode);
+
+    string GetWcKey();
+    void SetWcKey(in string wcKey);
+  };
 
 };
 

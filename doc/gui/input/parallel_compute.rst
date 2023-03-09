@@ -43,28 +43,64 @@ How to
 You follow the same principle as the creation of a sequential Mesh.
 
 
-#. First you create the mesh:
+1. First you create the mesh:
+
 	.. code-block:: python
 
-		par_mesh = smesh.ParallelMesh(geom, name="par_mesh")
+		par_mesh = smesh.ParallelMesh(my_geom, name="par_mesh")
 
-#. Define the Global Hypothesis that will be split into an hypothesis for the
+2. Define the Global Hypothesis that will be split into an hypothesis for the
    1D+2D compound and one for each of the 3D solids:
-	.. code-block:: python
+
+  .. code-block:: python
 
 		NETGEN_3D_Parameters_1 = smesh.CreateHypothesisByAverageLength( 'NETGEN_Parameters',
                                                  'NETGENEngine', 34.641, 0 )
-		par_mesh.AddGlobalHypothesis(netgen_parameters)
+		par_mesh.AddGlobalHypothesis(NETGEN_3D_Parameters_1)
 
-#. Set the parameters for the parallelisation:
+3. Set the method for the parallelisation:
+
+  You have two methods for parallelisation:
+
+  * Multihtreading: Will run the computation on your computer using the processors on your computer.
+
+  .. code-block:: python
+
+     par_mesh.SetParallelismMethod(smeshBuilder.MULTITHREAD)
+
+
+  * MultiNodal: Will run the computation on a remote resource (cluster) that is defined in your salome catalog.
+
+  .. code-block:: python
+
+     par_mesh.SetParallelismMethod(smeshBuilder.MULTINODE)
+
+
+4.  Set the parameters for the parallelism:
+
+  *  Multithread:
+
 	.. code-block:: python
 
 		param = par_mesh.GetParallelismSettings()
 		param.SetNbThreads(6)
 
-#. Compute the mesh:
+  * Multinode:
+
+  .. code-block:: python
+
+     param = par_mesh.GetParallelismSettings()
+     param.SetResource("cronos")
+     param.SetNbProc(nbox**3)
+     param.SetNbProcPerNode(2)
+     param.SetNbNode(6)
+     param.SetWcKey("P11N0:SALOME_COFEE")
+
+5. Compute the mesh:
 	.. code-block:: python
 
-		mesh.Compute()
+		is_done = par_mesh.Compute()
+		if not is_done:
+		    raise Exception("Error when computing Mesh")
 
 **See Also** a sample script of :ref:`tui_create_parallel_mesh`.

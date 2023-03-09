@@ -146,6 +146,7 @@ SET(SMESHEngine_SOURCES
   SMESH_PreMeshInfo.cxx
   MG_ADAPT_i.cxx
   SMESH_Homard_i.cxx
+  SMESH_ParallelMesh_i.cxx
 )
 
 # --- rules ---

@@ -7028,24 +7028,6 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
   return res;
 }
 
-//=============================================================================
-/*!
- * \brief Set the number of threads for a parallel computation
- */
-//=============================================================================
-void SMESH_Mesh_i::SetNbThreads(CORBA::Long nbThreads){
-  _impl->SetNbThreads(nbThreads);
-}
-
-//=============================================================================
-/*!
- * \brief Get the number of threads for a parallel computation
- */
-//=============================================================================
-CORBA::Long SMESH_Mesh_i::GetNbThreads(){
-  return _impl->GetNbThreads();
-}
-
 
 //=============================================================================
 /*!

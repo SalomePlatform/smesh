@@ -29,8 +29,14 @@
 
 #include "SMESH_Mesh.hxx"
 
+#ifndef WIN32
+#include <boost/asio.hpp>
+#endif
+
 #include "SMESH_Gen.hxx"
 #include "SMESH_subMesh.hxx"
+
+enum ParallelismMethod {MultiThread, MultiNode};
 
 class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
 {
@@ -42,42 +48,51 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
 
   virtual ~SMESH_ParallelMesh();
 
-#ifndef WIN32
+  // Locking mechanism
   void Lock() override {_my_lock.lock();};
   void Unlock() override {_my_lock.unlock();};
-
-  int GetNbThreads() override{return _NbThreads;};
-  void SetNbThreads(long nbThreads) override{_NbThreads=nbThreads;};
-
-  void InitPoolThreads() override {_pool = new boost::asio::thread_pool(_NbThreads);};
-  void DeletePoolThreads() override {delete _pool;};
-
+  // We need to recreate the pool afterthe join
   void wait() override {_pool->join(); DeletePoolThreads(); InitPoolThreads(); };
 
-  bool IsParallel() override {return _NbThreads > 0;};
+  // Thread Pool
+  void InitPoolThreads() {_pool = new boost::asio::thread_pool(GetPoolNbThreads());};
+  void DeletePoolThreads() {delete _pool;};
+  boost::asio::thread_pool* GetPool() {return _pool;};
+  int GetPoolNbThreads();
 
+  // Temporary folder
   void CreateTmpFolder();
   void DeleteTmpFolder();
+  boost::filesystem::path GetTmpFolder() {return tmp_folder;};
 
-  boost::filesystem::path GetTmpFolder() override {return tmp_folder;};
-  boost::asio::thread_pool* GetPool() override {return _pool;};
-#else
-  void Lock() override {};
-  void Unlock() override {};
+  //
+  bool IsParallel() override {return true;};
 
-  int GetNbThreads() override {return 0;};
-  void SetNbThreads(long nbThreads) {(void) nbThreads;};
+  // Parallelims paramaters
+  int GetParallelismMethod() {return _method;};
+  void SetParallelismMethod(int aMethod) {_method = aMethod;};
 
-  void InitPoolThreads() override {};
-  void DeletePoolThreads() override {};
-  void wait() override {};
+  // Mutlithreading parameters
+  int GetNbThreads() {return _NbThreads;};
+  void SetNbThreads(long nbThreads);
 
-  bool IsParallel() override {return false;};
+  // Multinode parameters
+  std::string GetResource() {return _resource;};
+  void SetResource(std::string aResource) {_resource = aResource;};
 
-  void CreateTmpFolder();
-  void DeleteTmpFolder();
-#endif
+  int GetNbProc() {return _nbProc;};
+  void SetNbProc(long nbProc) {_nbProc = nbProc;};
 
+  int GetNbProcPerNode() {return _nbProcPerNode;};
+  void SetNbProcPerNode(long nbProcPerNodes) {_nbProcPerNode = nbProcPerNodes;};
+
+  int GetNbNode() {return _nbNode;};
+  void SetNbNode(long nbNodes) {_nbNode = nbNodes;};
+
+  std::string GetWcKey() {return _wcKey;};
+  void SetWcKey(std::string wcKey) {_wcKey = wcKey;};
+
+  // Parallel computation
   bool ComputeSubMeshes(
             SMESH_Gen* gen,
             SMESH_Mesh & aMesh,
@@ -94,9 +109,22 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
   SMESH_ParallelMesh():SMESH_Mesh() {};
   SMESH_ParallelMesh(const SMESH_ParallelMesh& aMesh):SMESH_Mesh(aMesh) {};
  private:
+  // Mutex for multhitreading write in SMESH_Mesh
 #ifndef WIN32
-  boost::filesystem::path tmp_folder;
-  boost::asio::thread_pool *     _pool = nullptr; //thread pool for computation
+  boost::mutex _my_lock;
 #endif
+  boost::filesystem::path tmp_folder;
+  // thread pool for computation
+  boost::asio::thread_pool *     _pool = nullptr;
+
+  int _method = ParallelismMethod::MultiThread;
+
+  int _NbThreads = std::thread::hardware_concurrency();
+
+  int _nbProc = 1;
+  int _nbProcPerNode = 1;
+  int _nbNode = 1;
+  std::string _resource = "";
+  std::string _wcKey = "P11N0:SALOME";
 };
 #endif

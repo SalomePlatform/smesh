@@ -43,7 +43,7 @@ class SMESH_I_EXPORT SMESH_SequentialMesh_i:
   SMESH_SequentialMesh_i( PortableServer::POA_ptr thePOA,
                           SMESH_Gen_i*            myGen_i ):SMESH_Mesh_i(thePOA, myGen_i){};
 
-  virtual ~SMESH_SequentialMesh_i(){};
+  virtual ~SMESH_SequentialMesh_i();
 
 };
 

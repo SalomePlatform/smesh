@@ -40,6 +40,11 @@ SET(smesh_SCRIPTS
   smesh_tools.py
 )
 
+SET(smesh_exe_SCRIPTS
+  mesher_launcher.py
+  send_files.py
+)
+
 SET(StdMeshers_SCRIPTS
   __init__.py
   StdMeshersBuilder.py
@@ -66,6 +71,7 @@ ENDIF(WIN32)
 install(TARGETS _SMeshHelper DESTINATION ${SALOME_INSTALL_LIBS})
 install(FILES ${SMeshHelper_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})
 SALOME_INSTALL_SCRIPTS("${_swig_SCRIPTS}"  ${SALOME_INSTALL_BINS} EXTRA_DPYS "${SWIG_MODULE_SMeshHelper_REAL_NAME}")
+SALOME_INSTALL_SCRIPTS("${smesh_exe_SCRIPTS}"  ${SALOME_INSTALL_BINS})
 
 # --- rules ---
 SALOME_INSTALL_SCRIPTS("${smesh_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/salome/smesh DEF_PERMS)
