@@ -51,6 +51,9 @@
 #include "memoire.h"
 #include <functional>
 
+#include <QString>
+#include <QProcess>
+
 #ifdef WIN32
   #include <windows.h>
 #endif
@@ -174,12 +177,12 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
  */
 //=============================================================================
 
-SMESH_Mesh* SMESH_Gen::CreateParallelMesh(bool theIsEmbeddedMode)
+SMESH_ParallelMesh* SMESH_Gen::CreateParallelMesh(bool theIsEmbeddedMode)
 {
   Unexpect aCatch(SalomeException);
 
   // create a new SMESH_mesh object
-  SMESH_Mesh *aMesh = new SMESH_ParallelMesh(
+  SMESH_ParallelMesh *aMesh = new SMESH_ParallelMesh(
                                      _localId++,
                                      this,
                                      theIsEmbeddedMode,
@@ -206,7 +209,7 @@ bool SMESH_Gen::sequentialComputeSubMeshes(
           const bool complexShapeFirst,
           const bool   aShapeOnly)
 {
-  MESSAGE("Compute submeshes sequentialy");
+  MESSAGE("Sequential Compute of submeshes");
 
   bool ret = true;
 
@@ -291,6 +294,68 @@ const std::function<void(SMESH_subMesh*,
 
 
 //=============================================================================
+/*
+ * Copy a file on remote resource
+ */
+//=============================================================================
+
+void SMESH_Gen::send_mesh(SMESH_Mesh& aMesh, std::string file_name)
+{
+#ifndef WIN32
+  SMESH_ParallelMesh& aParMesh = dynamic_cast<SMESH_ParallelMesh&>(aMesh);
+  // Calling run_mesher
+  // Path to mesher script
+  fs::path send_files = fs::path(std::getenv("SMESH_ROOT_DIR"))/
+  fs::path("bin")/
+  fs::path("salome")/
+  fs::path("send_files.py");
+
+  std::string s_program="python3";
+  std::list<std::string> params;
+  params.push_back(send_files.string());
+  params.push_back(file_name);
+  params.push_back("--resource="+aParMesh.GetResource());
+
+  // log file
+  fs::path log_file=aParMesh.GetTmpFolder() / fs::path("copy.log");
+  QString out_file = log_file.string().c_str();
+
+  // Building arguments for QProcess
+  QString program = QString::fromStdString(s_program);
+  QStringList arguments;
+  for(auto arg : params){
+    arguments << arg.c_str();
+  }
+
+  std::string cmd = "";
+  cmd += s_program;
+  for(auto arg: params){
+    cmd += " " + arg;
+  }
+  MESSAGE("Send files command: ");
+  MESSAGE(cmd);
+
+  QProcess myProcess;
+  myProcess.setProcessChannelMode(QProcess::MergedChannels);
+  myProcess.setStandardOutputFile(out_file);
+
+  myProcess.start(program, arguments);
+  // Waiting for process to finish (argument -1 make it wait until the end of
+  // the process otherwise it just waits 30 seconds)
+  bool finished = myProcess.waitForFinished(-1);
+  int ret = myProcess.exitCode();
+
+  if(ret != 0 || !finished){
+  // Run crahed
+    std::string msg = "Issue with send_files: \n";
+    msg += "See log for more details: " + log_file.string() + "\n";
+    msg += cmd + "\n";
+    throw SALOME_Exception(msg);
+  }
+#endif
+}
+
+//=============================================================================
 /*!
  * Algo to run the computation of all the submeshes of a mesh in parallel
  */
@@ -315,10 +380,10 @@ bool SMESH_Gen::parallelComputeSubMeshes(
 
   SMESH_subMeshIteratorPtr smIt;
   SMESH_subMesh *shapeSM = aMesh.GetSubMesh(aShape);
+  SMESH_ParallelMesh &aParMesh = dynamic_cast<SMESH_ParallelMesh&>(aMesh);
 
   TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
-  int nbThreads = aMesh.GetNbThreads();
-  MESSAGE("Compute submeshes with threads: " << nbThreads);
+  MESSAGE("Parallel Compute of submeshes");
 
 
   smIt = shapeSM->getDependsOnIterator(includeSelf, !complexShapeFirst);
@@ -332,11 +397,6 @@ bool SMESH_Gen::parallelComputeSubMeshes(
     // Not doing in parallel 1D and 2D meshes
     if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
       continue;
-    if(shapeType==TopAbs_FACE||shapeType==TopAbs_EDGE)
-      aMesh.SetNbThreads(0);
-    else
-      aMesh.SetNbThreads(nbThreads);
-
 
     if (shapeType != previousShapeType) {
       // Waiting for all threads for the previous type to end
@@ -347,12 +407,12 @@ bool SMESH_Gen::parallelComputeSubMeshes(
         case TopAbs_FACE:
           file_name = "Mesh2D.med";
           break;
-        case TopAbs_EDGE:
-          file_name = "Mesh1D.med";
-          break;
-        case TopAbs_VERTEX:
-          file_name = "Mesh0D.med";
-          break;
+        //case TopAbs_EDGE:
+        //  file_name = "Mesh1D.med";
+        //  break;
+        //case TopAbs_VERTEX:
+        //  file_name = "Mesh0D.med";
+        //  break;
         case TopAbs_SOLID:
         default:
           file_name = "";
@@ -360,8 +420,11 @@ bool SMESH_Gen::parallelComputeSubMeshes(
       }
       if(file_name != "")
       {
-        fs::path mesh_file = fs::path(aMesh.GetTmpFolder()) / fs::path(file_name);
+        fs::path mesh_file = fs::path(aParMesh.GetTmpFolder()) / fs::path(file_name);
 	      SMESH_DriverMesh::exportMesh(mesh_file.string(), aMesh, "MESH");
+        if (aParMesh.GetParallelismMethod() == ParallelismMethod::MultiNode) {
+          this->send_mesh(aMesh, mesh_file.string());
+        }
       }
       //Resetting threaded pool info
       previousShapeType = shapeType;
@@ -375,15 +438,25 @@ bool SMESH_Gen::parallelComputeSubMeshes(
       smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
       continue;
     }
-    boost::asio::post(*(aMesh.GetPool()), std::bind(compute_function, smToCompute, computeEvent,
+    // Parallelism is only for 3D parts
+    if(shapeType!=TopAbs_SOLID){
+      compute_function(smToCompute, computeEvent,
                       shapeSM, aShapeOnly, allowedSubShapes,
-                      aShapesId));
+                      aShapesId);
+    }else{
+      boost::asio::post(*(aParMesh.GetPool()), std::bind(compute_function, smToCompute, computeEvent,
+                        shapeSM, aShapeOnly, allowedSubShapes,
+                        aShapesId));
+    }
   }
 
   // Waiting for the thread for Solids to finish
   aMesh.wait();
 
   aMesh.GetMeshDS()->Modified();
+
+  // Cleanup done here as in Python the destructor is not called
+  aParMesh.cleanup();
 
   return ret;
 #endif
@@ -648,6 +721,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
           if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
             continue;
           sm->SetAllowedSubShapes( fillAllowed( shapeSM, aShapeOnly, allowedSubShapes ));
+
           setCurrentSubMesh( sm );
           sm->ComputeStateEngine( computeEvent );
 

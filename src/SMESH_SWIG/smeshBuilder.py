@@ -1629,7 +1629,9 @@ class Mesh(metaclass = MeshMeta):
                         geo_name = "%s_%s to mesh"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
                 if parallel and isinstance(self, ParallelMesh):
-                    self.SetMesh( self.smeshpyD.CreateParallelMesh(self.geom) )
+                    mymesh = self.smeshpyD.CreateParallelMesh(self.geom)
+                    mymesh2 = mymesh._narrow(SMESH._objref_SMESH_Mesh)
+                    self.SetMesh( mymesh )
                 else:
                     self.SetMesh( self.smeshpyD.CreateMesh(self.geom) )
 
@@ -5490,7 +5492,7 @@ class Mesh(metaclass = MeshMeta):
                                                            toCopyAll,toCreateAllElements,groups)
         if mesh: mesh = self.smeshpyD.Mesh(mesh)
         return nb, mesh, group
-    
+
     def MakeBoundaryElements(self, dimension=SMESH.BND_2DFROM3D, groupName="", meshName="",
                              toCopyAll=False, groups=[]):
         """
@@ -7550,7 +7552,7 @@ def _copy_netgen_param(dim, local_param, global_param):
     Create 1D/2D/3D netgen parameters from a NETGEN 1D2D3D parameter
     """
     if dim==1:
-        #TODO: Try to identify why we need to substract 1
+        #TODO: Try to identify why we need to substract 1 to have same results
         local_param.NumberOfSegments(int(global_param.GetNbSegPerEdge())-1)
     elif dim==2:
         local_param.SetMaxSize(global_param.GetMaxSize())
@@ -7559,6 +7561,7 @@ def _copy_netgen_param(dim, local_param, global_param):
         local_param.SetFineness(global_param.GetFineness())
         local_param.SetNbSegPerEdge(global_param.GetNbSegPerEdge())
         local_param.SetNbSegPerRadius(global_param.GetNbSegPerRadius())
+        #TODO: Why the 0.9 to have same results
         local_param.SetGrowthRate(global_param.GetGrowthRate()*0.9)
         local_param.SetChordalError(global_param.GetChordalError())
         local_param.SetChordalErrorEnabled(global_param.GetChordalErrorEnabled())
@@ -7580,6 +7583,31 @@ def _copy_netgen_param(dim, local_param, global_param):
         local_param.SetGrowthRate(global_param.GetGrowthRate())
         local_param.SetNbThreads(global_param.GetNbThreads())
 
+
+def _shaperstudy2geom(geompyD, shaper_obj):
+    """
+    Convertion of shaper object to geom object
+
+    Parameters:
+        geompyD: geomBuilder instance
+        shaper_obj: Shaper study object
+
+    Returns:
+        geom object
+
+    """
+    import tempfile
+    #Writing shaperstudy object into a brep file
+    fid, tmp_file = tempfile.mkstemp(suffix='.brep')
+    with open(fid, 'wb') as f:
+        f.write(shaper_obj.GetShapeStream())
+    # Reimporting brep file into geom
+    real_geom = geompyD.ImportBREP(tmp_file)
+    os.remove(tmp_file)
+
+    return real_geom
+
+
 def _split_geom(geompyD, geom):
     """
     Splitting geometry into n solids and a 2D/1D compound
@@ -7588,7 +7616,11 @@ def _split_geom(geompyD, geom):
         geompyD: geomBuilder instance
         geom: geometrical object for meshing
 
+    Returns:
+        compound containing all the 1D,2D elements
+        list of solids
     """
+
     # Splitting geometry into 3D elements and all the 2D/1D into one compound
     object_solids = geompyD.ExtractShapes(geom, geompyD.ShapeType["SOLID"],
                                           True)
@@ -7615,7 +7647,6 @@ def _split_geom(geompyD, geom):
                                        'Face_{}'.format(iface))
 
     # Creating submesh for edges 1D/2D part
-
     all_faces = geompyD.MakeCompound(faces)
     geompyD.addToStudy(all_faces, 'Compound_1')
     all_faces = geompyD.MakeGlueEdges(all_faces, 1e-07)
@@ -7624,6 +7655,8 @@ def _split_geom(geompyD, geom):
 
     return all_faces, solids
 
+
+MULTITHREAD, MULTINODE = range(2)
 class ParallelismSettings:
     """
     Defines the parameters for the parallelism of ParallelMesh
@@ -7640,20 +7673,108 @@ class ParallelismSettings:
 
         self._mesh = mesh
 
+
+class MTParallelismSettings(ParallelismSettings):
+    """
+    Defines the parameters for the parallelism of ParallelMesh using MultiThreading
+    """
+    def __init__(self, mesh):
+        ParallelismSettings.__init__(self, mesh)
+
+    # Multithreading methods
     def SetNbThreads(self, nbThreads):
-        """
-        Set the number of threads for multithreading
-        """
+        """ Set the number of threads for multithread """
         if nbThreads < 1:
             raise ValueError("Number of threads must be stricly greater than 1")
 
         self._mesh.mesh.SetNbThreads(nbThreads)
 
     def GetNbThreads(self):
-        """
-        Get Number of threads
-        """
+        """ Get Number of threads """
         return self._mesh.mesh.GetNbThreads()
+
+    def __str__(self):
+        """ str conversion """
+        string = "\nParameter for MultiThreading parallelism:\n"
+        string += "NbThreads: {}\n".format(self.GetNbThreads())
+
+        return string
+
+
+class MNParallelismSettings(ParallelismSettings):
+    """
+    Defines the parameters for the parallelism of ParallelMesh using MultiNodal
+    """
+    def __init__(self, mesh):
+        ParallelismSettings.__init__(self, mesh)
+
+    def GetResource(self):
+        """ Get the resource on which to run """
+        return self._mesh.mesh.GetResource()
+
+    def SetResource(self, resource):
+        """ Set the resource on which to run """
+        self._mesh.mesh.SetResource(resource)
+
+    def SetNbProc(self, nbProc):
+        """ Set the number of Processor for multinode """
+        if nbProc < 1:
+            raise ValueError("Number of Proc must be stricly greater than 1")
+        self._mesh.mesh.SetNbProc(nbProc)
+
+    def GetNbProc(self):
+        """ Get Number of Processor """
+        return self._mesh.mesh.GetNbProc()
+
+    def SetNbProcPerNode(self, nbProcPerNode):
+        """ Set the number of Processor Per Node for multinode """
+        if nbProcPerNode < 1:
+            raise ValueError("Number of Processor Per Node must be stricly greater than 1")
+
+        self._mesh.mesh.SetNbProcPerNode(nbProcPerNode)
+
+    def GetNbProcPerNode(self):
+        """ Get Number of Processor Per Node """
+        return self._mesh.mesh.GetNbProcPerNode()
+
+    def SetNbNode(self, nbNode):
+        """ Set the number of Node for multinode """
+        if nbNode < 1:
+            raise ValueError("Number of Node must be stricly greater than 1")
+        self._mesh.mesh.SetNbNode(nbNode)
+
+    def GetNbNode(self):
+        """ Get Number of Node """
+        return self._mesh.mesh.GetNbNode()
+
+    def SetWcKey(self, wcKey):
+        """ Set the number of Node for multinode """
+        self._mesh.mesh.SetWcKey(wcKey)
+
+    def GetWcKey(self):
+        """ Get Number of Node """
+        return self._mesh.mesh.GetWcKey()
+
+    def SetWalltime(self, walltime):
+        """ Set the number of Node for multinode """
+        self._mesh.mesh.SetWalltime(walltime)
+
+    def GetWalltime(self):
+        """ Get Number of Node """
+        return self._mesh.mesh.GetWalltime()
+
+    def __str__(self):
+        """ str conversion """
+        string = "\nParameter for MultiNode parallelism:\n"
+        string += "Reource: {}\n".format(self.GetResource())
+        string += "NbProc: {}\n".format(self.GetNbProc())
+        string += "NbProcPerNode: {}\n".format(self.GetNbProcPerNode())
+        string += "NbNode: {}\n".format(self.GetNbNode())
+        string += "WcKey: {}\n".format(self.GetWcKey())
+        string += "Walltime: {}\n".format(self.GetWalltime())
+
+        return string
+
 
 class ParallelMesh(Mesh):
     """
@@ -7678,33 +7799,61 @@ class ParallelMesh(Mesh):
         if not isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
             raise ValueError("geom argument must be a geometry")
 
+        import SHAPERSTUDY
+        import shaperBuilder
+        # If we have a shaper object converting it into geom (temporary solution)
+        if isinstance(geom, SHAPERSTUDY.SHAPERSTUDY_ORB._objref_SHAPER_Object):
+            geom_obj = _shaperstudy2geom(geompyD, geom)
+        else:
+            geom_obj = geom
+
         # Splitting geometry into one geom containing 1D and 2D elements and a
         # list of 3D elements
-        super(ParallelMesh, self).__init__(smeshpyD, geompyD, geom, name, parallel=True)
+        super(ParallelMesh, self).__init__(smeshpyD, geompyD, geom_obj, name, parallel=True)
 
         if split_geom:
-            self._all_faces, self._solids = _split_geom(geompyD, geom)
+            self._all_faces, self._solids = _split_geom(geompyD, geom_obj)
 
-            self.UseExistingSegments()
-            self.UseExistingFaces()
-
-            self._algo2d = self.Triangle(geom=self._all_faces, algo="NETGEN_2D")
+            order = []
+            self._algo2d = self.Triangle(geom=geom_obj, algo="NETGEN_2D")
             self._algo3d = []
 
             for solid_id, solid in enumerate(self._solids):
                 name = "Solid_{}".format(solid_id)
-                self.UseExistingSegments(geom=solid)
-                self.UseExistingFaces(geom=solid)
                 algo3d = self.Tetrahedron(geom=solid, algo="NETGEN_3D_Remote")
                 self._algo3d.append(algo3d)
 
-        self._param = ParallelismSettings(self)
+        self._param = None
 
+
+    def GetNbSolids(self):
+        """
+        Return the number of 3D solids
+        """
+        return len(self._solids)
+
+    def GetParallelismMethod(self):
+        """ Get the parallelims method """
+        return self.mesh.GetParallelismMethod()
+
+    def SetParallelismMethod(self, method):
+        """ Set the parallelims method """
+        if method not in [MULTITHREAD , MULTINODE]:
+            raise ValueError("Parallelism method can only be 0:MultiThread or 1:MultiNode")
+
+        self.mesh.SetParallelismMethod(method)
+
+        if method == MULTITHREAD:
+            self._param = MTParallelismSettings(self)
+        else:
+            self._param = MNParallelismSettings(self)
 
     def GetParallelismSettings(self):
         """
         Return class to set parameters for the parallelism
         """
+        if self._param is None:
+            raise Exception("You need to set Parallelism method first (SetParallelismMethod)")
         return self._param
 
     def AddGlobalHypothesis(self, hyp):
@@ -7730,7 +7879,6 @@ class ParallelMesh(Mesh):
 
 
     pass # End of ParallelMesh
-
 
 class meshProxy(SMESH._objref_SMESH_Mesh):
     """
@@ -7774,8 +7922,18 @@ class meshProxy(SMESH._objref_SMESH_Mesh):
         if len( args ) == 1:
             args += True,
         return SMESH._objref_SMESH_Mesh.ExportDAT(self, *args)
-    pass
+
 omniORB.registerObjref(SMESH._objref_SMESH_Mesh._NP_RepositoryId, meshProxy)
+
+
+class parallelMeshProxy(SMESH._objref_SMESH_ParallelMesh):
+    def __init__(self,*args):
+        SMESH._objref_SMESH_ParallelMesh.__init__(self,*args)
+    def __deepcopy__(self, memo=None):
+        new = self.__class__(self)
+        return new
+omniORB.registerObjref(SMESH._objref_SMESH_ParallelMesh._NP_RepositoryId, parallelMeshProxy)
+
 
 
 class submeshProxy(SMESH._objref_SMESH_subMesh):

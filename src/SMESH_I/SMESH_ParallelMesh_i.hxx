@@ -30,6 +30,7 @@
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh_i.hxx"
+#include "SMESH_ParallelMesh.hxx"
 
 #include <SALOME_GenericObj_i.hh>
 #include <SALOMEconfig.h>
@@ -41,11 +42,40 @@ class SMESH_I_EXPORT SMESH_ParallelMesh_i:
   public virtual POA_SMESH::SMESH_ParallelMesh,
   public virtual SMESH_Mesh_i
 {
+  SMESH_ParallelMesh_i();
+  SMESH_ParallelMesh_i(const SMESH_ParallelMesh_i&);
+  public:
   SMESH_ParallelMesh_i( PortableServer::POA_ptr thePOA,
                         SMESH_Gen_i*            myGen_i ):SMESH_Mesh_i(thePOA, myGen_i){};
 
   virtual ~SMESH_ParallelMesh_i(){};
 
+  CORBA::Long GetParallelismMethod();
+  void SetParallelismMethod(CORBA::Long aMethod);
+
+  CORBA::Long GetNbThreads();
+  void SetNbThreads(CORBA::Long nbThreads);
+
+  char* GetResource();
+  void SetResource(const char* aResource);
+
+  CORBA::Long GetNbProc();
+  void SetNbProc(CORBA::Long nbProcs);
+
+  CORBA::Long GetNbProcPerNode();
+  void SetNbProcPerNode(CORBA::Long nbProcPerNodes);
+
+  CORBA::Long GetNbNode();
+  void SetNbNode(CORBA::Long nbNodes);
+
+  char* GetWcKey();
+  void SetWcKey(const char* wcKey);
+
+  char* GetWalltime();
+  void SetWalltime(const char* walltime);
+
+  private:
+  ::SMESH_ParallelMesh* DownCast();
 };
 
 #endif

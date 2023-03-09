@@ -29,8 +29,17 @@
 
 #include "SMESH_Mesh.hxx"
 
+#ifndef WIN32
+#include <boost/asio.hpp>
+#endif
+
 #include "SMESH_Gen.hxx"
 #include "SMESH_subMesh.hxx"
+#ifdef WIN32
+#include <thread>
+#include <boost/filesystem.hpp>
+#endif
+enum ParallelismMethod {MultiThread, MultiNode};
 
 class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
 {
@@ -40,44 +49,67 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
                        bool              theIsEmbeddedMode,
                        SMESHDS_Document* theDocument);
 
-  virtual ~SMESH_ParallelMesh();
+  ~SMESH_ParallelMesh();
 
-#ifndef WIN32
+  // Locking mechanism
+  #ifndef WIN32
   void Lock() override {_my_lock.lock();};
   void Unlock() override {_my_lock.unlock();};
-
-  int GetNbThreads() override{return _NbThreads;};
-  void SetNbThreads(long nbThreads) override{_NbThreads=nbThreads;};
-
-  void InitPoolThreads() override {_pool = new boost::asio::thread_pool(_NbThreads);};
-  void DeletePoolThreads() override {delete _pool;};
-
+  // We need to recreate the pool afterthe join
   void wait() override {_pool->join(); DeletePoolThreads(); InitPoolThreads(); };
+  #endif
 
-  bool IsParallel() override {return _NbThreads > 0;};
-
-  void CreateTmpFolder();
-  void DeleteTmpFolder();
-
-  boost::filesystem::path GetTmpFolder() override {return tmp_folder;};
-  boost::asio::thread_pool* GetPool() override {return _pool;};
+  // Thread Pool
+#ifndef WIN32
+  void InitPoolThreads() {_pool = new boost::asio::thread_pool(GetPoolNbThreads());};
+  boost::asio::thread_pool* GetPool() {return _pool;};
+  void DeletePoolThreads() {delete _pool;};
 #else
-  void Lock() override {};
-  void Unlock() override {};
-
-  int GetNbThreads() override {return 0;};
-  void SetNbThreads(long nbThreads) {(void) nbThreads;};
-
-  void InitPoolThreads() override {};
-  void DeletePoolThreads() override {};
-  void wait() override {};
-
-  bool IsParallel() override {return false;};
-
-  void CreateTmpFolder();
-  void DeleteTmpFolder();
+  void InitPoolThreads() {};
+  void* GetPool() {return NULL;};
+  void DeletePoolThreads(){};
 #endif
 
+  int GetPoolNbThreads();
+
+  // Temporary folder
+  bool keepingTmpFolfer();
+  void CreateTmpFolder();
+  void DeleteTmpFolder();
+  boost::filesystem::path GetTmpFolder() {return tmp_folder;};
+  void cleanup();
+
+  //
+  bool IsParallel() override {return true;};
+
+  // Parallelims paramaters
+  int GetParallelismMethod() {return _method;};
+  void SetParallelismMethod(int aMethod) {_method = aMethod;};
+
+  // Mutlithreading parameters
+  int GetNbThreads() {return _NbThreads;};
+  void SetNbThreads(long nbThreads);
+
+  // Multinode parameters
+  std::string GetResource() {return _resource;};
+  void SetResource(std::string aResource) {_resource = aResource;};
+
+  int GetNbProc() {return _nbProc;};
+  void SetNbProc(long nbProc) {_nbProc = nbProc;};
+
+  int GetNbProcPerNode() {return _nbProcPerNode;};
+  void SetNbProcPerNode(long nbProcPerNodes) {_nbProcPerNode = nbProcPerNodes;};
+
+  int GetNbNode() {return _nbNode;};
+  void SetNbNode(long nbNodes) {_nbNode = nbNodes;};
+
+  std::string GetWcKey() {return _wcKey;};
+  void SetWcKey(std::string wcKey) {_wcKey = wcKey;};
+
+  std::string GetWalltime() {return _walltime;};
+  void SetWalltime(std::string walltime) {_walltime = walltime;};
+
+  // Parallel computation
   bool ComputeSubMeshes(
             SMESH_Gen* gen,
             SMESH_Mesh & aMesh,
@@ -94,9 +126,22 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
   SMESH_ParallelMesh():SMESH_Mesh() {};
   SMESH_ParallelMesh(const SMESH_ParallelMesh& aMesh):SMESH_Mesh(aMesh) {};
  private:
+  // Mutex for multhitreading write in SMESH_Mesh
 #ifndef WIN32
-  boost::filesystem::path tmp_folder;
-  boost::asio::thread_pool *     _pool = nullptr; //thread pool for computation
+  boost::mutex _my_lock;
+  // thread pool for computation
+  boost::asio::thread_pool *     _pool = nullptr;
 #endif
+  boost::filesystem::path tmp_folder;
+  int _method = ParallelismMethod::MultiThread;
+
+  int _NbThreads = std::thread::hardware_concurrency();
+
+  int _nbProc = 1;
+  int _nbProcPerNode = 1;
+  int _nbNode = 1;
+  std::string _resource = "";
+  std::string _wcKey = "P11N0:SALOME";
+  std::string _walltime = "01:00:00";
 };
 #endif

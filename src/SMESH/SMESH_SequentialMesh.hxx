@@ -45,11 +45,6 @@ class SMESH_EXPORT SMESH_SequentialMesh: public SMESH_Mesh
   void Lock() override {};
   void Unlock() override {};
 
-  int GetNbThreads() override {return 0;};
-  void SetNbThreads(long nbThreads) {(void) nbThreads;};
-
-  void InitPoolThreads() override {};
-  void DeletePoolThreads() override {};
   void wait() override {};
 
   bool IsParallel() override {return false;};
