@@ -71,6 +71,8 @@ Quadratic mesh can be obtained in three ways:
 * Using :ref:`convert_to_from_quadratic_mesh_page` operation.
 * Using an appropriate option of some meshing algorithms, which generate elements of several dimensions starting from mesh segments.
 
+A work in progress allow you to compute your mesh in parralle :ref:`Parallel Computing<parallel_compute>`
+
 
 **Table of Contents**
 
@@ -86,3 +88,4 @@ Quadratic mesh can be obtained in three ways:
    copy_mesh.rst
    create_dual_mesh.rst
    connectivity.rst
+   parallel_compute.rst

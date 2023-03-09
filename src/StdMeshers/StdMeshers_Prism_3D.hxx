@@ -33,6 +33,7 @@
 #include "SMESH_Block.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_SequentialMesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_TypeDefs.hxx"
 #include "SMESH_subMesh.hxx"
@@ -117,7 +118,7 @@ namespace Prism_3D
 
 // ===============================================================
 /*!
- * \brief Tool analyzing and giving access to a prism geometry 
+ * \brief Tool analyzing and giving access to a prism geometry
  *  treating it like a block, i.e. the four side faces are
  *  emulated by division/uniting of missing/excess faces.
  *  It also manage associations between block sub-shapes and a mesh.
@@ -200,7 +201,7 @@ class STDMESHERS_EXPORT StdMeshers_PrismAsBlock: public SMESH_Block
    */
   bool GetLayersTransformation(std::vector<gp_Trsf> &      trsf,
                                const Prism_3D::TPrismTopo& prism) const;
-  
+
   /*!
    * \brief Return pointer to mesh
     * \retval SMESH_Mesh - mesh
@@ -389,7 +390,7 @@ private:
   SMESH_ComputeErrorPtr myError;
 
   // container of 4 side faces
-  TSideFace*            mySide; 
+  TSideFace*            mySide;
   // node columns for each base edge
   std::vector< TParam2ColumnMap >                       myParam2ColumnMaps;
   // to find a column for a node by edge SMESHDS Index

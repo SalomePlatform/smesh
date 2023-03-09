@@ -27,9 +27,6 @@
 //
 //#define CHRONODEF
 //
-#ifndef WIN32
-#include <boost/asio.hpp>
-#endif
 #include "SMESH_Gen.hxx"
 
 #include "SMESH_DriverMesh.hxx"
@@ -39,6 +36,8 @@
 #include "SMESHDS_Document.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_SequentialMesh.hxx"
+#include "SMESH_ParallelMesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 
@@ -57,6 +56,10 @@
 #endif
 
 #include <Basics_Utils.hxx>
+
+#ifndef WIN32
+#include <boost/asio.hpp>
+#endif
 
 using namespace std;
 #ifndef WIN32
@@ -154,7 +157,8 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
   Unexpect aCatch(SalomeException);
 
   // create a new SMESH_mesh object
-  SMESH_Mesh *aMesh = new SMESH_Mesh(_localId++,
+  SMESH_Mesh *aMesh = new SMESH_SequentialMesh(
+                                     _localId++,
                                      this,
                                      theIsEmbeddedMode,
                                      _studyContext->myDocument);
@@ -163,6 +167,27 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
   return aMesh;
 }
 
+//=============================================================================
+/*!
+ * Creates a parallel mesh in a study.
+ * if (theIsEmbeddedMode) { mesh modification commands are not logged }
+ */
+//=============================================================================
+
+SMESH_Mesh* SMESH_Gen::CreateParallelMesh(bool theIsEmbeddedMode)
+{
+  Unexpect aCatch(SalomeException);
+
+  // create a new SMESH_mesh object
+  SMESH_Mesh *aMesh = new SMESH_ParallelMesh(
+                                     _localId++,
+                                     this,
+                                     theIsEmbeddedMode,
+                                     _studyContext->myDocument);
+  _studyContext->mapMesh[_localId-1] = aMesh;
+
+  return aMesh;
+}
 
 //=============================================================================
 /*!
@@ -200,7 +225,7 @@ bool SMESH_Gen::sequentialComputeSubMeshes(
       continue;
 
     // check for preview dimension limitations
-    if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
+    if ( aShapesId && SMESH_Gen::GetShapeDim( shapeType ) > (int)aDim )
     {
       // clear compute state not to show previous compute errors
       //  if preview invoked less dimension less than previous
@@ -264,6 +289,7 @@ const std::function<void(SMESH_subMesh*,
 
 });
 
+
 //=============================================================================
 /*!
  * Algo to run the computation of all the submeshes of a mesh in parallel
@@ -289,11 +315,6 @@ bool SMESH_Gen::parallelComputeSubMeshes(
 
   SMESH_subMeshIteratorPtr smIt;
   SMESH_subMesh *shapeSM = aMesh.GetSubMesh(aShape);
-
-  // Pool of thread for computation
-  // TODO: move when parallelMesh created
-  aMesh.InitPoolThreads();
-  aMesh.CreateTmpFolder();
 
   TopAbs_ShapeEnum previousShapeType = TopAbs_VERTEX;
   int nbThreads = aMesh.GetNbThreads();
@@ -339,23 +360,22 @@ bool SMESH_Gen::parallelComputeSubMeshes(
       }
       if(file_name != "")
       {
-        fs::path mesh_file = fs::path(aMesh.tmp_folder) / fs::path(file_name);
-	SMESH_DriverMesh::exportMesh(mesh_file.string(), aMesh, "MESH");
-
+        fs::path mesh_file = fs::path(aMesh.GetTmpFolder()) / fs::path(file_name);
+	      SMESH_DriverMesh::exportMesh(mesh_file.string(), aMesh, "MESH");
       }
       //Resetting threaded pool info
       previousShapeType = shapeType;
     }
 
     // check for preview dimension limitations
-    if ( aShapesId && GetShapeDim( shapeType ) > (int)aDim )
+    if ( aShapesId && SMESH_Gen::GetShapeDim( shapeType ) > (int)aDim )
     {
       // clear compute state not to show previous compute errors
       //  if preview invoked less dimension less than previous
       smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
       continue;
     }
-    boost::asio::post(*(aMesh._pool), std::bind(compute_function, smToCompute, computeEvent,
+    boost::asio::post(*(aMesh.GetPool()), std::bind(compute_function, smToCompute, computeEvent,
                       shapeSM, aShapeOnly, allowedSubShapes,
                       aShapesId));
   }
@@ -364,7 +384,6 @@ bool SMESH_Gen::parallelComputeSubMeshes(
   aMesh.wait();
 
   aMesh.GetMeshDS()->Modified();
-  aMesh.DeleteTmpFolder();
 
   return ret;
 #endif
@@ -416,22 +435,14 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
     // ===============================================
     // Mesh all the sub-shapes starting from vertices
     // ===============================================
-    if (aMesh.IsParallel())
-      ret = parallelComputeSubMeshes(
-              aMesh, aShape, aDim,
-              aShapesId, allowedSubShapes,
-              computeEvent,
-              includeSelf,
-              complexShapeFirst,
-              aShapeOnly);
-    else
-      ret = sequentialComputeSubMeshes(
-              aMesh, aShape, aDim,
-              aShapesId, allowedSubShapes,
-              computeEvent,
-              includeSelf,
-              complexShapeFirst,
-              aShapeOnly);
+    ret = aMesh.ComputeSubMeshes(
+            this,
+            aMesh, aShape, aDim,
+            aShapesId, allowedSubShapes,
+            computeEvent,
+            includeSelf,
+            complexShapeFirst,
+            aShapeOnly);
 
     return ret;
   }

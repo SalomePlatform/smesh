@@ -77,6 +77,8 @@ SET(_link_LIBRARIES
 SET(SMESHimpl_HEADERS
   SMESH_Gen.hxx
   SMESH_Mesh.hxx
+  SMESH_SequentialMesh.hxx
+  SMESH_ParallelMesh.hxx
   SMESH_subMesh.hxx
   SMESH_subMeshEventListener.hxx
   SMESH_Hypothesis.hxx
@@ -102,6 +104,8 @@ SET(SMESHimpl_SOURCES
   memoire.h
   SMESH_Gen.cxx
   SMESH_Mesh.cxx
+  SMESH_SequentialMesh.cxx
+  SMESH_ParallelMesh.cxx
   SMESH_subMesh.cxx
   SMESH_Hypothesis.cxx
   SMESH_Algo.cxx

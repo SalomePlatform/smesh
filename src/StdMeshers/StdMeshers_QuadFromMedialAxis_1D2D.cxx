@@ -30,6 +30,7 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_MAT2d.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_SequentialMesh.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_ProxyMesh.hxx"
@@ -144,7 +145,7 @@ public:
     return true;
   }
 };
- 
+
 //================================================================================
 /*!
  * \brief Constructor sets algo features
@@ -203,7 +204,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::CheckHypothesis(SMESH_Mesh&         aMe
 namespace
 {
   typedef map< const SMDS_MeshNode*, list< const SMDS_MeshNode* > > TMergeMap;
-  
+
   //================================================================================
   /*!
    * \brief Sinuous face
@@ -236,7 +237,7 @@ namespace
   /*!
    * \brief Temporary mesh
    */
-  struct TmpMesh : public SMESH_Mesh
+  struct TmpMesh : public SMESH_SequentialMesh
   {
     TmpMesh()
     {
@@ -506,7 +507,7 @@ namespace
     theSinuEdges[1].clear();
     theShortEdges[0].clear();
     theShortEdges[1].clear();
-   
+
     vector<TopoDS_Edge> & allEdges = theSinuFace._edges;
     const size_t nbEdges = allEdges.size();
     if ( nbEdges < 4 && theSinuFace._nbWires == 1 )
@@ -841,7 +842,7 @@ namespace
 
 
     // Find 1D algo to mesh branchEdge
-  
+
     // look for a most local 1D hyp assigned to the FACE
     int mostSimpleShape = -1, maxShape = TopAbs_EDGE;
     TopoDS_Edge edge;
@@ -1450,7 +1451,7 @@ namespace
       nIn = nodeParams.rbegin()->second;
     else
       nIn = u2n->second;
-    
+
     // find position of distant nodes in uvsOut and uvsIn
     size_t iDistOut, iDistIn;
     for ( iDistOut = 0; iDistOut < uvsOut.size(); ++iDistOut )
@@ -2151,6 +2152,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::computeQuads( SMESH_MesherHelper& theHe
 bool StdMeshers_QuadFromMedialAxis_1D2D::Compute(SMESH_Mesh&         theMesh,
                                                  const TopoDS_Shape& theShape)
 {
+  std::cout << "helper_quad " << theMesh.IsParallel() << std::endl;
   SMESH_MesherHelper helper( theMesh );
   helper.SetSubShape( theShape );
 

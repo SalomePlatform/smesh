@@ -1515,7 +1515,8 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         TopoDS_Shape shape = _subShape;
         algo->setSubMeshesToCompute(this);
         // check submeshes needed
-        // In parallel there would be no submesh to check
+        // When computing in parallel mode we do not have a additional layer of submesh
+        // The check should not be done in parallel as that check is not thread-safe
         if (_father->HasShapeToMesh() && !_father->IsParallel()) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {

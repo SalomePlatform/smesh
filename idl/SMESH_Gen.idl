@@ -243,6 +243,16 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Create a Mesh object, given a geometry shape.
+     * Mesh is created empty (no points, no elements).
+     * Shape is explored via GEOM_Client to create local copies.
+     * of TopoDS_Shapes and bind CORBA references of shape & subshapes
+     * with TopoDS_Shapes
+     * The mesh is a parallel one
+     */
+    SMESH_Mesh CreateParallelMesh( in GEOM::GEOM_Object theObject )
+      raises ( SALOME::SALOME_Exception );
+    /*!
      * Create an empty mesh object
      */
     SMESH_Mesh CreateEmptyMesh()

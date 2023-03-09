@@ -70,7 +70,7 @@ using namespace std;
 
 //=======================================================================
 //function : StdMeshers_RadialQuadrangle_1D2D
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 StdMeshers_RadialQuadrangle_1D2D::StdMeshers_RadialQuadrangle_1D2D(int        hypId,
@@ -103,7 +103,7 @@ StdMeshers_RadialQuadrangle_1D2D::~StdMeshers_RadialQuadrangle_1D2D()
 
 //=======================================================================
 //function : CheckHypothesis
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool StdMeshers_RadialQuadrangle_1D2D::CheckHypothesis
@@ -111,7 +111,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::CheckHypothesis
                             const TopoDS_Shape&                  aShape,
                             SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
-  // check aShape 
+  // check aShape
   myNbLayerHypo = 0;
   myDistributionHypo = 0;
 
@@ -271,7 +271,7 @@ namespace
         sideEdges.splice( sideEdges.end(), edges, edges.begin() );
 
       StdMeshers_FaceSidePtr side;
-      if ( aMesh ) 
+      if ( aMesh )
         side = StdMeshers_FaceSide::New( face, sideEdges, aMesh,
                                          /*isFwd=*/true, /*skipMedium=*/ true, helper );
       sides.push_back( side );
@@ -355,7 +355,7 @@ namespace
         }
     }
 
-    int iCirc = deviation2sideInd.rbegin()->second; 
+    int iCirc = deviation2sideInd.rbegin()->second;
     aCircSide = sides[ iCirc ];
     aLinSide1 = sides[( iCirc + 1 ) % sides.size() ];
     if ( sides.size() > 2 )
@@ -958,7 +958,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     centerUV   = nodes.back().UV();
   }
   // ------------------------------------------------------------------------------------------
-  else // nbSides == 3 
+  else // nbSides == 3
   {
     // one curve must be a part of ellipse and 2 other curves must be segments of line
 
@@ -1082,7 +1082,7 @@ int StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(StdMeshers_FaceSideP
     if ( !TNodeDistributor::GetDistributor(*mesh)->Compute( positions, linSide->Edge(0),
                                                             *curve, f, l, *mesh, hyp1D ))
     {
-      if ( myDistributionHypo ) { // bad hyp assigned 
+      if ( myDistributionHypo ) { // bad hyp assigned
         return error( TNodeDistributor::GetDistributor(*mesh)->GetComputeError() );
       }
       else {
@@ -1090,7 +1090,7 @@ int StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(StdMeshers_FaceSideP
       }
     }
   }
-  
+
   if ( positions.empty() ) // try to use nb of layers
   {
     if ( !nbLayers )
@@ -1132,7 +1132,7 @@ int StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(StdMeshers_FaceSideP
 
 //=======================================================================
 //function : Evaluate
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
@@ -1193,7 +1193,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
       return false;
   }
   // ------------------------------------------------------------------------------------------
-  else // nbSides == 3 
+  else // nbSides == 3
   {
     if ( !computeLayerPositions(( linSide1->Length() > linSide2->Length() ) ? linSide1 : linSide2,
                                  layerPositions ))
@@ -1217,7 +1217,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
     if ( SMDSEntity_Quad_Edge < (int) nbElems.size() )
       nbCircSegments += ( nbElems[ SMDSEntity_Edge ] + nbElems[ SMDSEntity_Quad_Edge ]);
   }
-  
+
   smIdType nbQuads = nbCircSegments * ( layerPositions.size() - 1 );
   smIdType nbTria  = nbCircSegments;
   smIdType nbNodes = ( nbCircSegments - 1 ) * ( layerPositions.size() - 2 );

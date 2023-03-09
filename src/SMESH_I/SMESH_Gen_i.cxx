@@ -107,6 +107,8 @@
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_ControlsDef.hxx"
 #include <SMESH_BoostTxtArchive.hxx>
+#include <SMESH_SequentialMesh_i.hxx>
+#include <SMESH_ParallelMesh_i.hxx>
 
 // to pass CORBA exception through SMESH_TRY
 #define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
@@ -560,7 +562,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
  */
 //=============================================================================
 
-SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh(bool parallel /*=false*/)
 {
   Unexpect aCatch(SALOME_SalomeException);
   MESSAGE( "SMESH_Gen_i::createMesh" );
@@ -571,7 +573,11 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this );
     // create a new mesh object
     MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
-    meshServant->SetImpl( myGen.CreateMesh( myIsEmbeddedMode ));
+    if(parallel) {
+      meshServant->SetImpl( dynamic_cast<SMESH_Mesh*>(myGen.CreateParallelMesh( myIsEmbeddedMode )));
+    }else{
+      meshServant->SetImpl( dynamic_cast<SMESH_Mesh*>(myGen.CreateMesh( myIsEmbeddedMode )));
+    }
 
     // activate the CORBA servant of Mesh
     SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( meshServant->_this() );
@@ -1198,9 +1204,43 @@ char* SMESH_Gen_i::GetOption(const char* name)
 SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::CreateMesh" );
+  MESSAGE( "SMESH_Gen_i::CreateMesh(GEOM_Object_ptr)" );
   // create mesh
   SMESH::SMESH_Mesh_var mesh = this->createMesh();
+  // set shape
+  SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
+  ASSERT( meshServant );
+  meshServant->SetShape( theShapeObject );
+
+  // publish mesh in the study
+  if ( CanPublishInStudy( mesh ) ) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+    SALOMEDS::SObject_wrap aSO = PublishMesh( mesh.in() );
+    aStudyBuilder->CommitCommand();
+    if ( !aSO->_is_nil() ) {
+      // Update Python script
+      TPythonDump(this) << aSO << " = " << this << ".CreateMesh(" << theShapeObject << ")";
+    }
+  }
+
+  return mesh._retn();
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::CreateParallelMesh
+ *
+ *  Create empty parallel mesh on a shape and publish it in the study
+ */
+//=============================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateParallelMesh( GEOM::GEOM_Object_ptr theShapeObject )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  MESSAGE( "SMESH_Gen_i::CreateParallelMesh" );
+  // create mesh
+  SMESH::SMESH_Mesh_var mesh = this->createMesh(true);
   // set shape
   SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
   ASSERT( meshServant );
@@ -1232,7 +1272,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
 SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateEmptyMesh()
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::CreateMesh" );
+  MESSAGE( "SMESH_Gen_i::CreateEmptyMesh" );
   // create mesh
   SMESH::SMESH_Mesh_var mesh = this->createMesh();
 

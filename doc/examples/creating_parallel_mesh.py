@@ -98,14 +98,22 @@ def run_test(nbox=2, boxsize=100):
     """
     geom, seq_mesh, netgen_parameters = build_seq_mesh(nbox, boxsize, 0)
 
-    par_mesh = smesh.ParallelMesh(geom, netgen_parameters, 6, name="par_mesh")
+    print("Creating Parallel Mesh")
+    par_mesh = smesh.ParallelMesh(geom, name="par_mesh")
+    par_mesh.AddGlobalHypothesis(netgen_parameters)
+    param = par_mesh.GetParallelismSettings()
+    param.SetNbThreads(6)
 
+    assert param.GetNbThreads() == 6, param.GetNbThreads()
+
+    print("Starting sequential compute")
     start = time.monotonic()
     is_done = seq_mesh.Compute()
     assert is_done
     stop = time.monotonic()
     time_seq = stop-start
 
+    print("Starting parallel compute")
     start = time.monotonic()
     is_done = par_mesh.Compute()
     assert is_done

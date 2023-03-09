@@ -70,6 +70,7 @@ public:
   ~SMESH_Gen();
 
   SMESH_Mesh* CreateMesh(bool theIsEmbeddedMode);
+  SMESH_Mesh* CreateParallelMesh(bool theIsEmbeddedMode);
 
   enum ComputeFlags
   {
@@ -167,9 +168,7 @@ public:
 
   int GetANewId();
 
-private:
-
-
+public:
   bool parallelComputeSubMeshes(
           SMESH_Mesh & aMesh,
           const TopoDS_Shape & aShape,
@@ -191,6 +190,11 @@ private:
           const bool includeSelf,
           const bool complexShapeFirst,
           const bool aShapeOnly);
+
+private:
+
+
+
   int _localId;                         // unique Id of created objects, within SMESH_Gen entity
   StudyContextStruct* _studyContext;
 

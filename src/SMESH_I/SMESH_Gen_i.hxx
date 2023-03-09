@@ -231,6 +231,9 @@ public:
   // Create empty mesh on a shape
   SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject );
 
+  // Create empty parallel mesh on a shape
+  SMESH::SMESH_Mesh_ptr CreateParallelMesh( GEOM::GEOM_Object_ptr theShapeObject );
+
   // Create empty mesh
   SMESH::SMESH_Mesh_ptr CreateEmptyMesh();
 
@@ -631,7 +634,7 @@ private:
   SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,
                                                 const char* theLibName);
   // Create empty mesh on shape
-  SMESH::SMESH_Mesh_ptr createMesh();
+  SMESH::SMESH_Mesh_ptr createMesh(bool parallel=false);
 
   // Check mesh icon
   bool isGeomModifIcon( SMESH::SMESH_Mesh_ptr mesh );

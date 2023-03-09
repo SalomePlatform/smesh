@@ -45,6 +45,7 @@
 #include <SMESH_Comment.hxx>
 #include <SMESH_Gen.hxx>
 #include <SMESH_Mesh.hxx>
+#include <SMESH_SequentialMesh.hxx>
 #include <SMESH_MeshAlgos.hxx>
 #include <SMESH_MeshEditor.hxx>
 #include <SMESH_MesherHelper.hxx>
@@ -324,7 +325,7 @@ namespace {
       break;
     }
     case TopAbs_EDGE: {
-      
+
       // Get submeshes of sub-vertices
       const map< int, SMESH_subMesh * >& subSM = sm->DependsOn();
       if ( subSM.size() != 2 )
@@ -711,7 +712,7 @@ namespace {
     while ( elemIt->more() ) // loop on all mesh faces on srcFace
     {
       const SMDS_MeshElement* elem = elemIt->next();
-      const int nbN = elem->NbCornerNodes(); 
+      const int nbN = elem->NbCornerNodes();
       tgtNodes.resize( nbN );
       helper->SetElementsOnShape( false );
       for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
@@ -1096,7 +1097,7 @@ namespace {
    */
   //================================================================================
 
-  struct QuadMesh : public SMESH_Mesh
+  struct QuadMesh : public SMESH_SequentialMesh
   {
     ObjectPool< TriaCoordSys > _traiLCSPool;
     SMESH_ElementSearcher*     _elemSearcher;
@@ -1428,7 +1429,7 @@ namespace {
     //   const SMDS_MeshElement* elem = elemIt->next();
     //   TFaceConn& tgtNodes = newFacesVec[ iFaceSrc++ ];
 
-    //   const int nbN = elem->NbCornerNodes(); 
+    //   const int nbN = elem->NbCornerNodes();
     //   tgtNodes.resize( nbN );
     //   for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
     //   {
@@ -1442,7 +1443,7 @@ namespace {
     //       {
     //         tgtNodeOrXY.first = srcN_tgtN->second; // tgt node exists
     //       }
-    //       else 
+    //       else
     //       {
     //         // find XY of src node within the quadrilateral srcFace
     //         if ( !block.ComputeParameters( SMESH_TNodeXYZ( srcNode ),

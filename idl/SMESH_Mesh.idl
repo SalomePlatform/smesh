@@ -904,6 +904,11 @@ module SMESH
      */
     void SetNbThreads(in long nbThreads);
     /*!
+    /*!
+     * \brief Get Number of Threads
+     */
+    long GetNbThreads();
+    /*!
 
     /*!
      * Get mesh description
@@ -1107,6 +1112,9 @@ module SMESH
      */
     long GetId();
   };
+
+  interface SMESH_SequentialMesh:SMESH_Mesh{};
+  interface SMESH_ParallelMesh:SMESH_Mesh{};
 
 };
 

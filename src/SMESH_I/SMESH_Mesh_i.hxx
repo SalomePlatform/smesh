@@ -673,7 +673,11 @@ private:
                         SMESH::submesh_array_array& theSubMeshOrder,
                         const bool                  theIsDump);
 
+  /*!
+   * Parallelims informations
+   */
   void SetNbThreads(CORBA::Long nbThreads);
+  CORBA::Long GetNbThreads();
 
   /*!
    * \brief Finds concurrent sub-meshes

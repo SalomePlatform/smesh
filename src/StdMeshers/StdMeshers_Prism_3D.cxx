@@ -95,7 +95,7 @@ namespace
   /*!
    * \brief Auxiliary mesh
    */
-  struct TmpMesh: public SMESH_Mesh
+  struct TmpMesh: public SMESH_SequentialMesh
   {
     TmpMesh() {
       _isShapeToMesh = (_id = 0);
@@ -5075,7 +5075,7 @@ void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) con
 {
   if (!SALOME::VerbosityActivated())
     return;
-    
+
   // Not bedugged code. Last node is sometimes incorrect
   const TSideFace* side = mySide;
   double u = 0;

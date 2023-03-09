@@ -67,7 +67,7 @@ SET(_link_LIBRARIES
   ${KERNEL_Registry}
   ${KERNEL_SalomeHDFPersist}
   ${KERNEL_SalomeLifeCycleCORBA}
-  ${KERNEL_TOOLSDS}  
+  ${KERNEL_TOOLSDS}
   ${KERNEL_SalomeGenericObj}
   ${KERNEL_SalomeIDLKERNEL}
   ${KERNEL_SALOMELocalTrace}
@@ -115,6 +115,8 @@ SET(SMESHEngine_HEADERS
   SMESH.hxx
   MG_ADAPT_i.hxx
   SMESH_Homard_i.hxx
+  SMESH_SequentialMesh_i.hxx
+  SMESH_ParallelMesh_i.hxx
 )
 
 # --- sources ---

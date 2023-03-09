@@ -462,20 +462,21 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             obj,name = name,obj
         return Mesh(self, self.geompyD, obj, name)
 
-    def ParallelMesh(self, obj, param, nbThreads, name=0):
+    def ParallelMesh(self, obj, name=0, split_geom=True):
         """
         Create a parallel mesh.
 
         Parameters:
             obj: geometrical object for meshing
             name: the name for the new mesh.
-            param: full mesh parameters
-            nbThreads: Number of threads for parallelisation.
+            split_geom: If True split the geometry and create the assoicated
+            sub meshes
 
         Returns:
             an instance of class :class:`ParallelMesh`.
         """
-        return ParallelMesh(self, self.geompyD, obj, param, nbThreads, name)
+        return ParallelMesh(self, self.geompyD, obj,
+                            split_geom=split_geom, name=name)
 
     def RemoveMesh( self, mesh ):
         """
@@ -1592,7 +1593,7 @@ class Mesh(metaclass = MeshMeta):
     mesh = 0
     editor = 0
 
-    def __init__(self, smeshpyD, geompyD, obj=0, name=0):
+    def __init__(self, smeshpyD, geompyD, obj=0, name=0, parallel=False):
 
         """
         Constructor
@@ -1625,7 +1626,10 @@ class Mesh(metaclass = MeshMeta):
                     else:
                         geo_name = "%s_%s to mesh"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
-                self.SetMesh( self.smeshpyD.CreateMesh(self.geom) )
+                if parallel and isinstance(self, ParallelMesh):
+                    self.SetMesh( self.smeshpyD.CreateParallelMesh(self.geom) )
+                else:
+                    self.SetMesh( self.smeshpyD.CreateMesh(self.geom) )
 
             elif isinstance(obj, SMESH._objref_SMESH_Mesh):
                 self.SetMesh(obj)
@@ -7501,6 +7505,9 @@ class Mesh(metaclass = MeshMeta):
 
 
 def _copy_netgen_param(dim, local_param, global_param):
+    """
+    Create 1D/2D/3D netgen parameters from a NETGEN 1D2D3D parameter
+    """
     if dim==1:
         #TODO: Try to identify why we need to substract 1
         local_param.NumberOfSegments(int(global_param.GetNbSegPerEdge())-1)
@@ -7532,19 +7539,95 @@ def _copy_netgen_param(dim, local_param, global_param):
         local_param.SetGrowthRate(global_param.GetGrowthRate())
         local_param.SetNbThreads(global_param.GetNbThreads())
 
+def _split_geom(geompyD, geom):
+    """
+    Splitting geometry into n solids and a 2D/1D compound
+
+    Parameters:
+        geompyD: geomBuilder instance
+        geom: geometrical object for meshing
+
+    """
+    # Splitting geometry into 3D elements and all the 2D/1D into one compound
+    object_solids = geompyD.ExtractShapes(geom, geompyD.ShapeType["SOLID"],
+                                          True)
+
+    solids = []
+    isolid = 0
+    for solid in object_solids:
+        isolid += 1
+        geompyD.addToStudyInFather( geom, solid, 'Solid_{}'.format(isolid) )
+        solids.append(solid)
+    # If geom is a solid ExtractShapes will return nothin in that case geom is the solids
+    if isolid == 0:
+       solids = [geom]
+
+    faces = []
+    iface = 0
+    for isolid, solid in enumerate(solids):
+        solid_faces = geompyD.ExtractShapes(solid, geompyD.ShapeType["FACE"],
+                                            True)
+        for face in solid_faces:
+            faces.append(face)
+            iface += 1
+            geompyD.addToStudyInFather(solid, face,
+                                       'Face_{}'.format(iface))
+
+    # Creating submesh for edges 1D/2D part
+
+    all_faces = geompyD.MakeCompound(faces)
+    geompyD.addToStudy(all_faces, 'Compound_1')
+    all_faces = geompyD.MakeGlueEdges(all_faces, 1e-07)
+    all_faces = geompyD.MakeGlueFaces(all_faces, 1e-07)
+    geompyD.addToStudy(all_faces, 'global2D')
+
+    return all_faces, solids
+
+class ParallelismSettings:
+    """
+    Defines the parameters for the parallelism of ParallelMesh
+    """
+    def __init__(self, mesh):
+        """
+        Construsctor
+
+        Parameters:
+        mesh: Instance of ParallelMesh
+        """
+        if not(isinstance(mesh, ParallelMesh)):
+            raise ValueError("mesh should be a ParallelMesh")
+
+        self._mesh = mesh
+
+    def SetNbThreads(self, nbThreads):
+        """
+        Set the number of threads for multithreading
+        """
+        if nbThreads < 1:
+            raise ValueError("Number of threads must be stricly greater than 1")
+
+        self._mesh.mesh.SetNbThreads(nbThreads)
+
+    def GetNbThreads(self):
+        """
+        Get Number of threads
+        """
+        return self._mesh.mesh.GetNbThreads()
+
 class ParallelMesh(Mesh):
     """
     Surcharge on Mesh for parallel computation of a mesh
     """
-
-    def __init__(self, smeshpyD, geompyD, geom, param, nbThreads, name=0):
+    def __init__(self, smeshpyD, geompyD, geom, split_geom=True, name=0):
         """
         Create a parallel mesh.
 
         Parameters:
+            smeshpyD: instance of smeshBuilder
+            geompyD: instance of geomBuilder
             geom: geometrical object for meshing
-            param: full mesh parameters
-            nbThreads: Number of threads for parallelisation.
+            split_geom: If true will divide geometry on solids and 1D/2D
+            coumpound and create the associated submeshes
             name: the name for the new mesh.
 
         Returns:
@@ -7554,63 +7637,56 @@ class ParallelMesh(Mesh):
         if not isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
             raise ValueError("geom argument must be a geometry")
 
-        if not isinstance(param, NETGENPlugin._objref_NETGENPlugin_Hypothesis):
+        # Splitting geometry into one geom containing 1D and 2D elements and a
+        # list of 3D elements
+        super(ParallelMesh, self).__init__(smeshpyD, geompyD, geom, name, parallel=True)
+
+        if split_geom:
+            self._all_faces, self._solids = _split_geom(geompyD, geom)
+
+            self.UseExistingSegments()
+            self.UseExistingFaces()
+
+            self._algo2d = self.Triangle(geom=self._all_faces, algo="NETGEN_2D")
+            self._algo3d = []
+
+            for solid_id, solid in enumerate(self._solids):
+                name = "Solid_{}".format(solid_id)
+                self.UseExistingSegments(geom=solid)
+                self.UseExistingFaces(geom=solid)
+                algo3d = self.Tetrahedron(geom=solid, algo="NETGEN_3D_Remote")
+                self._algo3d.append(algo3d)
+
+        self._param = ParallelismSettings(self)
+
+
+    def GetParallelismSettings(self):
+        """
+        Return class to set parameters for the parallelism
+        """
+        return self._param
+
+    def AddGlobalHypothesis(self, hyp):
+        """
+        Split hypothesis to apply it to all the submeshes:
+        - the 1D+2D
+        - each of the 3D solids
+
+        Parameters:
+                hyp: a hypothesis to assign
+
+        """
+        if not isinstance(hyp, NETGENPlugin._objref_NETGENPlugin_Hypothesis):
             raise ValueError("param must come from NETGENPlugin")
 
-        if nbThreads < 1:
-            raise ValueError("Number of threads must be stricly greater than 1")
+        param2d = self._algo2d.Parameters()
+        _copy_netgen_param(2, param2d, hyp)
 
-        # Splitting geometry into 3D elements and all the 2D/1D into one compound
-        object_solids = geompyD.ExtractShapes(geom, geompyD.ShapeType["SOLID"],
-                                              True)
-
-        solids = []
-        isolid = 0
-        for solid in object_solids:
-            isolid += 1
-            geompyD.addToStudyInFather( geom, solid, 'Solid_{}'.format(isolid) )
-            solids.append(solid)
-
-        faces = []
-        iface = 0
-        for isolid, solid in enumerate(solids):
-            solid_faces = geompyD.ExtractShapes(solid, geompyD.ShapeType["FACE"],
-                                                True)
-            for face in solid_faces:
-                faces.append(face)
-                iface += 1
-                geompyD.addToStudyInFather(solid, face,
-                                           'Face_{}'.format(iface))
-
-        # Creating submesh for edges 1D/2D part
-
-        all_faces = geompyD.MakeCompound(faces)
-        geompyD.addToStudy(all_faces, 'Compound_1')
-        all_faces = geompyD.MakeGlueEdges(all_faces, 1e-07)
-        all_faces = geompyD.MakeGlueFaces(all_faces, 1e-07)
-        geompyD.addToStudy(all_faces, 'global2D')
-
-        super(ParallelMesh, self).__init__(smeshpyD, geompyD, geom, name)
-
-        self.mesh.SetNbThreads(nbThreads)
-
-        self.UseExistingSegments()
-        self.UseExistingFaces()
-
-        algo2d = self.Triangle(geom=all_faces, algo="NETGEN_2D")
-        param2d = algo2d.Parameters()
-
-        _copy_netgen_param(2, param2d, param)
-
-        for solid_id, solid in enumerate(solids):
-            name = "Solid_{}".format(solid_id)
-            self.UseExistingSegments(geom=solid)
-            self.UseExistingFaces(geom=solid)
-            algo3d = self.Tetrahedron(geom=solid, algo="NETGEN_3D_Remote")
+        for algo3d in self._algo3d:
 
             param3d = algo3d.Parameters()
+            _copy_netgen_param(3, param3d, hyp)
 
-            _copy_netgen_param(3, param3d, param)
 
     pass # End of ParallelMesh
 

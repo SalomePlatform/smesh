@@ -117,3 +117,12 @@ Creating Dual Mesh
 
 :download:`Download this script <../../examples/create_dual_mesh.py>`
 
+.. _tui_create_parallel_mesh:
+
+Creating Parallel Mesh
+======================
+
+.. literalinclude:: ../../examples/creating_parallel_mesh.py
+    :language: python
+
+:download:`Download this script <../../examples/creating_parallel_mesh.py>`
