@@ -120,6 +120,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myIsPointsVisible = false;
   myIsEntityModeCache = false;
   myRepresentationCache = 0;
+  objectEntitiesCache = 0;
 
   myHighlightActor = SMESH_SVTKActor::New();
   myHighlightActor->Delete(); // vtkSmartPointer!
@@ -1645,6 +1646,12 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
   {
     myRepresentationCache = GetRepresentation();
     SetRepresentation( ePoint );
+  }
+
+  if ( anObjectEntities != 0 && objectEntitiesCache == 0 )
+  {
+    objectEntitiesCache = anObjectEntities;
+    SetRepresentation( eSurface );
   }
 
   if ( myEntityMode != theMode )
