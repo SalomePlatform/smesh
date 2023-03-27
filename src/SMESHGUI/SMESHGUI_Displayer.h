@@ -48,6 +48,7 @@ public:
 
 protected:
   SalomeApp_Study*         study() const;
+  std::string              getName( const QString& entry );
 
 private:
   SalomeApp_Application*   myApp;

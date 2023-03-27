@@ -36,13 +36,39 @@
 #include <SUIT_ViewManager.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
+#include <SPV3D_Prs.h>
+#include <SPV3D_ViewModel.h>
+#include <PV3DViewer_ViewWindow.h>
 
+//For PV3D
+#include "SMESH_Actor.h"
 
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+std::string SMESHGUI_Displayer::getName( const QString& entry )
+{
+  Handle( SALOME_InteractiveObject ) theIO = new SALOME_InteractiveObject();
+  theIO->setEntry( entry.toUtf8().constData() );
+  if ( !theIO.IsNull() )
+  {
+    //  Find SOBject (because shape should be published previously)
+    if ( study() )
+    {
+      _PTR(SObject) aSObj ( study()->studyDS()->FindObjectID( theIO->getEntry() ) );
+      _PTR(GenericAttribute) anAttr;
+
+      if ( aSObj && aSObj->FindAttribute( anAttr, "AttributeName") )
+      {
+        _PTR(AttributeName) aNameAttr( anAttr );
+        return aNameAttr->Value();
+      }
+    }
+  }
+  return "";
+}
 
 SMESHGUI_Displayer::SMESHGUI_Displayer( SalomeApp_Application* app )
 : LightApp_Displayer(),
@@ -57,7 +83,7 @@ SMESHGUI_Displayer::~SMESHGUI_Displayer()
 
 SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_View* theViewFrame )
 {
-  SALOME_Prs* prs = 0;
+  SALOME_Prs *prs = nullptr;
 
   SALOME_View* aViewFrame = theViewFrame ? theViewFrame : GetActiveView();
 
@@ -81,6 +107,28 @@ SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_
       else if( anActor )
         SMESH::RemoveActor( vtk_viewer->getViewManager()->getActiveView(), anActor );
     }
+    
+    SPV3D_ViewModel *pv3d_viewer = dynamic_cast<SPV3D_ViewModel *>( aViewFrame );
+    if(pv3d_viewer)
+    {
+      SUIT_ViewWindow* wnd = pv3d_viewer->getViewManager()->getActiveView();
+      SMESH_Actor* anActor = SMESH::FindActorByEntry( wnd, entry.toUtf8().data() );
+      if( !anActor )
+        anActor = SMESH::CreateActor( entry.toUtf8().data(), true );
+      if( anActor )
+      {
+        prs = LightApp_Displayer::buildPresentation( entry.toUtf8().data(), aViewFrame );
+        if( prs )
+        {
+          SPV3D_Prs *pv3dPrs = dynamic_cast<SPV3D_Prs*>( prs );
+          if( pv3dPrs )
+          {
+            pv3dPrs->SetName( getName( entry ) );
+            pv3dPrs->FillUsingActor( anActor );
+          }
+        }
+      }
+    }
   }
 
   return prs;
@@ -94,7 +142,7 @@ SalomeApp_Study* SMESHGUI_Displayer::study() const
 bool SMESHGUI_Displayer::canBeDisplayed( const QString& entry, const QString& viewer_type ) const
 {
   bool res = false;
-  if(viewer_type != SVTK_Viewer::Type())
+  if(viewer_type != SVTK_Viewer::Type() && viewer_type != SPV3D_ViewModel::Type())
     return res;
   
   _PTR(SObject) obj = SMESH::getStudy()->FindObjectID( (const char*)entry.toUtf8() );
