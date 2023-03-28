@@ -44,7 +44,7 @@ class SMESH_I_EXPORT SMESH_ParallelMesh_i:
   SMESH_ParallelMesh_i( PortableServer::POA_ptr thePOA,
                         SMESH_Gen_i*            myGen_i ):SMESH_Mesh_i(thePOA, myGen_i){};
 
-  virtual ~SMESH_ParallelMesh_i();
+  virtual ~SMESH_ParallelMesh_i(){};
 
 };
 

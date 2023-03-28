@@ -47,16 +47,6 @@ SMESH_ParallelMesh_i::SMESH_ParallelMesh_i( PortableServer::POA_ptr thePOA,
 }
 
 //=============================================================================
-/*!
- *  Destructor
- */
-//=============================================================================
-
-SMESH_ParallelMesh_i::~SMESH_ParallelMesh_i()
-{
-}
-
-//=============================================================================
 namespace
 {
   //!< implementation of struct used to call methods of SMESH_Mesh_i from SMESH_Mesh
