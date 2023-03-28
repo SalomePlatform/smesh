@@ -32,12 +32,12 @@
   #include <windows.h>
 #endif
 
-#ifndef WIN32
+#ifndef DISABLE_PSMESH
 #include <boost/filesystem.hpp>
 namespace fs=boost::filesystem;
 #endif
 
-#ifndef WIN32
+#ifndef DISABLE_PSMESH
 #include <boost/asio.hpp>
 #endif
 
@@ -58,7 +58,11 @@ SMESH_ParallelMesh::SMESH_ParallelMesh(int               theLocalId,
                                                                   theDocument)
 {
   MESSAGE("SMESH_ParallelMesh::SMESH_ParallelMesh(int localId)");
+#ifndef DISABLE_PSMESH
   _NbThreads = std::thread::hardware_concurrency();
+#else
+  _NbThreads = 0;
+#endif
   CreateTmpFolder();
 };
 
@@ -78,7 +82,7 @@ SMESH_ParallelMesh::~SMESH_ParallelMesh()
 //=============================================================================
 void SMESH_ParallelMesh::CreateTmpFolder()
 {
-#ifndef WIN32
+#ifndef DISABLE_PSMESH
   // Temporary folder that will be used by parallel computation
   tmp_folder = fs::temp_directory_path()/fs::unique_path(fs::path("SMESH_%%%%-%%%%"));
   fs::create_directories(tmp_folder);
@@ -92,7 +96,7 @@ void SMESH_ParallelMesh::CreateTmpFolder()
 //=============================================================================
 void SMESH_ParallelMesh::DeleteTmpFolder()
 {
-#ifndef WIN32
+#ifndef DISABLE_PSMESH
     fs::remove_all(tmp_folder);
 #endif
 }

@@ -42,6 +42,7 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
 
   virtual ~SMESH_ParallelMesh();
 
+#ifndef DISABLE_PSMESH
   void Lock() override {_my_lock.lock();};
   void Unlock() override {_my_lock.unlock();};
 
@@ -60,6 +61,22 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
 
   boost::filesystem::path GetTmpFolder() override {return tmp_folder;};
   boost::asio::thread_pool* GetPool() override {return _pool;};
+#else
+  void Lock() override {};
+  void Unlock() override {};
+
+  int GetNbThreads() override {return 0;};
+  void SetNbThreads(long nbThreads) {(void) nbThreads;};
+
+  void InitPoolThreads() override {};
+  void DeletePoolThreads() override {};
+  void wait() override {};
+
+  bool IsParallel() override {return false;};
+
+  void CreateTmpFolder();
+  void DeleteTmpFolder();
+#endif
 
   bool ComputeSubMeshes(
             SMESH_Gen* gen,
@@ -77,7 +94,9 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
   SMESH_ParallelMesh():SMESH_Mesh() {};
   SMESH_ParallelMesh(const SMESH_ParallelMesh& aMesh):SMESH_Mesh(aMesh) {};
  private:
+#ifndef DISABLE_PSMESH
   boost::filesystem::path tmp_folder;
   boost::asio::thread_pool *     _pool = nullptr; //thread pool for computation
+#endif
 };
 #endif

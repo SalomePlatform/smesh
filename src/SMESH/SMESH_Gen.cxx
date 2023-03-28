@@ -57,12 +57,12 @@
 
 #include <Basics_Utils.hxx>
 
-#ifndef WIN32
+#ifndef DISABLE_PSMESH
 #include <boost/asio.hpp>
 #endif
 
 using namespace std;
-#ifndef WIN32
+#ifndef DISABLE_PSMESH
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #endif
@@ -307,7 +307,7 @@ bool SMESH_Gen::parallelComputeSubMeshes(
           const bool complexShapeFirst,
           const bool   aShapeOnly)
 {
-#ifdef WIN32
+#ifdef DISABLE_PSMESH
   throw SALOME_Exception("ParallelMesh is not working on Windows");
 #else
 
