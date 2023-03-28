@@ -42,7 +42,7 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
 
   virtual ~SMESH_ParallelMesh();
 
-#ifndef DISABLE_PSMESH
+#ifndef WIN32
   void Lock() override {_my_lock.lock();};
   void Unlock() override {_my_lock.unlock();};
 
@@ -94,7 +94,7 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
   SMESH_ParallelMesh():SMESH_Mesh() {};
   SMESH_ParallelMesh(const SMESH_ParallelMesh& aMesh):SMESH_Mesh(aMesh) {};
  private:
-#ifndef DISABLE_PSMESH
+#ifndef WIN32
   boost::filesystem::path tmp_folder;
   boost::asio::thread_pool *     _pool = nullptr; //thread pool for computation
 #endif
