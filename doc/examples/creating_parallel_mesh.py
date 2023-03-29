@@ -1,7 +1,11 @@
 # contains function to compute a mesh in parallel
 from platform import java_ver
 import sys
-from tkinter import W
+try:
+    from tkinter import W
+except:
+    print("warning: could not import tkinter")
+
 import salome
 
 import time

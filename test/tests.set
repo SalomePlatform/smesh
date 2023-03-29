@@ -33,7 +33,6 @@ SET(BAD_TESTS
   ex04_cube5tetraHexa.py
   ex21_lamp.py
   ex29_refine.py
-  ex30_tepal.py
   ex_MakePolyLine.py
   test_smeshplugins.py
   PAL_MESH_041_mesh.py
@@ -68,6 +67,7 @@ SET(BAD_TESTS
   )
 IF(NOT WIN32)
   LIST(APPEND BAD_TESTS
+    ex30_tepal.py
     test_smeshplugin_mg_tetra_parallele.py
   )
 ENDIF(NOT WIN32)
