@@ -1508,12 +1508,14 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
   my3DExtActor->VisibilityOff();
 
   myScalarBarActor->VisibilityOff();
+  
 
   if ( GetVisibility() ) {
     if ( theIsUpdateRepersentation )
       SetRepresentation(GetRepresentation());
-
-    if(myControlMode != eNone) {
+  
+    // Avoid calling VisibilityOn of ExtActor after editing hypothesis. Use the same criteria than scalarBarActor
+    if( myControlMode != eNone && myFunctor && myVisualObj->GetNbEntities( myFunctor->GetType() ) ) { 
       switch(myControlMode) {
       case eFreeNodes:
       case eCoincidentNodes:
@@ -1543,9 +1545,8 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
         break;
       default:;
       }
-      if ( myFunctor && myVisualObj->GetNbEntities( myFunctor->GetType() ))
-        myScalarBarActor->VisibilityOn();
-    }
+      myScalarBarActor->VisibilityOn();
+    }    
 
     if ( GetPickable( ))
       myPickableActor->VisibilityOn();
