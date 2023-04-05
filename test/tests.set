@@ -67,7 +67,6 @@ SET(BAD_TESTS
   )
 IF(NOT WIN32)
   LIST(APPEND BAD_TESTS
-    ex30_tepal.py
     test_smeshplugin_mg_tetra_parallele.py
   )
 ENDIF(NOT WIN32)
