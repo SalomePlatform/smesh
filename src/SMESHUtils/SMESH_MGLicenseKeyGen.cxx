@@ -430,12 +430,75 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     }
     return ok;
   }
+
+  //================================================================================
+  /*!
+   * \brief Unlock a specific MeshGems product (for products called as a library)
+   *  \param [in] product - product of MeshGems to unlock
+   *  \param [out] error - return error description
+   *  \return bool - is a success
+   */
+  //================================================================================
+  bool UnlockProduct( const std::string& product, std::string& error )
+  {
+    MESSAGE("SMESH UnlockProduct: " << product);
+    LibraryFile libraryFile;
+    if ( !loadLibrary( error, libraryFile ))
+      return false;
+
+    bool ok = false;
+    // get the key from KeyGen
+    std::string key = SMESHUtils_MGLicenseKeyGen::GetKey(error);
+    typedef int (*SignFun)(const char* );
+
+    // specific function to unlock each product
+    std::string function = "meshgems_" + product + "_unlock_product";
+
+    SignFun signFun = (SignFun) GetProc( theLibraryHandle, function.c_str() );
+    if ( !signFun )
+    {
+      if ( ! getLastError( error ))
+        error = SMESH_Comment( "Can't find symbol '") << function << "' in '" << getenv( theEnvVar ) << "'";
+    }
+    else
+    {
+      SMESH_TRY;
+
+      int status = signFun( key.c_str() );
+      // MeshGems status: 0: OK, 1: warning, -1: error
+      ok = status >= 0;
+
+      SMESH_CATCH( SMESH::returnError );
+
+      if ( !error.empty() )
+	{
+	  ok = false;
+	}
+      else if ( !ok )
+        error = "UnlockProduct() failed (located in '" + libraryFile._name + "')";
+    }
+    return ok;
+  }
   
+  //================================================================================
+  /*!
+   * \brief Sign a CAD (or don't do it if env MESHGEMS_OLD_STYLE is set)
+   *  \param [in] meshgems_cad - pointer to a MG CAD object (meshgems_cad_t)
+   *  \param [out] error - return error description
+   *  \return bool - is a success
+   */
+  //================================================================================
   bool SignCAD( void* meshgems_cad, std::string& error )
   {
     const char *meshGemsOldStyleEnvVar( getenv( MESHGEMS_OLD_STYLE ) );
     if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 )
-      return SignCAD_After(meshgems_cad, error);
+      {
+	if (NeedsMGSpatialEnvLicense(error))
+	  // SignCAD is only called by cadsurf. Other components call SignMesh
+	  return UnlockProduct("cadsurf", error);
+	else
+	  return SignCAD_After(meshgems_cad, error);
+      }
     else
       return true;
   }
@@ -479,12 +542,27 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     return ok;
   }
   
-  bool SignMesh( void* meshgems_mesh, std::string& error )
+  //================================================================================
+  /*!
+   * \brief Sign a mesh (or don't do it if env MESHGEMS_OLD_STYLE is set)
+   *  \param [in] meshgems_mesh - pointer to a MG mesh (meshgems_mesh_t)
+   *  \param [in] product - product of MeshGems to unlock
+   *  \param [out] error - return error description
+   *  \return bool - is a success
+   */
+  //================================================================================
+  bool SignMesh( void* meshgems_mesh, const std::string& product, std::string& error )
   {
     const char *meshGemsOldStyleEnvVar( getenv( MESHGEMS_OLD_STYLE ) );
     if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 )
-      // sign the mesh (MG 2.13 and 2.14)
-      return SignMesh_After(meshgems_mesh, error);
+      {
+	if (NeedsMGSpatialEnvLicense(error))
+	  // unlock product (MG 2.15)
+	  return UnlockProduct(product, error);
+	else
+	  // sign the mesh (MG 2.13 and 2.14)
+	  return SignMesh_After(meshgems_mesh, error);
+      }
     else
       // use DLIM8 server (nothing to do here)
       return true;
