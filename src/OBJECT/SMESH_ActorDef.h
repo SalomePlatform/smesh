@@ -226,6 +226,10 @@ class SMESH_ActorDef : public SMESH_Actor
 
   virtual void UpdateScalarBar();
   virtual void UpdateDistribution();
+  virtual void ClipThreshold(bool isThresholdOn, double min = 0.0, double max = 0.0);
+  virtual bool IsClipThresholdOn() const { return myIsClipThresholdOn; }
+  virtual void SetWireframeOff(bool isWireframeOff);
+  virtual bool IsWireframeOff() const { return myIsWireframeOff; }
 
 #ifndef DISABLE_PLOT2DVIEWER
   virtual SPlot2d_Histogram* GetPlot2Histogram() { return my2dHistogram; }
@@ -300,6 +304,8 @@ class SMESH_ActorDef : public SMESH_Actor
   int  myRepresentationCache;
   bool myIsEntityModeCache;
   bool myIsPointsVisible;
+  bool myIsClipThresholdOn = false;
+  bool myIsWireframeOff = false;
 
   bool myIsShrinkable;
   bool myIsShrunk;

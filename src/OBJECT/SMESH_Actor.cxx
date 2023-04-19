@@ -80,6 +80,9 @@
 #include <vtkImplicitBoolean.h>
 #include <vtkImplicitFunctionCollection.h>
 
+#include <vtkThreshold.h>
+#include <vtkPassThrough.h>
+
 #include "utilities.h"
 
 
@@ -838,6 +841,8 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
   my3DActor->GetMapper()->SetScalarVisibility(false);
   myBallActor->GetMapper()->SetScalarVisibility(false);
   myScalarBarActor->SetVisibility(false);
+  ClipThreshold(false);
+  SetWireframeOff(false);
 
   bool anIsScalarVisible = theMode > eNone;
 
@@ -1821,6 +1826,8 @@ void SMESH_ActorDef::UpdateHighlight()
   case SMESH_DeviceActor::eSurface:
   case SMESH_DeviceActor::eWireframe:
     {
+      anIsVisible = !IsWireframeOff();
+
       if(myIsHighlighted) {
         myHighlitableActor->SetProperty(myHighlightProp);
       }else if(myIsPreselected){
@@ -2485,6 +2492,49 @@ void SMESH_ActorDef::UpdateScalarBar()
   myScalarBarActor->SetDistributionColor(rgb);
 
 
+}
+
+// Hides the cells beyond threshold if isThresholdOn == true.
+void SMESH_ActorDef::ClipThreshold(bool isThresholdOn, double min /*= 0.0*/, double max /*= 0.0*/)
+{
+  myIsClipThresholdOn = isThresholdOn;
+  
+  if (isThresholdOn)
+  {
+    // Initialize the filter
+    vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+
+    // We have set scalar data with SMESH_DeviceActor::SetControlMode() call as vtkDataSetAttributes::SCALARS.
+    // So, we don't need to pass an array name in SetInputArrayToProcess().
+    threshold->SetInputConnection(myControlActor->myMergeFilter->GetOutputPort());               
+    threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, vtkDataSetAttributes::SCALARS);
+
+    // Set range
+    threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
+    threshold->SetLowerThreshold(min);
+    threshold->SetUpperThreshold(max);
+
+    // Debug output
+    threshold->Update();
+    SCRUTE(threshold->GetOutput()->GetNumberOfCells());
+
+    // Add to the filters' chain
+    vtkAlgorithmOutput* port = threshold->GetOutputPort();
+    myControlActor->myPassFilter[0]->SetInputConnection(port);
+  }
+  else
+  {
+    // Restore the filters' chain
+    myControlActor->SetImplicitFunctionUsed(myControlActor->myIsImplicitFunctionUsed);
+  }
+}
+
+// Hides the wireframe if isWireframeOff == true.
+void SMESH_ActorDef::SetWireframeOff(bool isWireframeOff)
+{
+  myIsWireframeOff = isWireframeOff;
+
+  UpdateHighlight();
 }
 
 void SMESH_ActorDef::UpdateDistribution()

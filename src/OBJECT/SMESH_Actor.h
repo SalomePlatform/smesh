@@ -166,6 +166,10 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   virtual void UpdateScalarBar() = 0;
   virtual void UpdateDistribution() = 0;
+  virtual void ClipThreshold(bool isThresholdOn, double min = 0.0, double max = 0.0) = 0;
+  virtual bool IsClipThresholdOn() const = 0;
+  virtual void SetWireframeOff(bool isWireframeOff) = 0;
+  virtual bool IsWireframeOff() const = 0;
 
   virtual void SetPointsFontProperties( SMESH::LabelFont family, int size, 
                                         bool bold, bool italic, bool shadow,

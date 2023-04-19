@@ -50,6 +50,8 @@
 
 #include <QtxColorButton.h>
 
+#include "utilities.h"
+
 // Qt includes
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -146,11 +148,21 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   myLogarithmicCheck->setText(tr("SMESH_LOGARITHMIC_SCALARBAR"));
   myLogarithmicCheck->setChecked(false);
 
+  myThresholdCheck = new QCheckBox (myRangeGrp);
+  myThresholdCheck->setText(tr("SMESH_TRESHOLD_SCALARBAR"));
+  myThresholdCheck->setChecked(false);
+
+  myWireframeOffCheck = new QCheckBox (myRangeGrp);
+  myWireframeOffCheck->setText(tr("SMESH_WIREFRAME_OFF_SCALARBAR"));
+  myWireframeOffCheck->setChecked(false);
+
   myRangeGrpLayout->addWidget( new QLabel( tr( "SMESH_RANGE_MIN" ), myRangeGrp ), 0, 0, 1, 1 );
   myRangeGrpLayout->addWidget( myMinEdit, 0, 1, 1, 1 );
   myRangeGrpLayout->addWidget( new QLabel( tr( "SMESH_RANGE_MAX" ), myRangeGrp ), 0, 2, 1, 1 );
   myRangeGrpLayout->addWidget( myMaxEdit, 0, 3, 1, 1 );
-  myRangeGrpLayout->addWidget( myLogarithmicCheck, 1, 0, 1, 4 );
+  myRangeGrpLayout->addWidget( myLogarithmicCheck, 1, 0, 1, 1 );
+  myRangeGrpLayout->addWidget( myThresholdCheck, 1, 1, 1, 1 );
+  myRangeGrpLayout->addWidget( myWireframeOffCheck, 1, 2, 1, 1 );
 
   aTopLayout->addWidget( myRangeGrp );
 
@@ -564,6 +576,9 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
 
   myLookupTable->SetRange( aMin, aMax );
   myLookupTable->SetNumberOfTableValues(myColorsSpin->value());
+  applyThreshold(aMin, aMax);
+
+  applyWireframeOff();
 
   bool scaleChanged = (myLogarithmicCheck->isChecked() != (myLookupTable->GetScale() == VTK_SCALE_LOG10));
   if (scaleChanged)
@@ -656,7 +671,14 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
           myLogarithmicCheck->setChecked(aLookupTable->GetScale() == VTK_SCALE_LOG10);
           //myLogarithmicCheck->setEnabled(range[0] > 1e-07 && range[1] > 1e-07);
           myLogarithmicCheck->setEnabled(range[0] != range[1]);
+
+          myThresholdCheck->setChecked(myActor->IsClipThresholdOn());
+          applyThreshold(range[0], range[1]);
+
+          myWireframeOffCheck->setChecked(myActor->IsWireframeOff());
         }
+
+        applyWireframeOff();
 
         vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
         double aTColor[3];
@@ -736,11 +758,19 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
 //=================================================================================================
 void SMESHGUI_Preferences_ScalarBarDlg::onMinMaxChanged()
 {
-  double aMin = myMinEdit->text().toDouble();
-  double aMax = myMaxEdit->text().toDouble();
-  bool isLogarithmicEnabled = (aMin > 1e-07 && aMax > 1e-07);
-  myLogarithmicCheck->setChecked(isLogarithmicEnabled);
+  // Check if the min-max range is valid.
+  const double aMin = myMinEdit->text().toDouble();
+  const double aMax = myMaxEdit->text().toDouble();
+  const bool isLogarithmicEnabled = aMin > 1e-07 && aMax > 1e-07; // TODO: is it right validation?
+
+  // The checkbox should be enabled only when the range is valid for it
   myLogarithmicCheck->setEnabled(isLogarithmicEnabled);
+
+  // Change checkbox only if the range is not valid. Otherwise it's on the user decision.
+  if (!isLogarithmicEnabled)
+  {
+    myLogarithmicCheck->setChecked(isLogarithmicEnabled);
+  }
 }
 
 //=================================================================================================
@@ -872,4 +902,28 @@ void SMESHGUI_Preferences_ScalarBarDlg::initScalarBarFromResources()
     if (mgr->hasValue("SMESH", name.arg( "height" )))
       DEF_VER_H = mgr->doubleValue("SMESH", name.arg( "height" ));
   }
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::applyThreshold()
+ *
+ *  Hides and shows elements beyond the given min - max range by threshold filter inside the actor.
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::applyThreshold(double min, double max)
+{
+  myActor->ClipThreshold(myThresholdCheck->isChecked(), min, max);
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::applyWireframeOff()
+ *
+ *  Hides and shows edges' lines.
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::applyWireframeOff()
+{
+  myActor->SetWireframeOff(myWireframeOffCheck->isChecked());
 }
