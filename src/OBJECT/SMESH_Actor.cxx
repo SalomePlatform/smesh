@@ -1827,7 +1827,7 @@ void SMESH_ActorDef::UpdateHighlight()
   case SMESH_DeviceActor::eSurface:
   case SMESH_DeviceActor::eWireframe:
     {
-      anIsVisible = !IsWireframeOff();
+      anIsVisible = anIsVisible && !IsWireframeOff();
 
       if(myIsHighlighted) {
         myHighlitableActor->SetProperty(myHighlightProp);
