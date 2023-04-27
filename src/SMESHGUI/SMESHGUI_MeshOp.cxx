@@ -37,6 +37,7 @@
 #include "SMESH_NumberFilter.hxx"
 #include "SMESH_TypeDefs.hxx"
 #include "SMESH_TypeFilter.hxx"
+#include "SMESH_Gen_i.hxx"
 
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -2038,7 +2039,10 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
           elemType = SMESH::NODE;
 
         CORBA::String_var name = geomGroups[ iG ]->GetName();
-        meshGroup = aMesh->CreateGroupFromGEOM( elemType, name, geomGroups[ iG ]);
+
+        SALOMEDS::SObject_wrap groupSO = SMESH_Gen_i::GetSMESHGen()->ObjectToSObject( geomGroups[iG] );
+        if (!groupSO->_is_nil())
+          meshGroup = aMesh->CreateGroupFromGEOM( elemType, name, geomGroups[ iG ]);
         // if ( elemType != SMESH::NODE )
         //   meshGroup = aMesh->CreateGroupFromGEOM( SMESH::NODE, name, geomGroups[ iG ]);
       }
