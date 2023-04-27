@@ -58,7 +58,8 @@ namespace SMESHUtils_MGLicenseKeyGen
   SMESHUtils_EXPORT bool        CheckKeyGenLibrary( std::string& error );
 
   SMESHUtils_EXPORT std::string GetLibraryName();
-
+  SMESHUtils_EXPORT int         GetMGVersionFromFunction(const char* function_name);
+  SMESHUtils_EXPORT int         GetMGVersionFromEnv(const char* env_variable);
   SMESHUtils_EXPORT int         GetMGVersionHex(std::string& error);
   SMESHUtils_EXPORT bool        NeedsMGSpatialEnvLicense(std::string& error);
   SMESHUtils_EXPORT bool        SetMGSpatialEnvLicense(std::string& error);

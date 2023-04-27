@@ -447,12 +447,10 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
       return false;
 
     bool ok = false;
-    // get the key from KeyGen
-    std::string key = SMESHUtils_MGLicenseKeyGen::GetKey(error);
-    typedef int (*SignFun)(const char* );
+    typedef bool (*SignFun)(const std::string& );
 
     // specific function to unlock each product
-    std::string function = "meshgems_" + product + "_unlock_product";
+    std::string function = "UnlockProduct";
 
     SignFun signFun = (SignFun) GetProc( theLibraryHandle, function.c_str() );
     if ( !signFun )
@@ -464,22 +462,21 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     {
       SMESH_TRY;
 
-      int status = signFun( key.c_str() );
-      // MeshGems status: 0: OK, 1: warning, -1: error
-      ok = status >= 0;
+      ok = signFun( product.c_str() );
 
       SMESH_CATCH( SMESH::returnError );
 
       if ( !error.empty() )
-	{
-	  ok = false;
-	}
+      {
+        std::cerr << "error: " << error << std::endl;
+        ok = false;
+      }
       else if ( !ok )
         error = "UnlockProduct() failed (located in '" + libraryFile._name + "')";
     }
     return ok;
   }
-  
+
   //================================================================================
   /*!
    * \brief Sign a CAD (or don't do it if env MESHGEMS_OLD_STYLE is set)
@@ -492,13 +489,13 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
   {
     const char *meshGemsOldStyleEnvVar( getenv( MESHGEMS_OLD_STYLE ) );
     if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 )
-      {
-	if (NeedsMGSpatialEnvLicense(error))
-	  // SignCAD is only called by cadsurf. Other components call SignMesh
-	  return UnlockProduct("cadsurf", error);
-	else
-	  return SignCAD_After(meshgems_cad, error);
-      }
+    {
+      if (NeedsMGSpatialEnvLicense(error))
+        // SignCAD is only called by cadsurf. Other components call SignMesh
+        return UnlockProduct("cadsurf", error);
+      else
+        return SignCAD_After(meshgems_cad, error);
+    }
     else
       return true;
   }
@@ -541,7 +538,7 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     }
     return ok;
   }
-  
+
   //================================================================================
   /*!
    * \brief Sign a mesh (or don't do it if env MESHGEMS_OLD_STYLE is set)
@@ -555,14 +552,14 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
   {
     const char *meshGemsOldStyleEnvVar( getenv( MESHGEMS_OLD_STYLE ) );
     if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 )
-      {
-	if (NeedsMGSpatialEnvLicense(error))
-	  // unlock product (MG 2.15)
-	  return UnlockProduct(product, error);
-	else
-	  // sign the mesh (MG 2.13 and 2.14)
-	  return SignMesh_After(meshgems_mesh, error);
-      }
+    {
+      if (NeedsMGSpatialEnvLicense(error))
+        // unlock product (MG 2.15)
+        return UnlockProduct(product, error);
+      else
+        // sign the mesh (MG 2.13 and 2.14)
+        return SignMesh_After(meshgems_mesh, error);
+    }
     else
       // use DLIM8 server (nothing to do here)
       return true;
@@ -579,11 +576,11 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
   //================================================================================
 
   std::string GetKey_After(const std::string& gmfFile,
-                            int                nbVertex,
-                            int                nbEdge,
-                            int                nbFace,
-                            int                nbVol,
-                            std::string&       error)
+                           int                nbVertex,
+                           int                nbEdge,
+                           int                nbFace,
+                           int                nbVol,
+                           std::string&       error)
   {
     std::string key;
     LibraryFile libraryFile;
@@ -639,78 +636,98 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     return key;
   }
 
+  //================================================================================
+  /*!
+   * \brief Get MeshGems version major/minor/patch from the environment variables
+   *  \param [out] error - return error description
+   *  \return int - the version
+   */
+  //================================================================================
+  int GetMGVersionFromEnv(const char* env_variable)
+  {
+    MESSAGE("Entering GetMGVersionFromEnv and calling " << env_variable);
+    int version = -1;
+    if (getenv(env_variable) == nullptr )
+    {
+      MESSAGE("Could not find " << env_variable << " from environment");
+    }
+    else
+    {
+      version = std::stoi(std::string(getenv(env_variable)));
+    }
+    return version;
+  }
+  //================================================================================
+  /*!
+   * \brief Get MeshGems version major/minor/patch from the keygen library and meshgems built-in functions
+   *  \param [out] error - return error description
+   *  \return int - the function implemented in the library
+   */
+  //================================================================================
+  int GetMGVersionFromFunction(const char* function_name)
+  {
+    MESSAGE("Entering GetMGVersionFromFunction and calling " << function_name);
+    int version = -1;
+    typedef int (*GetKeyFun)();
+    GetKeyFun keyFun = (GetKeyFun) GetProc( theLibraryHandle, function_name);
+    if ( !keyFun )
+    {
+      MESSAGE("Could not find " << function_name << " from library");
+    }
+    else
+    {
+      version = keyFun();
+    }
+    return version;
+  }
 
   //================================================================================
   /*!
-   * \brief Get MeshGems version from the keygen library and meshgems built-in functions
+   * \brief Get MeshGems version from the keygen library or meshgems built-in functions
    *  \param [out] error - return error description
    *  \return int - the version
    */
   //================================================================================
   int GetMGVersionHex(std::string&       error)
   {
-    // get minor version
+    // load mgkeygen library
     int v_min = -1;
     LibraryFile libraryFile;
     if ( !loadLibrary( error, libraryFile ))
       return v_min;
+    MESSAGE("Extracting MeshGems version");
 
-    typedef int (*GetKeyFun)();
-    GetKeyFun keyFun = (GetKeyFun) GetProc( theLibraryHandle, "meshgems_core_get_version_minor" );
-    if ( !keyFun )
-    {
-      if ( ! getLastError( error ))
-	error = SMESH_Comment( "Can't find symbol 'meshgems_core_get_version_minor' in '") << getenv( theEnvVar ) << "'";
-    }
-    else
-    {
-	v_min = keyFun( );
-    }
-    if ( v_min==-1 )
-      error = "meshgems_core_get_version_minor() failed (located in '" + libraryFile._name + "')";
-
-    MESSAGE("meshgems_core_get_version_minor: " << v_min);
+    // get minor version
+    v_min = GetMGVersionFromFunction("meshgems_core_get_version_minor");
+    if (v_min == -1)
+      v_min = GetMGVersionFromFunction("GetVersionMinor");
+    if (v_min == -1)
+      v_min = GetMGVersionFromEnv("MESHGEMS_VERSION_MINOR");
+    if (v_min == -1)
+      error = "could not retrieve minor version (located in '" + libraryFile._name + "')";
+    MESSAGE("MeshGems minor version =  " << v_min);
 
     // get major version
-    int v_maj = -1;
-
-    typedef int (*GetKeyFun)();
-    keyFun = (GetKeyFun) GetProc( theLibraryHandle, "meshgems_core_get_version_major" );
-    if ( !keyFun )
-    {
-      if ( ! getLastError( error ))
-	error = SMESH_Comment( "Can't find symbol 'meshgems_core_get_version_major' in '") << getenv( theEnvVar ) << "'";
-    }
-    else
-    {
-	v_maj = keyFun( );
-    }
-    if ( v_maj==-1 )
-      error = "meshgems_core_get_version_major() failed (located in '" + libraryFile._name + "')";
-
-    MESSAGE("meshgems_core_get_version_major: " << v_maj);
+    int v_maj = GetMGVersionFromFunction("meshgems_core_get_version_major");
+    if (v_maj == -1)
+      v_maj = GetMGVersionFromFunction("GetVersionMajor");
+    if (v_maj == -1)
+      v_maj = GetMGVersionFromEnv("MESHGEMS_VERSION_MAJOR");
+    if (v_maj == -1)
+      error = "could not retrieve major version (located in '" + libraryFile._name + "')";
+    MESSAGE("MeshGems major version = " << v_maj);
 
     // get patch version
-    int v_patch = -1;
-
-    typedef int (*GetKeyFun)();
-    keyFun = (GetKeyFun) GetProc( theLibraryHandle, "meshgems_core_get_version_patch" );
-    if ( !keyFun )
-    {
-      if ( ! getLastError( error ))
-	error = SMESH_Comment( "Can't find symbol 'meshgems_core_get_version_patch' in '") << getenv( theEnvVar ) << "'";
-    }
-    else
-    {
-	v_patch = keyFun( );
-    }
-    if ( v_patch==-1 )
-      error = "meshgems_core_get_version_patch() failed (located in '" + libraryFile._name + "')";
-
-    MESSAGE("meshgems_core_get_version_patch: " << v_patch );
+    int v_patch = GetMGVersionFromFunction("meshgems_core_get_version_patch");
+    if (v_patch == -1)
+      v_patch = GetMGVersionFromFunction("GetVersionPatch");
+    if (v_patch == -1)
+      v_patch = GetMGVersionFromEnv("MESHGEMS_VERSION_PATCH");
+    if (v_patch == -1)
+      error = "could not retrieve patch version (located in '" + libraryFile._name + "')";
+    MESSAGE("MeshGems patch version = " << v_patch);
 
     int v_hex = (v_maj << 16 | v_min << 8 | v_patch);
-
     MESSAGE("v_hex: " << v_hex);
 
     return v_hex;
@@ -766,37 +783,37 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
    */
   //================================================================================
   std::string GetKey(const std::string& gmfFile,
-                    int                nbVertex,
-                    int                nbEdge,
-                    int                nbFace,
-                    int                nbVol,
-                    std::string&       error)
+                     int                nbVertex,
+                     int                nbEdge,
+                     int                nbFace,
+                     int                nbVol,
+                     std::string&       error)
   {
     // default key if MESHGEMS_OLD_STYLE or SPATIAL_LICENSE is set
     std::string key("0");
     const char *meshGemsOldStyleEnvVar( getenv( MESHGEMS_OLD_STYLE ) );
     if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 )
+    {
+      const char *spatialLicenseEnvVar( getenv( SPATIAL_LICENSE ) );
+      if ( !spatialLicenseEnvVar || strlen(spatialLicenseEnvVar) == 0 )
       {
-	const char *spatialLicenseEnvVar( getenv( SPATIAL_LICENSE ) );
-	if ( !spatialLicenseEnvVar || strlen(spatialLicenseEnvVar) == 0 )
-	  {
-	    if (NeedsMGSpatialEnvLicense(error))
-	      {
-		// if MG version > 2.15, set environment license, don't return it as a key
-		// otherwise it will be printed in the command line
-		MESSAGE("SPATIAL_LICENSE not in env => we add it from MGKeygen .so");
-		SetMGSpatialEnvLicense(error);
-	      }
-	    else
-	      {
-		// generate the key from the mesh info (MG 2.13 and 2.14)
-		MESSAGE("MG < 2.15 => get the key from MGKeygen .so and this mesh info");
-		key = GetKey_After(gmfFile,nbVertex,nbEdge,nbFace,nbVol,error);
-	      }
-	  }
-	else
-	  MESSAGE("SPATIAL_LICENSE already in env => we use it");
+        if (NeedsMGSpatialEnvLicense(error))
+        {
+          // if MG version > 2.15, set environment license, don't return it as a key
+          // otherwise it will be printed in the command line
+          MESSAGE("SPATIAL_LICENSE not in env => we add it from MGKeygen .so");
+          SetMGSpatialEnvLicense(error);
+        }
+        else
+        {
+          // generate the key from the mesh info (MG 2.13 and 2.14)
+          MESSAGE("MG < 2.15 => get the key from MGKeygen .so and this mesh info");
+          key = GetKey_After(gmfFile,nbVertex,nbEdge,nbFace,nbVol,error);
+        }
       }
+      else
+        MESSAGE("SPATIAL_LICENSE already in env => we use it");
+    }
     if (! error.empty())
       std::cerr << error;
     return key;
@@ -819,16 +836,16 @@ namespace SMESHUtils_MGLicenseKeyGen // API implementation
     if ( !meshGemsOldStyleEnvVar || strlen(meshGemsOldStyleEnvVar) == 0 ){
       const char *spatialLicenseEnvVar( getenv( SPATIAL_LICENSE ) );
       if ( !spatialLicenseEnvVar || strlen(spatialLicenseEnvVar) == 0 )
-	{
-	  MESSAGE("SPATIAL_LICENSE not in env => we add it from MGKeygen .so");
-	  // use new style, i.e. key in a library
-	  key = GetKey_After(error);
-	}
+      {
+        MESSAGE("SPATIAL_LICENSE not in env => we add it from MGKeygen .so");
+        // use new style, i.e. key in a library
+        key = GetKey_After(error);
+      }
       else
-	{
-	  MESSAGE("SPATIAL_LICENSE already in env => we use it");
-	  key = std::string(spatialLicenseEnvVar);
-	}
+      {
+        MESSAGE("SPATIAL_LICENSE already in env => we use it");
+        key = std::string(spatialLicenseEnvVar);
+      }
     }
     if (! error.empty())
       std::cerr << error;
