@@ -67,11 +67,6 @@ SET(BAD_TESTS
   SMESH_create_dual_mesh_tpipe.py
   netgen_runner.py
   )
-IF(NOT WIN32)
-  LIST(APPEND BAD_TESTS
-    test_smeshplugin_mg_tetra_parallele.py
-  )
-ENDIF(NOT WIN32)
 
 # The following tests can be executed with both 'make test' and 'salome test'.
 # ----------------------------------------------------------------------------
