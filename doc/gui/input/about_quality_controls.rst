@@ -47,6 +47,7 @@ Volume quality controls:
 
 * :ref:`aspect_ratio_3d_page`
 * :ref:`volume_page`
+* :ref:`warping_3d_page`
 * :ref:`max_element_length_3d_page`
 * :ref:`scaled_jacobian_page`
 * :ref:`bare_border_volumes_page`
@@ -98,6 +99,7 @@ To manage the quality controls call pop-up in the VTK viewer and select "Control
 	aspect_ratio_3d.rst
 	volume.rst
 	max_element_length_3d.rst
+	warping_3d.rst
 	bare_border_volumes.rst
 	over_constrained_volumes.rst
 	scalar_bar.rst

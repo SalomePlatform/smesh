@@ -1333,6 +1333,10 @@
         <translation>Angle de déformation</translation>
     </message>
     <message>
+        <source>MEN_WARP_3D</source>
+        <translation>Déformation 3D</translation>
+    </message>
+    <message>
         <source>MEN_WHAT_IS</source>
         <translation>Information sur un élément de maillage</translation>
     </message>
@@ -3936,6 +3940,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Angle de déformation</translation>
     </message>
     <message>
+        <source>STB_WARP_3D</source>
+        <translation>Déformation 3D</translation>
+    </message>
+    <message>
         <source>STB_WHAT_IS</source>
         <translation>Information sur un élément ou un nœud de maillage</translation>
     </message>
@@ -4656,6 +4664,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Angle de déformation</translation>
     </message>
     <message>
+        <source>TOP_WARP_3D</source>
+        <translation>Déformation 3D</translation>
+    </message>
+    <message>
         <source>TOP_WHAT_IS</source>
         <translation>Information sur l'élément de maillage</translation>
     </message>
@@ -4678,6 +4690,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>WARP_ELEMENTS</source>
         <translation>Déformation</translation>
+    </message>
+    <message>
+        <source>WARP_3D_ELEMENTS</source>
+        <translation>Déformation 3D</translation>
     </message>
     <message>
         <source>MEN_FILE_INFO</source>

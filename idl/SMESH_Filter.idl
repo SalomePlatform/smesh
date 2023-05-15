@@ -42,7 +42,8 @@ module SMESH
   {
     FT_AspectRatio,
     FT_AspectRatio3D,
-    FT_Warping,   
+    FT_Warping,
+    FT_Warping3D,
     FT_MinimumAngle,
     FT_Taper,       
     FT_Skew,         
@@ -138,6 +139,7 @@ module SMESH
   interface AspectRatio     : NumericalFunctor{};
   interface AspectRatio3D   : NumericalFunctor{};
   interface Warping         : NumericalFunctor{};
+  interface Warping3D       : NumericalFunctor {};
   interface Taper           : NumericalFunctor{};
   interface Skew            : NumericalFunctor{};
   interface Area            : NumericalFunctor{};
@@ -586,6 +588,7 @@ module SMESH
     AspectRatio        CreateAspectRatio();
     AspectRatio3D      CreateAspectRatio3D();
     Warping            CreateWarping();
+    Warping3D          CreateWarping3D();
     Taper              CreateTaper();
     Skew               CreateSkew();
     Area               CreateArea();

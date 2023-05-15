@@ -1132,6 +1132,10 @@
       <translation>変形の角度</translation>
     </message>
     <message>
+      <source>MEN_WARP_3D</source>
+      <translation>3Dワープ</translation>
+    </message>
+    <message>
       <source>MEN_WHAT_IS</source>
       <translation>メッシュ要素について</translation>
     </message>
@@ -3540,6 +3544,10 @@
       <translation>変形の角度</translation>
     </message>
     <message>
+      <source>STB_WARP_3D</source>
+      <translation>3Dワープ</translation>
+    </message>
+    <message>
       <source>STB_WHAT_IS</source>
       <translation>要素またはメッシュ ノードについて</translation>
     </message>
@@ -4208,6 +4216,10 @@
       <translation>変形の角度</translation>
     </message>
     <message>
+      <source>TOP_WARP_3D</source>
+      <translation>3Dワープ</translation>
+    </message>
+    <message>
       <source>TOP_WHAT_IS</source>
       <translation>メッシュの要素に関する情報</translation>
     </message>
@@ -4230,6 +4242,10 @@
     <message>
       <source>WARP_ELEMENTS</source>
       <translation>変形</translation>
+    </message>
+    <message>
+      <source>WARP_3D_ELEMENTS</source>
+      <translation>3D 変形</translation>
     </message>
     <message>
       <source>MEN_FILE_INFO</source>

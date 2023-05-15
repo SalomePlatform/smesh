@@ -226,6 +226,7 @@ class SMESH_ActorDef : public SMESH_Actor
 
   virtual void UpdateScalarBar();
   virtual void UpdateDistribution();
+  virtual SMESH_DeviceActor* GetActorForThreshold();
   virtual void ClipThreshold(bool isThresholdOn, double min = 0.0, double max = 0.0);
   virtual bool IsClipThresholdOn() const { return myIsClipThresholdOn; }
   virtual void SetWireframeOff(bool isWireframeOff);

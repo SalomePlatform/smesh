@@ -303,6 +303,8 @@ namespace {
     //   - FT_Length3D              = 22
     // v 9.12.0: FT_Undefined == 51, new items:
     //   - FT_ScaledJacobian        = 8
+    // v 9.12.0: FT_Undefined == 52, new items:
+    //   - FT_Warping3D             = 4
     //
     // It's necessary to continue recording this history and to fill
     // undef2newItems (see below) accordingly.
@@ -328,6 +330,7 @@ namespace {
       undef2newItems[ 49 ].push_back( 22 );
       undef2newItems[ 50 ].push_back( 22 );
       undef2newItems[ 51 ].push_back( 8 );
+      undef2newItems[ 52 ].push_back( 4 );
 
       ASSERT( undef2newItems.rbegin()->first == SMESH::FT_Undefined );
     }

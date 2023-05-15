@@ -47,6 +47,7 @@ SET(BAD_TESTS
   SMESH_box_tetra.py
   SMESH_controls.py
   SMESH_controls_scaled_jacobian.py
+  SMESH_controls_3D_warping.py
   SMESH_fixation_netgen.py
   SMESH_fixation_tetra.py
   SMESH_flight_skin.py

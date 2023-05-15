@@ -1013,6 +1013,14 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       myControlActor = my2DActor;
       break;
     }
+    case eWarping3D:
+    {
+      SMESH::Controls::Warping3D* aControl = new SMESH::Controls::Warping3D();
+      aControl->SetPrecision(myControlsPrecision);
+      myFunctor.reset(aControl);
+      myControlActor = my3DActor;
+      break;
+    }
     case eSkew:
     {
       SMESH::Controls::Skew* aControl = new SMESH::Controls::Skew();
@@ -1076,6 +1084,10 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       case eLength2D:
       case eMultiConnection2D:
         my1DExtActor->SetExtControlMode(myFunctor,myScalarBarActor,myLookupTable);
+        UpdateDistribution();
+        break;
+      case eWarping3D:
+        my2DExtActor->SetExtControlMode(myFunctor, myScalarBarActor, myLookupTable);
         UpdateDistribution();
         break;
       default:
@@ -1543,6 +1555,7 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
       case eBareBorderFace:
       case eOverConstrainedFace:
       case eCoincidentElems2D:
+      case eWarping3D:
         my2DExtActor->VisibilityOn();
         break;
       case eBareBorderVolume:
@@ -1558,7 +1571,8 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
     if ( GetPickable( ))
       myPickableActor->VisibilityOn();
 
-    if ( GetRepresentation() != ePoint )
+    if ( GetRepresentation() != ePoint && 
+      !(IsClipThresholdOn() && GetActorForThreshold() != myControlActor)) // Avoid calling VisibilityOn if for display result of Threshold Criteria need only ExtActor
     {
       if(myEntityMode & e0DElements  ){
         my0DActor->VisibilityOn();
@@ -2502,11 +2516,27 @@ void SMESH_ActorDef::UpdateScalarBar()
 
 }
 
-// Hides the cells beyond threshold if isThresholdOn == true.
-void SMESH_ActorDef::ClipThreshold(bool isThresholdOn, double min /*= 0.0*/, double max /*= 0.0*/)
+// Get Actor for Threshold criteria compute
+SMESH_DeviceActor* SMESH_ActorDef::GetActorForThreshold()
 {
+  switch (myControlMode) {
+  case eLength2D:
+    return my1DExtActor;
+  case eWarping3D:
+    return my2DExtActor;
+  default:;
+    return myControlActor;
+  }
+}
+
+// Hides the cells beyond threshold if isThresholdOn == true.
+void SMESH_ActorDef::ClipThreshold(bool isThresholdOn,double min /*= 0.0*/, double max /*= 0.0*/)
+{
+  SMESH_DeviceActor* anActor = GetActorForThreshold();
+  if (anActor != myControlActor)
+    myControlActor->VisibilityOff();
+
   myIsClipThresholdOn = isThresholdOn;
-  
   if (isThresholdOn)
   {
     // Initialize the filter
@@ -2514,7 +2544,7 @@ void SMESH_ActorDef::ClipThreshold(bool isThresholdOn, double min /*= 0.0*/, dou
 
     // We have set scalar data with SMESH_DeviceActor::SetControlMode() call as vtkDataSetAttributes::SCALARS.
     // So, we don't need to pass an array name in SetInputArrayToProcess().
-    threshold->SetInputConnection(myControlActor->myMergeFilter->GetOutputPort());               
+    threshold->SetInputConnection(anActor->myMergeFilter->GetOutputPort());
     threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, vtkDataSetAttributes::SCALARS);
 
     // Set range
@@ -2528,12 +2558,18 @@ void SMESH_ActorDef::ClipThreshold(bool isThresholdOn, double min /*= 0.0*/, dou
 
     // Add to the filters' chain
     vtkAlgorithmOutput* port = threshold->GetOutputPort();
-    myControlActor->myPassFilter[0]->SetInputConnection(port);
+    anActor->myPassFilter[0]->SetInputConnection(port);
   }
   else
   {
     // Restore the filters' chain
-    myControlActor->SetImplicitFunctionUsed(myControlActor->myIsImplicitFunctionUsed);
+    anActor->SetImplicitFunctionUsed(anActor->myIsImplicitFunctionUsed);
+    // Restore Actor filters when after Controls, which not use ExtACtor was called Controls, which use ExtActor
+    // For avoid artifact's
+    if (anActor != myControlActor)
+      myControlActor->SetImplicitFunctionUsed(myControlActor->myIsImplicitFunctionUsed);
+
+    myControlActor->VisibilityOn();
   }
 }
 

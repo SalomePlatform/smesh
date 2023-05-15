@@ -1203,6 +1203,8 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             functor = aFilterMgr.CreateAspectRatio3D()
         elif theCriterion == FT_Warping:
             functor = aFilterMgr.CreateWarping()
+        elif theCriterion == FT_Warping3D:
+            functor = aFilterMgr.CreateWarping3D()
         elif theCriterion == FT_MinimumAngle:
             functor = aFilterMgr.CreateMinimumAngle()
         elif theCriterion == FT_Taper:
@@ -7459,6 +7461,19 @@ class Mesh(metaclass = MeshMeta):
         """
 
         return self.FunctorValue(SMESH.FT_Warping, elemId)
+
+    def GetWarping3D(self, elemId):
+        """
+        Get warping angle of faces element of 3D elements.
+
+        Parameters:
+            elemId: mesh element ID
+
+        Returns:
+            element's warping angle value
+        """
+
+        return self.FunctorValue(SMESH.FT_Warping3D, elemId)
 
     def GetMinimumAngle(self, elemId):
         """

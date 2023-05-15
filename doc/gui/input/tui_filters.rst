@@ -97,6 +97,24 @@ filters 2D mesh elements (faces) according to the warping angle value:
 
 **See also:** :ref:`tui_warping`
 
+.. _filter_warping_3d:
+
+Warping 3D
+=============
+
+filters 3D mesh elements (volumes) according to the maximum warping angle value of the faces of volumes:
+
+* element type is *SMESH.VOLUME*
+* functor type is *SMESH.FT_Warping3D*
+* threshold is floating point value (warping angle)
+
+.. literalinclude:: ../../examples/filters_ex41.py
+    :language: python
+
+:download:`Download this script <../../examples/filters_ex41.py>`
+
+**See also:** :ref:`tui_warping_3d`
+
 .. _filter_minimum_angle:
 
 Minimum angle

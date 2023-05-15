@@ -1674,6 +1674,8 @@ QString SMESHGUI_ElemInfo::ctrl2str( int control )
     title = tr( "ASPECTRATIO_3D_ELEMENTS" ); break;
   case SMESH::FT_Warping:
     title = tr( "WARP_ELEMENTS" ); break;
+  case SMESH::FT_Warping3D:
+    title = tr( "WARP_3D_ELEMENTS" ); break;
   case SMESH::FT_MinimumAngle:
     title = tr( "MINIMUMANGLE_ELEMENTS" ); break;
   case SMESH::FT_Taper:

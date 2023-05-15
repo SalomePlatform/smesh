@@ -116,6 +116,10 @@
         <translation>Aspect Ratio 3D</translation>
     </message>
     <message>
+        <source>WARPING_3D_ELEMENTS</source>
+        <translation>Warping 3D</translation>
+    </message>
+    <message>
         <source>ASPECTRATIO_ELEMENTS</source>
         <translation>Aspect Ratio</translation>
     </message>
@@ -1331,6 +1335,10 @@
     <message>
         <source>MEN_WARP</source>
         <translation>Warping Angle</translation>
+    </message>
+    <message>
+        <source>MEN_WARP_3D</source>
+        <translation>Warping 3D</translation>
     </message>
     <message>
         <source>MEN_WHAT_IS</source>
@@ -3937,6 +3945,10 @@ Use Display Entity menu command to show them.
         <translation>Warping angle</translation>
     </message>
     <message>
+        <source>STB_WARP_3D</source>
+        <translation>Warping angle</translation>
+    </message>
+    <message>
         <source>STB_WHAT_IS</source>
         <translation>Show information about the mesh node or element</translation>
     </message>
@@ -4657,6 +4669,10 @@ Use Display Entity menu command to show them.
         <translation>Warping angle</translation>
     </message>
     <message>
+        <source>TOP_WARP_3D</source>
+        <translation>Warping 3D</translation>
+    </message>
+    <message>
         <source>TOP_WHAT_IS</source>
         <translation>Mesh Element Information</translation>
     </message>
@@ -4679,6 +4695,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>WARP_ELEMENTS</source>
         <translation>Warping</translation>
+    </message>
+    <message>
+        <source>WARP_3D_ELEMENTS</source>
+        <translation>Warping 3D</translation>
     </message>
     <message>
         <source>MEN_FILE_INFO</source>
@@ -6296,6 +6316,10 @@ Please check input data and try again</translation>
     <message>
         <source>ASPECT_RATIO_3D</source>
         <translation>Aspect ratio 3D</translation>
+    </message>
+    <message>
+        <source>WARPING_3D</source>
+        <translation>Warping 3D</translation>
     </message>
     <message>
         <source>BAD_ORIENTED_VOLUME</source>

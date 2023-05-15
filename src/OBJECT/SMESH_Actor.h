@@ -38,6 +38,7 @@
 class vtkUnstructuredGrid;
 
 class SMESH_ScalarBarActor;
+class SMESH_DeviceActor;
 
 class vtkPlane;
 class vtkImplicitBoolean;
@@ -139,7 +140,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   enum eControl{eNone, eLength, eLength2D, eDeflection2D, eFreeBorders, eFreeEdges, eFreeNodes,
                 eFreeFaces, eMultiConnection, eArea, eTaper, eAspectRatio,
-                eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eMultiConnection2D, eVolume3D, eScaledJacobian,
+                eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eWarping3D, eMultiConnection2D, eVolume3D, eScaledJacobian,
                 eMaxElementLength2D, eMaxElementLength3D, eBareBorderFace, eBareBorderVolume,
                 eOverConstrainedFace, eOverConstrainedVolume, eCoincidentNodes,
                 eCoincidentElems1D, eCoincidentElems2D, eCoincidentElems3D, eNodeConnectivityNb,
@@ -167,6 +168,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void UpdateScalarBar() = 0;
   virtual void UpdateDistribution() = 0;
   virtual void ClipThreshold(bool isThresholdOn, double min = 0.0, double max = 0.0) = 0;
+  virtual SMESH_DeviceActor* GetActorForThreshold() = 0;
   virtual bool IsClipThresholdOn() const = 0;
   virtual void SetWireframeOff(bool isWireframeOff) = 0;
   virtual bool IsWireframeOff() const = 0;

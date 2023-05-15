@@ -164,6 +164,19 @@ namespace SMESH
     Warping_i();
     FunctorType                     GetFunctorType();
   };
+
+  /*
+    Class       : Warping3D_i
+    Description : Functor for calculating 3D warping
+  */
+  class SMESH_I_EXPORT Warping3D_i : public virtual POA_SMESH::Warping3D,
+    public virtual NumericalFunctor_i
+  {
+  public:
+    Warping3D_i();
+    FunctorType                     GetFunctorType();
+  };
+
   
   
   /*
@@ -1121,6 +1134,7 @@ namespace SMESH
     AspectRatio_ptr           CreateAspectRatio();
     AspectRatio3D_ptr         CreateAspectRatio3D();
     Warping_ptr               CreateWarping();
+    Warping3D_ptr             CreateWarping3D();
     Taper_ptr                 CreateTaper();
     Skew_ptr                  CreateSkew();
     Area_ptr                  CreateArea();

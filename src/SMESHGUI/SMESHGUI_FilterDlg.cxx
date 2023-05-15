@@ -1563,6 +1563,7 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
   bool isDbl = ( aCriterion == SMESH::FT_AspectRatio        ||
                  aCriterion == SMESH::FT_AspectRatio3D      ||
                  aCriterion == SMESH::FT_Warping            ||
+                 aCriterion == SMESH::FT_Warping3D          ||
                  aCriterion == SMESH::FT_MinimumAngle       ||
                  aCriterion == SMESH::FT_Taper              ||
                  aCriterion == SMESH::FT_Skew               ||
@@ -1606,6 +1607,7 @@ const char* SMESHGUI_FilterTable::getPrecision( const int aType )
   case SMESH::FT_Taper:
     retval = "parametric_precision"; break;
   case SMESH::FT_Warping:
+  case SMESH::FT_Warping3D:
   case SMESH::FT_MinimumAngle:
   case SMESH::FT_Skew:
   case SMESH::FT_CoplanarFaces:
@@ -1812,6 +1814,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int /*col*/,
   case SMESH::FT_AspectRatio:
   case SMESH::FT_AspectRatio3D:
   case SMESH::FT_Warping:
+  case SMESH::FT_Warping3D:
   case SMESH::FT_MinimumAngle:
   case SMESH::FT_Taper:
   case SMESH::FT_Skew:
@@ -2270,6 +2273,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
     if (aCriteria.isEmpty())
     {
       aCriteria[ SMESH::FT_AspectRatio3D        ] = tr("ASPECT_RATIO_3D");
+      aCriteria[ SMESH::FT_Warping3D            ] = tr("WARPING_3D");
       aCriteria[ SMESH::FT_RangeOfIds           ] = tr("RANGE_OF_IDS");
       aCriteria[ SMESH::FT_BelongToMeshGroup    ] = tr("BELONG_TO_MESH_GROUP");
       aCriteria[ SMESH::FT_BelongToGeom         ] = tr("BELONG_TO_GEOM");

@@ -908,6 +908,9 @@ bool SMESH::SelectionProxy::elementControl( int id, int control, double precisio
       case SMESH::FT_Warping:
         functor.reset( new SMESH::Controls::Warping() );
         break;
+      case SMESH::FT_Warping3D:
+        functor.reset(new SMESH::Controls::Warping3D());
+        break;
       case SMESH::FT_MinimumAngle:
         functor.reset( new SMESH::Controls::MinimumAngle() );
         break;
@@ -978,6 +981,9 @@ bool SMESH::SelectionProxy::elementControl( int id, int control, double precisio
         break;
       case SMESH::FT_Warping:
         functor = manager->CreateWarping();
+        break;
+      case SMESH::FT_Warping3D:
+        functor = manager->CreateWarping3D();
         break;
       case SMESH::FT_MinimumAngle:
         functor = manager->CreateMinimumAngle();

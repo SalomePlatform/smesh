@@ -409,6 +409,7 @@ namespace SMESH
       case FT_AspectRatio:           myStream<< "aAspectRatio";           break;
       case FT_AspectRatio3D:         myStream<< "aAspectRatio3D";         break;
       case FT_Warping:               myStream<< "aWarping";               break;
+      case FT_Warping3D:             myStream<< "aWarping3D";             break;
       case FT_MinimumAngle:          myStream<< "aMinimumAngle";          break;
       case FT_Taper:                 myStream<< "aTaper";                 break;
       case FT_Skew:                  myStream<< "aSkew";                  break;

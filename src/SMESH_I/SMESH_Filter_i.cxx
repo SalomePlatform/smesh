@@ -399,6 +399,20 @@ namespace SMESH {
     return SMESH::FT_Warping;
   }
 
+  /*
+    Class       : Warping3D_i
+    Description : Functor for calculating warping
+  */
+  Warping3D_i::Warping3D_i()
+  {
+    myNumericalFunctorPtr.reset(new Controls::Warping3D());
+    myFunctorPtr = myNumericalFunctorPtr;
+  }
+
+  FunctorType Warping3D_i::GetFunctorType()
+  {
+    return SMESH::FT_Warping3D;
+  }
 
   /*
     Class       : Taper_i
@@ -2106,6 +2120,14 @@ namespace SMESH {
   }
 
 
+  Warping3D_ptr FilterManager_i::CreateWarping3D()
+  {
+    SMESH::Warping3D_i* aServant = new SMESH::Warping3D_i();
+    SMESH::Warping3D_var anObj = aServant->_this();
+    TPythonDump() << aServant << " = " << this << ".CreateWarping3D()";
+    return anObj._retn();
+  }
+
   Taper_ptr FilterManager_i::CreateTaper()
   {
     SMESH::Taper_i* aServant = new SMESH::Taper_i();
@@ -3071,6 +3093,9 @@ namespace SMESH {
         case SMESH::FT_Warping:
           aFunctor = aFilterMgr->CreateWarping();
           break;
+        case SMESH::FT_Warping3D:
+          aFunctor = aFilterMgr->CreateWarping3D();
+          break;
         case SMESH::FT_MinimumAngle:
           aFunctor = aFilterMgr->CreateMinimumAngle();
           break;
@@ -3532,6 +3557,7 @@ namespace SMESH {
     {
       case FT_AspectRatio           : return "Aspect ratio";
       case FT_Warping               : return "Warping";
+      case FT_Warping3D             : return "Warping 3D";
       case FT_MinimumAngle          : return "Minimum angle";
       case FT_Taper                 : return "Taper";
       case FT_Skew                  : return "Skew";
@@ -3589,6 +3615,7 @@ namespace SMESH {
   {
     if      ( theStr.equals( "Aspect ratio"                 ) ) return FT_AspectRatio;
     else if ( theStr.equals( "Warping"                      ) ) return FT_Warping;
+    else if ( theStr.equals( "Warping 3D"                   ) ) return FT_Warping3D;
     else if ( theStr.equals( "Minimum angle"                ) ) return FT_MinimumAngle;
     else if ( theStr.equals( "Taper"                        ) ) return FT_Taper;
     else if ( theStr.equals( "Skew"                         ) ) return FT_Skew;
@@ -4163,6 +4190,7 @@ namespace SMESH {
       "FT_AspectRatio",
       "FT_AspectRatio3D",
       "FT_Warping",
+      "FT_Warping3D",
       "FT_MinimumAngle",
       "FT_Taper",
       "FT_Skew",

@@ -1423,21 +1423,7 @@ bool Warping::IsApplicable( const SMDS_MeshElement* element ) const
 
 double Warping::GetValue( const TSequenceOfXYZ& P )
 {
-  if ( P.size() != 4 )
-    return 0;
-
-  gp_XYZ G = ( P( 1 ) + P( 2 ) + P( 3 ) + P( 4 ) ) / 4.;
-
-  double A1 = ComputeA( P( 1 ), P( 2 ), P( 3 ), G );
-  double A2 = ComputeA( P( 2 ), P( 3 ), P( 4 ), G );
-  double A3 = ComputeA( P( 3 ), P( 4 ), P( 1 ), G );
-  double A4 = ComputeA( P( 4 ), P( 1 ), P( 2 ), G );
-
-  double val = Max( Max( A1, A2 ), Max( A3, A4 ) );
-
-  const double eps = 0.1; // val is in degrees
-
-  return val < eps ? 0. : val;
+  return ComputeValue(P);
 }
 
 double Warping::ComputeA( const gp_XYZ& thePnt1,
@@ -1464,6 +1450,25 @@ double Warping::ComputeA( const gp_XYZ& thePnt1,
   return asin( fabs( H / L ) ) * 180. / M_PI;
 }
 
+double Warping::ComputeValue(const TSequenceOfXYZ& thePoints) const
+{
+  if (thePoints.size() != 4)
+    return 0;
+
+  gp_XYZ G = (thePoints(1) + thePoints(2) + thePoints(3) + thePoints(4)) / 4.;
+
+  double A1 = ComputeA(thePoints(1), thePoints(2), thePoints(3), G);
+  double A2 = ComputeA(thePoints(2), thePoints(3), thePoints(4), G);
+  double A3 = ComputeA(thePoints(3), thePoints(4), thePoints(1), G);
+  double A4 = ComputeA(thePoints(4), thePoints(1), thePoints(2), G);
+
+  double val = Max(Max(A1, A2), Max(A3, A4));
+
+  const double eps = 0.1; // val is in degrees
+
+  return val < eps ? 0. : val;
+}
+
 double Warping::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
   // the warp is in the range [0.0,PI/2]
@@ -1477,6 +1482,93 @@ SMDSAbs_ElementType Warping::GetType() const
   return SMDSAbs_Face;
 }
 
+
+//================================================================================
+/*
+  Class       : Warping3D
+  Description : Functor for calculating warping
+*/
+//================================================================================
+
+bool Warping3D::IsApplicable(const SMDS_MeshElement* element) const
+{
+  return NumericalFunctor::IsApplicable(element);//&& element->NbNodes() == 4;
+}
+
+double Warping3D::GetValue(long theId)
+{
+  double aVal = 0;
+  myCurrElement = myMesh->FindElement(theId);
+  if (myCurrElement)
+  {
+    WValues aValues;
+    ProcessVolumeELement(aValues);
+    for (const auto& aValue: aValues)
+    {
+      aVal = Max(aVal, aValue.myWarp);
+    }
+  }
+  return aVal;
+}
+
+double Warping3D::GetValue(const TSequenceOfXYZ& P)
+{
+  return ComputeValue(P);
+}
+
+SMDSAbs_ElementType Warping3D::GetType() const
+{
+  return SMDSAbs_Volume;
+}
+
+bool Warping3D::Value::operator<(const Warping3D::Value& x) const
+{
+  if (myPntIds.size() != x.myPntIds.size())
+    return myPntIds.size() < x.myPntIds.size();
+
+  for (int anInd = 0; anInd < myPntIds.size(); ++anInd)
+    if (myPntIds[anInd] != x.myPntIds[anInd])
+      return myPntIds[anInd] != x.myPntIds[anInd];
+
+  return false;
+}
+
+// Compute value on each face of volume
+void Warping3D::ProcessVolumeELement(WValues& theValues)
+{
+  SMDS_VolumeTool aVTool(myCurrElement);
+  double aCoord[3];
+  for (int aFaceID = 0; aFaceID < aVTool.NbFaces(); ++aFaceID)
+  {
+    TSequenceOfXYZ aPoints;
+    std::set<const SMDS_MeshNode*> aNodes;
+    std::vector<long> aNodeIds;
+    const SMDS_MeshNode** aNodesPtr = aVTool.GetFaceNodes(aFaceID);
+
+    if (aNodesPtr)
+    {
+      for (int i = 0; i < aVTool.NbFaceNodes(aFaceID); ++i)
+      {
+        aNodesPtr[i]->GetXYZ(aCoord);
+        aPoints.push_back(gp_XYZ{ aCoord[0], aCoord[1], aCoord[2] });
+        aNodeIds.push_back(aNodesPtr[i]->GetID());
+      }
+      double aWarp = GetValue(aPoints);
+      Value aVal{ aWarp, aNodeIds };
+
+      theValues.push_back(aVal);
+    }
+  }
+}
+
+void Warping3D::GetValues(WValues& theValues)
+{
+  for (SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator(); anIter->more(); )
+  {
+    myCurrElement = anIter->next();
+    ProcessVolumeELement(theValues);
+  }
+}
 
 //================================================================================
 /*

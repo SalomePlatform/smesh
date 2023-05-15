@@ -246,9 +246,35 @@ namespace SMESH{
       virtual SMDSAbs_ElementType GetType() const;
       virtual bool IsApplicable( const SMDS_MeshElement* element ) const;
 
-    private:
+    protected:
       double ComputeA( const gp_XYZ&, const gp_XYZ&, const gp_XYZ&, const gp_XYZ& ) const;
+      double ComputeValue( const TSequenceOfXYZ& thePoints ) const;
     };
+
+    /*
+      Class       : Warping3D
+      Description : Functor for calculating warping
+    */
+    class SMESHCONTROLS_EXPORT Warping3D: public virtual Warping {
+    public:
+      virtual bool IsApplicable(const SMDS_MeshElement* element) const;
+      virtual double GetValue(const TSequenceOfXYZ& thePoints);
+      virtual double GetValue(long theId);
+      virtual SMDSAbs_ElementType GetType() const;
+      
+      struct Value {
+        double myWarp;
+        std::vector<long> myPntIds;
+        bool operator<(const Value& x) const;
+      };
+
+      typedef std::vector<Value> WValues;
+      void GetValues(WValues& theValues);
+
+    private:
+      void ProcessVolumeELement(WValues& theValues);
+    };
+    typedef boost::shared_ptr<Warping3D> Warping3DPtr;
   
   
     /*

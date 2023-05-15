@@ -1121,6 +1121,8 @@ namespace
       type = QObject::tr( "ASPECTRATIO_3D_ELEMENTS" );
     else if ( dynamic_cast< SMESH::Controls::Warping* >( f.get() ) )
       type = QObject::tr( "WARP_ELEMENTS" );
+    else if (dynamic_cast<SMESH::Controls::Warping3D*>(f.get()))
+      type = QObject::tr("WARP_3D_ELEMENTS");
     else if ( dynamic_cast< SMESH::Controls::Taper* >( f.get() ) )
       type = QObject::tr( "TAPER_ELEMENTS" );
     else if ( dynamic_cast< SMESH::Controls::Skew* >( f.get() ) )
@@ -1780,6 +1782,7 @@ namespace
     ActionControl.Bind( SMESHOp::OpMaxElementLength2D,    SMESH_Actor::eMaxElementLength2D );
     ActionControl.Bind( SMESHOp::OpEqualFace,             SMESH_Actor::eCoincidentElems2D );
     ActionControl.Bind( SMESHOp::OpAspectRatio3D,         SMESH_Actor::eAspectRatio3D );
+    ActionControl.Bind( SMESHOp::OpWarping3D,             SMESH_Actor::eWarping3D );
     ActionControl.Bind( SMESHOp::OpVolume,                SMESH_Actor::eVolume3D );
     ActionControl.Bind( SMESHOp::OpScaledJacobian,        SMESH_Actor::eScaledJacobian );
     ActionControl.Bind( SMESHOp::OpMaxElementLength3D,    SMESH_Actor::eMaxElementLength3D );
@@ -3906,6 +3909,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpMaxElementLength2D:
   case SMESHOp::OpEqualFace:
   case SMESHOp::OpAspectRatio3D:
+  case SMESHOp::OpWarping3D:
   case SMESHOp::OpVolume:
   case SMESHOp::OpScaledJacobian:
   case SMESHOp::OpMaxElementLength3D:
@@ -4214,6 +4218,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpMaxElementLength2D,    "MAX_ELEMENT_LENGTH_2D",   "ICON_MAX_ELEMENT_LENGTH_2D",   0, true );
   createSMESHAction( SMESHOp::OpEqualFace,             "EQUAL_FACE",              "ICON_EQUAL_FACE",    0, true );
   createSMESHAction( SMESHOp::OpAspectRatio3D,         "ASPECT_3D",               "ICON_ASPECT_3D",     0, true );
+  createSMESHAction( SMESHOp::OpWarping3D,             "WARP_3D",                 "ICON_WARP",          0, true);
   createSMESHAction( SMESHOp::OpVolume,                "VOLUME_3D",               "ICON_VOLUME_3D",     0, true );
   createSMESHAction( SMESHOp::OpMaxElementLength3D,    "MAX_ELEMENT_LENGTH_3D",   "ICON_MAX_ELEMENT_LENGTH_3D",   0, true );
   createSMESHAction( SMESHOp::OpBareBorderVolume,      "BARE_BORDER_VOLUME",      "ICON_BARE_BORDER_VOLUME",      0, true );
@@ -4359,7 +4364,7 @@ void SMESHGUI::initialize( CAM_Application* app )
                << SMESHOp::OpMinimumAngle << SMESHOp::OpWarpingAngle << SMESHOp::OpSkew
                << SMESHOp::OpMaxElementLength2D << SMESHOp::OpBareBorderFace
                << SMESHOp::OpOverConstrainedFace << SMESHOp::OpEqualFace                // face controls
-               << SMESHOp::OpAspectRatio3D << SMESHOp::OpVolume
+               << SMESHOp::OpAspectRatio3D << SMESHOp::OpVolume << SMESHOp::OpWarping3D
                << SMESHOp::OpMaxElementLength3D << SMESHOp::OpBareBorderVolume
                << SMESHOp::OpOverConstrainedVolume << SMESHOp::OpEqualVolume << SMESHOp::OpScaledJacobian; // volume controls
   QActionGroup* aCtrlGroup = new QActionGroup( application()->desktop() );
@@ -4472,6 +4477,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpEqualFace,             faceId,   -1 );
   createMenu( SMESHOp::OpDeflection2D,          faceId,   -1 );
   createMenu( SMESHOp::OpAspectRatio3D,         volumeId, -1 );
+  createMenu( SMESHOp::OpWarping3D,             volumeId, -1 );
   createMenu( SMESHOp::OpVolume,                volumeId, -1 );
   createMenu( SMESHOp::OpMaxElementLength3D,    volumeId, -1 );
   createMenu( SMESHOp::OpBareBorderVolume,      volumeId, -1 );
@@ -4631,6 +4637,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   int ctrl3dTb = createTool( tr( "TB_CTRL3D" ), QString( "SMESHVolumeControlsToolbar" ) ) ;
   createTool( SMESHOp::OpAspectRatio3D,         ctrl3dTb );
+  createTool( SMESHOp::OpWarping3D,             ctrl3dTb );
   createTool( SMESHOp::OpVolume,                ctrl3dTb );
   createTool( SMESHOp::OpMaxElementLength3D,    ctrl3dTb );
   createTool( SMESHOp::OpBareBorderVolume,      ctrl3dTb );
@@ -5094,6 +5101,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( SMESHOp::OpAspectRatio3D  ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpAspectRatio3D ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpAspectRatio3D ), "controlMode = 'eAspectRatio3D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( SMESHOp::OpWarping3D ), aSubId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpWarping3D ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpWarping3D), "controlMode = 'eWarping3D'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert ( action( SMESHOp::OpVolume ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpVolume ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );

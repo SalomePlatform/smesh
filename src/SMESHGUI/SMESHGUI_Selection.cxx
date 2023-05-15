@@ -377,6 +377,7 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     case SMESH_Actor::eTaper:                 mode = "eTaper";                 break;
     case SMESH_Actor::eAspectRatio:           mode = "eAspectRatio";           break;
     case SMESH_Actor::eAspectRatio3D:         mode = "eAspectRatio3D";         break;
+    case SMESH_Actor::eWarping3D:             mode = "eWarping3D";             break;
     case SMESH_Actor::eMinimumAngle:          mode = "eMinimumAngle";          break;
     case SMESH_Actor::eWarping:               mode = "eWarping";               break;
     case SMESH_Actor::eSkew:                  mode = "eSkew";                  break;
@@ -438,6 +439,7 @@ bool SMESHGUI_Selection::isNumFunctor( int ind ) const
     case SMESH_Actor::eAspectRatio3D:
     case SMESH_Actor::eMinimumAngle:
     case SMESH_Actor::eWarping:
+    case SMESH_Actor::eWarping3D:
     case SMESH_Actor::eSkew:
       result = true;
       break;

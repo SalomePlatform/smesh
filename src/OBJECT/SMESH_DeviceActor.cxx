@@ -507,6 +507,80 @@ SMESH_DeviceActor
       myMergeFilter->SetScalarsData(aDataSet);
       aDataSet->Delete();
     }
+    else if (Warping3D* aWarping3D = dynamic_cast<Warping3D*>(theFunctor.get())){
+
+      SMESH::Controls::Warping3D::WValues aValues;
+
+      aWarping3D->GetValues(aValues);
+      vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
+      vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
+
+      aDataSet->SetPoints(aGrid->GetPoints());
+
+      vtkIdType aNbCells = aValues.size();
+
+      vtkDoubleArray* aScalars = vtkDoubleArray::New();
+      aScalars->SetNumberOfComponents(1);
+      aScalars->SetNumberOfTuples(aNbCells);
+
+      vtkIdType aCellsSize = 3 * aNbCells;
+      vtkCellArray* aConnectivity = vtkCellArray::New();
+      aConnectivity->Allocate(aCellsSize, 0);
+
+      vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
+      aCellTypesArray->SetNumberOfComponents(1);
+      aCellTypesArray->Allocate(aNbCells* aCellTypesArray->GetNumberOfComponents());
+
+      Warping3D::WValues::const_iterator anIter = aValues.begin();
+      aNbCells = 0;
+      for (; anIter != aValues.end(); anIter++) {
+
+        const Warping3D::Value& aValue = *anIter;
+        vtkIdList* anIdList = vtkIdList::New();
+        anIdList->SetNumberOfIds(aValue.myPntIds.size());
+        bool isExist = true;
+        for (int i = 0; i < aValue.myPntIds.size(); ++i)
+        {
+          int aVTKId = myVisualObj->GetNodeVTKId(aValue.myPntIds[i]);
+          if (aVTKId < 0)
+          {
+            isExist = false;
+            break;
+          }
+          anIdList->SetId(i, aVTKId);
+        }
+        if (isExist)
+        {
+          aConnectivity->InsertNextCell(anIdList);
+          aCellTypesArray->InsertNextValue(VTK_POLYGON);
+          aScalars->SetValue(aNbCells, aValue.myWarp);
+          aNbCells++;
+        }
+      }
+      aCellTypesArray->SetNumberOfTuples(aNbCells);
+      aScalars->SetNumberOfTuples(aNbCells);
+
+      vtkIdTypeArray* aCellLocationsArray = vtkIdTypeArray::New();
+      aCellLocationsArray->SetNumberOfComponents(1);
+      aCellLocationsArray->SetNumberOfTuples(aNbCells);
+
+      aConnectivity->InitTraversal();
+      vtkIdType const* pts(nullptr);
+      for (vtkIdType idType = 0, npts; aConnectivity->GetNextCell(npts, pts); idType++)
+        aCellLocationsArray->SetValue(idType, aConnectivity->GetTraversalLocation(npts));
+
+      aDataSet->SetCells(aCellTypesArray, aCellLocationsArray, aConnectivity);
+      SetUnstructuredGrid(aDataSet);
+
+      aDataSet->GetCellData()->SetScalars(aScalars);
+      aScalars->Delete();
+
+      theLookupTable->SetRange(aScalars->GetRange());
+      theLookupTable->Build();
+
+      myMergeFilter->SetScalarsData(aDataSet);
+      aDataSet->Delete();
+    }
   }
   GetMapper()->SetScalarVisibility(anIsInitialized);
   theScalarBarActor->SetVisibility(anIsInitialized);

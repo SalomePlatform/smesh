@@ -250,3 +250,13 @@ Scaled Jacobian
     :language: python
 
 :download:`Download this script <../../examples/quality_controls_ex24.py>`
+
+.. _tui_warping_3d: 
+
+Warping 3D
+=======
+
+.. literalinclude:: ../../examples/quality_controls_ex23.py
+    :language: python
+
+:download:`Download this script <../../examples/quality_controls_ex23.py>`
