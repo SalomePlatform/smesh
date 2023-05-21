@@ -645,6 +645,7 @@ namespace SMESH
       try {
         CORBA::String_var error;
         res = aMesh->AddHypothesis(aShapeObject, aHyp, error.out());
+        UpdateViewer(aMesh);
         if (res > SMESH::HYP_OK) {
           wc.suspend();
           processHypothesisStatus(res, aHyp, true, error.in() );
@@ -676,6 +677,7 @@ namespace SMESH
         {
           CORBA::String_var error;
           res = aMesh->AddHypothesis( aShapeObject, aHyp, error.out() );
+          UpdateViewer(aMesh);
           if (res > SMESH::HYP_OK) {
             wc.suspend();
             processHypothesisStatus( res, aHyp, true, error.in() );
@@ -764,12 +766,7 @@ namespace SMESH
             processHypothesisStatus(res, anHyp, false);
             wc.resume();
           }
-          if ( _PTR(SObject) meshSO = SMESH::FindSObject(aMesh) )
-          {
-            if ( SMESH_Actor* actor = SMESH::FindActorByEntry( meshSO->GetID().c_str() ))
-              if( actor->GetVisibility() )
-                actor->Update();
-          }
+          UpdateViewer(aMesh);
         }
       } catch(const SALOME::SALOME_Exception& S_ex) {
         wc.suspend();
@@ -778,6 +775,16 @@ namespace SMESH
       }
     }
     return res < SMESH::HYP_UNKNOWN_FATAL;
+  } 
+
+  void UpdateViewer(SMESH::SMESH_Mesh_ptr theMesh)
+  {
+    if (_PTR(SObject) meshSO = SMESH::FindSObject(theMesh))
+    {
+      if (SMESH_Actor* actor = SMESH::FindActorByEntry(meshSO->GetID().c_str()))
+        if (actor->GetVisibility())
+          actor->Update();
+    }
   }
 
   SObjectList GetMeshesUsingAlgoOrHypothesis(SMESH::SMESH_Hypothesis_ptr AlgoOrHyp)

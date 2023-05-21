@@ -115,6 +115,8 @@ namespace SMESH
   bool RemoveHypothesisOrAlgorithmOnMesh( _PTR(SObject),
                                           SMESH::SMESH_Hypothesis_ptr );
 
+  SMESHGUI_EXPORT void UpdateViewer(SMESH::SMESH_Mesh_ptr);
+
   typedef std::vector<_PTR(SObject)> SObjectList;
   SMESHGUI_EXPORT
   SObjectList GetMeshesUsingAlgoOrHypothesis( SMESH::SMESH_Hypothesis_ptr );

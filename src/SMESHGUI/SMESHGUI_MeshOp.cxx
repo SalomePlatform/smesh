@@ -158,7 +158,7 @@ bool SMESHGUI_MeshOp::onApply()
     if (( myToCreate && !myIsMesh ) || myIsInvalidSubMesh )
       aResult = createSubMesh( aMess, anEntryList );
     else if ( !myToCreate )
-      aResult = editMeshOrSubMesh( aMess );
+      aResult = editMeshOrSubMesh( aMess, anEntryList );
     if ( aResult )
     {
       SMESHGUI::Modified();
@@ -2577,13 +2577,14 @@ int SMESHGUI_MeshOp::find( const SMESH::SMESH_Hypothesis_var& theHyp,
 //================================================================================
 /*!
  * \brief Edits mesh or sub-mesh
-  * \param theMess - Output parameter intended for returning error message
-  * \retval bool  - TRUE if mesh is edited successfully, FALSE otherwise
+  * \param theMess      - Output parameter intended for returning error message
+ *  \param theEntryList - List of entries of published objects
+  * \retval bool        - TRUE if mesh is edited successfully, FALSE otherwise
  *
  * Assigns new name hypotheses and algorithms to the mesh or sub-mesh
  */
 //================================================================================
-bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
+bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess, QStringList& theEntryList)
 {
   theMess = "";
 
@@ -2627,6 +2628,12 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
   bool isMesh = !aMesh->_is_nil();
   if ( !isMesh && !aSubMeshVar->_is_nil() )
     aMesh = aSubMeshVar->GetFather();
+
+  _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh.in());
+  if (aMeshSO) {
+    SMESH::SetName(aMeshSO, myDlg->objectText(SMESHGUI_MeshDlg::Obj));
+    theEntryList.append(aMeshSO->GetID().c_str());
+  }
 
   // Assign new algorithms and hypotheses
   for ( int dim = aDim; dim <= SMESH::DIM_3D; dim++ )

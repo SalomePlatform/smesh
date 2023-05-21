@@ -120,7 +120,7 @@ private:
 
   bool                           createMesh( QString&, QStringList& );
   bool                           createSubMesh( QString&, QStringList& );
-  bool                           editMeshOrSubMesh( QString& );
+  bool                           editMeshOrSubMesh( QString&, QStringList& );
   void                           createSubMeshOnInternalEdges( SMESH::SMESH_Mesh_ptr mesh,
                                                                GEOM::GEOM_Object_ptr mainShape );
   bool                           checkSubMeshConcurrency( SMESH::SMESH_Mesh_ptr    mesh,
