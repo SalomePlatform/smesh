@@ -738,9 +738,11 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
         if corners and isinstance( corners[0], GEOM._objref_GEOM_Object ):
             corners = [ self.mesh.geompyD.GetSubShapeID( self.mesh.geom, v ) for v in corners ]
 
-        if self.params.GetQuadType() != quadType:
+        #If quadType is None - will used default parameter ( StdMeshers.QUAD_STANDARD )
+        if quadType and self.params.GetQuadType() != quadType:
             self.params.SetQuadType(quadType)
-        if vertexID > 0:
+        #If triangleVertex is None - will used default parameter ( -1 ):
+        if triangleVertex and vertexID > 0:
             self.params.SetTriaVertex( vertexID )
         from salome.smesh.smeshBuilder import AssureGeomPublished
         for v in enfVertices:
