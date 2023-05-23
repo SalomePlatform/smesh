@@ -73,6 +73,7 @@ SET(BAD_TESTS
   filters_ex36.py
   filters_ex37.py
   filters_ex38.py
+  filters_ex40.py
   filters_node_nb_conn.py
   filters_belong2group.py
   generate_flat_elements.py
@@ -119,6 +120,7 @@ SET(BAD_TESTS
   quality_controls_ex20.py
   quality_controls_ex21.py
   quality_controls_ex22.py
+  quality_controls_ex24.py
   quality_controls_defl.py
   split_biquad.py
   transforming_meshes_ex01.py

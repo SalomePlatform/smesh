@@ -1162,6 +1162,8 @@ namespace
       type = QObject::tr( "EQUAL_VOLUME" );
     else if ( dynamic_cast< SMESH::Controls::NodeConnectivityNumber* >( f.get() ) )
       type = QObject::tr( "NODE_CONNECTIVITY_NB" );
+    else if ( dynamic_cast< SMESH::Controls::ScaledJacobian* >( f.get() ) )
+      type = QObject::tr( "SCALED_JACOBIAN" );
     return type;
   }
 
@@ -1778,6 +1780,7 @@ namespace
     ActionControl.Bind( SMESHOp::OpEqualFace,             SMESH_Actor::eCoincidentElems2D );
     ActionControl.Bind( SMESHOp::OpAspectRatio3D,         SMESH_Actor::eAspectRatio3D );
     ActionControl.Bind( SMESHOp::OpVolume,                SMESH_Actor::eVolume3D );
+    ActionControl.Bind( SMESHOp::OpScaledJacobian,        SMESH_Actor::eScaledJacobian );
     ActionControl.Bind( SMESHOp::OpMaxElementLength3D,    SMESH_Actor::eMaxElementLength3D );
     ActionControl.Bind( SMESHOp::OpBareBorderVolume,      SMESH_Actor::eBareBorderVolume );
     ActionControl.Bind( SMESHOp::OpOverConstrainedVolume, SMESH_Actor::eOverConstrainedVolume );
@@ -3902,6 +3905,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpEqualFace:
   case SMESHOp::OpAspectRatio3D:
   case SMESHOp::OpVolume:
+  case SMESHOp::OpScaledJacobian:
   case SMESHOp::OpMaxElementLength3D:
   case SMESHOp::OpBareBorderVolume:
   case SMESHOp::OpOverConstrainedVolume:
@@ -4213,6 +4217,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpBareBorderVolume,      "BARE_BORDER_VOLUME",      "ICON_BARE_BORDER_VOLUME",      0, true );
   createSMESHAction( SMESHOp::OpOverConstrainedVolume, "OVER_CONSTRAINED_VOLUME", "ICON_OVER_CONSTRAINED_VOLUME", 0, true );
   createSMESHAction( SMESHOp::OpEqualVolume,           "EQUAL_VOLUME",            "ICON_EQUAL_VOLUME",  0, true );
+  createSMESHAction( SMESHOp::OpScaledJacobian,        "SCALED_JACOBIAN",         "ICON_SCALED_JACOBIAN",         0, true );
   createSMESHAction( SMESHOp::OpOverallMeshQuality,    "OVERALL_MESH_QUALITY",    "ICON_OVL_MESH_QUALITY" );
 
   createSMESHAction( SMESHOp::OpNode,                   "NODE",            "ICON_DLG_NODE" );
@@ -4353,7 +4358,7 @@ void SMESHGUI::initialize( CAM_Application* app )
                << SMESHOp::OpOverConstrainedFace << SMESHOp::OpEqualFace                // face controls
                << SMESHOp::OpAspectRatio3D << SMESHOp::OpVolume
                << SMESHOp::OpMaxElementLength3D << SMESHOp::OpBareBorderVolume
-               << SMESHOp::OpOverConstrainedVolume << SMESHOp::OpEqualVolume;           // volume controls
+               << SMESHOp::OpOverConstrainedVolume << SMESHOp::OpEqualVolume << SMESHOp::OpScaledJacobian; // volume controls
   QActionGroup* aCtrlGroup = new QActionGroup( application()->desktop() );
   aCtrlGroup->setExclusive( true );
   for( int i = 0; i < aCtrlActions.size(); i++ )
@@ -4469,6 +4474,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpBareBorderVolume,      volumeId, -1 );
   createMenu( SMESHOp::OpOverConstrainedVolume, volumeId, -1 );
   createMenu( SMESHOp::OpEqualVolume,           volumeId, -1 );
+  createMenu( SMESHOp::OpScaledJacobian,        volumeId, -1 );
   createMenu( separator(),                      ctrlId,   -1 );
   createMenu( SMESHOp::OpReset,                 ctrlId,   -1 );
   createMenu( separator(),                      ctrlId,   -1 );
@@ -4626,6 +4632,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpBareBorderVolume,      ctrl3dTb );
   createTool( SMESHOp::OpOverConstrainedVolume, ctrl3dTb );
   createTool( SMESHOp::OpEqualVolume,           ctrl3dTb );
+  createTool( SMESHOp::OpScaledJacobian,        ctrl3dTb );
 
   int addElemTb = createTool( tr( "TB_ADD" ), QString( "SMESHAddElementToolbar" ) ) ;
   createTool( SMESHOp::OpNode,              addElemTb );
@@ -5102,6 +5109,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( SMESHOp::OpEqualVolume  ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpEqualVolume ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpEqualVolume ), "controlMode = 'eCoincidentElems3D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( SMESHOp::OpScaledJacobian  ), aSubId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpScaledJacobian ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpScaledJacobian ), "controlMode = 'eScaledJacobian'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 

@@ -612,6 +612,10 @@
             <translation>mesh_volume_3d.png</translation>
         </message>
         <message>
+            <source>ICON_SCALED_JACOBIAN</source>
+            <translation>mesh_scaled_jacobian.png</translation>
+        </message>
+        <message>
             <source>ICON_BARE_BORDER_VOLUME</source>
             <translation>bare_border_volume.png</translation>
         </message>

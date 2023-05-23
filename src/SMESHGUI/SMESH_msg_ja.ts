@@ -72,6 +72,10 @@
       <translation>節点接続番号</translation>
     </message>
     <message>
+      <source>SCALED_JACOBIAN</source>
+      <translation>スケーリングされたヤコビアン</translation>
+    </message>
+    <message>
       <source>FREE_EDGES</source>
       <translation>フリーエッジ</translation>
     </message>
@@ -1118,6 +1122,10 @@
     <message>
       <source>MEN_VOLUME_3D</source>
       <translation>ボリューム</translation>
+    </message>
+    <message>
+      <source>MEN_SCALED_JACOBIAN</source>
+      <translation>スケーリングされたヤコビアン</translation>
     </message>
     <message>
       <source>MEN_WARP</source>
@@ -3520,6 +3528,10 @@
       <translation>ボリューム</translation>
     </message>
     <message>
+      <source>STB_SCALED_JACOBIAN</source>
+      <translation>スケーリングされたヤコビアン</translation>
+    </message>
+    <message>
       <source>STB_VOLUME_3D</source>
       <translation>ボリューム</translation>
     </message>
@@ -4182,6 +4194,10 @@
     <message>
       <source>TOP_VOLUMES</source>
       <translation>ボリューム</translation>
+    </message>
+    <message>
+      <source>TOP_SCALED_JACOBIAN</source>
+      <translation>スケーリングされたヤコビアン</translation>
     </message>
     <message>
       <source>TOP_VOLUME_3D</source>
@@ -5921,7 +5937,7 @@
     </message>
     <message>
       <source>VOLUME_3D</source>
-      <translation>ボリューム</translation>
+      <translation>スケーリングされたヤコビアン</translation>
     </message>
     <message>
       <source>WARPING</source>

@@ -404,6 +404,17 @@ namespace SMESH{
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };
+    
+    /*
+      Class       : ScaledJacobian
+      Description : Functor returning the ScaledJacobian as implemeted in VTK for volumetric elements
+    */
+    class SMESHCONTROLS_EXPORT ScaledJacobian: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theNodeId );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
 
 
     /*

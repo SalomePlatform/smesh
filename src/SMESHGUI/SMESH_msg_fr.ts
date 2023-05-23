@@ -100,6 +100,10 @@
         <translation>Volumes sur-contraints</translation>
     </message>
     <message>
+        <source>SCALED_JACOBIAN</source>
+        <translation>Jacobien normalisé</translation>
+    </message>
+    <message>
         <source>MIN_DIAG_ELEMENTS</source>
         <translation>Diagonale minimum</translation>
     </message>
@@ -1315,6 +1319,10 @@
     <message>
         <source>MEN_VOLUME_3D</source>
         <translation>Volume</translation>
+    </message>
+    <message>
+        <source>MEN_SCALED_JACOBIAN</source>
+        <translation>Jacobien normalisé</translation>
     </message>
     <message>
         <source>MEN_WARP</source>
@@ -3912,6 +3920,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Volume</translation>
     </message>
     <message>
+        <source>STB_SCALED_JACOBIAN</source>
+        <translation>Jacobien normalisé</translation>
+    </message>
+    <message>
         <source>STB_WARP</source>
         <translation>Angle de déformation</translation>
     </message>
@@ -4622,6 +4634,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_VOLUME_3D</source>
         <translation>Volume</translation>
+    </message>
+    <message>
+        <source>TOP_SCALED_JACOBIAN</source>
+        <translation>Jacobien normalisé</translation>
     </message>
     <message>
         <source>TOP_WARP</source>

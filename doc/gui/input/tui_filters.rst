@@ -61,6 +61,24 @@ filters 3D mesh elements (volumes) according to the aspect ratio value:
 
 **See also:** :ref:`tui_aspect_ratio_3d`
 
+.. _filter_scaled_jacobian:
+
+Scaled Jacobian
+===============
+
+filters 3D mesh elements (volumes) according to the scaled jacobian value:
+
+* element type is *SMESH.VOLUME*
+* functor type is *SMESH.FT_ScaledJacobian*
+* threshold is floating point value
+
+.. literalinclude:: ../../examples/filters_ex40.py
+    :language: python
+
+:download:`Download this script <../../examples/filters_ex40.py>`
+
+**See also:** :ref:`tui_scaled_jacobian`
+
 .. _filter_warping_angle:
 
 Warping angle

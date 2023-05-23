@@ -1568,6 +1568,7 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
                  aCriterion == SMESH::FT_Skew               ||
                  aCriterion == SMESH::FT_Area               ||
                  aCriterion == SMESH::FT_Volume3D           ||
+                 aCriterion == SMESH::FT_ScaledJacobian     ||
                  aCriterion == SMESH::FT_MaxElementLength2D ||
                  aCriterion == SMESH::FT_MaxElementLength3D ||
                  aCriterion == SMESH::FT_Length             ||
@@ -1816,6 +1817,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int /*col*/,
   case SMESH::FT_Skew:
   case SMESH::FT_Area:
   case SMESH::FT_Volume3D:
+  case SMESH::FT_ScaledJacobian:
   case SMESH::FT_MaxElementLength2D:
   case SMESH::FT_MaxElementLength3D: anIsDoubleCriterion = true; break;
 
@@ -2284,6 +2286,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_EqualVolumes         ] = tr("EQUAL_VOLUME");
       aCriteria[ SMESH::FT_EntityType           ] = tr("ENTITY_TYPE");
       aCriteria[ SMESH::FT_ConnectedElements    ] = tr("CONNECTED_ELEMS");
+      aCriteria[ SMESH::FT_ScaledJacobian       ] = tr("SCALED_JACOBIAN");
     }
     return aCriteria;
   }

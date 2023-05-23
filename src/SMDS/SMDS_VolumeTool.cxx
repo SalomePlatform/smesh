@@ -80,9 +80,17 @@ static int Tetra_RE [4][4] = { // REVERSED -> FORWARD (EXTERNAL)
   { 0, 3, 2, 0 }};
 static int Tetra_nbN [] = { 3, 3, 3, 3 };
 
-//
-//     PYRAMID
-//
+/*        
+//    N1 +---------+ N2
+//       | \     / | 
+//       |  \   /  |
+//       |   \ /   |
+//       |   /+\   |     PYRAMID
+//       |  / N4\  |
+//       | /     \ |
+//       |/       \|
+//    N0 +---------+ N3
+*/
 static int Pyramid_F [5][5] = { // FORWARD == EXTERNAL
   { 0, 1, 2, 3, 0 },            // All faces have external normals
   { 0, 4, 1, 0, 4 },
@@ -363,12 +371,17 @@ struct XYZ {
   inline XYZ operator-( const XYZ& other );
   inline XYZ operator+( const XYZ& other );
   inline XYZ Crossed( const XYZ& other );
+  inline XYZ operator-();
   inline double Dot( const XYZ& other );
   inline double Magnitude();
   inline double SquareMagnitude();
+  inline XYZ Normalize();
 };
 inline XYZ XYZ::operator-( const XYZ& Right ) {
   return XYZ(x - Right.x, y - Right.y, z - Right.z);
+}
+inline XYZ XYZ::operator-() {
+  return XYZ(-x,-y,-z);
 }
 inline XYZ XYZ::operator+( const XYZ& Right ) {
   return XYZ(x + Right.x, y + Right.y, z + Right.z);
@@ -386,6 +399,13 @@ inline double XYZ::Magnitude() {
 }
 inline double XYZ::SquareMagnitude() {
   return (x * x + y * y + z * z);
+}
+inline XYZ XYZ::Normalize() {
+  double magnitude = Magnitude();
+  if ( magnitude != 0.0 )
+    return XYZ(x /= magnitude,y /= magnitude,z /= magnitude );   
+  else
+    return XYZ(x,y,z);
 }
 
   //================================================================================
@@ -694,7 +714,6 @@ static double getTetraVolume(const SMDS_MeshNode* n1,
 //function : GetSize
 //purpose  : Return element volume
 //=======================================================================
-
 double SMDS_VolumeTool::GetSize() const
 {
   double V = 0.;
@@ -846,6 +865,334 @@ double SMDS_VolumeTool::GetSize() const
   }
   return V;
 }
+
+
+//=======================================================================
+//function : getTetraScaledJacobian
+//purpose  : Given the smesh nodes in the canonical order of the tetrahedron, return the scaled jacobian
+//=======================================================================
+static double getTetraScaledJacobian(const SMDS_MeshNode* n0,
+                                     const SMDS_MeshNode* n1,
+                                     const SMDS_MeshNode* n2,
+                                     const SMDS_MeshNode* n3)
+{
+  const double sqrt = std::sqrt(2.0);
+  // Get the coordinates
+  XYZ p0( n0 );
+  XYZ p1( n1 );
+  XYZ p2( n2 );
+  XYZ p3( n3 );
+  // Define the edges connecting the nodes
+  XYZ L0 = p1-p0;
+  XYZ L1 = p2-p1;
+  XYZ L2 = p2-p0; // invert the definition of doc to get the proper orientation of the crossed product
+  XYZ L3 = p3-p0;
+  XYZ L4 = p3-p1;
+  XYZ L5 = p3-p2;
+  double Jacobian = L2.Crossed( L0 ).Dot( L3 );
+  double norm0 = L0.Magnitude();
+  double norm1 = L1.Magnitude();
+  double norm2 = L2.Magnitude();
+  double norm3 = L3.Magnitude();
+  double norm4 = L4.Magnitude();
+  double norm5 = L5.Magnitude();
+
+  std::array<double, 5> norms{};
+  norms[0] = Jacobian;
+  norms[1] = norm3*norm4*norm5;
+  norms[2] = norm1*norm2*norm5;
+  norms[3] = norm0*norm1*norm4;
+  norms[4] = norm0*norm2*norm3;  
+
+  auto findMaxNorm = std::max_element(norms.begin(), norms.end());
+  double maxNorm = *findMaxNorm;
+
+  if ( std::fabs( maxNorm ) < std::numeric_limits<double>::min() )
+    maxNorm = std::numeric_limits<double>::max();
+
+  return Jacobian * sqrt / maxNorm;
+}
+
+//=======================================================================
+//function : getPyramidScaledJacobian
+//purpose  : Given the pyramid, compute the scaled jacobian of the four tetrahedrons and return the minimun value.
+//=======================================================================
+static double getPyramidScaledJacobian(const SMDS_MeshNode* n0,
+                                        const SMDS_MeshNode* n1,
+                                        const SMDS_MeshNode* n2,
+                                        const SMDS_MeshNode* n3,
+                                        const SMDS_MeshNode* n4)
+{ 
+  const double sqrt = std::sqrt(2.0);
+  std::array<double, 4> tetScaledJacobian{};
+  tetScaledJacobian[0] = getTetraScaledJacobian(n0, n1, n3, n4);
+  tetScaledJacobian[1] = getTetraScaledJacobian(n1, n2, n0, n4);
+  tetScaledJacobian[2] = getTetraScaledJacobian(n2, n3, n1, n4);
+  tetScaledJacobian[3] = getTetraScaledJacobian(n3, n0, n2, n4);  
+
+  auto minEntry = std::min_element(tetScaledJacobian.begin(), tetScaledJacobian.end());
+
+  double scaledJacobian = (*minEntry) * 2.0/sqrt;
+  return scaledJacobian < 1.0 ? scaledJacobian : 1.0 - (scaledJacobian - 1.0);
+}
+
+
+
+//=======================================================================
+//function : getHexaScaledJacobian
+//purpose  : Evaluate the scaled jacobian on the eight vertices of the hexahedron and return the minimal registered value
+//remark   : Follow the reference numeration described at the top of the class.
+//=======================================================================
+static double getHexaScaledJacobian(const SMDS_MeshNode* n0,
+                                    const SMDS_MeshNode* n1,
+                                    const SMDS_MeshNode* n2,
+                                    const SMDS_MeshNode* n3,
+                                    const SMDS_MeshNode* n4,
+                                    const SMDS_MeshNode* n5,
+                                    const SMDS_MeshNode* n6,
+                                    const SMDS_MeshNode* n7)
+{ 
+  // Scaled jacobian is an scalar quantity measuring the deviation of the geometry from the perfect geometry
+  // Get the coordinates
+  XYZ p0( n0 );
+  XYZ p1( n1 );
+  XYZ p2( n2 );
+  XYZ p3( n3 );
+  XYZ p4( n4 );
+  XYZ p5( n5 );
+  XYZ p6( n6 );
+  XYZ p7( n7 );
+
+  // Define the edges connecting the nodes  
+  XYZ L0  = (p1-p0).Normalize();
+  XYZ L1  = (p2-p1).Normalize();
+  XYZ L2  = (p3-p2).Normalize();
+  XYZ L3  = (p3-p0).Normalize();
+  XYZ L4  = (p4-p0).Normalize();
+  XYZ L5  = (p5-p1).Normalize();
+  XYZ L6  = (p6-p2).Normalize();
+  XYZ L7  = (p7-p3).Normalize();
+  XYZ L8  = (p5-p4).Normalize();
+  XYZ L9  = (p6-p5).Normalize();
+  XYZ L10 = (p7-p6).Normalize();
+  XYZ L11 = (p7-p4).Normalize();
+  XYZ X0  = (p1-p0+p2-p3+p6-p7+p5-p4).Normalize();
+  XYZ X1  = (p3-p0+p2-p1+p7-p4+p6-p5).Normalize();
+  XYZ X2  = (p4-p0+p7-p3+p5-p1+p6-p2).Normalize();
+  
+  std::array<double, 9> scaledJacobian{};
+  //Scaled jacobian of nodes following their numeration
+  scaledJacobian[0] =  L4.Crossed( L3).Dot( L0 );   // For L0
+  scaledJacobian[1] =  L5.Crossed(-L0).Dot( L1 );   // For L1
+  scaledJacobian[2] =  L6.Crossed(-L1).Dot( L2 );   // For L2
+  scaledJacobian[3] =  L7.Crossed(-L2).Dot(-L3 );   // For L3
+  scaledJacobian[4] = -L4.Crossed( L8).Dot( L11 );  // For L11  
+  scaledJacobian[5] = -L5.Crossed( L9).Dot(-L8 );   // For L8
+  scaledJacobian[6] = -L6.Crossed(L10).Dot(-L9 );   // For L9
+  scaledJacobian[7] = -L7.Crossed(-L11).Dot(-L10 ); // For L10
+  scaledJacobian[8] =  X2.Crossed( X1).Dot( X0 );   // For principal axes
+
+  auto minScaledJacobian = std::min_element(scaledJacobian.begin(), scaledJacobian.end());
+  return *minScaledJacobian;
+}
+
+
+//=======================================================================
+//function : getTetraNormalizedJacobian
+//purpose  : Return the jacobian of the tetrahedron based on normalized vectors
+//=======================================================================
+static double getTetraNormalizedJacobian(const SMDS_MeshNode* n0,
+                                          const SMDS_MeshNode* n1,
+                                          const SMDS_MeshNode* n2,
+                                          const SMDS_MeshNode* n3)
+{
+  const double sqrt = std::sqrt(2.0);
+  // Get the coordinates
+  XYZ p0( n0 );
+  XYZ p1( n1 );
+  XYZ p2( n2 );
+  XYZ p3( n3 );
+  // Define the normalized edges connecting the nodes
+  XYZ L0 = (p1-p0).Normalize();
+  XYZ L2 = (p2-p0).Normalize(); // invert the definition of doc to get the proper orientation of the crossed product
+  XYZ L3 = (p3-p0).Normalize();
+  return L2.Crossed( L0 ).Dot( L3 );
+}
+
+//=======================================================================
+//function : getPentaScaledJacobian
+//purpose  : Evaluate the scaled jacobian on the pentahedron based on decomposed tetrahedrons
+//=======================================================================
+/*   
+//            + N1
+//           /|\
+//          / | \
+//         /  |  \
+//        /   |   \
+//    N0 +---------+ N2
+//       |    |    |               NUMERATION RERENCE FOLLOWING POSSITIVE RIGHT HAND RULE
+//       |    + N4 |               
+//       |   / \   |               PENTAHEDRON
+//       |  /   \  |
+//       | /     \ |
+//       |/       \|
+//    N3 +---------+ N5
+//
+//          N1
+//          +
+//          |\
+//         /| \
+//        / |  \
+//    N0 +--|---+ N2               TETRAHEDRON ASSOCIATED TO N0
+//       \  |   /                  Numeration passed to getTetraScaledJacobian 
+//        \ |  /                   N0=N0; N1=N2; N2=N3; N3=N1
+//         \| /                     
+//          |/
+//          +
+//          N3
+//
+//           N1
+//           +
+//          /|\
+//         / | \
+//        /  |  \
+//    N2 +---|---+ N5             TETRAHEDRON ASSOCIATED TO N2
+//       \   |  /                 Numeration passed to getTetraScaledJacobian 
+//        \  | /                  N0=N2; N1=N5; N2=N0; N3=N1
+//         \ |/
+//          \|
+//           +
+//           N0
+//
+//           N4
+//           +
+//          /|\
+//         / | \
+//        /  |  \
+//    N3 +---|---+ N0             TETRAHEDRON ASSOCIATED TO N3
+//       \   |   /                Numeration passed to getTetraScaledJacobian 
+//        \  |  /                 N0=N3; N1=N0; N2=N5; N3=N4
+//         \ | /
+//          \|/
+//           +
+//           N5
+//
+//           N3
+//           +
+//          /|\
+//         / | \
+//        /  |  \
+//    N1 +---|---+ N2             TETRAHEDRON ASSOCIATED TO N1
+//       \   |   /                Numeration passed to getTetraScaledJacobian 
+//        \  |  /                 N0=N1; N1=N2; N2=N0; N3=N3
+//         \ | /
+//          \|/
+//           +
+//           N0
+//
+//          ...
+*/
+static double getPentaScaledJacobian(const SMDS_MeshNode* n0,
+                                     const SMDS_MeshNode* n1,
+                                     const SMDS_MeshNode* n2,
+                                     const SMDS_MeshNode* n3,
+                                     const SMDS_MeshNode* n4,
+                                     const SMDS_MeshNode* n5)
+{ 
+  std::array<double, 6> scaledJacobianOfReferenceTetra{};
+  scaledJacobianOfReferenceTetra[0] = getTetraNormalizedJacobian(n0, n2, n3, n1);  // For n0
+  scaledJacobianOfReferenceTetra[1] = getTetraNormalizedJacobian(n2, n5, n0, n1);  // For n2
+  scaledJacobianOfReferenceTetra[2] = getTetraNormalizedJacobian(n3, n0, n5, n4);  // For n3
+  scaledJacobianOfReferenceTetra[3] = getTetraNormalizedJacobian(n5, n3, n2, n4);  // For n5
+  scaledJacobianOfReferenceTetra[4] = getTetraNormalizedJacobian(n1, n2, n0, n3);  // For n1  
+  scaledJacobianOfReferenceTetra[5] = getTetraNormalizedJacobian(n4, n3, n5, n2);  // For n4
+  
+  auto minScaledJacobian = std::min_element(scaledJacobianOfReferenceTetra.begin(), scaledJacobianOfReferenceTetra.end());
+  double minScalJac = (*minScaledJacobian)* 2.0 / std::sqrt(3.0);
+
+  if (minScalJac > 0)
+    return std::min(minScalJac, std::numeric_limits<double>::max());
+
+  return std::max(minScalJac, -std::numeric_limits<double>::max());
+}
+
+//=======================================================================
+//function : getHexaPrismScaledJacobian
+//purpose  : Evaluate the scaled jacobian on the hexaprism by decomposing the goemetry into three 1hexa + 2 pentahedrons
+//=======================================================================
+static double getHexaPrismScaledJacobian(const SMDS_MeshNode* n0,
+                                          const SMDS_MeshNode* n1,
+                                          const SMDS_MeshNode* n2,
+                                          const SMDS_MeshNode* n3,
+                                          const SMDS_MeshNode* n4,
+                                          const SMDS_MeshNode* n5,
+                                          const SMDS_MeshNode* n6,
+                                          const SMDS_MeshNode* n7,
+                                          const SMDS_MeshNode* n8,
+                                          const SMDS_MeshNode* n9,
+                                          const SMDS_MeshNode* n10, 
+                                          const SMDS_MeshNode* n11)
+{ 
+  // The Pentahedron from the left
+  // n0=n0; n1=n1; n2=n2; n3=n6; n4=n7, n5=n8; 
+  double scaledJacobianPentleft = getPentaScaledJacobian( n0, n1, n2, n6, n7, n8 );
+  // The core Hexahedron
+  // n0=n0; n1=n2, n2=n3; n3=n5; n4=n6; n5=n8; n6=n9; n7=n11
+  double scaledJacobianHexa     = getHexaScaledJacobian( n0, n2, n3, n5, n6, n8, n9, n11 );
+  // The Pentahedron from the right
+  // n0=n5; n1=n4; n2=n3; n3=n11; n4=n10; n5=n9
+  double scaledJacobianPentright = getPentaScaledJacobian( n5, n4, n3, n11, n10, n9 );
+
+  return std::min( scaledJacobianHexa, std::min( scaledJacobianPentleft, scaledJacobianPentright ) );
+  
+}
+
+//=======================================================================
+//function : GetScaledJacobian
+//purpose  : Return element Scaled Jacobian using the generic definition given 
+//            in https://gitlab.kitware.com/third-party/verdict/-/blob/master/SAND2007-2853p.pdf
+//=======================================================================
+
+double SMDS_VolumeTool::GetScaledJacobian() const
+{
+  
+  // For Tetra, call directly the getTetraScaledJacobian 
+  double scaledJacobian = 0.;
+
+  VolumeType type = GetVolumeType();    
+  switch (type)
+  {
+  case TETRA:
+  case QUAD_TETRA:
+    scaledJacobian = getTetraScaledJacobian( myVolumeNodes[0], myVolumeNodes[1], myVolumeNodes[2], myVolumeNodes[3] );
+    break;    
+  case HEXA:
+  case QUAD_HEXA: 
+    scaledJacobian = getHexaScaledJacobian( myVolumeNodes[0], myVolumeNodes[1], myVolumeNodes[2], myVolumeNodes[3],
+                                            myVolumeNodes[4], myVolumeNodes[5], myVolumeNodes[6], myVolumeNodes[7] );
+    break;
+  case PYRAM:
+  case QUAD_PYRAM:  
+    scaledJacobian = getPyramidScaledJacobian( myVolumeNodes[0], myVolumeNodes[1], myVolumeNodes[2], myVolumeNodes[3], myVolumeNodes[4] );
+    break;
+  case PENTA:
+  case QUAD_PENTA:
+    scaledJacobian = getPentaScaledJacobian( myVolumeNodes[0], myVolumeNodes[1], 
+                                             myVolumeNodes[2], myVolumeNodes[3], 
+                                             myVolumeNodes[4], myVolumeNodes[5] );
+    break;
+  case HEX_PRISM: 
+    scaledJacobian = getHexaPrismScaledJacobian( myVolumeNodes[0], myVolumeNodes[1], myVolumeNodes[2], myVolumeNodes[3], 
+                                                 myVolumeNodes[4], myVolumeNodes[5], myVolumeNodes[6], myVolumeNodes[7],
+                                                 myVolumeNodes[8], myVolumeNodes[9], myVolumeNodes[10], myVolumeNodes[11]);
+    break;
+  default:
+    break;
+  }
+
+  return scaledJacobian;
+}
+
 
 //=======================================================================
 //function : GetBaryCenter

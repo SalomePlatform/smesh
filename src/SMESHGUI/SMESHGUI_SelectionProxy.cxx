@@ -941,6 +941,9 @@ bool SMESH::SelectionProxy::elementControl( int id, int control, double precisio
       case SMESH::FT_BallDiameter:
         functor.reset( new SMESH::Controls::BallDiameter() );
         break;
+      case SMESH::FT_ScaledJacobian:
+        functor.reset( new SMESH::Controls::ScaledJacobian() );
+        break;
       default:
         break;
       } 
@@ -1008,6 +1011,9 @@ bool SMESH::SelectionProxy::elementControl( int id, int control, double precisio
         break;
       case SMESH::FT_BallDiameter:
         functor = manager->CreateBallDiameter();
+        break;
+      case SMESH::FT_ScaledJacobian:
+        functor = manager->CreateScaledJacobian();
         break;
       default:
         break;

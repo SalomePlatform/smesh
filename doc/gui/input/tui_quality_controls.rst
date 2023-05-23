@@ -240,3 +240,13 @@ Element Diameter 3D
     :language: python
 
 :download:`Download this script <../../examples/quality_controls_ex22.py>`
+
+.. _tui_scaled_jacobian:
+
+Scaled Jacobian
+===================
+
+.. literalinclude:: ../../examples/quality_controls_ex24.py
+    :language: python
+
+:download:`Download this script <../../examples/quality_controls_ex24.py>`

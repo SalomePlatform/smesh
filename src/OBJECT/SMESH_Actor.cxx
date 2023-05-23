@@ -953,6 +953,14 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       myControlActor = my3DActor;
       break;
     }
+    case eScaledJacobian:
+    {
+      SMESH::Controls::ScaledJacobian* aControl = new SMESH::Controls::ScaledJacobian();
+      aControl->SetPrecision( myControlsPrecision );
+      myFunctor.reset( aControl );
+      myControlActor = my3DActor;
+      break;
+    }
     case eMaxElementLength2D:
     {
       SMESH::Controls::MaxElementLength2D* aControl = new SMESH::Controls::MaxElementLength2D();
@@ -1112,7 +1120,6 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
     QString aTitle = QString(myScalarBarActor->GetTitle());
     aTitle.replace(QRegExp("(:\\s).*"),"\\1"+ QString::number(GetNumberControlEntities()));
     myScalarBarActor->SetTitle(aTitle.toUtf8().constData());
-
   }
   else {
     if(theCheckEntityMode){

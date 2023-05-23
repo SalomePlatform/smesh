@@ -1233,6 +1233,8 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             functor = aFilterMgr.CreateNodeConnectivityNumber()
         elif theCriterion == FT_BallDiameter:
             functor = aFilterMgr.CreateBallDiameter()
+        elif theCriterion == FT_ScaledJacobian:
+            functor = aFilterMgr.CreateScaledJacobian()
         else:
             print("Error: given parameter is not numerical functor type.")
         aFilterMgr.UnRegister()
@@ -7468,6 +7470,19 @@ class Mesh(metaclass = MeshMeta):
         """
 
         return self.FunctorValue(SMESH.FT_Skew, elemId)
+
+    def GetScaledJacobian(self, elemId):
+        """
+        Get the scaled jacobian of 3D element id
+
+        Parameters:
+            elemId: mesh element ID
+
+        Returns:
+            the scaled jacobian
+        """
+
+        return self.FunctorValue(SMESH.FT_ScaledJacobian, elemId)
 
     def GetMinMax(self, funType, meshPart=None):
         """

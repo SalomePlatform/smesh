@@ -139,7 +139,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   enum eControl{eNone, eLength, eLength2D, eDeflection2D, eFreeBorders, eFreeEdges, eFreeNodes,
                 eFreeFaces, eMultiConnection, eArea, eTaper, eAspectRatio,
-                eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eMultiConnection2D, eVolume3D,
+                eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eMultiConnection2D, eVolume3D, eScaledJacobian,
                 eMaxElementLength2D, eMaxElementLength3D, eBareBorderFace, eBareBorderVolume,
                 eOverConstrainedFace, eOverConstrainedVolume, eCoincidentNodes,
                 eCoincidentElems1D, eCoincidentElems2D, eCoincidentElems3D, eNodeConnectivityNb,

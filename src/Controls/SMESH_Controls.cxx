@@ -2351,6 +2351,70 @@ SMDSAbs_ElementType NodeConnectivityNumber::GetType() const
   return SMDSAbs_Node;
 }
 
+//================================================================================
+/*
+  Class       : ScaledJacobian
+  Description : Functor returning the ScaledJacobian for volumetric elements
+*/
+//================================================================================
+
+double ScaledJacobian::GetValue( long theElementId )
+{  
+  if ( theElementId && myMesh ) {
+    SMDS_VolumeTool aVolumeTool;
+    if ( aVolumeTool.Set( myMesh->FindElement( theElementId )))
+      return aVolumeTool.GetScaledJacobian();
+  }
+  return 0;
+
+  /* 
+  //VTK version not used because lack of implementation for HEXAGONAL_PRISM. 
+  //Several mesh quality measures implemented in vtkMeshQuality can be accessed left here as reference
+  double aVal = 0;
+  myCurrElement = myMesh->FindElement( theElementId );
+  if ( myCurrElement )
+  {
+    VTKCellType cellType      = myCurrElement->GetVtkType();
+    vtkUnstructuredGrid* grid = const_cast<SMDS_Mesh*>( myMesh )->GetGrid();
+    vtkCell* avtkCell         = grid->GetCell( myCurrElement->GetVtkID() );
+    switch ( cellType )
+    {
+      case VTK_QUADRATIC_TETRA:      
+      case VTK_TETRA:
+        aVal = Round( vtkMeshQuality::TetScaledJacobian( avtkCell ));
+        break;
+      case VTK_QUADRATIC_HEXAHEDRON:
+      case VTK_HEXAHEDRON:
+        aVal = Round( vtkMeshQuality::HexScaledJacobian( avtkCell ));
+        break;
+      case VTK_QUADRATIC_WEDGE:
+      case VTK_WEDGE: //Pentahedron
+        aVal = Round( vtkMeshQuality::WedgeScaledJacobian( avtkCell ));
+        break;
+      case VTK_QUADRATIC_PYRAMID:
+      case VTK_PYRAMID:
+        aVal = Round( vtkMeshQuality::PyramidScaledJacobian( avtkCell ));
+        break;
+      case VTK_HEXAGONAL_PRISM:
+      case VTK_POLYHEDRON:
+      default:
+        break;
+    }          
+  }
+  return aVal;
+  */
+}
+
+double ScaledJacobian::GetBadRate( double Value, int /*nbNodes*/ ) const
+{
+  return Value;
+}
+
+SMDSAbs_ElementType ScaledJacobian::GetType() const
+{
+  return SMDSAbs_Volume;
+}
+
 /*
                             PREDICATES
 */

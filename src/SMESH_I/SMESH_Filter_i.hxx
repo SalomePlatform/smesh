@@ -351,6 +351,18 @@ namespace SMESH
     NodeConnectivityNumber_i();
     FunctorType                     GetFunctorType();
   };
+
+  /*
+    Class       : ScaledJacobian_i
+    Description : Functor returning the scaled jacobian
+  */
+  class SMESH_I_EXPORT ScaledJacobian_i: public virtual POA_SMESH::ScaledJacobian,
+                                       public virtual NumericalFunctor_i
+  {
+  public:
+    ScaledJacobian_i();
+    FunctorType                     GetFunctorType();
+  };
   
   
   /*
@@ -1113,6 +1125,7 @@ namespace SMESH
     Skew_ptr                  CreateSkew();
     Area_ptr                  CreateArea();
     Volume3D_ptr              CreateVolume3D();
+    ScaledJacobian_ptr        CreateScaledJacobian();
     MaxElementLength2D_ptr    CreateMaxElementLength2D();
     MaxElementLength3D_ptr    CreateMaxElementLength3D();
     Length_ptr                CreateLength();

@@ -461,6 +461,21 @@ namespace SMESH {
   }
 
   /*
+    Class       : ScaledJacobian_i
+    Description : Functor for calculating volume of 3D element
+  */
+  ScaledJacobian_i::ScaledJacobian_i()
+  {
+    myNumericalFunctorPtr.reset( new Controls::ScaledJacobian() );
+    myFunctorPtr = myNumericalFunctorPtr;
+  }
+
+  FunctorType ScaledJacobian_i::GetFunctorType()
+  {
+    return SMESH::FT_ScaledJacobian;
+  }
+
+  /*
     Class       : MaxElementLength2D_i
     Description : Functor for calculating maximum length of 2D element
   */
@@ -2126,6 +2141,13 @@ namespace SMESH {
     return anObj._retn();
   }
 
+  ScaledJacobian_ptr FilterManager_i::CreateScaledJacobian()
+  {
+    SMESH::ScaledJacobian_i* aServant = new SMESH::ScaledJacobian_i();
+    SMESH::ScaledJacobian_var anObj   = aServant->_this();
+    TPythonDump()<<aServant<<" = "<<this<<".CreateScaledJacobian()";
+    return anObj._retn();
+  }
 
   MaxElementLength2D_ptr FilterManager_i::CreateMaxElementLength2D()
   {
@@ -3076,6 +3098,9 @@ namespace SMESH {
         case SMESH::FT_NodeConnectivityNumber:
           aFunctor = aFilterMgr->CreateNodeConnectivityNumber();
           break;
+        case SMESH::FT_ScaledJacobian:
+          aFunctor = aFilterMgr->CreateScaledJacobian();
+          break;
 
         // Predicates
 
@@ -3512,6 +3537,7 @@ namespace SMESH {
       case FT_Skew                  : return "Skew";
       case FT_Area                  : return "Area";
       case FT_Volume3D              : return "Volume3D";
+      case FT_ScaledJacobian        : return "ScaledJacobian";
       case FT_MaxElementLength2D    : return "Max element length 2D";
       case FT_MaxElementLength3D    : return "Max element length 3D";
       case FT_BelongToMeshGroup     : return "Belong to Mesh Group";
@@ -3568,6 +3594,7 @@ namespace SMESH {
     else if ( theStr.equals( "Skew"                         ) ) return FT_Skew;
     else if ( theStr.equals( "Area"                         ) ) return FT_Area;
     else if ( theStr.equals( "Volume3D"                     ) ) return FT_Volume3D;
+    else if ( theStr.equals( "ScaledJacobian"               ) ) return FT_ScaledJacobian;
     else if ( theStr.equals( "Max element length 2D"        ) ) return FT_MaxElementLength2D;
     else if ( theStr.equals( "Max element length 3D"        ) ) return FT_MaxElementLength3D;
     else if ( theStr.equals( "Belong to Mesh Group"         ) ) return FT_BelongToMeshGroup;
@@ -4141,6 +4168,7 @@ namespace SMESH {
       "FT_Skew",
       "FT_Area",
       "FT_Volume3D",
+      "FT_ScaledJacobian",
       "FT_MaxElementLength2D",
       "FT_MaxElementLength3D",
       "FT_FreeBorders",

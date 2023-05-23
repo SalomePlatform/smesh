@@ -1684,6 +1684,8 @@ QString SMESHGUI_ElemInfo::ctrl2str( int control )
     title = tr( "AREA_ELEMENTS" ); break;
   case SMESH::FT_Volume3D:
     title = tr( "VOLUME_3D_ELEMENTS" ); break;
+  case SMESH::FT_ScaledJacobian:
+    title = tr( "SCALED_JACOBIAN" ); break;  
   case SMESH::FT_MaxElementLength2D:
     title = tr( "MAX_ELEMENT_LENGTH_2D" ); break;
   case SMESH::FT_MaxElementLength3D:

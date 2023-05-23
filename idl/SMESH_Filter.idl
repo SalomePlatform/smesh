@@ -47,7 +47,8 @@ module SMESH
     FT_Taper,       
     FT_Skew,         
     FT_Area,          
-    FT_Volume3D,          
+    FT_Volume3D,   
+    FT_ScaledJacobian,       
     FT_MaxElementLength2D,
     FT_MaxElementLength3D,
     FT_FreeBorders,
@@ -170,6 +171,7 @@ module SMESH
   };
   interface BallDiameter    : NumericalFunctor{};
   interface NodeConnectivityNumber : NumericalFunctor{};
+  interface ScaledJacobian  : NumericalFunctor{};
   
 
   /*!
@@ -598,6 +600,7 @@ module SMESH
     MultiConnection2D  CreateMultiConnection2D();
     BallDiameter       CreateBallDiameter();
     NodeConnectivityNumber CreateNodeConnectivityNumber();
+    ScaledJacobian     CreateScaledJacobian();
     /*!
      *  Create logical functors ( predicates )
      */

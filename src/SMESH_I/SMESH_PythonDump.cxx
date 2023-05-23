@@ -414,6 +414,7 @@ namespace SMESH
       case FT_Skew:                  myStream<< "aSkew";                  break;
       case FT_Area:                  myStream<< "aArea";                  break;
       case FT_Volume3D:              myStream<< "aVolume3D";              break;
+      case FT_ScaledJacobian:        myStream<< "aScaledJacobian";        break;
       case FT_MaxElementLength2D:    myStream<< "aMaxElementLength2D";    break;
       case FT_MaxElementLength3D:    myStream<< "aMaxElementLength3D";    break;
       case FT_FreeBorders:           myStream<< "aFreeBorders";           break;

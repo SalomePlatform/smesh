@@ -371,6 +371,7 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     case SMESH_Actor::eMultiConnection2D:     mode = "eMultiConnection2D";     break;
     case SMESH_Actor::eArea:                  mode = "eArea";                  break;
     case SMESH_Actor::eVolume3D:              mode = "eVolume3D";              break;
+    case SMESH_Actor::eScaledJacobian:        mode = "eScaledJacobian";        break;
     case SMESH_Actor::eMaxElementLength2D:    mode = "eMaxElementLength2D";    break;
     case SMESH_Actor::eMaxElementLength3D:    mode = "eMaxElementLength3D";    break;
     case SMESH_Actor::eTaper:                 mode = "eTaper";                 break;
@@ -429,6 +430,7 @@ bool SMESHGUI_Selection::isNumFunctor( int ind ) const
     case SMESH_Actor::eMultiConnection2D:
     case SMESH_Actor::eArea:
     case SMESH_Actor::eVolume3D:
+    case SMESH_Actor::eScaledJacobian:
     case SMESH_Actor::eMaxElementLength2D:
     case SMESH_Actor::eMaxElementLength3D:
     case SMESH_Actor::eTaper:

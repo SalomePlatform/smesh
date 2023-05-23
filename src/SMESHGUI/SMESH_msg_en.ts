@@ -96,6 +96,10 @@
         <translation>Volumes with bare border</translation>
     </message>
     <message>
+        <source>SCALED_JACOBIAN</source>
+        <translation>Scaled Jacobian</translation>
+    </message>
+    <message>
         <source>OVER_CONSTRAINED_VOLUME</source>
         <translation>Over-constrained volumes</translation>
     </message>
@@ -1315,6 +1319,10 @@
     <message>
         <source>MEN_VOLUME_3D</source>
         <translation>Volume</translation>
+    </message>
+    <message>
+        <source>MEN_SCALED_JACOBIAN</source>
+        <translation>Scaled Jacobian</translation>
     </message>
     <message>
         <source>MEN_WARP</source>
@@ -3913,6 +3921,10 @@ Use Display Entity menu command to show them.
         <translation>Volume</translation>
     </message>
     <message>
+        <source>STB_SCALED_JACOBIAN</source>
+        <translation>Scaled Jacobian</translation>
+    </message>
+    <message>
         <source>STB_WARP</source>
         <translation>Warping angle</translation>
     </message>
@@ -4623,6 +4635,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_VOLUME_3D</source>
         <translation>Volume</translation>
+    </message>
+    <message>
+        <source>TOP_SCALED_JACOBIAN</source>
+        <translation>Scaled Jacobian</translation>
     </message>
     <message>
         <source>TOP_WARP</source>
@@ -6495,6 +6511,10 @@ Please enter correct value and try again</translation>
     <message>
         <source>VOLUME_3D</source>
         <translation>Volume</translation>
+    </message>
+    <message>
+        <source>SCALED_JACOBIAN</source>
+        <translation>Scaled Jacobian</translation>
     </message>
     <message>
         <source>WARPING</source>

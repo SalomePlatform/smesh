@@ -122,6 +122,7 @@ namespace SMESHOp {
     OpBareBorderVolume       = 3303,   // MENU CONTROLS - VOLUMES WITH BARE BORDER
     OpOverConstrainedVolume  = 3304,   // MENU CONTROLS - OVERCONSTRAINED VOLUMES
     OpEqualVolume            = 3305,   // MENU CONTROLS - DOUBLE VOLUMES
+    OpScaledJacobian         = 3306,   // MENU CONTROLS - SCALED JACOBIAN
     OpOverallMeshQuality     = 3400,   // MENU CONTROLS - OVERALL MESH QUALITY
     // Modification -------------------//--------------------------------
     OpNode                   = 4000,   // MENU MODIFICATION - ADD - NODE

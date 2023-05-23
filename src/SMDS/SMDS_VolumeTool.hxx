@@ -103,6 +103,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   double GetSize() const;
   // Return element volume
 
+  double GetScaledJacobian() const;
+  // Return the scaled jacobian 
+
   bool GetBaryCenter (double & X, double & Y, double & Z) const;
 
   bool IsOut(double X, double Y, double Z, double tol) const;
