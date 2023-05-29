@@ -26,6 +26,7 @@
 
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Algo.hxx"
@@ -376,7 +377,44 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
   if ( CommonNode == Nrem ) return; // already merged
   //int nbI = CommonNode->NbInverseElements( SMDSAbs_Volume );
   SMESH_TNodeXYZ Pi( CommonNode );
-  gp_XYZ Pnew = /*( nbI*Pi + nbJ*Pj ) / (nbI+nbJ);*/ 0.5 * ( Pi + Pj );
+  // gp_XYZ Pnew = /*( nbI*Pi + nbJ*Pj ) / (nbI+nbJ);*/ 0.5 * ( Pi + Pj );
+  
+  SMDS_VolumeTool volumeTool;
+  double pyrad1Vol = 0.0; 
+  double pyrad2Vol = 0.0;
+  // To get the pyramids vols
+  if ( volumeTool.Set( PrmI ) )
+    pyrad1Vol = volumeTool.GetSize();
+  if ( volumeTool.Set( PrmJ ) )
+    pyrad2Vol = volumeTool.GetSize();
+
+  typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > elemIterator;
+  elemIterator iteratorsEnd;
+
+  vector< const SMDS_MeshElement* > associatedElementsI ( elemIterator( CommonNode->GetInverseElementIterator(SMDSAbs_Volume)), iteratorsEnd);
+  if ( associatedElementsI.size() > 1 )
+    for ( size_t i = 0; i < associatedElementsI.size(); ++i )
+    {
+      const SMDS_MeshElement* element = associatedElementsI[i];
+      if ( element != PrmI && volumeTool.Set( element ) )
+        pyrad1Vol += volumeTool.GetSize();    
+    }  
+  vector< const SMDS_MeshElement* > associatedElementsJ ( elemIterator( Nrem->GetInverseElementIterator(SMDSAbs_Volume)), iteratorsEnd);
+  if ( associatedElementsJ.size() > 1 )
+    for ( size_t i = 0; i < associatedElementsJ.size(); ++i )
+    {
+      const SMDS_MeshElement* element = associatedElementsJ[i];
+      if ( element != PrmJ && volumeTool.Set( element )  )
+        pyrad2Vol += volumeTool.GetSize(); //associatedVolPyramid->GetSize();        
+   }
+
+  double totalVol = pyrad1Vol + pyrad2Vol;
+  // The new Apex can't be computed based in an arithmetic median, 
+  // Geometric mediam is considered to be better
+  // gp_XYZ Pnew = /*( nbI*Pi + nbJ*Pj ) / (nbI+nbJ);*/ 0.5 * ( Pi + Pj );
+  ASSERT( totalVol > 0. );
+  gp_XYZ Pnew = Pi * pyrad1Vol/totalVol + Pj * pyrad2Vol/totalVol;
+
   CommonNode->setXYZ( Pnew.X(), Pnew.Y(), Pnew.Z() );
 
   nodesToMove.insert( CommonNode );

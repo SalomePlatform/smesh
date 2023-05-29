@@ -41,10 +41,10 @@ dicoParams = dict(nomCas            = "cubeMilieu",
 referencesMaillageFissure = dict( \
                                 Entity_Quad_Quadrangle = 3140, \
                                 Entity_Quad_Hexa = 7120, \
-                                Entity_Node = 61414, \
+                                Entity_Node = 60127, \
                                 Entity_Quad_Edge = 346, \
                                 Entity_Quad_Triangle = 818, \
-                                Entity_Quad_Tetra = 19117, \
+                                Entity_Quad_Tetra = 18141, \
                                 Entity_Quad_Pyramid = 990, \
                                 Entity_Quad_Penta = 230 \
                                 )
