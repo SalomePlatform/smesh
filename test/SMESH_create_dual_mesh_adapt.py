@@ -93,6 +93,7 @@ print("dual_volume: ", dual_volume)
 print("dual_raw_volume: ", dual_raw_volume)
 
 assert (dual_volume >= dual_raw_volume)
+assert abs( tetra_volume - dual_raw_volume )/tetra_volume < 1e-12
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()

@@ -199,6 +199,10 @@ class SMDS_EXPORT SMDS_VolumeTool
   bool GetFaceBaryCenter (int faceIndex, double & X, double & Y, double & Z) const;
   // Return barycenter of a face
 
+  bool AllFacesSameOriented() const;
+  // Check that all the faces of a polyhedron have the same orientation
+  // no differentiation between inward and outward orientation is made.
+
   double GetFaceArea( int faceIndex ) const;
   // Return face area
 

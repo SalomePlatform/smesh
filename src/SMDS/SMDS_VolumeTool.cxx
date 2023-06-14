@@ -730,7 +730,7 @@ double SMDS_VolumeTool::GetSize() const
 
     // split a polyhedron into tetrahedrons
 
-    bool oriOk = true;
+    bool oriOk = AllFacesSameOriented();
     SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
     for ( int f = 0; f < NbFaces(); ++f )
     {
@@ -743,7 +743,6 @@ double SMDS_VolumeTool::GetSize() const
         p1 = p2;
       }
       V += p1.Dot( area );
-      oriOk = oriOk && IsFaceExternal( f );
     }
     V /= 6;
     if ( !oriOk && V > 0 )
@@ -1594,6 +1593,60 @@ bool SMDS_VolumeTool::GetFaceBaryCenter (int faceIndex, double & X, double & Y, 
     Z += myCurFace.myNodes[i]->Z() / myCurFace.myNbNodes;
   }
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Check that all the faces in a polyhedron follow the same orientation
+ * \remark there is no differentiation for outward and inward face orientation.
+ */
+//================================================================================
+bool SMDS_VolumeTool::AllFacesSameOriented() const
+{  
+  SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
+  bool validOrientation = true;
+  std::map<Link, std::vector<int>> collectLinksOrientations;
+  me->myFwdLinks.clear();
+  for ( int faceId = 0; faceId < NbFaces(); ++faceId )
+  {
+    me->setFace( faceId );
+    myExternalFaces = false;
+
+    // Build the links
+    for ( int i = 0; i < myCurFace.myNbNodes; ++i )
+    {
+      NLink link( myCurFace.myNodes[i], myCurFace.myNodes[i+1] );
+      std::map<Link, int>::const_iterator foundLink = myFwdLinks.find( link );
+
+      if ( foundLink == myFwdLinks.end() )
+        me->myFwdLinks.insert( make_pair( link, link.myOri ));               
+
+      collectLinksOrientations[ link ].push_back( link.myOri );
+    }     
+  }
+
+  // Check duality of the orientations
+  std::map<Link, std::vector<int>>::const_iterator theLinks;
+  for ( theLinks = collectLinksOrientations.begin(); theLinks != collectLinksOrientations.end(); theLinks++ )
+  {
+    if ( theLinks->second.size() == 2 ) // 99% of the cases there are 2 faces per link
+    {
+      if ( 1 != -1*theLinks->second[0]*theLinks->second[1] ) 
+        return false;
+      continue;
+    }
+
+    if ( theLinks->second.size() % 2 != 0 )// Dont treat uneven number of links 
+      continue;
+
+    // In the other 1% of the cases we count the number occurrence and check that they match
+    int minusOne  = std::count( theLinks->second.begin(), theLinks->second.end(), -1 );
+    int plusOne   = std::count( theLinks->second.begin(), theLinks->second.end(),  1 );
+    if ( minusOne != plusOne ) 
+      return false;
+  }
+
+  return validOrientation;
 }
 
 //=======================================================================

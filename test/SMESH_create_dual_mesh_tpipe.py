@@ -128,6 +128,7 @@ print("dual_raw_volume: ", dual_raw_volume)
 assert (dual_volume >= dual_raw_volume)
 
 assert abs(dual_volume-shape_volume)/shape_volume < 0.14
+assert abs(dual_raw_volume-tetra_volume)/tetra_volume < 1e-12
 
 # Check groups
 dual_Mesh_groups = dual_Mesh_1.GetGroups()
