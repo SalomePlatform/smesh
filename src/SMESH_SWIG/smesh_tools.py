@@ -195,7 +195,7 @@ def smesh_create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True,
         id_grp_poly, nodes_added_on_tri = \
             __getIdsGrpDualFromOrig(mc_mesh_file, grp_name, mesh2d, -1)
 
-        if id_grp_poly is not None and grp_name[:4] == __prefix:
+        if id_grp_poly is not None and grp_name[:4] == __prefix and adapt_to_shape:
             # This group is on a specific geom face
             face_id = grp_name.split("_")[-1]
             face_id = int(face_id)
