@@ -748,7 +748,8 @@ public:
                        bool                    toCopyElements = false,
                        bool                    toCopyExistingBondary = false,
                        bool                    toAddExistingBondary = false,
-                       bool                    aroundElements = false);
+                       bool                    aroundElements = false,
+                       bool                    toCreateAllElements= false);
 
  private:
 

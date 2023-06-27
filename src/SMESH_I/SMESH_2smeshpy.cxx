@@ -765,7 +765,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       meshID = aCommand->GetResultValue();
     else if ( method == "MakeBoundaryMesh")
       meshID = aCommand->GetResultValue(1);
-    else if ( method == "MakeBoundaryElements")
+    else if ( method == "MakeBoundaryElements" || method == "MakeBoundaryOfEachElement" )
       meshID = aCommand->GetResultValue(2);
 
     if ( method.Search("MakeGroups") != -1      ||
@@ -782,7 +782,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       groups = aCommand->GetResultValue();
     else if ( method == "MakeBoundaryMesh" )
       groups = aCommand->GetResultValue(2);
-    else if ( method == "MakeBoundaryElements")
+    else if ( method == "MakeBoundaryElements" || method == "MakeBoundaryOfEachElement" )
       groups = aCommand->GetResultValue(3);
     else if ( method == "Create0DElementsOnAllNodes" &&
               aCommand->GetArg(2).Length() > 2 ) // group name != ''
@@ -1828,7 +1828,8 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd, const _pyID& meshId):
   }
   else if ( theCreationCmd->GetMethod().Search("MakeMesh") != -1 ||
             theCreationCmd->GetMethod() == "MakeBoundaryMesh" ||
-            theCreationCmd->GetMethod() == "MakeBoundaryElements" )
+            theCreationCmd->GetMethod() == "MakeBoundaryElements" ||
+            theCreationCmd->GetMethod() == "MakeBoundaryOfEachElement" )
   {
     // this mesh depends on a source mesh
     // (theCreationCmd is already Process()ed by _pyMeshEditor)
@@ -2521,7 +2522,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "GetLastCreatedElems", "FaceGroupsSeparatedByEdges",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh","TranslateObjectMakeMesh",
       "Scale","ScaleMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
-      "MakeBoundaryElements", "SplitVolumesIntoTetra","SplitHexahedraIntoPrisms",
+      "MakeBoundaryElements", "MakeBoundaryOfEachElement", "SplitVolumesIntoTetra","SplitHexahedraIntoPrisms",
       "DoubleElements","DoubleNodes","DoubleNode","DoubleNodeGroup","DoubleNodeGroups",
       "DoubleNodeElem","DoubleNodeElemInRegion","DoubleNodeElemGroup","AffectedElemGroupsInRegion",
       "DoubleNodeElemGroupInRegion","DoubleNodeElemGroups","DoubleNodeElemGroupsInRegion",

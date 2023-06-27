@@ -34,6 +34,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_0D_elem.png
   mesh_0D_on_all_nodes.png
   mesh_2d_from_3d.png
+  mesh_2d_from_3d_elements.png
   mesh_add.png
   mesh_add_sub.png
   mesh_algo_hexa.png

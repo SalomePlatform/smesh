@@ -136,6 +136,7 @@ SET(_moc_HEADERS
   SMESHGUI_MakeNodeAtPointDlg.h
   SMESHGUI_MeshInfosBox.h
   SMESHGUI_Make2DFrom3DOp.h
+  SMESHGUI_MakeFull2DFrom3DOp.h
   SMESHGUI_FindElemByPointDlg.h
   SMESHGUI_MeshOrderDlg.h
   SMESHGUI_CopyMeshDlg.h
@@ -249,6 +250,7 @@ SET(_other_SOURCES
   SMESHGUI_FileInfoDlg.cxx
   SMESHGUI_MeshInfosBox.cxx
   SMESHGUI_Make2DFrom3DOp.cxx
+  SMESHGUI_MakeFull2DFrom3DOp.cxx
   SMESHGUI_FindElemByPointDlg.cxx
   SMESHGUI_MeshOrderDlg.cxx
   SMESHGUI_CopyMeshDlg.cxx

@@ -11,6 +11,7 @@ Salome provides a vast specter of mesh modification and transformation operation
 * :ref:`Remove <removing_nodes_and_elements_page>` any existing mesh elements and nodes.
 * :ref:`Convert linear mesh to quadratic <convert_to_from_quadratic_mesh_page>`, or vice versa.
 * :ref:`Generate boundary elements <make_2dmesh_from_3d_page>`.
+* :ref:`Generate 2D mesh from 3D elements <make_2dmesh_from_3d_elements_page>`.
 * :ref:`Translate <translation_page>` in the indicated direction the mesh or some of its elements.
 * :ref:`Rotate <rotation_page>` by the indicated axis and angle the mesh or some of its elements.
 * :ref:`Scale <scale_page>` the mesh or some of its elements.
@@ -80,6 +81,7 @@ Salome provides a vast specter of mesh modification and transformation operation
    pattern_mapping.rst
    convert_to_from_quadratic_mesh.rst
    make_2dmesh_from_3d.rst
+   make_2dmesh_from_3d_elements.rst
    generate_flat_elements.rst
    cut_mesh_by_plane.rst
 

@@ -12809,7 +12809,8 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
                                        bool                    toCopyElements/*=false*/,
                                        bool                    toCopyExistingBoundary/*=false*/,
                                        bool                    toAddExistingBondary/*= false*/,
-                                       bool                    aroundElements/*= false*/)
+                                       bool                    aroundElements/*= false*/,
+                                       bool                    toCreateAllElements/*= false*/)
 {
   SMDSAbs_ElementType missType = (dimension == BND_2DFROM3D) ? SMDSAbs_Face : SMDSAbs_Edge;
   SMDSAbs_ElementType elemType = (dimension == BND_1DFROM2D) ? SMDSAbs_Face : SMDSAbs_Volume;
@@ -12828,7 +12829,6 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   SMESH_MeshEditor* presentEditor;
   SMESH_MeshEditor tgtEditor2( tgtEditor.GetMesh() );
   presentEditor = toAddExistingBondary ? &tgtEditor : &tgtEditor2;
-
   SMESH_MesherHelper helper( *myMesh );
   const TopAbs_ShapeEnum missShapeType = ( missType==SMDSAbs_Face ? TopAbs_FACE : TopAbs_EDGE );
   SMDS_VolumeTool vTool;
@@ -12866,8 +12866,9 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
       const SMDS_MeshElement* otherVol = 0;
       for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
       {
-        if ( !vTool.IsFreeFace(iface, &otherVol) &&
-             ( !aroundElements || elements.count( otherVol )))
+        if ( !toCreateAllElements && 
+              !vTool.IsFreeFace(iface, &otherVol) &&
+                ( !aroundElements || elements.count( otherVol )))
           continue;
         freeFacets.push_back( iface );
       }

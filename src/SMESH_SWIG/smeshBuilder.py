@@ -5465,6 +5465,32 @@ class Mesh(metaclass = MeshMeta):
         if mesh: mesh = self.smeshpyD.Mesh(mesh)
         return mesh, group
 
+    def MakeBoundaryOfEachElement(self, groupName="", meshName="", toCopyAll=False, groups=[] ):
+        """
+        Create boundary elements around the whole mesh or groups of elements
+
+        Parameters:
+                groupName: a name of group to store all boundary elements in,
+                        "" means not to create the group
+                meshName: a name of a new mesh, which is a copy of the initial
+                        mesh + created boundary elements; "" means not to create the new mesh
+                toCopyAll: if True, the whole initial mesh will be copied into
+                        the new mesh else only boundary elements will be copied into the new mesh
+                groups: list of :class:`sub-meshes, groups or filters <SMESH.SMESH_IDSource>` of elements to make boundary around
+
+        Returns:
+                tuple( long, mesh, group )
+                       - long - number of added boundary elements
+                       - mesh - the :class:`Mesh` where elements were added to
+                       - group - the :class:`group <SMESH.SMESH_Group>` of boundary elements or None
+        """
+        dimension=SMESH.BND_2DFROM3D
+        toCreateAllElements = True # create all boundary elements in the mesh
+        nb, mesh, group = self.editor.MakeBoundaryElements( dimension,groupName,meshName,
+                                                           toCopyAll,toCreateAllElements,groups)
+        if mesh: mesh = self.smeshpyD.Mesh(mesh)
+        return nb, mesh, group
+    
     def MakeBoundaryElements(self, dimension=SMESH.BND_2DFROM3D, groupName="", meshName="",
                              toCopyAll=False, groups=[]):
         """
@@ -5488,9 +5514,9 @@ class Mesh(metaclass = MeshMeta):
                        - mesh - the :class:`Mesh` where elements were added to
                        - group - the :class:`group <SMESH.SMESH_Group>` of boundary elements or None
         """
-
+        toCreateAllElements = False # create only elements in the boundary of the solid
         nb, mesh, group = self.editor.MakeBoundaryElements(dimension,groupName,meshName,
-                                                           toCopyAll,groups)
+                                                           toCopyAll,toCreateAllElements,groups)
         if mesh: mesh = self.smeshpyD.Mesh(mesh)
         return nb, mesh, group
 

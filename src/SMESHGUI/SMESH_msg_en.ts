@@ -477,6 +477,10 @@
         <translation>Create boundary elements</translation>
     </message>
     <message>
+        <source>MEN_2D_FROM_3D_ELEMENTS</source>
+        <translation>Create 2D mesh from 3D elements</translation>
+    </message>
+    <message>
         <source>MEN_MESH_ORDER</source>
         <translation>Change sub-mesh priority</translation>
     </message>
@@ -3381,6 +3385,10 @@ Use Display Entity menu command to show them.
         <translation>Create boundary elements</translation>
     </message>
     <message>
+        <source>STB_2D_FROM_3D_ELEMENTS</source>
+        <translation>Create 2D mesh from 3D elements</translation>
+    </message>
+    <message>
         <source>STB_MESH_ORDER</source>
         <translation>Change sub-mesh priority</translation>
     </message>
@@ -4107,6 +4115,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_2D_FROM_3D</source>
         <translation>Create boundary elements</translation>
+    </message>
+    <message>
+        <source>TOP_2D_FROM_3D_ELEMENTS</source>
+        <translation>Create 2D mesh from 3D elements</translation>
     </message>
     <message>
         <source>TOP_MESH_ORDER</source>
@@ -7905,6 +7917,17 @@ It is impossible to read point coordinates from file</translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_MakeFull2DFrom3DDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Create 2D mesh from 3D elements</translation>
+    </message>
+    <message>
+        <source>2D_FROM_3D_ELEMENTS</source>
+        <translation>2D from 3D</translation>
+    </message>
+</context>    
+<context>
     <name>SMESHGUI_Make2DFrom3DDlg</name>
     <message>
         <source>CAPTION</source>
@@ -7953,6 +7976,43 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>CREATE_GROUP</source>
         <translation>Create group</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_MakeFull2DFrom3DOp</name>
+    <message>
+        <source>NB_ADDED</source>
+        <translation>%1 boundary elements have been added</translation>
+    </message>
+    <message>
+        <source>WRONG_GROUPS</source>
+        <translation>The following groups have not been processed
+as they are of improper type:
+%1</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_INPUT_MESH</source>
+        <translation>Source mesh is not specified</translation>
+    </message>
+    <message>
+        <source>SMESH_TOO_MANY_MESHES</source>
+        <translation>Only one mesh can be processed at once</translation>
+    </message>
+    <message>
+        <source>SMESH_NOT_ONLY_GROUPS</source>
+        <translation>Can&apos;t process meshes and groups at once</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_3D_ELEMENTS</source>
+        <translation>The source objects do not contain 3D elements</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_MESH_NAME_NOT_SPECIFIED</source>
+        <translation>New mesh name is not specified</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_GRP_NAME_NOT_SPECIFIED</source>
+        <translation>Group name is not specified</translation>
     </message>
 </context>
 <context>

@@ -196,6 +196,7 @@ SET(GOOD_TESTS
   transforming_meshes_ex11.py
   transforming_meshes_ex12.py
   transforming_meshes_ex13.py
+  transforming_meshes_ex14.py
   use_existing_faces.py
   viewing_meshes_ex02.py
   quad_medial_axis_algo.py

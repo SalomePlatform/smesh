@@ -7306,6 +7306,7 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
  *    mesh + created boundary elements; "" means not to create the new mesh
  *  \param toCopyAll - if true, the whole initial mesh will be copied into
  *    the new mesh else only boundary elements will be copied into the new mesh
+ *  \param toCreateAllElements - if true all the dim element are created from the mesh
  *  \param groups - optional groups of elements to make boundary around
  *  \param mesh - returns the mesh where elements were added to
  *  \param group - returns the created group, if any
@@ -7317,6 +7318,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
                                                      const char* groupName,
                                                      const char* meshName,
                                                      CORBA::Boolean toCopyAll,
+                                                     CORBA::Boolean toCreateAllElements,
                                                      const SMESH::ListOfIDSources& groups,
                                                      SMESH::SMESH_Mesh_out mesh,
                                                      SMESH::SMESH_Group_out group)
@@ -7354,7 +7356,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
     // process groups belonging to another mesh
     SMESH::SMESH_Mesh_var    otherMesh = groupsOfOtherMesh[0]->GetMesh();
     SMESH::SMESH_MeshEditor_var editor = otherMesh->GetMeshEditor();
-    nbAdded += editor->MakeBoundaryElements( dim, groupName, meshName, toCopyAll,
+    nbAdded += editor->MakeBoundaryElements( dim, groupName, meshName, toCopyAll, toCreateAllElements,
                                              groupsOfOtherMesh, mesh, group );
   }
 
@@ -7381,6 +7383,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   SMESH_Mesh*     srcMesh = ( toCopyMesh && !toCopyAll ) ? myMesh : tgtMesh;
   SMESHDS_Mesh* srcMeshDS = srcMesh->GetMeshDS();
 
+
   // group of boundary elements
   SMESH_Group* smesh_group = 0;
   SMDSAbs_ElementType elemType = (dim == SMESH::BND_2DFROM3D) ? SMDSAbs_Volume : SMDSAbs_Face;
@@ -7393,7 +7396,6 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   }
 
   TIDSortedElemSet elements;
-
   if ( groups.length() > 0 )
   {
     for ( int i = 0; i < nbGroups; ++i )
@@ -7410,7 +7412,8 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
                                                  /*toCopyElements=*/false,
                                                  /*toCopyExistingBondary=*/srcMesh != tgtMesh,
                                                  /*toAddExistingBondary=*/true,
-                                                 /*aroundElements=*/true);
+                                                 /*aroundElements=*/true,
+                                                 /*toCreateAllElements=*/toCreateAllElements);
       }
     }
   }
@@ -7422,7 +7425,8 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
                                              tgtMesh,
                                              /*toCopyElements=*/false,
                                              /*toCopyExistingBondary=*/srcMesh != tgtMesh,
-                                             /*toAddExistingBondary=*/true);
+                                             /*toAddExistingBondary=*/true,
+                                             /*aroundElements=*/toCreateAllElements);
   }
   tgtMesh->GetMeshDS()->Modified();
 
@@ -7437,13 +7441,21 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   if ( group_var->_is_nil() )
     pyDump << "_NoneGroup = "; // assignment to None is forbidden
   else
+
     pyDump << group_var << " = ";
-  pyDump << this << ".MakeBoundaryElements( "
-         << "SMESH." << dimName[int(dim)] << ", "
-         << "'" << groupName << "', "
-         << "'" << meshName<< "', "
-         << toCopyAll << ", "
-         << groups << ")";
+  
+  if ( toCreateAllElements )
+    pyDump << this << ".MakeBoundaryOfEachElement( ";
+  else
+  {
+    pyDump << this << ".MakeBoundaryElements( "
+           << "SMESH." << dimName[int(dim)] << ", ";
+  }
+
+  pyDump<< "'" << groupName << "', "
+        << "'" << meshName<< "', "
+        << toCopyAll << ", "
+        << groups << ")";
 
   mesh  = mesh_var._retn();
   group = group_var._retn();

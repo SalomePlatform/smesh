@@ -16,10 +16,10 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// File   : SMESHGUI_Make2DFrom3D.cxx
-// Author : Vadim SANDLER, Open CASCADE S.A.S. (vadim.sandler@opencascade.com)
+// File   : SMESHGUI_MakeFull2DFrom3DOp.cxx
+// Author : Cesar Conopoima, Open CASCADE S.A.S. (cesar.conopoima@opencascade.com)
 
-#include "SMESHGUI_Make2DFrom3DOp.h"
+#include "SMESHGUI_MakeFull2DFrom3DOp.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
@@ -49,195 +49,54 @@
 
 // Qt includes
 #include <QGroupBox>
-#include <QRadioButton>
-#include <QLineEdit>
-#include <QCheckBox>
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QToolButton>
 
 #include <Standard_ErrorHandler.hxx>
-
-#define SPACING 6
-#define MARGIN  11
 
 /*!
   \class SMESHGUI_Make2DFrom3DDlg
   \brief Copy Mesh dialog box
 */
 
-SMESHGUI_Make2DFrom3DDlg::SMESHGUI_Make2DFrom3DDlg( QWidget* parent )
-  : SMESHGUI_Dialog( parent, false, true, OK | Apply | Close | Help )
+SMESHGUI_MakeFull2DFrom3DDlg::SMESHGUI_MakeFull2DFrom3DDlg( QWidget* parent )
+  : SMESHGUI_Make2DFrom3DDlg( parent )
 {
   // title
   setWindowTitle( tr("CAPTION") );
-
-  // mode
-  myModeGrp = new QGroupBox( tr( "MODE" ), mainFrame() );
-  QHBoxLayout* aModeGrpLayout = new QHBoxLayout( myModeGrp );
-  aModeGrpLayout->setMargin( MARGIN );
-  aModeGrpLayout->setSpacing( SPACING );
-  my2dFrom3dRB = new QRadioButton( tr( "2D_FROM_3D" ), myModeGrp );
-  my1dFrom2dRB = new QRadioButton( tr( "1D_FROM_2D" ), myModeGrp );
-  //my1dFrom3dRB = new QRadioButton( tr( "1D_FROM_3D" ), aModeGrp );
-  aModeGrpLayout->addWidget( my2dFrom3dRB );
-  aModeGrpLayout->addWidget( my1dFrom2dRB );
-  //aModeGrpLayout->addWidget( my1dFrom3dRB );
-//   // Groups of mesh faces
-//   setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
-//   createObject( tr( "Groups" ), mainFrame(), Groups );
-//   setNameIndication( Groups, ListOfNames );
-//   objectWg( Groups, Btn )->hide();
-
-  // Mesh or Groups
-  //setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
-  createObject( tr( "Groups" ), mainFrame(), MeshOrGroups );
-  setNameIndication( MeshOrGroups, ListOfNames );
-  objectWg( MeshOrGroups, Btn )->hide();
-
-  // target
-  QGroupBox* aTargetGrp = new QGroupBox( tr( "TARGET" ), mainFrame() );
-  QGridLayout* aTargetGrpLayout = new QGridLayout( aTargetGrp );
-  aTargetGrpLayout->setMargin( MARGIN );
-  aTargetGrpLayout->setSpacing( SPACING );
-  myThisMeshRB   = new QRadioButton( tr( "THIS_MESH" ), aTargetGrp );
-  myNewMeshRB    = new QRadioButton( tr( "NEW_MESH" ),  aTargetGrp );
-  myMeshName     = new QLineEdit( aTargetGrp );
-  myCopyCheck    = new QCheckBox( tr( "COPY_SRC" ),     aTargetGrp );
-  aTargetGrpLayout->addWidget( myThisMeshRB,    0, 0 );
-  aTargetGrpLayout->addWidget( myNewMeshRB,     1, 0 );
-  aTargetGrpLayout->addWidget( myMeshName,     1, 1 );
-  aTargetGrpLayout->addWidget( myCopyCheck,    2, 0 );
-  myGroupCheck = new QCheckBox( tr( "CREATE_GROUP" ), mainFrame() );
-  myGroupName  = new QLineEdit( mainFrame() );
-
-  // layout
-  QGridLayout* aDlgLay = new QGridLayout( mainFrame() );
-  aDlgLay->setMargin( 0 );
-  aDlgLay->setSpacing( SPACING );
-  aDlgLay->addWidget( myModeGrp,     0, 0, 1, 3 );
-  aDlgLay->addWidget( objectWg( MeshOrGroups,  Label ),   1, 0 );
-  aDlgLay->addWidget( objectWg( MeshOrGroups,  Control ), 1, 1 );
-  aDlgLay->addWidget( aTargetGrp,   2, 0, 1, 3 );
-  aDlgLay->addWidget( myGroupCheck, 3, 0 );
-  aDlgLay->addWidget( myGroupName,  3, 1, 1, 2 );
-
-  // connect signals  
-  connect( myThisMeshRB, SIGNAL( clicked() ), this, SLOT( onTargetChanged() ) );
-  connect( myNewMeshRB,  SIGNAL( clicked() ), this, SLOT( onTargetChanged() ) );
-  connect( myGroupCheck, SIGNAL( clicked() ), this, SLOT( onGroupChecked() ) );
-
-  // init dlg
-  my2dFrom3dRB->setChecked( true );
-  myThisMeshRB->setChecked( true );
-  onTargetChanged();
-  onGroupChecked();
+  myModeGrp->setVisible(false);
 }
 
-SMESHGUI_Make2DFrom3DDlg::~SMESHGUI_Make2DFrom3DDlg()
+SMESHGUI_MakeFull2DFrom3DDlg::~SMESHGUI_MakeFull2DFrom3DDlg()
 {
 }
 
-SMESH::Bnd_Dimension SMESHGUI_Make2DFrom3DDlg::mode() const
-{
-  if ( my2dFrom3dRB->isChecked() )
-    return SMESH::BND_2DFROM3D;
-  else if ( my1dFrom2dRB->isChecked() )
-    return SMESH::BND_1DFROM2D;
-  else
-    return SMESH::BND_1DFROM3D;
-}
-
-bool SMESHGUI_Make2DFrom3DDlg::needNewMesh() const
-{
-  return myNewMeshRB->isChecked();
-}
-
-QString SMESHGUI_Make2DFrom3DDlg::getNewMeshName() const
-{
-  return myMeshName->text().trimmed();
-}
-
-void SMESHGUI_Make2DFrom3DDlg::setNewMeshName( const QString& name )
-{
-  myMeshName->setText( name );
-}
-
-void SMESHGUI_Make2DFrom3DDlg::setNewMeshEnabled( bool enable )
-{
-  if ( !enable )
-    myThisMeshRB->setChecked( true );
-
-  myNewMeshRB->setEnabled( enable );
-
-  onTargetChanged();
-}
-
-bool SMESHGUI_Make2DFrom3DDlg::getNewMeshEnabled() const
-{
-  return myNewMeshRB->isEnabled();
-}
-
-bool SMESHGUI_Make2DFrom3DDlg::needGroup() const
-{
-  return myGroupCheck->isChecked();
-}
-
-QString SMESHGUI_Make2DFrom3DDlg::getGroupName() const
-{
-  return myGroupName->text().trimmed();
-}
-
-void SMESHGUI_Make2DFrom3DDlg::setGroupName( const QString& name )
-{
-  myGroupName->setText( name );
-}
-
-bool SMESHGUI_Make2DFrom3DDlg::copySource() const
-{
-  return myCopyCheck->isChecked();
-}
-
-void SMESHGUI_Make2DFrom3DDlg::onTargetChanged()
-{
-  myMeshName->setEnabled( myNewMeshRB->isChecked() );
-  myCopyCheck->setEnabled( myNewMeshRB->isChecked() );
-}
-
-void SMESHGUI_Make2DFrom3DDlg::onGroupChecked()
-{
-  myGroupName->setEnabled( myGroupCheck->isChecked() );
-}
 
 /*!
-  \class SMESHGUI_Make2DFrom3DOp
+  \class SMESHGUI_MakeFull2DFrom3DOp
   \brief Copy Mesh operation class
 */
-
-SMESHGUI_Make2DFrom3DOp::SMESHGUI_Make2DFrom3DOp()
-  : SMESHGUI_SelectionOp(),
+SMESHGUI_MakeFull2DFrom3DOp::SMESHGUI_MakeFull2DFrom3DOp()
+   : SMESHGUI_SelectionOp(),
     myMeshFilter(SMESH::MESH),
     myGroupFilter(SMESH::GROUP)
 {
 }
 
-SMESHGUI_Make2DFrom3DOp::~SMESHGUI_Make2DFrom3DOp()
+SMESHGUI_MakeFull2DFrom3DOp::~SMESHGUI_MakeFull2DFrom3DOp()
 {
-  if ( myDlg )
-    delete myDlg;
 }
 
-LightApp_Dialog* SMESHGUI_Make2DFrom3DOp::dlg() const
+LightApp_Dialog* SMESHGUI_MakeFull2DFrom3DOp::dlg() const
 {
   return myDlg;
 }
 
-void SMESHGUI_Make2DFrom3DOp::startOperation()
+void SMESHGUI_MakeFull2DFrom3DOp::startOperation()
 {
   if( !myDlg )
-    myDlg = new SMESHGUI_Make2DFrom3DDlg( desktop() );
+    myDlg = new SMESHGUI_MakeFull2DFrom3DDlg( desktop() );
 
-  myHelpFileName = "make_2dmesh_from_3d.html";
+
+  myHelpFileName = "make_2dmesh_from_3d_elements.html";
 
   SMESHGUI_SelectionOp::startOperation();
 
@@ -245,49 +104,16 @@ void SMESHGUI_Make2DFrom3DOp::startOperation()
   myDlg->setGroupName( SMESH::UniqueName( "Group" ) );
   myDlg->show();
 
-  connect( myDlg->my2dFrom3dRB, SIGNAL( toggled(bool) ), this, SLOT( onModeChanged() ) );
-  connect( myDlg->my1dFrom2dRB, SIGNAL( toggled(bool) ), this, SLOT( onModeChanged() ) );
-  //connect( myDlg->my1dFrom3dRB, SIGNAL( toggled(bool) ), this, SLOT( onModeChanged() ) );
-
-  //onModeChanged();
-
-  myDlg->activateObject( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups );
+  myDlg->activateObject( SMESHGUI_MakeFull2DFrom3DDlg::MeshOrGroups );
   selectionDone();
 }
 
-//================================================================================
-/*!
- * \brief Set filter corresponding to dimension
- */
-//================================================================================
-
-void SMESHGUI_Make2DFrom3DOp::onModeChanged()
+void SMESHGUI_MakeFull2DFrom3DOp::selectionDone()
 {
-//   QRadioButton* b = dynamic_cast<QRadioButton*>( sender());
-//   if ( b && !b->isChecked() )
-//     return;
-
-//   // enable "2D groups" field
-//   bool enableGroups = ( myDlg->mode() == SMESH::BND_1DFROM3D );
-//   myDlg->setObjectEnabled( SMESHGUI_Make2DFrom3DDlg::Groups, enableGroups );
-//   ((QToolButton*) myDlg->objectWg( SMESHGUI_Make2DFrom3DDlg::Groups,
-//                                    SMESHGUI_Make2DFrom3DDlg::Btn ))->setChecked( enableGroups );
-  
-//   // install filter
-//   int id =  enableGroups ? SMESHGUI_Make2DFrom3DDlg::Groups : SMESHGUI_Make2DFrom3DDlg::Mesh;
-//   onDeactivateObject( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups );
-//   onActivateObject  ( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups );
-//   selectionDone();
-}
-
-void SMESHGUI_Make2DFrom3DOp::selectionDone()
-{
-  myDlg->clearSelection( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups );
+  myDlg->clearSelection( SMESHGUI_MakeFull2DFrom3DDlg::MeshOrGroups );
   mySrcMesh = SMESH::SMESH_Mesh::_nil();
 
   if ( !dlg() ) return;
-
-  
   if ( dlg()->isVisible() ) {
     try {
       QStringList names, ids;
@@ -303,7 +129,6 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
       {
         _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( ids[i].toUtf8().constData() );
         mySrcMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( sobj );  
-        //isMesh = !mySrcMesh->_is_nil(); // EAP - it's sometimes necessary to copy to a new mesh
       }
       myDlg->setNewMeshEnabled( isMesh );
     }
@@ -315,9 +140,9 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
   }
 }
 
-SUIT_SelectionFilter* SMESHGUI_Make2DFrom3DOp::createFilter( const int /*theId*/ ) const
+SUIT_SelectionFilter* SMESHGUI_MakeFull2DFrom3DOp::createFilter( const int /*theId*/ ) const
 {
-  SMESHGUI_Make2DFrom3DOp* me = (SMESHGUI_Make2DFrom3DOp*) this;
+  SMESHGUI_MakeFull2DFrom3DOp* me = (SMESHGUI_MakeFull2DFrom3DOp*) this;
 
   QList<SUIT_SelectionFilter*> subFilters;
   subFilters.append( & me->myMeshFilter );
@@ -327,18 +152,19 @@ SUIT_SelectionFilter* SMESHGUI_Make2DFrom3DOp::createFilter( const int /*theId*/
   return f;
 }
 
-bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
+bool SMESHGUI_MakeFull2DFrom3DOp::isValid( QString& msg ) const
 {
   if ( !dlg() ) return false;
-
+  
   // check if a mesh is selected
-  if ( !myDlg->hasSelection( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups ))
+  if ( !myDlg->hasSelection( SMESHGUI_MakeFull2DFrom3DDlg::MeshOrGroups ))
   {
     msg = tr( "SMESH_ERR_NO_INPUT_MESH" );
     return false;
   }
+
   QStringList entries;
-  dlg()->selectedObject( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups, entries );
+  dlg()->selectedObject( SMESHGUI_MakeFull2DFrom3DDlg::MeshOrGroups, entries );
   const bool isMeshSelected = ( !mySrcMesh->_is_nil() );
   if ( isMeshSelected )
   {
@@ -363,8 +189,8 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
     }
   }
   // check if the selected objects contains elements of required type
-  bool hasFaces = false, hasVolumes = false;
-  SMESH::Bnd_Dimension mode = myDlg->mode();
+  bool hasVolumes = false;
+  
   for ( int i = 0; i < entries.count(); ++i )
   {
     SMESH::SMESH_IDSource_var idSource;
@@ -375,18 +201,12 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
       for ( int j = 0; j < (int) types->length(); ++j )
         if ( types[j] == SMESH::VOLUME )
           hasVolumes = true;
-        else if ( types[j] == SMESH::FACE )
-          hasFaces = true;
     }
   }
-  if ( mode == SMESH::BND_2DFROM3D && !hasVolumes ) {
+  if ( !hasVolumes ) {
     msg = tr( "SMESH_ERR_NO_3D_ELEMENTS" );
     return false;
-  }
-  else if ( mode == SMESH::BND_1DFROM2D && !hasFaces  ) {
-    msg = tr( "SMESH_ERR_NO_2D_ELEMENTS" );
-    return false;
-  }
+  } 
 
   // check if new mesh name is specified
   if ( myDlg->needNewMesh() && myDlg->getNewMeshName().isEmpty() ) {
@@ -403,34 +223,31 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
   return true;
 }
 
-bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
+bool SMESHGUI_MakeFull2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
 {
   SUIT_OverrideCursor wc;
 
   bool ok = false;
-  bool toCreateAllElements = false;
   try {
-    SMESH::Bnd_Dimension mode = myDlg->mode();
     QString meshName          = myDlg->needNewMesh() ? myDlg->getNewMeshName() : QString();
     QString groupName         = myDlg->needGroup()   ? myDlg->getGroupName()   : QString();
     bool copyAll              = myDlg->copySource();
 
     QStringList entries;
-    dlg()->selectedObject( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups, entries );
+    dlg()->selectedObject( SMESHGUI_MakeFull2DFrom3DDlg::MeshOrGroups, entries );
     SMESH::ListOfIDSources_var groups = new SMESH::ListOfIDSources;
     QString wrongGroups = "";
 
     if ( mySrcMesh->_is_nil() ) // get selected groups, find groups of wrong type
     {
-      int nbGroups = 0;
-      int goodType = ( mode == SMESH::BND_2DFROM3D ? SMESH::VOLUME : SMESH::FACE );
+      int nbGroups = 0;      
       groups->length( entries.count() );
       for ( int i = 0; i < entries.count(); ++i )
       {
         _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entries[i].toUtf8().constData() );
         SMESH::SMESH_IDSource_var grp = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( sobj );  
         SMESH::array_of_ElementType_var types = grp->GetTypes();
-        if ( types->length() < 1 || types[0] != goodType )
+        if ( types->length() < 1 || types[0] != SMESH::VOLUME )
         {
           if ( !wrongGroups.isEmpty() )
             wrongGroups += ", ";
@@ -449,11 +266,11 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
       SMESH::SMESH_MeshEditor_var aMeshEditor = mySrcMesh->GetMeshEditor();
       SMESH::SMESH_Group_var newGrp;
       SMESH::SMESH_Mesh_var newMesh;
-      CORBA::Long nbAdded = aMeshEditor->MakeBoundaryElements( mode,
+      CORBA::Long nbAdded = aMeshEditor->MakeBoundaryElements( SMESH::BND_2DFROM3D,
                                                                groupName.toUtf8().constData(),
                                                                meshName.toUtf8().constData(),
                                                                copyAll,
-                                                               toCreateAllElements,
+                                                               true,
                                                                groups,
                                                                newMesh.out(),
                                                                newGrp.out() );
@@ -482,7 +299,7 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
   return ok;
 }
 
-bool SMESHGUI_Make2DFrom3DOp::onApply()
+bool SMESHGUI_MakeFull2DFrom3DOp::onApply()
 {
   if ( SMESHGUI::isStudyLocked() )
     return false;

@@ -1291,7 +1291,9 @@ module SMESH
      *  \param meshName - a name of a new mesh, which is a copy of the initial 
      *    mesh + created boundary elements; "" means not to create the new mesh
      *  \param toCopyAll - if true, the whole initial mesh will be copied into
-     *    the new mesh else only boundary elements will be copied into the new mesh
+     *    the new mesh else only the new elements will be copied into the new mesh
+     *  \param toCreateAllElements - if true, all the boundary elements of the mesh 
+     *    are computed. 
      *  \param groups - optional groups of 2D elements to make boundary around
      *  \param mesh - returns the mesh where elements were added to
      *  \param group - returns the created group, if any
@@ -1301,6 +1303,7 @@ module SMESH
                               in string          groupName,
                               in string          meshName,
                               in boolean         toCopyAll,
+                              in boolean         toCreateAllElements,
                               in ListOfIDSources groups,
                               out SMESH_Mesh     mesh,
                               out SMESH_Group    group) raises (SALOME::SALOME_Exception);

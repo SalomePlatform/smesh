@@ -65,6 +65,7 @@
 #include "SMESHGUI_MG_ADAPTDRIVER.h"
 #include "SMESHGUI_HomardAdaptDlg.h"
 #include "SMESHGUI_Make2DFrom3DOp.h"
+#include "SMESHGUI_MakeFull2DFrom3DOp.h"
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
 #include "SMESHGUI_Measurements.h"
 #include "SMESHGUI_MergeDlg.h"
@@ -3058,6 +3059,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpConvertMeshToQuadratic:
   case SMESHOp::OpCreateDualMesh:
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh from 3D
+  case SMESHOp::OpCreate2DElements: // create full 2D mesh from 3D
   case SMESHOp::OpReorientFaces:
   case SMESHOp::OpCreateGeometryGroup:
     {
@@ -4285,6 +4287,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpConvertMeshToQuadratic, "CONV_TO_QUAD",    "ICON_CONV_TO_QUAD" );
   createSMESHAction( SMESHOp::OpCreateDualMesh,         "CREATE_DUAL_MESH","ICON_CREATE_DUAL_MESH" );
   createSMESHAction( SMESHOp::OpCreateBoundaryElements, "2D_FROM_3D",      "ICON_2D_FROM_3D" );
+  createSMESHAction( SMESHOp::OpCreate2DElements,    "2D_FROM_3D_ELEMENTS","ICON_2D_FROM_3D_ELEMENTS" );
 
   createSMESHAction( SMESHOp::OpReset,               "RESET" );
   createSMESHAction( SMESHOp::OpScalarBarProperties, "SCALAR_BAR_PROP" );
@@ -4535,6 +4538,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( SMESHOp::OpConvertMeshToQuadratic, modifyId, -1 );
   createMenu( SMESHOp::OpCreateBoundaryElements, modifyId, -1 );
+  createMenu( SMESHOp::OpCreate2DElements,       modifyId, -1 );
   createMenu( SMESHOp::OpExtrusion,              modifyId, -1 );
   createMenu( SMESHOp::OpExtrusionAlongAPath,    modifyId, -1 );
   createMenu( SMESHOp::OpRevolution,             modifyId, -1 );
@@ -4688,6 +4692,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   int modifyTb = createTool( tr( "TB_MODIFY" ), QString( "SMESHModificationToolbar" ) ) ;
   createTool( SMESHOp::OpConvertMeshToQuadratic, modifyTb );
   createTool( SMESHOp::OpCreateBoundaryElements, modifyTb );
+  createTool( SMESHOp::OpCreate2DElements,       modifyTb );
   createTool( SMESHOp::OpExtrusion,              modifyTb );
   createTool( SMESHOp::OpExtrusionAlongAPath,    modifyTb );
   createTool( SMESHOp::OpRevolution,             modifyTb );
@@ -6043,6 +6048,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     break;
   case SMESHOp::OpCreateDualMesh:
     op = new SMESHGUI_CreateDualMeshOp();
+    break;
+  case SMESHOp::OpCreate2DElements:
+    op = new SMESHGUI_MakeFull2DFrom3DOp();
     break;
   case SMESHOp::OpReorientFaces:
     op = new SMESHGUI_ReorientFacesOp();

@@ -837,6 +837,7 @@ public:
                                    const char* groupName,
                                    const char* meshName,
                                    CORBA::Boolean toCopyAll,
+                                   CORBA::Boolean toCreateAllElements,
                                    const SMESH::ListOfIDSources& groups,
                                    SMESH::SMESH_Mesh_out mesh,
                                    SMESH::SMESH_Group_out group);

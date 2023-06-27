@@ -477,6 +477,10 @@
         <translation>Créer les éléments de frontière</translation>
     </message>
     <message>
+        <source>MEN_2D_FROM_3D_ELEMENTS</source>
+        <translation>Créer les faces des éléments volumiques</translation>
+    </message>
+    <message>
         <source>MEN_MESH_ORDER</source>
         <translation>Changer la priorité des sous-maillages</translation>
     </message>
@@ -3380,6 +3384,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Créer les éléments de frontière</translation>
     </message>
     <message>
+        <source>STB_2D_FROM_3D_ELEMENTS</source>
+        <translation>Créer les faces des éléments volumiques</translation>
+    </message>
+    <message>
         <source>STB_MESH_ORDER</source>
         <translation>Changer la priorité des sous-maillages</translation>
     </message>
@@ -4106,6 +4114,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_2D_FROM_3D</source>
         <translation>Créer les éléments de frontière</translation>
+    </message>
+    <message>
+        <source>TOP_2D_FROM_3D_ELEMENTS</source>
+        <translation>Créer les faces des éléments volumiques</translation>
     </message>
     <message>
         <source>TOP_MESH_ORDER</source>
@@ -7931,6 +7943,17 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_MakeFull2DFrom3DDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Créer les faces des éléments volumiques</translation>
+    </message>
+    <message>
+        <source>2D_FROM_3D_ELEMENTS</source>
+        <translation>Faces des éléments volumiques</translation>
+    </message>
+</context> 
+<context>
     <name>SMESHGUI_Make2DFrom3DDlg</name>
     <message>
         <source>CAPTION</source>
@@ -7979,6 +8002,43 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>CREATE_GROUP</source>
         <translation>Créer un groupe</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_MakeFull2DFrom3DOp</name>
+    <message>
+        <source>NB_ADDED</source>
+        <translation>%1 faces ont été ajoutés</translation>
+    </message>
+    <message>
+    <source>WRONG_GROUPS</source>
+    <translation>Les groupes suivants n'ont pas été traités
+en raison de leurs types incompatibles:
+%1</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_INPUT_MESH</source>
+        <translation>Aucun maillage, sous-maillage ou groupe source n'est indiqué</translation>
+    </message>
+    <message>
+        <source>SMESH_TOO_MANY_MESHES</source>
+        <translation>Un seul maillage à la fois peut être traité</translation>
+    </message>
+    <message>
+        <source>SMESH_NOT_ONLY_GROUPS</source>
+        <translation>Impossible de traiter à la fois des maillages et des groupes</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_3D_ELEMENTS</source>
+        <translation>L'objet source ne contient pas d'éléments 3D</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_MESH_NAME_NOT_SPECIFIED</source>
+        <translation>Le nom du nouveau maillage n'est pas indiqué</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_GRP_NAME_NOT_SPECIFIED</source>
+        <translation>Le nom du groupe n'est pas indiqué</translation>
     </message>
 </context>
 <context>

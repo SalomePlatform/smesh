@@ -136,3 +136,13 @@ Reorient faces
     :language: python
 
 :download:`Download this script <../../examples/transforming_meshes_ex13.py>`
+
+.. _tui_make_2dmesh_from_3d_elements: 
+
+Create 2D mesh from 3D elements
+========================
+
+.. literalinclude:: ../../examples/transforming_meshes_ex14.py
+    :language: python
+
+:download:`Download this script <../../examples/transforming_meshes_ex14.py>`
