@@ -136,6 +136,27 @@ computations.
 
 **See also** a sample TUI script of a :ref:`tui_viscous_layers`.
 
+.. _viscous_layers_api_anchor:
+
+Viscous Layers API
+####################################
+
+The Viscous layer API is available on TUI. Allows to compute a shrink version of the geometry. This shrank version can be passed to any mesher and be used to
+build the viscous layer from the mesh computed in the shrank geometry. The current implementation only support the **Face offset** method to extrude the 
+nodes from the shrank mesh to the original geometry. 
+
+This implementation supports 3D (Solids and Solid Compound) and 2D (Face) geometries. For the 3D case, the faces Ids are
+used to identify the faces (perpendicular to it) where the solid is to be reduced. For the 2D case, the edges Ids can be provided but will not have any effect
+on the geometry computation (this control is not available in the opencascade library), therefore, for this case the entire face is shrank.
+
+The Viscous Layer API receive the same parameters as the Viscous Layers Hypothesis and implements four methods:
+
+* The constructor ``ViscousLayerBuilder()``
+* The parameters definitions ``setBuilderParameters(...)``
+* The ``GetShrinkGeometry()`` method that returns the shrink version of the original geomtry.
+* The ``AddLayers( shrinkMesh )`` method that returns the complet version of the mesh (shrink+viscous layer)
+
+**See also** a sample TUI script of a :ref:`tui_viscous_layers_api`.
 
 .. _quadratic_mesh_anchor:
 

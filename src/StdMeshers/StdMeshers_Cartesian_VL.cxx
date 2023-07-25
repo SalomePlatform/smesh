@@ -30,6 +30,7 @@
 #include <SMESHDS_Mesh.hxx>
 #include <SMESHDS_SubMesh.hxx>
 #include <SMESH_Algo.hxx>
+#include <SMESH_MeshAlgos.hxx>
 #include <SMESH_Mesh.hxx>
 #include <SMESH_MeshEditor.hxx>
 #include <SMESH_MesherHelper.hxx>
@@ -37,9 +38,12 @@
 #include <SMESH_subMesh.hxx>
 
 #include <BRepAdaptor_Curve.hxx>
-#include <BRepTopAdaptor_FClass2d.hxx>
 #include <BRep_Builder.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepGProp.hxx>
+#include <BRepTopAdaptor_FClass2d.hxx>
 #include <BRep_Tool.hxx>
+#include <GProp_GProps.hxx>
 #include <ShapeAnalysis_Curve.hxx>
 #include <ShapeAnalysis_Surface.hxx>
 #include <TopExp.hxx>
@@ -138,6 +142,7 @@ namespace
     SMESHDS_SubMesh* sm = theOffsetMDS->MeshElements( theEOS._offsetShape );
     if ( !sm || sm->NbElements() == 0 || sm->NbNodes() == 0 )
       return;
+
     theEOS._edges.resize( sm->NbNodes() );
 
     const TopoDS_Face& initFace = TopoDS::Face( theEOS._initShape );
@@ -189,13 +194,17 @@ namespace
 
   void projectToEdge( VLEdgesOnShape & theEOS,
                       SMESHDS_Mesh*    theOffsetMDS,
-                      TNode2VLEdge &   theN2E )
+                      TNode2VLEdge &   theN2E,
+                      bool createVertex )
   {
     SMESHDS_SubMesh* sm = theOffsetMDS->MeshElements( theEOS._offsetShape );
+ 
     if ( !sm || sm->NbElements() == 0 )
       return;
-    theEOS._edges.resize( sm->NbNodes() );
 
+    int addVertexNode = createVertex ? 1 : 0;
+    theEOS._edges.resize( sm->NbNodes() + addVertexNode ); // +1 to set the vertex 
+    
     ShapeAnalysis_Curve projector;
     BRepAdaptor_Curve   initCurve( TopoDS::Edge( theEOS._initShape ));
     const double        tol = Precision::Confusion();
@@ -227,8 +236,39 @@ namespace
 
       theN2E.Bind( offP.Node(), &vlEdge );
     }
+
+    if ( createVertex )
+    {
+      // It is possible to define the vertex projections from the existing edges
+      // EOS._offsetShape the edge generated from the original edge
+      // Get the first vertex of both edges to define the connecting edges
+      auto offsetEdge = TopoDS::Edge( theEOS._offsetShape );
+      auto initEdge   = TopoDS::Edge( theEOS._initShape );
+      TopoDS_Vertex offsetVertex;
+      TopoDS_Vertex initVertex;
+      
+      if ( offsetEdge.Orientation() == TopAbs_FORWARD )
+      {
+        offsetVertex  = TopExp::FirstVertex ( offsetEdge );
+        initVertex    = TopExp::FirstVertex ( initEdge ); 
+      }
+      else
+      {
+        offsetVertex  = TopExp::LastVertex ( offsetEdge );
+        initVertex    = TopExp::LastVertex ( initEdge ); 
+      }
+
+      VLEdge & vlEdge = theEOS._edges[ iN ];
+      vlEdge._nodes.resize( 2 );
+      vlEdge._nodes[0] = SMESH_Algo::VertexNode( offsetVertex, theOffsetMDS );
+      
+      gp_Pnt offP = BRep_Tool::Pnt( initVertex );
+      
+      vlEdge._nodes[1] = theOffsetMDS->AddNode( offP.X(), offP.Y(), offP.Z() );
+      theN2E.Bind( vlEdge._nodes[0].Node(), &vlEdge );
+    }
     return;
-  }
+  }  
 
   //================================================================================
   /*!
@@ -445,13 +485,12 @@ namespace
             prism2polyhedron( vNodes, volumElem );
 
           if ( const SMDS_MeshElement* vol = editor.AddElement( vNodes, volumElem ))
-            vol->setIsMarked( true ); // to add to group
+            vol->setIsMarked( true ); // to add to group          
         }
       }
       else // at inlet/outlet
-      {
         makePolyhedron( edgesVec, vNodes, editor, volumElem );
-      }
+
       editor.ClearLastCreated();
 
       // move the face to the top of prisms, on mesh boundary
@@ -467,6 +506,7 @@ namespace
    *  \param [inout] theMesh - offset mesh to fill in
    *  \param [inout] theN2E - map of node to VLEdge
    *  \param [inout] theFaceID - ID of WOVL FACE for new faces to set on
+   *  \param [in]    isMainShape2D - used to identify the geometry where the new elements are included
    *  \return bool - ok
    */
   //================================================================================
@@ -474,7 +514,8 @@ namespace
   bool makeFaces( VLEdgesOnShape & theEOS,
                   SMESH_Mesh*      theMesh,
                   TNode2VLEdge   & theN2E,
-                  const TGeomID    theFaceID)
+                  const TGeomID    theFaceID,
+                  bool isMainShape2D = false )
   {
     SMESHDS_SubMesh* sm = theMesh->GetMeshDS()->MeshElements( theEOS._offsetShape );
     if ( !sm || sm->NbElements() == 0 )
@@ -486,6 +527,27 @@ namespace
     std::vector< const SMDS_MeshNode* > fNodes( 4 );
     std::vector<const SMDS_MeshElement *> foundVolum;
     std::vector< VLEdge*> edgesVec;
+    TIDSortedElemSet  refSetFace;
+    
+    // Check orientation of face and re
+    gp_XYZ refNormalVector(0.0,0.0,0.0);
+    if ( isMainShape2D )
+    {
+      SMESHDS_Mesh* offsetMDS = theMesh->GetMeshDS();
+      for ( SMDS_ElemIteratorPtr eIt = offsetMDS->elementsIterator(); eIt->more(); )
+      {
+        const SMDS_MeshElement* refFace = eIt->next(); // define the ref
+        if ( refFace->GetType() == SMDSAbs_Face )
+        {
+          SMESH_MeshAlgos::FaceNormal( refFace, refNormalVector, /*normalized=*/true );
+          break;
+        }
+      }
+      if ( refNormalVector.X() == 0.0 && refNormalVector.Y() == 0.0 && refNormalVector.Z() == 0.0 )
+        throw SALOME_Exception("No 2D element found in the mesh!\n");
+
+    }
+    
     for ( SMDS_ElemIteratorPtr eIt = sm->GetElements(); eIt->more(); )
     {
       const SMDS_MeshElement* edge = eIt->next();
@@ -503,6 +565,7 @@ namespace
         edgesVec[ i ] = theN2E( n );
       }
       size_t nbFaces = edgesVec[0]->_nodes.size() - 1;
+
       for ( size_t iF = 0; iF < nbFaces; ++iF )
       {
         fNodes[ 0 ] = edgesVec[ 0 ]->_nodes[ iF ].Node();
@@ -519,13 +582,20 @@ namespace
             TIDSortedElemSet faces = { face }, volumes = { foundVolum[0] };
             editor.Reorient2DBy3D( faces, volumes, /*outside=*/true );
           }
+          else if ( isMainShape2D )
+          {
+            gp_XYZ elementNormal;
+            SMESH_MeshAlgos::FaceNormal( face, elementNormal, /*normalized=*/true );
+            if ( elementNormal * refNormalVector < 0.0 /* diff orientation from the ref element */)
+              editor.Reorient( face );
+          }
         }
       }
       editor.ClearLastCreated();
 
       // move the face to the top of prisms, on mesh boundary
       //theMesh->GetMeshDS()->ChangeElementNodes( face, fNodes.data(), nbNodes );
-    }
+    }    
     return true;
   }
 
@@ -790,11 +860,16 @@ StdMeshers_Cartesian_VL::ViscousBuilder::ViscousBuilder( const StdMeshers_Viscou
   {
     const TopoDS_Shape& face = faces( i );
     TGeomID fID = iniMDS->ShapeToIndex( face );
-    if ( _shapesWVL.count( fID ))
+    bool isMainShape2D = (mainShape.ShapeType() == TopAbs_FACE) ? true : false;
+
+    if ( _shapesWVL.count( fID ) && !isMainShape2D )
       continue;
+
     for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next() )
       _edge2facesWOVL[ iniMDS->ShapeToIndex( exp.Current() )].push_back( fID );
   }
+  
+  // When 2D meshing Need to add edges where segments need to be added due to geometry shrink
   return;
 }
 
@@ -806,7 +881,96 @@ StdMeshers_Cartesian_VL::ViscousBuilder::ViscousBuilder( const StdMeshers_Viscou
 
 StdMeshers_Cartesian_VL::ViscousBuilder::~ViscousBuilder()
 {
-  delete _offsetMesh; _offsetMesh = 0;
+  delete _offsetMesh; //_offsetMesh = 0;
+}
+
+//================================================================================
+/*!
+ * \brief Create an offset solid from a given one
+ *  \param [in] theShape - input shape can be a solid, solidcompound or a compound with solids
+ *  \param [in] theMesh - main mesh
+ *  \param [out] theError - error description
+ *  \return TopoDS_Shape - result offset shape of the same type as the received shape
+ */
+//================================================================================
+
+TopoDS_Shape StdMeshers_Cartesian_VL::ViscousBuilder::MakeOffsetSolid(const TopoDS_Shape & theShape,
+                                                                        SMESH_Mesh &         theMesh,
+                                                                        std::string &        theError )
+{
+  double offset = -_hyp->GetTotalThickness();
+  double    tol = Precision::Confusion();
+  TopAbs_ShapeEnum typeOfShape = theShape.ShapeType();
+
+  TopTools_IndexedMapOfShape shapeList;
+  TopExp::MapShapes( theShape, TopAbs_SOLID, shapeList );
+  std::vector<TopoDS_Shape> shrinkBodies;
+
+  for ( int i = 1; i <= shapeList.Size(); ++i )
+  {
+    auto solid = shapeList( i );
+      // If Shape is solid call direct 
+    BRepOffset_MakeOffset * makeOffset = new BRepOffset_MakeOffset();
+    makeOffset->Initialize( solid, offset, tol, BRepOffset_Skin, /*Intersection=*/false,
+                          /*selfInter=*/false, GeomAbs_Intersection);
+
+    // exclude inlet FACEs
+    SMESHDS_Mesh* meshDS = theMesh.GetMeshDS();
+    for ( TopExp_Explorer fEx( theShape, TopAbs_FACE ); fEx.More(); fEx.Next() )
+    {
+      TGeomID fID = meshDS->ShapeToIndex( fEx.Current() );
+      if ( !_shapesWVL.count( fID ))
+        makeOffset->SetOffsetOnFace( TopoDS::Face( fEx.Current()), 0 );
+    }
+
+    makeOffset->MakeOffsetShape();
+    if ( makeOffset->IsDone() )
+    {
+      shrinkBodies.push_back( makeOffset->Shape() );
+      _makeOffsetCollection.push_back( makeOffset );
+    }
+    else
+    {
+      switch ( makeOffset->Error() )
+      {
+      case BRepOffset_NoError:
+        theError = "OK. Offset performed successfully.";break;
+      case BRepOffset_BadNormalsOnGeometry:
+        theError = "Degenerated normal on input data.";break;
+      case BRepOffset_C0Geometry:
+        theError = "C0 continuity of input data.";break;
+      case BRepOffset_NullOffset:
+        theError = "Null offset of all faces.";break;
+      case BRepOffset_NotConnectedShell:
+        theError = "Incorrect set of faces to remove, the remaining shell is not connected.";break;
+      case BRepOffset_CannotTrimEdges:
+        theError = "Can not trim edges.";break;
+      case BRepOffset_CannotFuseVertices:
+        theError = "Can not fuse vertices.";break;
+      case BRepOffset_CannotExtentEdge:
+        theError = "Can not extent edge.";break;
+      default:
+        theError = "operation not done.";
+      }
+      theError = "BRepOffset_MakeOffset error: " + theError;
+
+      return TopoDS_Shape();
+    }    
+  }
+  
+  if ( typeOfShape == TopAbs_COMPOUND || typeOfShape == TopAbs_COMPSOLID )
+  {
+    _solidCompound.SetGlue( BOPAlgo_GlueFull );
+    _solidCompound.SetToFillHistory( true );
+    for ( auto solid : shrinkBodies )
+      _solidCompound.AddArgument( solid );
+
+    _solidCompound.Perform();
+    return _solidCompound.Shape();
+  }
+  else
+    return shrinkBodies[ 0 ]; // return one solid
+
 }
 
 //================================================================================
@@ -824,91 +988,155 @@ StdMeshers_Cartesian_VL::ViscousBuilder::MakeOffsetShape(const TopoDS_Shape & th
                                                          SMESH_Mesh &         theMesh,
                                                          std::string &        theError )
 {
-  double offset = -_hyp->GetTotalThickness();
-  double    tol = Precision::Confusion();
-  _makeOffset.Initialize( theShape, offset, tol, BRepOffset_Skin, /*Intersection=*/false,
-                          /*selfInter=*/false, GeomAbs_Intersection );
-  // exclude inlet FACEs
-  SMESHDS_Mesh* meshDS = theMesh.GetMeshDS();
-  for ( TopExp_Explorer fEx( theShape, TopAbs_FACE ); fEx.More(); fEx.Next() )
-  {
-    TGeomID fID = meshDS->ShapeToIndex( fEx.Current() );
-    if ( !_shapesWVL.count( fID ))
-      _makeOffset.SetOffsetOnFace( TopoDS::Face( fEx.Current()), 0 );
-  }
+  double offset                 = -_hyp->GetTotalThickness();
+  double    tol                 = Precision::Confusion();
+  TopAbs_ShapeEnum typeOfShape  = theShape.ShapeType();
 
-  _makeOffset.MakeOffsetShape();
-  if ( _makeOffset.IsDone() )
+  // Switch here for the treatment of faces
+  if ( typeOfShape == TopAbs_FACE )
   {
-    _offsetShape = _makeOffset.Shape();
-    SMESH_MesherHelper::WriteShape( _offsetShape );////
+    TopoDS_Face face = TopoDS::Face( theShape );
+    GProp_GProps gprops;
+    BRepGProp::SurfaceProperties(face, gprops); // Stores results in gprops
+    double faceArea = gprops.Mass();
 
-    _offsetMesh->ShapeToMesh( _offsetShape );
-    _offsetMesh->GetSubMesh( _offsetShape )->DependsOn();
+    _makeFaceOffset = BRepOffsetAPI_MakeOffset( face, GeomAbs_Intersection );
+    _makeFaceOffset.Perform( offset );
+    TopoDS_Wire wireFrame   = TopoDS::Wire( _makeFaceOffset.Shape() );
+    TopoDS_Face shrinkFace  = TopoDS::Face( BRepBuilderAPI_MakeFace( wireFrame, false ) );
+    BRepGProp::SurfaceProperties(shrinkFace, gprops); // Stores results in gprops
+    double sArea = gprops.Mass();
+
+    if ( sArea > faceArea /*recompute the shrink face because offset was done in the contrary direction as expected*/)
+    {
+      _makeFaceOffset.Perform( -offset );
+      wireFrame  = TopoDS::Wire( _makeFaceOffset.Shape() );
+      shrinkFace = TopoDS::Face( BRepBuilderAPI_MakeFace( wireFrame, false ) );
+    }
+    _offsetShape = shrinkFace;
     return _offsetShape;
   }
-
-  switch ( _makeOffset.Error() )
+  else
   {
-  case BRepOffset_NoError:
-    theError = "OK. Offset performed successfully.";break;
-  case BRepOffset_BadNormalsOnGeometry:
-    theError = "Degenerated normal on input data.";break;
-  case BRepOffset_C0Geometry:
-    theError = "C0 continuity of input data.";break;
-  case BRepOffset_NullOffset:
-    theError = "Null offset of all faces.";break;
-  case BRepOffset_NotConnectedShell:
-    theError = "Incorrect set of faces to remove, the remaining shell is not connected.";break;
-  case BRepOffset_CannotTrimEdges:
-    theError = "Can not trim edges.";break;
-  case BRepOffset_CannotFuseVertices:
-    theError = "Can not fuse vertices.";break;
-  case BRepOffset_CannotExtentEdge:
-    theError = "Can not extent edge.";break;
-  default:
-    theError = "operation not done.";
-  }
-  theError = "BRepOffset_MakeOffset error: " + theError;
-
-  return TopoDS_Shape();
+    _offsetShape = MakeOffsetSolid( theShape, theMesh, theError );
+    return _offsetShape;
+  }  
 }
 
 //================================================================================
 /*!
- * \brief Return a sub-shape of the offset shape generated from a given initial sub-shape
+ * \brief Return the list of sub-shape of the same type of the offset shape generated from a given initial sub-shape
  */
 //================================================================================
 
-TopoDS_Shape StdMeshers_Cartesian_VL::ViscousBuilder::getOffsetSubShape( const TopoDS_Shape& S )
+void StdMeshers_Cartesian_VL::ViscousBuilder::getOffsetSubShape( const TopoDS_Shape& S, std::vector<TopoDS_Shape>& subShapeList )
+{  
+  for( auto offset : _makeOffsetCollection )
+  {
+    const TopTools_ListOfShape& newShapes = offset->Generated( S );
+    if ( newShapes.Size() == 0 )
+      continue; // keep searching
+
+    for ( const TopoDS_Shape& ns : newShapes )
+    {
+      if ( ns.ShapeType() == S.ShapeType() )
+      {
+        if  ( _solidCompound.Arguments().Size() == 0 /* only one solid shrank*/ )
+        {
+          subShapeList.push_back( ns );
+        }
+        else
+        {
+          // In boolean operations the shapes are modified or deleted
+          const TopTools_ListOfShape& newGlueShapes = _solidCompound.Modified( ns );
+          for ( TopoDS_Shape& ngs : newGlueShapes )
+            if ( ngs.ShapeType() == ns.ShapeType() /*&& !ngs.Checked()*/  )
+              subShapeList.push_back( ngs );
+          
+          if ( newGlueShapes.Size() == 0 && !_solidCompound.IsDeleted( ns ) )
+            subShapeList.push_back( ns );
+        }
+      }            
+    }      
+  }     
+
+  // check for _makeFaceOffset in face shrink
+  if ( _makeOffsetCollection.size()  == 0 )
+  {
+    const TopTools_ListOfShape& newShapes = _makeFaceOffset.Generated( S );
+    for ( const TopoDS_Shape& ns : newShapes )
+    {
+      if ( ns.ShapeType() == S.ShapeType() )
+        return subShapeList.push_back( ns );
+    }
+  }
+}
+
+bool StdMeshers_Cartesian_VL::ViscousBuilder::CheckGeometryMaps( SMESH_Mesh &        offsetMesh,
+                                                                  const TopoDS_Shape & theShape  )
 {
-  const TopTools_ListOfShape& newShapes = _makeOffset.Generated( S );
-  for ( const TopoDS_Shape& ns : newShapes )
-    if ( ns.ShapeType() == S.ShapeType() )
-      return ns;
-  return TopoDS_Shape();
+  SMESHDS_Mesh* offsetMDS       = offsetMesh.GetMeshDS();
+  TopoDS_Shape shrinkGeomToMesh = offsetMDS->ShapeToMesh();  
+
+  TopTools_IndexedMapOfShape shrinkGeomMap;
+  TopExp::MapShapes( shrinkGeomToMesh, shrinkGeomMap );
+  TopTools_IndexedMapOfShape offsetGeomMap;
+  TopExp::MapShapes( _offsetShape, offsetGeomMap );
+
+  // loop on sub-shapes to project nodes from offset boundary to initial boundary
+  TopAbs_ShapeEnum types[3] = { TopAbs_VERTEX, TopAbs_EDGE, TopAbs_FACE };
+  for ( TopAbs_ShapeEnum shType : types )
+  {
+    TopTools_IndexedMapOfShape shapes;
+    TopExp::MapShapes( theShape, shType, shapes );
+    for ( int i = 1; i <= shapes.Size(); ++i )
+    {
+      // For each type of geometry check the existence of one or more equivalents
+      std::vector<TopoDS_Shape> listOfShapes;
+      getOffsetSubShape( shapes(i), listOfShapes );
+      if ( listOfShapes.size() == 0 ) return false;
+    }
+  }
+  return true;
 }
 
 //================================================================================
 /*!
  * \brief Create prismatic mesh between _offsetShape and theShape
+ *  \remark Build the viscous layer from the iteration of shrink geometry
  *  \param [out] theMesh - mesh to fill in
  *  \param [in] theShape - initial shape
  *  \return bool - is Ok
  */
 //================================================================================
 
-bool StdMeshers_Cartesian_VL::ViscousBuilder::MakeViscousLayers( SMESH_Mesh &         theMesh,
+bool StdMeshers_Cartesian_VL::ViscousBuilder::MakeViscousLayers( SMESH_Mesh &        offsetMesh,
+                                                                 SMESH_Mesh &         theMesh,
                                                                  const TopoDS_Shape & theShape )
 {
-  SMESHDS_Mesh* offsetMDS = _offsetMesh->GetMeshDS();
-  SMESHDS_Mesh*   initMDS = theMesh.GetMeshDS();
+  SMESHDS_Mesh* offsetMDS       = offsetMesh.GetMeshDS();
+  SMESHDS_Mesh*   initMDS       = theMesh.GetMeshDS();
+  TopoDS_Shape shrinkGeomToMesh = offsetMDS->ShapeToMesh();  
+  bool isMainShape2D = (theShape.ShapeType() == TopAbs_FACE) ? true : false;
+
+  // Validate map of shrink+joint geometry elements
+  if ( !CheckGeometryMaps(offsetMesh, theShape ) && !isMainShape2D )
+    throw SALOME_Exception("All elements from the shrink geometry were not match to the original geometry\n");
+
+  
+  initMDS->ClearMesh(); // avoid mesh superposition on multiple calls of addLayers
   offsetMDS->SetAllCellsNotMarked();
+
+  TopTools_IndexedMapOfShape shrinkGeomMap;
+  TopExp::MapShapes( shrinkGeomToMesh, shrinkGeomMap );
+
+  TopTools_IndexedMapOfShape offsetGeomMap;
+  TopExp::MapShapes( _offsetShape, offsetGeomMap );
 
   // Compute heights of viscous layers
   std::vector< double > vlH;
   computeVLHeight( _hyp, vlH );
-
+  
   std::vector< VLEdgesOnShape > edgesOnShape;
   edgesOnShape.reserve( offsetMDS->MaxShapeIndex() + 1 );
   TNode2VLEdge n2e;
@@ -923,55 +1151,64 @@ bool StdMeshers_Cartesian_VL::ViscousBuilder::MakeViscousLayers( SMESH_Mesh &   
     {
       edgesOnShape.resize( edgesOnShape.size() + 1 );
       VLEdgesOnShape& EOS = edgesOnShape.back();
-
+      std::vector<TopoDS_Shape> listOfShapes;
       EOS._initShape    = shapes( i );
-      EOS._offsetShape  = getOffsetSubShape( EOS._initShape );
-      EOS._initShapeID  = initMDS->ShapeToIndex( EOS._initShape );
-      EOS._hasVL        = _shapesWVL.count( EOS._initShapeID );
-      EOS._toCheckCoinc = false;
-      if ( !EOS._hasVL )
-        continue;
+      
+      // Get a list of subShapes of the same type generated from the same face
+      // It is the case with split objects.
+      getOffsetSubShape( EOS._initShape, listOfShapes );
+      for ( TopoDS_Shape& shrinkShape : listOfShapes )
+      {
+        int shapeId       = offsetGeomMap.FindIndex( shrinkShape );        
+        EOS._offsetShape  = shrinkGeomMap.FindKey( shapeId );     
+        EOS._initShapeID  = initMDS->ShapeToIndex( EOS._initShape );
+        EOS._hasVL        = _shapesWVL.count( EOS._initShapeID );
 
-      // project boundary nodes of offset mesh to boundary of init mesh
-      // (new nodes are created in the offset mesh)
-      switch( EOS._offsetShape.ShapeType() ) {
-      case TopAbs_VERTEX:
-      {
-        EOS._edges.resize( 1 );
-        EOS._edges[0]._nodes.resize( 2 );
-        EOS._edges[0]._nodes[0] = SMESH_Algo::VertexNode( TopoDS::Vertex( EOS._offsetShape ),
-                                                          offsetMDS );
-        gp_Pnt offP = BRep_Tool::Pnt( TopoDS::Vertex( EOS._initShape ));
-        EOS._edges[0]._nodes[1] = offsetMDS->AddNode( offP.X(), offP.Y(), offP.Z() );
-        //EOS._edges[0]._length   = offP.Distance( EOS._edges[0]._nodes[0] );
-        n2e.Bind( EOS._edges[0]._nodes[0].Node(), & EOS._edges[0] );
-        break;
-      }
-      case TopAbs_EDGE:
-      {
-        projectToEdge( EOS, offsetMDS, n2e );
-        break;
-      }
-      case TopAbs_FACE:
-      {
-        projectToFace( EOS, offsetMDS, n2e );
-        break;
-      }
-      default:;
-      }
+        EOS._toCheckCoinc = false;
+        if ( !EOS._hasVL )
+          continue;
 
-      // create nodes of layers
-      if ( _hyp->GetNumberLayers() > 1 )
-      {
-        //if ( _shapesWVL.count( EOS._initShapeID ))
-        for ( size_t i = 0; i < EOS._edges.size(); ++i )
+        // project boundary nodes of offset mesh to boundary of init mesh
+        // (new nodes are created in the offset mesh)
+        switch( EOS._offsetShape.ShapeType() ) {
+        case TopAbs_VERTEX:
         {
-          divideVLEdge( &EOS._edges[ i ], vlH, offsetMDS );
+          EOS._edges.resize( 1 );
+          EOS._edges[0]._nodes.resize( 2 );
+          EOS._edges[0]._nodes[0] = SMESH_Algo::VertexNode( TopoDS::Vertex( EOS._offsetShape ),
+                                                            offsetMDS );
+          gp_Pnt offP = BRep_Tool::Pnt( TopoDS::Vertex( EOS._initShape ));
+          EOS._edges[0]._nodes[1] = offsetMDS->AddNode( offP.X(), offP.Y(), offP.Z() );
+          //EOS._edges[0]._length   = offP.Distance( EOS._edges[0]._nodes[0] );
+          n2e.Bind( EOS._edges[0]._nodes[0].Node(), & EOS._edges[0] );
+          break;
         }
-      }
-    } // loop on shapes
-  } // loop on shape types
+        case TopAbs_EDGE:
+        {
+          projectToEdge( EOS, offsetMDS, n2e, isMainShape2D /* add vertex from edges*/ );
+          break;
+        }
+        case TopAbs_FACE:
+        {
+          projectToFace( EOS, offsetMDS, n2e );
+          break;
+        }
+        default:;
+        }
 
+        // create nodes of layers
+        if ( _hyp->GetNumberLayers() > 1 )
+        {
+          //if ( _shapesWVL.count( EOS._initShapeID ))
+          for ( size_t i = 0; i < EOS._edges.size(); ++i )
+          {
+            divideVLEdge( &EOS._edges[ i ], vlH, offsetMDS );
+          }
+        }
+      } // loop on generated shrink shape
+    }//loop on original shape
+  } // loop on shape types
+  
   // create prisms
   bool prismsOk = true;
   for ( size_t i = 0; i < edgesOnShape.size(); ++i )
@@ -979,10 +1216,11 @@ bool StdMeshers_Cartesian_VL::ViscousBuilder::MakeViscousLayers( SMESH_Mesh &   
     VLEdgesOnShape& EOS = edgesOnShape[ i ];
     if ( EOS._initShape.ShapeType() == TopAbs_FACE && EOS._hasVL )
     {
-      if ( !makePrisms( EOS, _offsetMesh, n2e ))
+      if ( !makePrisms( EOS, &offsetMesh, n2e ))
         prismsOk = false;
     }
   }
+
   if ( prismsOk )
   {
     // create faces on FACEs WOVL
@@ -994,22 +1232,40 @@ bool StdMeshers_Cartesian_VL::ViscousBuilder::MakeViscousLayers( SMESH_Mesh &   
         auto e2f = _edge2facesWOVL.find( EOS._initShapeID );
         if ( e2f != _edge2facesWOVL.end() && !e2f->second.empty() )
         {
-          TopoDS_Shape f = initMDS->IndexToShape( e2f->second[0] );
-          TopoDS_Shape f2 = getOffsetSubShape( f );
-          //cout << e2f->second[0] << " OFF " << offsetMDS->ShapeToIndex( f2 ) << endl;
-          makeFaces( EOS, _offsetMesh, n2e, offsetMDS->ShapeToIndex( f2 ) );
+          TopoDS_Shape  f = initMDS->IndexToShape( e2f->second[0] );
+          std::vector<TopoDS_Shape> listOfShapes;
+          getOffsetSubShape( f, listOfShapes );
+          for( TopoDS_Shape& subShape : listOfShapes )
+          {
+            int shapeId   = offsetGeomMap.FindIndex( subShape );
+            TopoDS_Shape f2 = shrinkGeomMap.FindKey( shapeId );     
+            makeFaces( EOS, & offsetMesh, n2e, offsetMDS->ShapeToIndex( f2 ) );
+          }        
         }
       }
     }
   }
 
-  // copy offset mesh to the main one
+  if ( isMainShape2D )
+  {
+     // create faces on FACEs of the inflate viscous layer in 2D faces
+    for ( size_t i = 0; i < edgesOnShape.size(); ++i )
+    {
+      VLEdgesOnShape& EOS = edgesOnShape[ i ];
+      if ( EOS._initShape.ShapeType() == TopAbs_EDGE && EOS._hasVL /* iterate in market edges with viscous layer*/)
+      {
+        int shapeId = offsetMDS->ShapeToIndex( shrinkGeomToMesh );
+        makeFaces( EOS, & offsetMesh, n2e, shapeId, isMainShape2D ); // pass face Id of shrink geometry
+      }
+    }
+  }
+
+   // copy offset mesh to the main one
   initMDS->Modified();
   initMDS->CompactMesh();
   smIdType nShift = initMDS->NbNodes();
   TGeomID solidID = initMDS->ShapeToIndex( theShape );
-  copyMesh( _offsetMesh, & theMesh, solidID );
-
+  copyMesh( & offsetMesh, & theMesh, solidID );
 
   if ( !prismsOk )
   {
@@ -1028,9 +1284,9 @@ bool StdMeshers_Cartesian_VL::ViscousBuilder::MakeViscousLayers( SMESH_Mesh &   
   {
     VLEdgesOnShape& EOS = edgesOnShape[ i ];
     if ( EOS._hasVL )
-      setBnd2Sub( EOS, &theMesh, _offsetMesh, n2e, nShift, nodesToCheckCoinc );
+      setBnd2Sub( EOS, &theMesh, &offsetMesh, n2e, nShift, nodesToCheckCoinc );
     else
-      setBnd2FVWL( EOS, &theMesh, _offsetMesh, nShift );
+      setBnd2FVWL( EOS, &theMesh, &offsetMesh, nShift );
   }
 
   // merge coincident nodes
@@ -1051,6 +1307,7 @@ bool StdMeshers_Cartesian_VL::ViscousBuilder::MakeViscousLayers( SMESH_Mesh &   
         group->Add( el );
     }
   }
+
 
   return prismsOk;
 }

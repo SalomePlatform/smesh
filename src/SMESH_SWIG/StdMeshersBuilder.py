@@ -25,6 +25,7 @@ LIBRARY = "libStdMeshersEngine.so"
 
 from salome.smesh.smesh_algorithm import Mesh_Algorithm
 import StdMeshers
+from salome.geom import geomBuilder
 
 #----------------------------
 # Mesh algo type identifiers
@@ -2013,3 +2014,106 @@ class StdMeshersBuilder_UseExisting_2D(Mesh_Algorithm):
         pass
 
     pass # end of StdMeshersBuilder_UseExisting_2D class
+    
+class StdMeshersBuilder_ViscousLayer(Mesh_Algorithm):
+    """ Defines the prismatic layer builder.
+
+    It is created by calling smeshBuilder.Mesh.ViscousLayerBuilder(geom=TheGeometry)
+    """
+    
+    meshMethod = "ViscousLayerBuilder"
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
+    algoType   = "ViscousLayerBuilder"
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
+    docHelper  = "Viscous layer builder for 2D and 3D geometries"
+    """
+    doc string of the method
+    """
+    
+    # On create method it will call create method from mesh python class
+    # 
+    def __init__(self, mesh, geom = 0 ):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """        
+        self.thickness          = None
+        self.numberOfLayers     = None
+        self.stretchFactor      = None
+        self.elementsId         = []
+        self.isElementToIgnore  = True
+        self.extrMethod         = StdMeshers.SURF_OFFSET_SMOOTH
+        self.groupName          = ""
+        self.shrinkGeometry     = None
+        self.algo               = self.Create(mesh, geom, self.algoType)     
+        pass
+
+    def setBuilderParameters( self, thickness, numberOfLayers, stretchFactor, elementsId=[], 
+                                    isElementToIgnore=True, extrMethod=StdMeshers.SURF_OFFSET_SMOOTH, groupName="" ):            
+        self.thickness          = thickness
+        self.numberOfLayers     = numberOfLayers
+        self.stretchFactor      = stretchFactor
+        self.elementsId         = elementsId        # can be faces or edges
+        self.isElementToIgnore  = isElementToIgnore
+        self.extrMethod         = extrMethod
+        self.groupName          = groupName
+
+        self.algo.SetTotalThickness( thickness )
+        self.algo.SetNumberLayers( numberOfLayers )
+        self.algo.SetStretchFactor( stretchFactor )
+        
+        #Faces are set based on int ids so if a collection of face geom objects is recived cast it to int 
+        if elementsId and isinstance( elementsId, geomBuilder.GEOM._objref_GEOM_Object ):
+            elementsId = [ elementsId ]
+        if elementsId and isinstance( elementsId[0], geomBuilder.GEOM._objref_GEOM_Object ):
+            elementsIDs = []
+            for shape in elementsId:
+                try:
+                  ff = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["FACE"] )
+                  if ( len( ff ) == 0 ):
+                    #try to get edges
+                    ff = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["EDGE"] )
+
+                  for f in ff:
+                    elementsIDs.append( self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f))
+                except:
+                  # try to get the SHAPERSTUDY engine directly, because GetGen does not work because of
+                  # simplification of access in geomBuilder: omniORB.registerObjref
+                  from SHAPERSTUDY_utils import getEngine
+                  gen = getEngine()
+                  if gen:
+                    aShapeOp = gen.GetIShapesOperations()
+                    ff = aShapeOp.ExtractSubShapes( shape, self.mesh.geompyD.ShapeType["FACE"], False)
+                    if (len(ff)==0):
+                        #try to get edges
+                        ff = aShapeOp.ExtractSubShapes( shape, self.mesh.geompyD.ShapeType["EDGE"], False)
+                    for f in ff:
+                      elementsIDs.append( aShapeOp.GetSubShapeIndex( self.mesh.geom, f ))
+            elementsId = elementsIDs
+
+        self.algo.SetFaces( elementsId, isElementToIgnore )    
+        self.algo.SetGroupName( groupName )   
+        self.algo.SetMethod( extrMethod )        
+        
+    def GetShrinkGeometry( self ):
+        if isinstance(self.geom, geomBuilder.GEOM._objref_GEOM_Object):
+            self.shrinkGeometry = self.algo.GetShrinkGeometry( self.mesh.GetMesh(), self.geom )
+        
+        return self.shrinkGeometry
+
+    def AddLayers( self, shrinkMesh ):
+        success = self.algo.AddLayers( shrinkMesh.GetMesh(), self.mesh.GetMesh(), self.geom )
+        if ( success ):
+            return self.mesh  #Return the original mesh of the builder
+        else:
+            return shrinkMesh
+
+    pass # end of StdMeshersBuilder_ViscousLayer class

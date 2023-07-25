@@ -182,6 +182,17 @@ bool StdMeshers_Cartesian_3D::CheckHypothesis (SMESH_Mesh&          aMesh,
 
 namespace
 {
+  /*!
+   * \brief Temporary mesh to hold 
+   */
+  struct TmpMesh: public SMESH_Mesh
+  {
+    TmpMesh() {
+      _isShapeToMesh = (_id = 0);
+      _meshDS  = new SMESHDS_Mesh( _id, true );
+    }
+  };
+
   typedef int                     TGeomID; // IDs of sub-shapes
   typedef TopTools_ShapeMapHasher TShapeHasher; // non-oriented shape hasher
   typedef std::array< int, 3 >    TIJK;
@@ -6406,13 +6417,15 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     if ( offsetShape.IsNull() )
       throw SALOME_Exception( error );
 
-    SMESH_Mesh* offsetMesh = builder.MakeOffsetMesh();
+    SMESH_Mesh* offsetMesh = new TmpMesh(); 
+    offsetMesh->ShapeToMesh( offsetShape );
+    offsetMesh->GetSubMesh( offsetShape )->DependsOn();
 
     this->_isComputeOffset = true;
     if ( ! this->Compute( *offsetMesh, offsetShape ))
       return false;
 
-    return builder.MakeViscousLayers( theMesh, theShape );
+    return builder.MakeViscousLayers( *offsetMesh, theMesh, theShape );
   }
 
   // The algorithm generates the mesh in following steps:

@@ -37,6 +37,7 @@ SET(BAD_TESTS
   defining_hypotheses_ex10.py
   defining_hypotheses_ex11.py
   defining_hypotheses_ex17.py
+  defining_hypotheses_vlapi_ex17.py
   defining_hypotheses_adaptive1d.py
   filters_ex01.py
   filters_ex02.py

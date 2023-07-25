@@ -125,6 +125,7 @@ SET(StdMeshers_HEADERS
   StdMeshers_PolygonPerFace_2D.hxx
   StdMeshers_PolyhedronPerSolid_3D.hxx
   StdMeshers_BlockRenumber.hxx
+  StdMeshers_ViscousLayerBuilder.hxx
 )
 
 # --- sources ---
@@ -190,6 +191,7 @@ SET(StdMeshers_SOURCES
   StdMeshers_PolygonPerFace_2D.cxx
   StdMeshers_PolyhedronPerSolid_3D.cxx
   StdMeshers_BlockRenumber.cxx
+  StdMeshers_ViscousLayerBuilder.cxx
 )
 
 # --- rules ---

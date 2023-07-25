@@ -251,6 +251,16 @@ Viscous layers construction
 
 :download:`Download this script <../../examples/defining_hypotheses_ex17.py>`
 
+.. _tui_viscous_layers_api:
+
+Viscous layers API construction
+###########################
+
+.. literalinclude:: ../../examples/defining_hypotheses_vlapi_ex17.py
+    :language: python
+
+:download:`Download this script <../../examples/defining_hypotheses_vlapi_ex17.py>`
+
 .. _tui_radial_prism:
 
 Radial Prism example

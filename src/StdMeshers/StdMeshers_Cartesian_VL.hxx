@@ -26,11 +26,15 @@
 #ifndef __StdMeshers_Cartesian_VL_HXX__
 #define __StdMeshers_Cartesian_VL_HXX__
 
+#include <BOPAlgo_Builder.hxx>
 #include <BRepOffset_MakeOffset.hxx>
+#include <BRepOffsetAPI_MakeOffset.hxx>
+
 #include <set>
 #include <map>
 #include <vector>
 
+class TopoDS_Face;
 class StdMeshers_ViscousLayers;
 class SMESH_Mesh;
 
@@ -47,23 +51,34 @@ namespace StdMeshers_Cartesian_VL
 
     TopoDS_Shape MakeOffsetShape(const TopoDS_Shape & theShape,
                                  SMESH_Mesh &         theMesh,
-                                 std::string &        theError );
+                                 std::string &        theError );                              
 
     SMESH_Mesh*  MakeOffsetMesh();
 
-    bool         MakeViscousLayers( SMESH_Mesh &         theMesh,
-                                    const TopoDS_Shape & theShape );
-
+    bool         MakeViscousLayers( SMESH_Mesh &         offsetMesh,
+                                    SMESH_Mesh &         theMesh,
+                                    const TopoDS_Shape & theShape );                 
+    
   private:
+    
+    TopoDS_Shape MakeOffsetSolid(const TopoDS_Shape & theShape,
+                                 SMESH_Mesh &         theMesh,
+                                 std::string &        theError );   
 
-    TopoDS_Shape getOffsetSubShape( const TopoDS_Shape& S );
+    bool         CheckGeometryMaps( SMESH_Mesh &         offsetMesh,
+                                    const TopoDS_Shape & theShape );             
+
+    void getOffsetSubShape( const TopoDS_Shape& S, std::vector<TopoDS_Shape>& listOfShapes );
 
     const StdMeshers_ViscousLayers* _hyp;
     BRepOffset_MakeOffset           _makeOffset;
+    std::vector<BRepOffset_MakeOffset*> _makeOffsetCollection;  // collection to  
+    BRepOffsetAPI_MakeOffset        _makeFaceOffset;            // to define shrink of planar faces. The face is shrink in all 
+    BOPAlgo_Builder                 _solidCompound;             // to glue solids with common faces after shrinking then with BRepOffset_MakeOffset
     SMESH_Mesh*                     _offsetMesh;
     TopoDS_Shape                    _offsetShape;
-    std::set< int >                 _shapesWVL; // shapes with viscous layers
-    std::map< int, std::vector< int > > _edge2facesWOVL; // EDGE 2 FACEs w/o VL
+    std::set< int >                 _shapesWVL;                 // shapes with viscous layers
+    std::map< int, std::vector< int > > _edge2facesWOVL;        // EDGE 2 FACEs w/o VL
   };
 }
 

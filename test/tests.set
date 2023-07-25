@@ -37,6 +37,7 @@ SET(BAD_TESTS
   ex29_refine.py
   ex_MakePolyLine.py
   test_smeshplugins.py
+  test_vlapi_growthlayer.py
   PAL_MESH_041_mesh.py
   PAL_MESH_043_3D.py
   SMESH_BelongToGeom.py
@@ -77,6 +78,7 @@ SET(GOOD_TESTS
   create_penta_biquad.py
   extrusion_penta_biquad.py
   test_polyhedron_per_solid.py
+  test_vlapi_shrinkgeometry.py
 
   ex01_cube2build.py
   ex02_cube2primitive.py

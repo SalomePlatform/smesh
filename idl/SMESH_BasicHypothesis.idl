@@ -26,10 +26,11 @@
 #ifndef _SMESH_BASICHYPOTHESIS_IDL_
 #define _SMESH_BASICHYPOTHESIS_IDL_
 
+#include "GEOM_Gen.idl"
+
 #include "SALOME_Exception.idl"
 #include "SMESH_Hypothesis.idl"
 #include "SMESH_Mesh.idl"
-
 /*!
  * StdMeshers: interfaces to standard hypotheses and algorithms
  */
@@ -1246,6 +1247,39 @@ module StdMeshers
    */
   interface StdMeshers_Cartesian_3D : SMESH::SMESH_3D_Algo
   {
+  };
+  /*!
+   * StdMeshers_Cartesian_3D: interface of "ViscousLayerBuilder" algorithm
+   */
+  interface StdMeshers_ViscousLayerBuilder : SMESH::SMESH_2D_Algo
+  {
+    /*!
+     * Set faces to exclude from the definition of face to shrink
+     */
+    void SetIgnoreFaces(in SMESH::long_array faceIDs) raises (SALOME::SALOME_Exception);
+    // SMESH::long_array GetIgnoreFaces();
+
+    /*!
+     * Set faces either to exclude from treatment or to make the offset geometry on.
+     */
+    void SetFaces(in SMESH::long_array faceIDs,
+                  in boolean           toIgnore) raises (SALOME::SALOME_Exception);
+    // SMESH::long_array GetFaces();
+    // boolean           GetIsToIgnoreFaces();
+
+    void SetTotalThickness(in double thickness) raises (SALOME::SALOME_Exception);
+    void SetNumberLayers(in short numberOfLayers ) raises (SALOME::SALOME_Exception);
+    void SetStretchFactor(in double strechFactor ) raises (SALOME::SALOME_Exception);
+    void SetMethod( in VLExtrusionMethod how );
+    void SetGroupName(in string name);
+
+    GEOM::GEOM_Object GetShrinkGeometry( in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject );
+
+    /*!
+     * Build the prismatic layer from the shrink mesh
+     */
+    boolean AddLayers( in SMESH::SMESH_Mesh sourceMesh, in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject );
+
   };
 
 };
