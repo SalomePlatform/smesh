@@ -186,6 +186,7 @@ html_use_index = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'smeshdoc'
 
+extensions += ['sphinx.ext.mathjax']
 
 # Options for LaTeX output
 # ------------------------

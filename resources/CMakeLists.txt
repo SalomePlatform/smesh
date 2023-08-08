@@ -168,6 +168,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_renumbering_nodes.png
   mesh_revolution.png
   mesh_rotation.png
+  mesh_scaled_jacobian.png
   mesh_sew_bordertoside.png
   mesh_sew_conform_freeborders.png
   mesh_sew_freeborders.png

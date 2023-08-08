@@ -4,12 +4,19 @@
 Scaled Jacobian
 ***************
 
-The **Scaled Jacobian** mesh quality criteria, is a scalar measure of the deviation from the perfect element in the geometrical sense, this measure normalize the range of reported values
-between [0,1] for a normal element, the value of 1 is considered a perfect element and 0 a element with a collapsed side. Negative values are also accepted for invalid elements.
+The **Scaled Jacobian** mesh quality criteria is a scalar measure of the deviation from the perfect element in the geometrical sense. This measure normalizes the range of reported values between [0,1] for a normal element, the value of 1 is considered a perfect element and 0 a element with a collapsed side. Negative values are also accepted for invalid elements.
 
-The **Scaled Jacobian** is implemented for volumetric elements returning 0 for polyhedrons. For tetrahedron and hexahedron the close form 
-is defined in `[1] <https://gitlab.kitware.com/third-party/verdict/-/blob/master/SAND2007-2853p.pdf>`_, for pyramids the minimum scaled jacobian of the four tetrahedrons formed
-in the four vertices of the pyramid base is reported, for pentahedrons a decomposition into tetrahedron is also done and finally for hexahedron prisms the minimum scaled jacobian between two pentahedrons and one hexahedron is reported.
+The **Scaled Jacobian** is implemented for all volumetric elements (except for polyhedrons, returning 0).
+
+For tetrahedrons and hexahedrons, the formulas are
+defined in `The Verdict Library Reference Manual [1] <https://gitlab.kitware.com/third-party/verdict/-/blob/master/SAND2007-2853p.pdf>`_.
+
+For pyramid, the minimum scaled jacobian of the four tetrahedrons formed
+in the four vertices of the pyramid base is reported.
+
+For pentahedron, a decomposition into tetrahedron is also done.
+
+For hexahedron prisms, the minimum scaled jacobian between two pentahedrons and one hexahedron is reported.
 
 * Geometrically the Scaled Jacobian of a **tetrahedron** can be understood by the follow figure:
 
@@ -35,7 +42,7 @@ in the four vertices of the pyramid base is reported, for pentahedrons a decompo
    
    Your mesh will be displayed in the viewer with its elements colored according to the applied mesh quality control criterion:
 
-	.. image:: ../images/scaled_jacobian_mesh_tetra.png
+	.. image:: ../images/scaled_jacobian_mesh_hexa.png
 		:align: center
 
 

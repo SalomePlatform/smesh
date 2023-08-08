@@ -136,9 +136,47 @@ if not Done:
 
 pentahedrons = 0.6
 pentasAndPolys     = smesh.GetFilter(SMESH.VOLUME, SMESH.FT_ScaledJacobian, SMESH.FT_LessThan, pentahedrons )
-#Distorted hexas
 
 polysIds          = Mesh_4.GetIdsFromFilter(polysElements)
 pentasAndPolysIds = Mesh_4.GetIdsFromFilter(pentasAndPolys)
 
 assert( len(pentasAndPolysIds) - len(polysIds) == 10 )
+
+#Test distorded hexahedrons scaled jacobian values
+Mesh_5 = smesh.Mesh(Box_1,'Mesh_5')
+Regular_1D = Mesh_5.Segment()
+Number_of_Segments_1 = Regular_1D.NumberOfSegments(2)
+Quadrangle_2D = Mesh_5.Quadrangle(algo=smeshBuilder.QUADRANGLE)
+Hexa_3D = Mesh_5.Hexahedron(algo=smeshBuilder.Hexa)
+isDone = Mesh_5.Compute()
+
+if not Done:
+  raise Exception("Error when computing hexaedrons Mesh for quality control test")
+
+#move some nodes to make scaled jacobian lesser than 1
+node_id_1 = Mesh_5.FindNodeClosestTo(0, 0, 10)
+node_id_5 = Mesh_5.FindNodeClosestTo(10, 0, 10)
+node_id_14 = Mesh_5.FindNodeClosestTo(10, 5, 10)
+node_id_13 = Mesh_5.FindNodeClosestTo(10, 0, 5)
+node_id_6 = Mesh_5.FindNodeClosestTo(10, 0, 0)
+Mesh_5.MoveNode( node_id_1, 1, 1, 9 )
+Mesh_5.MoveNode( node_id_5, 9, 1, 9 )
+Mesh_5.MoveNode( node_id_14, 10, 5, 9 )
+Mesh_5.MoveNode( node_id_13, 9, 0, 5 )
+Mesh_5.MoveNode( node_id_6, 8, 0, 0 )
+
+yellow_element = Mesh_5.FindElementsByPoint(7.5, 2.5, 2.5)[0]
+green_element = Mesh_5.FindElementsByPoint(7.5, 2.5, 7.5)[0]
+blue_element = Mesh_5.FindElementsByPoint(2.5, 2.5, 7.5)[0]
+
+yellow_SJ = Mesh_5.GetScaledJacobian(yellow_element)
+green_SJ = Mesh_5.GetScaledJacobian(green_element)
+blue_SJ = Mesh_5.GetScaledJacobian(blue_element)
+
+yellow_SJ_ref = 0.910446300912
+green_SJ_ref = 0.818025491961
+blue_SJ_ref = 0.654728501099
+
+assert assertWithDelta( yellow_SJ_ref, yellow_SJ, 1e-10 )
+assert assertWithDelta( green_SJ_ref, green_SJ, 1e-10 )
+assert assertWithDelta( blue_SJ_ref, blue_SJ, 1e-10 )
