@@ -42,6 +42,7 @@
 #include <cstring>
 #include <numeric>
 #include <algorithm>
+#include <array>
 
 namespace
 {
