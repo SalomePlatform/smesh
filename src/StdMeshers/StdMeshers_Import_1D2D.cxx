@@ -203,6 +203,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   // BRepClass_FaceClassifier is most time consuming, so minimize its usage
   const double clsfTol = 1e2 * BRep_Tool::MaxTolerance( geomFace, TopAbs_VERTEX );
   BRepTopAdaptor_FClass2d classifier( geomFace, clsfTol ); //Brimless_FaceClassifier classifier;
+
+  const double clsfTolEdge = BRep_Tool::MaxTolerance( geomFace, TopAbs_EDGE );
+  BRepTopAdaptor_FClass2d classifierEdge( geomFace, clsfTolEdge ); //Define specific classifier for edges based on TopAbs_EDGE. Solve issue bos #36783
+
   Bnd_B2d bndBox2d;
   Bnd_Box bndBox3d;
   {
@@ -425,7 +429,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           if ( nodeState[i] != TopAbs_UNKNOWN ) continue;
           gp_XY uv = helper.GetNodeUV( geomFace, newNodes[i] );
-          nodeState[i] = classifier.Perform( uv ); //geomFace, uv, clsfTol );
+          nodeState[i] = classifierEdge.Perform( uv ); //geomFace, uv, clsfTolEdge );
           //nodeState[i] = classifier.State();
           isIn = ( nodeState[i] == TopAbs_IN );
         }
@@ -447,8 +451,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           Standard_Real U,V;
           proj.LowerDistanceParameters(U,V);
           gp_XY uv( U,V );
-          //classifier.Perform( geomFace, uv, clsfTol );
-          TopAbs_State state = classifier.Perform( uv );
+          //classifier.Perform( geomFace, uv, clsfTolEdge );
+          TopAbs_State state = classifierEdge.Perform( uv );
           if ( state != TopAbs_IN )
             continue;
         }
