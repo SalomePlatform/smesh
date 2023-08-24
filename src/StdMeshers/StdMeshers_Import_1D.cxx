@@ -948,20 +948,20 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
   const double        edgeTol = helper.MaxTolerance( geomEdge );
   const int           shapeID = tgtMesh->ShapeToIndex( geomEdge );
 
-
   double geomTol = Precision::Confusion();
+  double minGeomTol = std::numeric_limits<double>::max();
+
   for ( size_t iG = 0; iG < srcGroups.size(); ++iG )
   {
     const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
     for ( SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements(); srcElems->more(); )
     {
       const SMDS_MeshElement* edge = srcElems->next();
-      geomTol = Sqrt( 0.5 * ( getMinEdgeLength2( edge->GetNode(0) ) +
-                              getMinEdgeLength2( edge->GetNode(1) ))) / 25;
-      iG = srcGroups.size();
-      break;
+      minGeomTol = std::min( Sqrt( getMinEdgeLength2( edge->GetNode(0) )) / 25, minGeomTol );
+      geomTol = minGeomTol;
     }
   }
+
   CurveProjector curveProjector( geomEdge, geomTol );
 
   // get nodes on vertices
