@@ -49,7 +49,6 @@
 class SMESHDS_Document;
 class SMESH_Algo;
 class SMESH_Mesh;
-class SMESH_ParallelMesh;
 class TopoDS_Shape;
 
 
@@ -71,7 +70,7 @@ public:
   ~SMESH_Gen();
 
   SMESH_Mesh* CreateMesh(bool theIsEmbeddedMode);
-  SMESH_ParallelMesh* CreateParallelMesh(bool theIsEmbeddedMode);
+  SMESH_Mesh* CreateParallelMesh(bool theIsEmbeddedMode);
 
   enum ComputeFlags
   {
@@ -170,8 +169,6 @@ public:
   int GetANewId();
 
 public:
-  void send_mesh(SMESH_Mesh & aMesh, std::string filename);
-
   bool parallelComputeSubMeshes(
           SMESH_Mesh & aMesh,
           const TopoDS_Shape & aShape,

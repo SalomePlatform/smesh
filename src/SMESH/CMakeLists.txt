@@ -20,7 +20,6 @@
 # --- options ---
 # additional include directories
 INCLUDE_DIRECTORIES(
-  ${QT_INCLUDES}
   ${KERNEL_INCLUDE_DIRS}
   ${GEOM_INCLUDE_DIRS}
   ${OpenCASCADE_INCLUDE_DIR}
@@ -70,7 +69,6 @@ SET(_link_LIBRARIES
   MeshDriverGMF
   ${DriverCGNS_LIB}
   ${MEDCoupling_medloader}
-  Qt5::Core
 )
 
 # --- headers ---

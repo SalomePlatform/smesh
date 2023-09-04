@@ -24,10 +24,27 @@
 //  Module : SMESH
 
 #include "SMESH_ParallelMesh_i.hxx"
-#include "SMESH_Mesh_i.hxx"
 
 #include "SMESH_Gen_i.hxx"
 
+
+#ifdef _DEBUG_
+static int MYDEBUG = 0;
+#else
+static int MYDEBUG = 0;
+#endif
+
+//=============================================================================
+/*!
+ *  Constructor
+ */
+//=============================================================================
+
+SMESH_ParallelMesh_i::SMESH_ParallelMesh_i( PortableServer::POA_ptr thePOA,
+                            SMESH_Gen_i*            gen_i )
+: SMESH_Mesh_i(thePOA, gen_i)
+{
+}
 
 //=============================================================================
 namespace
@@ -53,138 +70,28 @@ namespace
   };
 }
 
-::SMESH_ParallelMesh* SMESH_ParallelMesh_i::DownCast()
+//================================================================================
+/*!
+ * \brief Set mesh implementation
+ */
+//================================================================================
+
+void SMESH_ParallelMesh_i::SetImpl(::SMESH_ParallelMesh * impl)
 {
-  ::SMESH_ParallelMesh* myImpl = dynamic_cast<::SMESH_ParallelMesh*>(_impl);
-  if (myImpl == NULL)
-    THROW_SALOME_CORBA_EXCEPTION("Could not cast as ParallelMesh", SALOME::INTERNAL_ERROR);
-
-  return myImpl;
+  if(MYDEBUG) MESSAGE("SMESH_ParallelMesh_i::SetImpl");
+  _impl = impl;
+  if ( _impl )
+    _impl->SetCallUp( new TCallUp_i(this));
 }
 
 //=============================================================================
 /*!
- * \brief Get the parallellism method
+ * Return a mesh implementation
  */
 //=============================================================================
 
-CORBA::Long SMESH_ParallelMesh_i::GetParallelismMethod(){
-  return DownCast()->GetParallelismMethod();
-}
-
-//=============================================================================
-/*!
- * \brief Set the parallellism method
- */
-//=============================================================================
-void SMESH_ParallelMesh_i::SetParallelismMethod(CORBA::Long aMethod){
-  DownCast()->SetParallelismMethod(aMethod);
-}
-
-//=============================================================================
-/*!
- * \brief Get the number of threads for a parallel computation
- */
-//=============================================================================
-CORBA::Long SMESH_ParallelMesh_i::GetNbThreads(){
-  return DownCast()->GetNbThreads();
-}
-
-//=============================================================================
-/*!
- * \brief Set the number of threads for a parallel computation
- */
-//=============================================================================
-void SMESH_ParallelMesh_i::SetNbThreads(CORBA::Long nbThreads){
-  DownCast()->SetNbThreads(nbThreads);
-}
-
-//=============================================================================
-/*!
- * \brief Get the ressource to connect to
- */
-//=============================================================================
-char* SMESH_ParallelMesh_i::GetResource(){
-  return CORBA::string_dup(DownCast()->GetResource().c_str());
-}
-
-//=============================================================================
-/*!
- * \brief Set the ressource to connect to
- */
-//=============================================================================
-void SMESH_ParallelMesh_i::SetResource(const char* aResource){
-  DownCast()->SetResource(std::string(aResource));
-}
-
-//=============================================================================
-/*!
- * \brief Get the number of processor to use on ressource
- */
-//=============================================================================
-CORBA::Long SMESH_ParallelMesh_i::GetNbProc(){
-  return DownCast()->GetNbProc();
-}
-
-//=============================================================================
-/*!
- * \brief Set the number of processor to use on ressource
- */
-//=============================================================================
-void SMESH_ParallelMesh_i::SetNbProc(CORBA::Long nbProcs){
-  DownCast()->SetNbProc(nbProcs);
-}
-
-//=============================================================================
-/*!
- * \brief Get the number of processor per node to use on ressource
- */
-//=============================================================================
-CORBA::Long SMESH_ParallelMesh_i::GetNbProcPerNode(){
-  return DownCast()->GetNbProcPerNode();
-}
-
-//=============================================================================
-/*!
- * \brief Set the number of processor per node to use on ressource
- */
-//=============================================================================
-void SMESH_ParallelMesh_i::SetNbProcPerNode(CORBA::Long nbProcPerNodes){
-  DownCast()->SetNbProcPerNode(nbProcPerNodes);
-}
-
-//=============================================================================
-/*!
- * \brief Get the number of node to use on ressource
- */
-//=============================================================================
-CORBA::Long SMESH_ParallelMesh_i::GetNbNode(){
-  return DownCast()->GetNbNode();
-}
-
-//=============================================================================
-/*!
- * \brief Set the number of node to use on ressource
- */
-//=============================================================================
-void SMESH_ParallelMesh_i::SetNbNode(CORBA::Long nbNodes){
-  DownCast()->SetNbNode(nbNodes);
-}
-
-//=============================================================================
-/*!
- * \brief Get the wckey to use on ressource
- */
-//=============================================================================
-char* SMESH_ParallelMesh_i::GetWcKey(){
-  return CORBA::string_dup(DownCast()->GetWcKey().c_str());
-}
-
-//=============================================================================
-/*!
- * \brief Set the wckey to use on ressource
- */
-//=============================================================================
-void SMESH_ParallelMesh_i::SetWcKey(const char* wcKey){
-  DownCast()->SetWcKey(std::string(wcKey));
+::SMESH_ParallelMesh & SMESH_ParallelMesh_i::GetImpl()
+{
+  if(MYDEBUG) MESSAGE("SMESH_ParallelMesh_i::GetImpl()");
+  return *_impl;
 }

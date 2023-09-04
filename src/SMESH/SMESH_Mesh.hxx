@@ -51,6 +51,7 @@
 
 #ifndef WIN32
 #include <boost/filesystem.hpp>
+#include <boost/asio/thread_pool.hpp>
 #endif
 #include <boost/thread.hpp>
 
@@ -394,9 +395,19 @@ class SMESH_EXPORT SMESH_Mesh
   virtual void Lock(){};
   virtual void Unlock(){};
 
-  virtual void wait(){};
+  virtual int GetNbThreads(){return 0;};
+  virtual void SetNbThreads(long nbThreads){(void) nbThreads;};
 
-  virtual bool IsParallel(){throw SALOME_Exception("Calling SMESH_Mesh::IsParallel");return false;};
+  virtual void InitPoolThreads(){std::cout << "Should not pass here: InitPoolThread" << std::endl;};
+  virtual void DeletePoolThreads(){std::cout << "Should not pass here: DeletePoolThread" << std::endl;};
+  virtual void wait(){std::cout << "Should not pass here: wait" << std::endl;};
+
+  virtual bool IsParallel(){std::cout << "Should not pass here: IsParallel" << std::endl;return false;};
+
+#ifndef WIN32
+  virtual boost::filesystem::path GetTmpFolder() {return "";};
+  virtual boost::asio::thread_pool* GetPool() {return NULL;};
+#endif
 
   virtual bool ComputeSubMeshes(
             SMESH_Gen* gen,
@@ -408,7 +419,7 @@ class SMESH_EXPORT SMESH_Mesh
             SMESH_subMesh::compute_event &computeEvent,
             const bool includeSelf,
             const bool complexShapeFirst,
-            const bool aShapeOnly){(void) gen;(void) aMesh;(void) aShape;(void) aDim;(void) aShapesId;(void) allowedSubShapes;(void) computeEvent;(void) includeSelf;(void) complexShapeFirst;(void) aShapeOnly;throw SALOME_Exception("Calling SMESH_Mesh::ComputeSubMeshes");return false;};
+            const bool aShapeOnly){(void) gen;(void) aMesh;(void) aShape;(void) aDim;(void) aShapesId;(void) allowedSubShapes;(void) computeEvent;(void) includeSelf;(void) complexShapeFirst;(void) aShapeOnly;std::cout << "Should not pass here: computesubmesh" << std::endl;return false;};
 
 private:
 
@@ -455,6 +466,12 @@ protected:
   // when group removal is invoked by hyp modification (issue 0020918)
   // 2) to forget not loaded mesh data at hyp modification
   TCallUp*                    _callUp;
+
+  // Mutex for multhitreading write in SMESH_Mesh
+#ifndef WIN32
+  boost::mutex _my_lock;
+#endif
+  int _NbThreads=-1;
 
 protected:
   SMESH_Mesh();

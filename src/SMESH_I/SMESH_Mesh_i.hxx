@@ -674,15 +674,20 @@ private:
                         const bool                  theIsDump);
 
   /*!
+   * Parallelims informations
+   */
+  void SetNbThreads(CORBA::Long nbThreads);
+  CORBA::Long GetNbThreads();
+
+  /*!
    * \brief Finds concurrent sub-meshes
    */
   TListOfListOfInt findConcurrentSubMeshes();
 
- protected:
-  ::SMESH_Mesh* _impl;        // :: force no namespace here
  private:
 
   static int    _idGenerator;
+  ::SMESH_Mesh* _impl;        // :: force no namespace here
   SMESH_Gen_i*  _gen_i;
   int           _id;          // id given by creator (unique within the creator instance)
   int           _nbInvalidHypos;

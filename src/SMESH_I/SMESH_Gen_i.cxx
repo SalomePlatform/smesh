@@ -101,11 +101,8 @@
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Hypothesis_i.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_ParallelMesh.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_Mesh_i.hxx"
-#include <SMESH_SequentialMesh_i.hxx>
-#include "SMESH_ParallelMesh_i.hxx"
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_ControlsDef.hxx"
@@ -565,7 +562,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
  */
 //=============================================================================
 
-SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh(bool parallel /*=false*/)
 {
   Unexpect aCatch(SALOME_SalomeException);
   MESSAGE( "SMESH_Gen_i::createMesh" );
@@ -576,10 +573,11 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this );
     // create a new mesh object
     MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
-    SMESH_Mesh* myImpl = dynamic_cast<SMESH_Mesh*>(myGen.CreateMesh( myIsEmbeddedMode ));
-    if(myImpl == NULL )
-      THROW_SALOME_CORBA_EXCEPTION( "Could not cast SequentialMesh as Mesh", SALOME::INTERNAL_ERROR );
-    meshServant->SetImpl(myImpl);
+    if(parallel) {
+      meshServant->SetImpl( dynamic_cast<SMESH_Mesh*>(myGen.CreateParallelMesh( myIsEmbeddedMode )));
+    }else{
+      meshServant->SetImpl( dynamic_cast<SMESH_Mesh*>(myGen.CreateMesh( myIsEmbeddedMode )));
+    }
 
     // activate the CORBA servant of Mesh
     SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( meshServant->_this() );
@@ -592,42 +590,6 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
   }
   return SMESH::SMESH_Mesh::_nil();
-}
-
-//=============================================================================
-/*!
- *  SMESH_Gen_i::createParallelMesh
- *
- *  Create empty parallel mesh on shape
- */
-//=============================================================================
-SMESH::SMESH_ParallelMesh_ptr SMESH_Gen_i::createParallelMesh()
-{
-  Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE( "SMESH_Gen_i::createParallelMesh" );
-
-  // Get or create the GEOM_Client instance
-  try {
-    // create a new mesh object servant, store it in a map in study context
-    SMESH_ParallelMesh_i* meshServant = new SMESH_ParallelMesh_i( GetPOA(), this );
-    // create a new mesh object
-    MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
-    SMESH_Mesh* myImpl = dynamic_cast<SMESH_Mesh*>(myGen.CreateParallelMesh( myIsEmbeddedMode ));
-    if(myImpl == NULL )
-      THROW_SALOME_CORBA_EXCEPTION( "Could not cast ParallelMesh as Mesh", SALOME::INTERNAL_ERROR );
-    meshServant->SetImpl(myImpl);
-
-    // activate the CORBA servant of Mesh
-    SMESH::SMESH_ParallelMesh_var mesh = SMESH::SMESH_ParallelMesh::_narrow( meshServant->_this() );
-    int nextId = RegisterObject( mesh );
-    MESSAGE( "Add mesh to map with id = "<< nextId);
-
-    return mesh._retn();
-  }
-  catch (SALOME_Exception& S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
-  }
-  return SMESH::SMESH_ParallelMesh::_nil();
 }
 
 //=============================================================================
@@ -1273,14 +1235,14 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
  */
 //=============================================================================
 
-SMESH::SMESH_ParallelMesh_ptr SMESH_Gen_i::CreateParallelMesh( GEOM::GEOM_Object_ptr theShapeObject )
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateParallelMesh( GEOM::GEOM_Object_ptr theShapeObject )
 {
   Unexpect aCatch(SALOME_SalomeException);
   MESSAGE( "SMESH_Gen_i::CreateParallelMesh" );
   // create mesh
-  SMESH::SMESH_ParallelMesh_var mesh = this->createParallelMesh();
+  SMESH::SMESH_Mesh_var mesh = this->createMesh(true);
   // set shape
-  SMESH_ParallelMesh_i* meshServant = SMESH::DownCast<SMESH_ParallelMesh_i*>( mesh );
+  SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
   ASSERT( meshServant );
   meshServant->SetShape( theShapeObject );
 
@@ -1292,7 +1254,7 @@ SMESH::SMESH_ParallelMesh_ptr SMESH_Gen_i::CreateParallelMesh( GEOM::GEOM_Object
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump(this) << aSO << " = " << this << ".CreateParallelMesh(" << theShapeObject << ")";
+      TPythonDump(this) << aSO << " = " << this << ".CreateMesh(" << theShapeObject << ")";
     }
   }
 
