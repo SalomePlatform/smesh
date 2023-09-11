@@ -956,6 +956,15 @@ std::string MgAdapt::getCommandToRun()
   cmd+= " --in "+ meshIn;
   meshFormatOutputMesh = getFileName()+".mesh";
   tmpFilesToBeDeleted.push_back(meshFormatOutputMesh);
+  if ( isFileExist( meshFormatOutputMesh )){
+    int notOk;
+    errStr=removeFile(meshFormatOutputMesh , notOk);
+    if (notOk)
+    {
+      appendMsgToLogFile(errStr);
+    }
+  }
+
   cmd+= " --out "+ meshFormatOutputMesh;
   if (useLocalMap || useConstantValue) cmd+= " --sizemap "+ solFileIn;
   else //  (useBackgroundMap)
