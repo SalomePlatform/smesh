@@ -2001,6 +2001,13 @@ class Mesh(metaclass = MeshMeta):
 
         return ok
 
+    def CheckCompute(self, isDone):
+        """
+        Check if the mesh was properly compute
+        """
+        if not isDone:
+            raise Exception("Could not compute {}".format(self.GetName()))
+
     def GetComputeErrors(self, shape=0 ):
         """
         Return a list of error messages (:class:`SMESH.ComputeError`) of the last :meth:`Compute`

@@ -700,6 +700,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   if ( objID == this->GetID() || objID == SMESH_2smeshpy::GenName())
   {
     this->Process( aCommand );
+
     //addFilterUser( aCommand, theGen ); // protect filters from clearing
     return aCommand;
   }
@@ -1015,6 +1016,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   // Concatenate( [mesh1, ...], ... )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
+  // CheckCompute( mesh, isDone )
   // Evaluate( mesh, geom )
   // mesh creation
   TCollection_AsciiString method = theCommand->GetMethod();
@@ -1093,11 +1095,29 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     if ( id_mesh != myMeshes.end() ) {
       theCommand->SetObject( meshID );
       theCommand->RemoveArgs();
+      std::cout << "command: " << theCommand->GetString() << std::endl;
+      id_mesh->second->Process( theCommand );
+      id_mesh->second->AddProcessedCmd( theCommand );
+      std::cout << "command processed: " << theCommand->GetString() << std::endl;
+      return;
+    }
+  }
+
+  // smeshgen.CheckCompute( mesh, isDone ) --> mesh.CheckCompute(isDone)
+  if ( method == "CheckCompute" )
+  {
+    const _pyID& meshID = theCommand->GetArg( 1 );
+    map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( meshID );
+    if ( id_mesh != myMeshes.end() ) {
+      theCommand->SetObject( meshID );
+      theCommand->RemoveArgs();
+      theCommand->SetArg(1, "isDone");
       id_mesh->second->Process( theCommand );
       id_mesh->second->AddProcessedCmd( theCommand );
       return;
     }
   }
+
 
   // smeshgen.Evaluate( mesh, geom ) --> mesh.Evaluate(geom)
   if ( method == "Evaluate" )
@@ -2224,7 +2244,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetElemFaceNodes", "GetFaceNormal", "FindElementByNodes",
         "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
         "Clear", "ConvertToStandalone", "GetMeshOrder", "SetMeshOrder",
-        "SetNbThreads"
+        "SetNbThreads", "CheckCompute"
         ,"" }; // <- mark of end
     sameMethods.Insert( names );
   }
@@ -3134,7 +3154,7 @@ void _pyHypothesis::rememberCmdOfParameter( const Handle(_pyCommand) & theComman
 
 //================================================================================
 /*!
- * \brief Return true if a setting parameter command ha been used to compute mesh
+ * \brief Return true if a setting parameter command has been used to compute mesh
  */
 //================================================================================
 
