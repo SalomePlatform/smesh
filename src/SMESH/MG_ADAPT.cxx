@@ -43,6 +43,7 @@
 #include <fcntl.h>
 #include <array>
 #include <memory>   // unique_ptr
+#include <chrono>
 
 typedef SMESH_Comment ToComment;
 
@@ -956,14 +957,6 @@ std::string MgAdapt::getCommandToRun()
   cmd+= " --in "+ meshIn;
   meshFormatOutputMesh = getFileName()+".mesh";
   tmpFilesToBeDeleted.push_back(meshFormatOutputMesh);
-  if ( isFileExist( meshFormatOutputMesh )){
-    int notOk;
-    errStr=removeFile(meshFormatOutputMesh , notOk);
-    if (notOk)
-    {
-      appendMsgToLogFile(errStr);
-    }
-  }
 
   cmd+= " --out "+ meshFormatOutputMesh;
   if (useLocalMap || useConstantValue) cmd+= " --sizemap "+ solFileIn;
@@ -1144,7 +1137,7 @@ std::string MgAdapt::getFileName() const
 aGenericName << _getpid();
 #endif
   aGenericName << "_";
-  aGenericName << std::abs((int)(long) aGenericName.data());
+  aGenericName << std::chrono::system_clock::now().time_since_epoch().count();
 
   return aGenericName;
 }
