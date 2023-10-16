@@ -146,3 +146,13 @@ Create 2D mesh from 3D elements
     :language: python
 
 :download:`Download this script <../../examples/transforming_meshes_ex14.py>`
+
+.. _tui_offset_elements: 
+
+Offset 2D mesh
+========================
+
+.. literalinclude:: ../../examples/transforming_meshes_ex15.py
+    :language: python
+
+:download:`Download this script <../../examples/transforming_meshes_ex15.py>`

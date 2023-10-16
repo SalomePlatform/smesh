@@ -129,6 +129,7 @@ SET(BAD_TESTS
   transforming_meshes_ex04.py
   transforming_meshes_ex05.py
   transforming_meshes_ex06.py
+  transforming_meshes_ex15.py
   viewing_meshes_ex01.py
   radial_prism_3d_algo.py
   create_dual_mesh.py

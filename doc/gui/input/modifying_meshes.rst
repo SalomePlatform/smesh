@@ -15,6 +15,7 @@ Salome provides a vast specter of mesh modification and transformation operation
 * :ref:`Translate <translation_page>` in the indicated direction the mesh or some of its elements.
 * :ref:`Rotate <rotation_page>` by the indicated axis and angle the mesh or some of its elements.
 * :ref:`Scale <scale_page>` the mesh or some of its elements.
+* :ref:`Offset <offset_elements_page>` the entire mesh, the sub-mesh or a selection of elements based on filters.
 * :ref:`Mirror <symmetry_page>` the mesh through a point, a vector or a plane of symmetry.
 * :ref:`double_nodes_page`. Duplication of nodes can be useful to emulate a crack in the model.
 * :ref:`Merge Nodes<merging_nodes_page>` coincident within the indicated tolerance.
@@ -58,6 +59,7 @@ Salome provides a vast specter of mesh modification and transformation operation
    translation.rst
    rotation.rst
    scale.rst
+   offset_elements.rst
    symmetry.rst
    double_nodes_page.rst 
    sewing_meshes.rst

@@ -245,7 +245,7 @@ SMESHGUI_OffsetDlg::SMESHGUI_OffsetDlg( SMESHGUI* theModule ) :
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter(aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "Offset_page.html";
+  myHelpFileName = "offset_elements.html";
 
   Init();
 
