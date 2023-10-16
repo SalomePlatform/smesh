@@ -188,6 +188,12 @@ class SMDS_EXPORT SMDS_VolumeTool
   bool IsFreeFace(  int faceIndex, const SMDS_MeshElement** otherVol=0 ) const;
   // Fast check that only one volume is built on nodes of a given face
   // otherVol returns another volume sharing the given facet
+  // Function works for conforming mesh.
+
+  bool IsFreeFaceCheckAllNodes(  int faceIndex, const SMDS_MeshElement** otherVol=0 ) const;
+  // Check that only one volume is built on nodes of a given face
+  // otherVol returns another volume sharing the given facet
+  // Function to be used on mesh with non conforming elements. The face shared between 
 
   bool IsFreeFaceAdv(  int faceIndex, const SMDS_MeshElement** otherVol=0 ) const;
   // Thorough check that all volumes built on the face nodes lays on one side

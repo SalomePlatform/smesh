@@ -830,6 +830,17 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   myUseThresholdForInternalFaces = new QCheckBox( tr("USE_THRESHOLD_FOR_INTERNAL_FACES"), GroupC1 );
   argGroupLayout->addWidget( myUseThresholdForInternalFaces, row, 0, 1, 2 );
   row++;
+  mySetQuanta = new QCheckBox( tr("SET_QUANTA"), GroupC1 );
+  argGroupLayout->addWidget( mySetQuanta, row, 0, 1, 2 );
+  row++;
+
+  argGroupLayout->addWidget( new QLabel( tr("QUANTA_VALUE"), GroupC1 ), row, 0 );
+  myQuanta = new SMESHGUI_SpinBox( GroupC1 );
+  myQuanta->setAcceptNames( false );
+  myQuanta->RangeStepAndValidator( 1e-6, 1, 0.05, "length_precision" );
+  myQuanta->setEnabled(false);
+  argGroupLayout->addWidget( myQuanta, row, 1 );  
+  row++;
 
   // 3)  Grid definition
   QTabWidget* tabWdg = new QTabWidget( fr );
@@ -935,6 +946,7 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   connect( resetBtn,        SIGNAL( clicked(bool)),             SLOT( onResetAxes(bool)));
   connect( myConsiderInternalFaces,      SIGNAL( toggled(bool)),
            myUseThresholdForInternalFaces, SLOT( setEnabled(bool)));
+  connect( mySetQuanta,     SIGNAL( clicked(bool)), SLOT( onSetQuanta(bool)) );
   for ( int i = 0; i < 3; ++i )
   {
     connect( myXDirSpin[i], SIGNAL(valueChanged   (const QString&)),
@@ -1011,6 +1023,10 @@ void StdMeshersGUI_CartesianParamCreator::retrieveParams() const
   myCreateFaces->setChecked( h->GetToCreateFaces() );
   myConsiderInternalFaces->setChecked( h->GetToConsiderInternalFaces() );
   myUseThresholdForInternalFaces->setChecked( h->GetToUseThresholdForInternalFaces() );
+  mySetQuanta->setChecked( h->GetToUseQuanta() );
+  myQuanta->setValue( h->GetQuanta() );
+  if (h->GetToUseQuanta())
+    myQuanta->setEnabled(true);
 
   // grid definition
   for ( int ax = 0; ax < 3; ++ax )
@@ -1101,6 +1117,8 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
     h->SetToCreateFaces( myCreateFaces->isChecked() );
     h->SetToConsiderInternalFaces( myConsiderInternalFaces->isChecked() );
     h->SetToUseThresholdForInternalFaces( myUseThresholdForInternalFaces->isChecked() );
+    h->SetToUseQuanta( mySetQuanta->isChecked() );
+    h->SetQuanta( myQuanta->text().toDouble() );
 
     // grid
     for ( int ax = 0; ax < 3; ++ax )
@@ -1452,4 +1470,20 @@ void StdMeshersGUI_CartesianParamCreator::onGridModeChanged(int)
                        myAxisTabs[2]->isGridBySpacing() );
 
   myFixedPointGrp->setEnabled( haveSpacing );
+}
+
+//================================================================================
+/*!
+ * \brief Enable and disable quanta value combo box 
+ */
+//================================================================================
+
+void StdMeshersGUI_CartesianParamCreator::onSetQuanta(bool)
+{
+  StdMeshers::StdMeshers_CartesianParameters3D_var h =
+    StdMeshers::StdMeshers_CartesianParameters3D::_narrow( hypothesis() );
+  if ( h->_is_nil() )
+    return;
+
+  myQuanta->setEnabled( mySetQuanta->isChecked() );
 }

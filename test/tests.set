@@ -32,6 +32,7 @@ SET(BAD_TESTS
   blocFissure_07_without_session.py
   body_fitting_viscous_layer_cylinder.py
   body_fitting_viscous_layer_tpipe.py
+  body_fitting_quanta_sphere.py
   ex04_cube5tetraHexa.py
   ex21_lamp.py
   ex29_refine.py

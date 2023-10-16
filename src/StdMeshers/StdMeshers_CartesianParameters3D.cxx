@@ -67,7 +67,9 @@ StdMeshers_CartesianParameters3D::StdMeshers_CartesianParameters3D(int         h
     _toAddEdges( false ),
     _toConsiderInternalFaces( false ),
     _toUseThresholdForInternalFaces( false ),
-    _toCreateFaces( false )
+    _toCreateFaces( false ),
+    _toUseQuanta(false),
+    _quanta(0.01)
 {
   _name = "CartesianParameters3D"; // used by "Cartesian_3D"
   _param_algo_dim = 3; // 3D
@@ -775,6 +777,37 @@ void StdMeshers_CartesianParameters3D::SetToCreateFaces(bool toCreate)
 }
 
 //=======================================================================
+//function : SetToUseQuanta
+//purpose  : Enables use of quanta
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::SetToUseQuanta(bool toUseQuanta)
+{
+  if ( _toUseQuanta != toUseQuanta )
+  {
+    _toUseQuanta = toUseQuanta;
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=======================================================================
+//function : SetQuanta
+//purpose  : Set size quanta value
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::SetQuanta(const double quanta)
+{
+  if ( quanta < 1e-6 || quanta > 1.0 )
+    throw SALOME_Exception(LOCALIZED("Quanta must be in the range [0.01,1] "));
+
+  bool changed = (_quanta != quanta); 
+  _quanta = quanta;
+  
+  if ( changed )
+    NotifySubMeshesHypothesisModification();
+}
+
+//=======================================================================
 //function : IsDefined
 //purpose  : Return true if parameters are well defined
 //=======================================================================
@@ -823,7 +856,9 @@ std::ostream & StdMeshers_CartesianParameters3D::SaveTo(std::ostream & save)
 
   save << " " << _toConsiderInternalFaces
        << " " << _toUseThresholdForInternalFaces
-       << " " << _toCreateFaces;
+       << " " << _toCreateFaces
+       << " " << _toUseQuanta
+       << " " << _quanta;
 
   return save;
 }
@@ -888,6 +923,9 @@ std::istream & StdMeshers_CartesianParameters3D::LoadFrom(std::istream & load)
     load >> _toUseThresholdForInternalFaces;
     load >> _toCreateFaces;
   }
+
+  if ( load >> _toUseQuanta )
+    load >> _quanta;
 
   return load;
 }

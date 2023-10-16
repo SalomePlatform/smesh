@@ -469,7 +469,9 @@ namespace
     // index shift within _nodes of nodes of a cell from the 1st node
     int                _nodeShift[8];
 
-    vector< const SMDS_MeshNode* >    _nodes; // mesh nodes at grid nodes
+    vector< const SMDS_MeshNode* >    _nodes;          // mesh nodes at grid nodes
+    vector< const SMDS_MeshNode* >    _allBorderNodes; // mesh nodes between the bounding box and the geometry boundary
+
     vector< const F_IntersectPoint* > _gridIntP; // grid node intersection with geometry
     ObjectPool< E_IntersectPoint >    _edgeIntPool; // intersections with EDGEs
     ObjectPool< F_IntersectPoint >    _extIntPool; // intersections with extended INTERNAL FACEs
@@ -481,6 +483,8 @@ namespace
     bool                              _toConsiderInternalFaces;
     bool                              _toUseThresholdForInternalFaces;
     double                            _sizeThreshold;
+    bool                              _toUseQuanta;
+    double                            _quanta;
 
     SMESH_MesherHelper*               _helper;
 
@@ -691,7 +695,8 @@ namespace
     // --------------------------------------------------------------------------------
     struct _Node //!< node either at a hexahedron corner or at intersection
     {
-      const SMDS_MeshNode*    _node; // mesh node at hexahedron corner
+      const SMDS_MeshNode*    _node;        // mesh node at hexahedron corner
+      const SMDS_MeshNode*    _boundaryCornerNode; // missing mesh node due to hex truncation on the boundary
       const B_IntersectPoint* _intPoint;
       const _Face*            _usedInFace;
       char                    _isInternalFlags;
@@ -700,6 +705,8 @@ namespace
         :_node(n), _intPoint(ip), _usedInFace(0), _isInternalFlags(0) {} 
       const SMDS_MeshNode*    Node() const
       { return ( _intPoint && _intPoint->_node ) ? _intPoint->_node : _node; }
+      const SMDS_MeshNode*    BoundaryNode() const
+      { return _node ? _node : _boundaryCornerNode; }
       const E_IntersectPoint* EdgeIntPnt() const
       { return static_cast< const E_IntersectPoint* >( _intPoint ); }
       const F_IntersectPoint* FaceIntPnt() const
@@ -1882,6 +1889,7 @@ namespace
     const size_t nbGridNodes = _coords[0].size() * _coords[1].size() * _coords[2].size();
     vector< TGeomID > shapeIDVec( nbGridNodes, theUndefID );
     _nodes.resize( nbGridNodes, 0 );
+    _allBorderNodes.resize( nbGridNodes, 0 );
     _gridIntP.resize( nbGridNodes, NULL );
 
     SMESHDS_Mesh* mesh = helper.GetMeshDS();
@@ -1932,10 +1940,11 @@ namespace
               if ( ++nodeCoord <  coordEnd )
                 nodeParam = *nodeCoord - *coord0;
               else
-                break;
+                break;                
             }
             if ( nodeCoord == coordEnd ) break;
           }
+          
           // create a mesh node on a GridLine at ip if it does not coincide with a grid node
           if ( nodeParam > ip->_paramOnLine + _tol )
           {
@@ -1995,6 +2004,14 @@ namespace
             TopoDS_Vertex v;
             SetOnShape( _nodes[ nodeIndex ], *_gridIntP[ nodeIndex ], & v );
             UpdateFacesOfVertex( *_gridIntP[ nodeIndex ], v );
+          }
+          else if ( _toUseQuanta && !_allBorderNodes[ nodeIndex ] /*add all nodes outside the body. Used to reconstruct the hexahedrals when polys are not desired!*/)
+          {
+            gp_XYZ xyz = ( _coords[0][x] * _axes[0] +
+                           _coords[1][y] * _axes[1] +
+                           _coords[2][z] * _axes[2] );
+            _allBorderNodes[ nodeIndex ] = mesh->AddNode( xyz.X(), xyz.Y(), xyz.Z() );
+            mesh->SetNodeInVolume( _allBorderNodes[ nodeIndex ], shapeIDVec[ nodeIndex ]);
           }
         }
 
@@ -2668,11 +2685,16 @@ namespace
     {
       _hexNodes[iN]._isInternalFlags = 0;
 
+      // Grid  node 
       _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _grid->_nodeShift[iN] ];
       _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _grid->_nodeShift[iN] ];
 
+      if ( _grid->_allBorderNodes[ _origNodeInd + _grid->_nodeShift[iN] ] ) 
+        _hexNodes[iN]._boundaryCornerNode = _grid->_allBorderNodes [ _origNodeInd + _grid->_nodeShift[iN] ];
+      
       if ( _hexNodes[iN]._node && !solid->Contains( _hexNodes[iN]._node->GetShapeID() ))
         _hexNodes[iN]._node = 0;
+
       if ( _hexNodes[iN]._intPoint && !solid->ContainsAny( _hexNodes[iN]._intPoint->_faceIDs ))
         _hexNodes[iN]._intPoint = 0;
 
@@ -4808,6 +4830,7 @@ namespace
   {
     F_IntersectPoint noIntPnt;
     const bool toCheckNodePos = _grid->IsToCheckNodePos();
+    const bool useQuanta      = _grid->_toUseQuanta;
 
     int nbAdded = 0;
     // add elements resulted from hexahedron intersection
@@ -4854,28 +4877,40 @@ namespace
         }
       } // loop to get nodes
 
-      const SMDS_MeshElement* v = 0;
-      
+      const SMDS_MeshElement* v = 0;      
       if ( !volDef->_quantities.empty() )
-      {      
-        // split polyhedrons of with disjoint volumes
-        std::vector<std::vector<int>> splitQuantities;
-        std::vector<std::vector< const SMDS_MeshNode* > > splitNodes;
-        if ( checkPolyhedronValidity( volDef, splitQuantities, splitNodes ) == 1 )
+      {                      
+        if ( !useQuanta )
         {
-          v = addPolyhedronToMesh( volDef, helper, nodes, volDef->_quantities );
+          // split polyhedrons of with disjoint volumes
+          std::vector<std::vector<int>> splitQuantities;
+          std::vector<std::vector< const SMDS_MeshNode* > > splitNodes;
+          if ( checkPolyhedronValidity( volDef, splitQuantities, splitNodes ) == 1 )
+            v = addPolyhedronToMesh( volDef, helper, nodes, volDef->_quantities );
+          else
+          {
+            int counter = -1;
+            for (size_t id = 0; id < splitQuantities.size(); id++)
+            {
+              v = addPolyhedronToMesh( volDef, helper, splitNodes[ id ], splitQuantities[ id ] );
+              if ( id < splitQuantities.size()-1 )
+                volDef->_brotherVolume.push_back( v );
+              counter++;
+            }
+            nbAdded += counter;
+          }
         }
         else
         {
-          int counter = -1;
-          for (size_t id = 0; id < splitQuantities.size(); id++)
-          {
-            v = addPolyhedronToMesh( volDef, helper, splitNodes[ id ], splitQuantities[ id ] );
-            if ( id < splitQuantities.size()-1 )
-              volDef->_brotherVolume.push_back( v );
-            counter++;
-          }
-          nbAdded += counter;
+          const double quanta = _grid->_quanta;
+          double polyVol      = volDef->_size;
+          double hexaVolume   = _sideLength[0] * _sideLength[1] * _sideLength[2];          
+          if ( hexaVolume > 0.0 && polyVol/hexaVolume >= quanta /*set the volume if the relation is satisfied*/)
+            v = helper.AddVolume( _hexNodes[0].BoundaryNode(), _hexNodes[2].BoundaryNode(),
+                                  _hexNodes[3].BoundaryNode(), _hexNodes[1].BoundaryNode(),
+                                  _hexNodes[4].BoundaryNode(), _hexNodes[6].BoundaryNode(),
+                                  _hexNodes[7].BoundaryNode(), _hexNodes[5].BoundaryNode() );
+          
         }
       }
       else
@@ -4945,6 +4980,8 @@ namespace
   //================================================================================
   /*!
    * \brief Return true if the element is in a hole
+   * \remark consider a cell to be in a hole if all links in any direction
+   *          comes OUT of geometry
    */
   bool Hexahedron::isInHole() const
   {
@@ -5695,25 +5732,24 @@ namespace
     SMESH_MeshEditor::ElemFeatures face( SMDSAbs_Face );
     SMESHDS_Mesh* meshDS = helper.GetMeshDS();
 
+    bool isQuantaSet =  _grid->_toUseQuanta;    
     // check if there are internal or shared FACEs
     bool hasInternal = ( !_grid->_geometry.IsOneSolid() ||
-                         _grid->_geometry._soleSolid.HasInternalFaces() );
+                         _grid->_geometry._soleSolid.HasInternalFaces() );   
 
     for ( size_t iV = 0; iV < boundaryVolumes.size(); ++iV )
     {
       if ( !vTool.Set( boundaryVolumes[ iV ]))
         continue;
-
       TGeomID solidID = vTool.Element()->GetShapeID();
       Solid *   solid = _grid->GetOneOfSolids( solidID );
 
       // find boundary facets
-
       bndFacets.clear();
       for ( int iF = 0, n = vTool.NbFaces(); iF < n; iF++ )
       {
         const SMDS_MeshElement* otherVol;
-        bool isBoundary = vTool.IsFreeFace( iF, &otherVol );
+        bool isBoundary = isQuantaSet ? vTool.IsFreeFaceCheckAllNodes( iF, &otherVol ) : vTool.IsFreeFace( iF, &otherVol );
         if ( isBoundary )
         {
           bndFacets.push_back( iF );
@@ -5735,7 +5771,6 @@ namespace
         continue;
 
       // create faces
-
       if ( !vTool.IsPoly() )
         vTool.SetExternalNormal();
       for ( size_t i = 0; i < bndFacets.size(); ++i ) // loop on boundary facets
@@ -5763,7 +5798,7 @@ namespace
             if ( nn[ iN ]->GetPosition()->GetDim() == 2 )
               faceID = nn[ iN ]->GetShapeID();
           }
-          if ( faceID == 0 )
+          if ( faceID == 0 && !isQuantaSet /*if quanta is set boundary nodes at boundary does not coincide with any geometrical face */ )
             faceID = findCommonFace( face.myNodes, helper.GetMesh() );
 
           bool toCheckFace = faceID && (( !isBoundary ) ||
@@ -5780,7 +5815,7 @@ namespace
             // if ( !faceID && !isBoundary )
             //   continue;
           }
-          if ( !faceID && !isBoundary )
+          if ( !faceID && !isBoundary && !isQuantaSet )
             continue;
         }
 
@@ -6625,6 +6660,8 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     grid._toConsiderInternalFaces        = _hyp->GetToConsiderInternalFaces();
     grid._toUseThresholdForInternalFaces = _hyp->GetToUseThresholdForInternalFaces();
     grid._sizeThreshold                  = _hyp->GetSizeThreshold();
+    grid._toUseQuanta                    = _hyp->GetToUseQuanta();
+    grid._quanta                         = _hyp->GetQuanta();
     if ( _isComputeOffset )
     {
       grid._toAddEdges = true;
@@ -6761,6 +6798,15 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
         {
           nodesToRemove.push_back( grid._nodes[i] );
           grid._nodes[i]->setIsMarked( true );
+        }
+
+      for ( size_t i = 0; i < grid._allBorderNodes.size(); ++i )
+        if ( grid._allBorderNodes[i] &&
+             !grid._allBorderNodes[i]->IsNull() &&
+             grid._allBorderNodes[i]->NbInverseElements() == 0 )
+        {
+          nodesToRemove.push_back( grid._allBorderNodes[i] );
+          grid._allBorderNodes[i]->setIsMarked( true );
         }
 
       // do remove

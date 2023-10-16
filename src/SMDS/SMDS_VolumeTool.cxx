@@ -2139,6 +2139,52 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherV
 
 //================================================================================
 /*!
+ * \brief Check that only one volume is built on the face nodes
+ *        Different to IsFreeFace function, all nodes of the face are checked.
+ *        For non conforming meshes, the face that is not conform with the neighbor 
+ *        will be identify as free.
+ */
+//================================================================================
+
+bool SMDS_VolumeTool::IsFreeFaceCheckAllNodes( int faceIndex, const SMDS_MeshElement** otherVol/*=0*/ ) const
+{
+  const bool isFree = true;
+
+  if ( !setFace( faceIndex ))
+    return !isFree;
+
+  const SMDS_MeshNode** nodes = GetFaceNodes( faceIndex );
+
+  const int  di = myVolume->IsQuadratic() ? 2 : 1;
+  const int nbN = myCurFace.myNbNodes/di;
+  std::vector<bool> allNodesCoincideWithNeighbor(nbN,false);
+
+  for (int nodeId = 0; nodeId < nbN; nodeId++)
+  {
+    SMDS_ElemIteratorPtr eIt = nodes[nodeId]->GetInverseElementIterator( SMDSAbs_Volume );
+    int count = 0;
+    while ( eIt->more() )
+    {
+      const SMDS_MeshElement* vol = eIt->next();
+      if ( vol == myVolume )
+        continue;
+      else
+      {
+        count++;
+      }
+    }
+
+    if ( count==0 /*free corner in the face means free face*/)
+    {
+      if ( otherVol ) *otherVol = 0;
+      return true;
+    }
+  }
+  return IsFreeFace( faceIndex, otherVol );
+}
+
+//================================================================================
+/*!
  * \brief Thorough check that only one volume is built on the face nodes
  */
 //================================================================================
