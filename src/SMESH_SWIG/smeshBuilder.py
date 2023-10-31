@@ -462,7 +462,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             obj,name = name,obj
         return Mesh(self, self.geompyD, obj, name)
 
-    def ParallelMesh(self, obj, name=0, split_geom=True):
+    def ParallelMesh(self, obj, name=0, split_geom=True, mesher2D="NETGEN", mesher3D="NETGEN"):
         """
         Create a parallel mesh.
 
@@ -476,7 +476,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             an instance of class :class:`ParallelMesh`.
         """
         return ParallelMesh(self, self.geompyD, obj,
-                            split_geom=split_geom, name=name)
+                            split_geom=split_geom, name=name, mesher2D=mesher2D, mesher3D=mesher3D )
 
     def RemoveMesh( self, mesh ):
         """
@@ -7546,6 +7546,10 @@ class Mesh(metaclass = MeshMeta):
 
     pass # end of Mesh class
 
+def _copy_gmsh_param(dim, local_param, global_param):
+    if dim==3:
+        local_param.SetMaxSize(global_param.GetMaxSize())
+        local_param.SetMinSize(global_param.GetMinSize())        
 
 def _copy_netgen_param(dim, local_param, global_param):
     """
@@ -7780,7 +7784,7 @@ class ParallelMesh(Mesh):
     """
     Surcharge on Mesh for parallel computation of a mesh
     """
-    def __init__(self, smeshpyD, geompyD, geom, split_geom=True, name=0):
+    def __init__(self, smeshpyD, geompyD, geom, split_geom=True, name=0, mesher2D="NETGEN", mesher3D="NETGEN"):
         """
         Create a parallel mesh.
 
@@ -7815,14 +7819,31 @@ class ParallelMesh(Mesh):
             self._all_faces, self._solids = _split_geom(geompyD, geom_obj)
 
             order = []
-            self._algo2d = self.Triangle(geom=geom_obj, algo="NETGEN_2D")
-            self._algo3d = []
 
-            for solid_id, solid in enumerate(self._solids):
-                name = "Solid_{}".format(solid_id)
-                algo3d = self.Tetrahedron(geom=solid, algo="NETGEN_3D_Remote")
-                self._algo3d.append(algo3d)
+            if ( mesher2D == "NETGEN" ): #Default 2D mesher
+                self._algo2d = self.Triangle(geom=geom_obj, algo="NETGEN_2D")            
 
+            if ( mesher2D != "NETGEN" ):
+                #Means that we want to mesh face of solids in parallel and not the volume
+                self._algo2d = []
+                #For the moment use AutomaticLength based on finesse
+                self._algo1d = self.Segment().AutomaticLength(0.1)
+
+                for solid_id, solid in enumerate(self._solids):
+                    name = "Solid_{}".format(solid_id)
+                    algo2d = self.Triangle(geom=solid, algo="NETGEN_2D_Remote")
+                    self._algo2d.append(algo2d)
+            else:
+                self._algo3d = []
+                for solid_id, solid in enumerate(self._solids):
+                    name = "Solid_{}".format(solid_id)
+                    if ( mesher3D == "NETGEN" ):
+                        algo3d = self.Tetrahedron(geom=solid, algo="NETGEN_3D_Remote")
+                        self._algo3d.append(algo3d)
+                    elif ( mesher3D == "GMSH" ):
+                        algo3d = self.Tetrahedron(geom=solid, algo="GMSH_3D_Remote")
+                        self._algo3d.append(algo3d)
+                        
         self._param = None
 
 
@@ -7856,7 +7877,7 @@ class ParallelMesh(Mesh):
             raise Exception("You need to set Parallelism method first (SetParallelismMethod)")
         return self._param
 
-    def AddGlobalHypothesis(self, hyp):
+    def AddGlobalHypothesis(self, hyp, mesher="NETGEN"):
         """
         Split hypothesis to apply it to all the submeshes:
         - the 1D+2D
@@ -7868,14 +7889,16 @@ class ParallelMesh(Mesh):
         """
         if not isinstance(hyp, NETGENPlugin._objref_NETGENPlugin_Hypothesis):
             raise ValueError("param must come from NETGENPlugin")
-
-        param2d = self._algo2d.Parameters()
+        
+        param2d = self._algo2d.Parameters()        
         _copy_netgen_param(2, param2d, hyp)
-
+     
         for algo3d in self._algo3d:
-
             param3d = algo3d.Parameters()
-            _copy_netgen_param(3, param3d, hyp)
+            if ( mesher == "NETGEN" ):
+                _copy_netgen_param(3, param3d, hyp)
+            elif( mesher == "GMSH" ):
+                _copy_gmsh_param(3, param3d, hyp)
 
 
     pass # End of ParallelMesh

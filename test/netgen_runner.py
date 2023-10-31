@@ -59,18 +59,24 @@ def test_netgen3d():
     box = geompy.MakeBoxDXDYDZ(200, 200, 200)
 
     geompy.ExtractShapes(box, geompy.ShapeType["FACE"], True)
-    groupe_1 = geompy.CreateGroup(box, geompy.ShapeType["FACE"])
+    groupe_1 = geompy.CreateGroup(box, geompy.ShapeType["FACE"] )
     geompy.UnionIDs(groupe_1, [3, 13, 23, 27, 31, 33])
 
     [_, _, _, _, _, _, groupe_1] = geompy.GetExistingSubObjects(box, False)
+    
+    shape_faces = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])
+    oneFace = shape_faces[0]
 
     # Creating 2D mesh
     netgen_2d_parameters_1 = smesh.CreateHypothesisByAverageLength(
         'NETGEN_Parameters_2D', 'NETGENEngine', 34.641, 0)
-    mesh_2d = smesh.Mesh(groupe_1, 'Maillage_1')
-    mesh_2d.AddHypothesis(groupe_1, netgen_2d_parameters_1)
+    
+    mesh_2d = smesh.Mesh(box, 'Maillage_1')
+    mesh_2d.AddHypothesis(box, netgen_2d_parameters_1)
+
     mesh_2d.Triangle(algo=smeshBuilder.NETGEN_1D2D)
     isDone = mesh_2d.Compute()
+
     if not isDone:
         raise Exception("Error when computing Mesh")
 

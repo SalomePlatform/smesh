@@ -407,9 +407,9 @@ bool SMESH_Gen::parallelComputeSubMeshes(
         case TopAbs_FACE:
           file_name = "Mesh2D.med";
           break;
-        //case TopAbs_EDGE:
-        //  file_name = "Mesh1D.med";
-        //  break;
+        case TopAbs_EDGE:
+          file_name = "Mesh1D.med";
+          break;
         //case TopAbs_VERTEX:
         //  file_name = "Mesh0D.med";
         //  break;

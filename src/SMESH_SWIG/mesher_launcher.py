@@ -30,7 +30,7 @@ from argparse import ArgumentParser
 import pydefx
 import pylauncher
 
-MESHER_HANDLED = ["NETGEN3D"]
+MESHER_HANDLED = ["NETGEN3D","NETGEN2D","NETGEN1D","NETGEN1D2D","NETGEN1D2D","GMSH3D"]
 
 CMD_TEMPLATE = \
 """{runner} {mesher} {mesh_file} {shape_file} {param_file} {elem_orientation_file} {new_element_file} {output_mesh_file} > {log_file} 2>&1"""
@@ -94,11 +94,16 @@ def get_runner(mesher):
     else:
         ext = ""
 
-    if mesher in ['NETGEN3D']:
+    if mesher in ['NETGEN3D','NETGEN2D','NETGEN1D','NETGEN1D2D','NETGEN1D2D']:
         exe_path = path.join("${NETGENPLUGIN_ROOT_DIR}",
                              "bin",
                              "salome",
                              "NETGENPlugin_Runner"+ext)
+    elif mesher in ['GMSH3D']:
+        exe_path = path.join("${GMSHPLUGIN_ROOT_DIR}",
+                             "bin",
+                             "salome",
+                             "GMSHPlugin_Runner"+ext)
     else:
         raise Exception("Mesher {mesher} is not handled".format(mesher=mesher))
 
@@ -106,7 +111,6 @@ def get_runner(mesher):
 
 def run_local(args):
     """ Simple Local run """
-    print("Local run")
     #TODO: Check on how to handle log for windows (through sp.check_output)
     cmd = CMD_TEMPLATE.format(\
         runner=get_runner(args.mesher),

@@ -68,6 +68,9 @@ SET(BAD_TESTS
   SMESH_create_dual_mesh_adapt.py
   SMESH_create_dual_mesh_tpipe.py
   netgen_runner.py
+  netgen_runner_2D.py
+  netgen_runner_1D2D3D.py
+  gmsh_runner.py
   test_import_1D2D_with_tetras_and_pyras.py
   )
 

@@ -133,7 +133,9 @@ SET(BAD_TESTS
   viewing_meshes_ex01.py
   radial_prism_3d_algo.py
   create_dual_mesh.py
-  creating_parallel_mesh.py
+  creating_parallel_mesh.py  
+  creating_parallel_gmsh_mesh.py
+  creating_parallel_2D_mesh.py
   )
 IF(NOT WIN32)
   LIST(APPEND BAD_TESTS
