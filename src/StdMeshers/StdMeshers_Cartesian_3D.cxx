@@ -938,6 +938,7 @@ namespace
       TGeomID                 _solidID;
       double                  _size;
       const SMDS_MeshElement* _volume; // new volume
+      std::vector<const SMDS_MeshElement*> _brotherVolume; // produced due to poly split 
 
       vector< SMESH_Block::TShapeID > _names; // name of side a polygon originates from
 
@@ -1069,6 +1070,10 @@ namespace
     bool isInHole() const;
     bool hasStrangeEdge() const;
     bool checkPolyhedronSize( bool isCutByInternalFace, double & volSize ) const;
+    int checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::vector<int>>& splitQuantities, 
+                                  std::vector<std::vector<const SMDS_MeshNode*>>& splitNodes );
+    const SMDS_MeshElement* addPolyhedronToMesh( _volumeDef* volDef,  SMESH_MesherHelper& helper, const std::vector<const SMDS_MeshNode*>& nodes, 
+                                                const std::vector<int>& quantities );
     bool addHexa ();
     bool addTetra();
     bool addPenta();
@@ -3556,7 +3561,6 @@ namespace
     _volumeDefs._nodes.clear();
     _volumeDefs._quantities.clear();
     _volumeDefs._names.clear();
-
     // create a classic cell if possible
 
     int nbPolygons = 0;
@@ -4851,26 +4855,27 @@ namespace
       } // loop to get nodes
 
       const SMDS_MeshElement* v = 0;
+      
       if ( !volDef->_quantities.empty() )
-      {
-        v = helper.AddPolyhedralVolume( nodes, volDef->_quantities );
-        volDef->_size = SMDS_VolumeTool( v ).GetSize();
-        if ( volDef->_size < 0 ) // invalid polyhedron
+      {      
+        // split polyhedrons of with disjoint volumes
+        std::vector<std::vector<int>> splitQuantities;
+        std::vector<std::vector< const SMDS_MeshNode* > > splitNodes;
+        if ( checkPolyhedronValidity( volDef, splitQuantities, splitNodes ) == 1 )
         {
-          if ( ! SMESH_MeshEditor( helper.GetMesh() ).Reorient( v ) || // try to fix
-               SMDS_VolumeTool( v ).GetSize() < 0 )
+          v = addPolyhedronToMesh( volDef, helper, nodes, volDef->_quantities );
+        }
+        else
+        {
+          int counter = -1;
+          for (size_t id = 0; id < splitQuantities.size(); id++)
           {
-            helper.GetMeshDS()->RemoveFreeElement( v, /*sm=*/nullptr, /*fromGroups=*/false );
-            v = nullptr;
-            //_hasTooSmall = true;
-
-            if (SALOME::VerbosityActivated())
-            {
-              std::cout << "Remove INVALID polyhedron, _cellID = " << _cellID
-                        << " ijk = ( " << _i << " " << _j << " " << _k << " ) "
-                        << " solid " << volDef->_solidID << std::endl;
-            }
+            v = addPolyhedronToMesh( volDef, helper, splitNodes[ id ], splitQuantities[ id ] );
+            if ( id < splitQuantities.size()-1 )
+              volDef->_brotherVolume.push_back( v );
+            counter++;
           }
+          nbAdded += counter;
         }
       }
       else
@@ -4928,6 +4933,10 @@ namespace
       if ( volDef->_volume )
       {
         helper.GetMeshDS()->SetMeshElementOnShape( volDef->_volume, volDef->_solidID );
+        for (auto broVol : volDef->_brotherVolume )
+        {
+          helper.GetMeshDS()->SetMeshElementOnShape( broVol, volDef->_solidID );
+        }
       }
     }
 
@@ -5077,6 +5086,159 @@ namespace
 
     return volume > initVolume / _grid->_sizeThreshold;
   }
+
+  //================================================================================
+  /*!
+   * \brief Check that all faces in polyhedron are connected so a unique volume is defined.
+   *        We test that it is possible to go from any node to all nodes in the polyhedron.
+   *        The set of nodes that can be visit within then defines a unique element.
+   *        In case more than one polyhedron is detected. The function return the set of quantities and nodes defining separates elements.
+   *        Reference to issue #bos[38521][EDF] Generate polyhedron with separate volume.
+   */
+  int Hexahedron::checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::vector<int>>& splitQuantities, 
+                                           std::vector<std::vector<const SMDS_MeshNode*>>& splitNodes )
+  {  
+    int mySet = 1;
+    std::map<int,int> numberOfSets; // define set id with the number of faces associated!
+    if ( !volDef->_quantities.empty() )
+    {
+      auto connectivity = volDef->_quantities;
+      int accum = 0;
+      std::vector<bool> allFaces( connectivity.size(), false );
+      std::set<int> elementSet;
+      allFaces[ 0 ] = true; // the first node below to the first face
+      size_t connectedFaces = 1;
+      // Start filling the set with the nodes of the first face
+      splitQuantities.push_back( { connectivity[ 0 ] } );
+      splitNodes.push_back( { volDef->_nodes[ 0 ].Node() } );
+      elementSet.insert( volDef->_nodes[ 0 ].Node()->GetID() );
+      for (int n = 1; n < connectivity[ 0 ]; n++)
+      {
+        elementSet.insert( volDef->_nodes[ n ].Node()->GetID() );
+        splitNodes.back().push_back( volDef->_nodes[ n ].Node() );
+      }
+      
+      numberOfSets.insert( std::pair<int,int>(mySet,1) );
+      while ( connectedFaces != allFaces.size() )
+      {
+        for (size_t innerId = 1; innerId < connectivity.size(); innerId++)
+        {
+          if ( innerId == 1 )
+            accum = connectivity[ 0 ];
+
+          if ( !allFaces[ innerId ] )
+          {
+            int faceCounter = 0;
+            for (int n = 0; n < connectivity[ innerId ]; n++)
+            {
+              int nodeId = volDef->_nodes[ accum + n ].Node()->GetID();
+              if ( elementSet.count( nodeId ) != 0 ) 
+                faceCounter++;
+            }
+            if ( faceCounter >= 2 ) // found coincidences nodes
+            {
+              for (int n = 0; n < connectivity[ innerId ]; n++)
+              {
+                int nodeId = volDef->_nodes[ accum + n ].Node()->GetID();
+                // insert new nodes so other faces can be identified as belowing to the element
+                splitNodes.back().push_back( volDef->_nodes[ accum + n ].Node() );
+                elementSet.insert( nodeId );
+              }
+              allFaces[ innerId ] = true;
+              splitQuantities.back().push_back( connectivity[ innerId ] );
+              numberOfSets[ mySet ]++;
+              connectedFaces++;
+              innerId = 0; // to restart searching!
+            }
+          }
+          accum += connectivity[ innerId ];
+        }
+
+        if ( connectedFaces != allFaces.size() )
+        {
+          // empty the set, and fill it with nodes of a unvisited face!
+          elementSet.clear();
+          accum = connectivity[ 0 ];
+          for (size_t faceId = 1; faceId < connectivity.size(); faceId++)
+          {
+            if ( !allFaces[ faceId ] )
+            {
+              splitNodes.push_back( { volDef->_nodes[ accum ].Node() } );
+              elementSet.insert( volDef->_nodes[ accum ].Node()->GetID() );
+              for (int n = 1; n < connectivity[ faceId ]; n++)
+              {
+                elementSet.insert( volDef->_nodes[ accum + n ].Node()->GetID() );
+                splitNodes.back().push_back( volDef->_nodes[ accum + n ].Node() );
+              }
+
+              splitQuantities.push_back( { connectivity[ faceId ] } );
+              allFaces[ faceId ] = true;
+              connectedFaces++;
+              break;
+            }
+            accum += connectivity[ faceId ];
+          }
+          mySet++;
+          numberOfSets.insert( std::pair<int,int>(mySet,1) );
+        }
+      }
+
+      if ( numberOfSets.size() > 1 )
+      {
+        bool allMoreThan2Faces = true;
+        for( auto k : numberOfSets )
+        {
+          if ( k.second <= 2 )
+            allMoreThan2Faces &= false;
+        }
+        
+        if ( allMoreThan2Faces )
+        {        
+          // The separate objects are suspect to be closed
+          return numberOfSets.size();        
+        }
+        else
+        {
+          // Have to index the last face nodes to the final set
+          // contrary case return as it were a valid polyhedron for backward compatibility
+          return 1;  
+        }
+      }
+    }
+    return numberOfSets.size();
+  }
+
+  
+  //================================================================================
+  /*!
+   * \brief add original or separated polyhedrons to the mesh
+   */
+  const SMDS_MeshElement* Hexahedron::addPolyhedronToMesh( _volumeDef* volDef,  SMESH_MesherHelper& helper, const std::vector<const SMDS_MeshNode*>& nodes, 
+                                                            const std::vector<int>& quantities )
+  {
+    const SMDS_MeshElement* v = helper.AddPolyhedralVolume( nodes, quantities );
+
+    volDef->_size = SMDS_VolumeTool( v ).GetSize();
+    if ( volDef->_size < 0 ) // invalid polyhedron
+    {
+      if ( ! SMESH_MeshEditor( helper.GetMesh() ).Reorient( v ) || // try to fix
+          SMDS_VolumeTool( v ).GetSize() < 0 )
+      {
+        helper.GetMeshDS()->RemoveFreeElement( v, /*sm=*/nullptr, /*fromGroups=*/false );
+        v = nullptr;
+        //_hasTooSmall = true;
+
+        if (SALOME::VerbosityActivated())
+        {
+          std::cout << "Remove INVALID polyhedron, _cellID = " << _cellID
+                    << " ijk = ( " << _i << " " << _j << " " << _k << " ) "
+                    << " solid " << volDef->_solidID << std::endl;
+        }
+      }
+    }
+    return v;
+  }
+
   //================================================================================
   /*!
    * \brief Tries to create a hexahedron
@@ -5816,6 +5978,14 @@ namespace
         if ( _grid->IsToCheckNodePos() ) // un-mark nodes marked in addVolumes()
           for ( size_t iN = 0; iN < volDef->_nodes.size(); ++iN )
             volDef->_nodes[iN].Node()->setIsMarked( false );
+      }
+      if ( volDef->_brotherVolume.size() > 0 )
+      {
+        for (auto _bro : volDef->_brotherVolume )
+        {
+          _bro->setIsMarked( true );
+          boundaryElems.push_back( _bro );
+        }        
       }
     }
   }
