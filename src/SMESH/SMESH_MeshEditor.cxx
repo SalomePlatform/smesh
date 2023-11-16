@@ -62,6 +62,8 @@
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
 #include <Precision.hxx>
+#include <ShapeAnalysis.hxx>
+#include <ShapeAnalysis_Curve.hxx>
 #include <TColStd_ListOfInteger.hxx>
 #include <TopAbs_State.hxx>
 #include <TopExp.hxx>
@@ -3850,6 +3852,68 @@ void SMESH_MeshEditor::GetLinkedNodes( const SMDS_MeshNode* theNode,
 }
 
 //=======================================================================
+//function : averageBySurface
+//purpose  : Auxiliar function to treat properly nodes in periodic faces in the laplacian smoother
+//=======================================================================
+void averageBySurface( const Handle(Geom_Surface)& theSurface, const SMDS_MeshNode* refNode, 
+                        TIDSortedElemSet& nodeSet, map< const SMDS_MeshNode*, gp_XY* >& theUVMap, double * coord )
+{
+  if ( theSurface.IsNull() ) 
+  {
+    TIDSortedElemSet::iterator nodeSetIt = nodeSet.begin();
+    for ( ; nodeSetIt != nodeSet.end(); nodeSetIt++ ) 
+    {
+      const SMDS_MeshNode* node = cast2Node(*nodeSetIt);
+      coord[0] += node->X();
+      coord[1] += node->Y();
+      coord[2] += node->Z();
+    }
+  }
+  else
+  {
+    Standard_Real Umin,Umax,Vmin,Vmax;
+    theSurface->Bounds( Umin, Umax, Vmin, Vmax );
+    ASSERT( theUVMap.find( refNode ) != theUVMap.end() );
+    gp_XY* nodeUV = theUVMap[ refNode ];
+    Standard_Real uref = nodeUV->X();
+    Standard_Real vref = nodeUV->Y();
+
+    TIDSortedElemSet::iterator nodeSetIt = nodeSet.begin();
+    for ( ; nodeSetIt != nodeSet.end(); nodeSetIt++ ) 
+    {
+      const SMDS_MeshNode* node = cast2Node(*nodeSetIt);
+      ASSERT( theUVMap.find( node ) != theUVMap.end() );
+      gp_XY* uv = theUVMap[ node ];    
+
+      if ( theSurface->IsUPeriodic() || theSurface->IsVPeriodic() )  
+      {          
+        Standard_Real u          = uv->X();
+        Standard_Real v          = uv->Y();                      
+        Standard_Real uCorrected = u;
+        Standard_Real vCorrected = v;
+        bool isUTobeCorrected = (std::fabs( uref - u ) >= 0.7 * std::fabs( Umax - Umin ));
+        bool isVTobeCorrected = (std::fabs( vref - v ) >= 0.7 * std::fabs( Vmax - Vmin ));
+
+        if( isUTobeCorrected  )
+          uCorrected = uref > u ? Umax + std::fabs(Umin - u) : Umin - std::fabs(Umax - u);
+
+        if( isVTobeCorrected )
+          vCorrected = vref > v ? Vmax + std::fabs(Vmin - v) : Vmin - std::fabs(Vmax - v);
+        
+        coord[0] += uCorrected;
+        coord[1] += vCorrected;
+
+      }
+      else
+      {
+        coord[0] += uv->X();
+        coord[1] += uv->Y();
+      }
+    }   
+  }
+}
+
+//=======================================================================
 //function : laplacianSmooth
 //purpose  : pulls theNode toward the center of surrounding nodes directly
 //           connected to that node along an element edge
@@ -3865,26 +3929,14 @@ void laplacianSmooth(const SMDS_MeshNode*                 theNode,
   SMESH_MeshEditor::GetLinkedNodes( theNode, nodeSet, SMDSAbs_Face );
 
   // compute new coodrs
+  double coord[] = { 0., 0., 0. };  
 
-  double coord[] = { 0., 0., 0. };
-  TIDSortedElemSet::iterator nodeSetIt = nodeSet.begin();
-  for ( ; nodeSetIt != nodeSet.end(); nodeSetIt++ ) {
-    const SMDS_MeshNode* node = cast2Node(*nodeSetIt);
-    if ( theSurface.IsNull() ) { // smooth in 3D
-      coord[0] += node->X();
-      coord[1] += node->Y();
-      coord[2] += node->Z();
-    }
-    else { // smooth in 2D
-      ASSERT( theUVMap.find( node ) != theUVMap.end() );
-      gp_XY* uv = theUVMap[ node ];
-      coord[0] += uv->X();
-      coord[1] += uv->Y();
-    }
-  }
+  averageBySurface( theSurface, theNode, nodeSet, theUVMap, coord );
+
   int nbNodes = nodeSet.size();
   if ( !nbNodes )
     return;
+
   coord[0] /= nbNodes;
   coord[1] /= nbNodes;
 
@@ -3894,7 +3946,7 @@ void laplacianSmooth(const SMDS_MeshNode*                 theNode,
     gp_Pnt p3d = theSurface->Value( coord[0], coord[1] );
     coord[0] = p3d.X();
     coord[1] = p3d.Y();
-    coord[2] = p3d.Z();
+    coord[2] = p3d.Z();    
   }
   else
     coord[2] /= nbNodes;
@@ -3902,6 +3954,72 @@ void laplacianSmooth(const SMDS_MeshNode*                 theNode,
   // move node
 
   const_cast< SMDS_MeshNode* >( theNode )->setXYZ(coord[0],coord[1],coord[2]);
+}
+
+//=======================================================================
+//function : correctTheValue
+//purpose  : Given a boundaries of parametric space determine if the node coordinate (u,v) need correction 
+//            based on the reference coordinate (uref,vref)
+//=======================================================================
+void correctTheValue( Standard_Real Umax, Standard_Real Umin, Standard_Real Vmax, Standard_Real Vmin, 
+                        Standard_Real uref, Standard_Real vref, Standard_Real &u, Standard_Real &v  )
+{
+  bool isUTobeCorrected = (std::fabs( uref - u ) >= 0.7 * std::fabs( Umax - Umin ));
+  bool isVTobeCorrected = (std::fabs( vref - v ) >= 0.7 * std::fabs( Vmax - Vmin ));
+  if ( isUTobeCorrected )
+    u = std::fabs(u-Umin) < 1e-7 ? Umax : Umin;            
+  if ( isVTobeCorrected )
+    v = std::fabs(v-Vmin) < 1e-7 ? Vmax : Vmin;
+}
+
+//=======================================================================
+//function : averageByElement
+//purpose  : Auxiliar function to treat properly nodes in periodic faces in the centroidal smoother
+//=======================================================================
+void averageByElement( const Handle(Geom_Surface)& theSurface, const SMDS_MeshNode* refNode, const SMDS_MeshElement* elem,
+                        map< const SMDS_MeshNode*, gp_XY* >& theUVMap, SMESH::Controls::TSequenceOfXYZ& aNodePoints, 
+                        gp_XYZ& elemCenter )
+{
+  int nn = elem->NbNodes();
+  if(elem->IsQuadratic()) nn = nn/2;
+  int i=0;
+  SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+  Standard_Real Umin,Umax,Vmin,Vmax;
+  while ( i<nn ) 
+  {
+    const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>( itN->next() );
+    i++;
+    gp_XYZ aP( aNode->X(), aNode->Y(), aNode->Z() );
+    aNodePoints.push_back( aP );
+    if ( !theSurface.IsNull() ) // smooth in 2D
+    { 
+      ASSERT( theUVMap.find( aNode ) != theUVMap.end() );
+      gp_XY* uv = theUVMap[ aNode ];
+
+      if ( theSurface->IsUPeriodic() || theSurface->IsVPeriodic() )  
+      {  
+        theSurface->Bounds( Umin, Umax, Vmin, Vmax );
+        Standard_Real u          = uv->X();
+        Standard_Real v          = uv->Y();   
+        bool isSingularPoint     = std::fabs(u - Umin) < 1e-7 || std::fabs(v - Vmin) < 1e-7 || std::fabs(u - Umax) < 1e-7 || std::fabs( v - Vmax ) < 1e-7;
+        if ( !isSingularPoint )
+        {
+          aP.SetCoord( uv->X(), uv->Y(), 0. );
+        }
+        else
+        {
+          gp_XY* refPoint = theUVMap[ refNode ];
+          Standard_Real uref = refPoint->X();
+          Standard_Real vref = refPoint->Y();
+          correctTheValue( Umax, Umin, Vmax, Vmin, uref, vref, u, v ); 
+          aP.SetCoord( u, v, 0. );
+        }        
+      }
+      else
+        aP.SetCoord( uv->X(), uv->Y(), 0. );
+    }    
+    elemCenter += aP;   
+  }
 }
 
 //=======================================================================
@@ -3918,48 +4036,46 @@ void centroidalSmooth(const SMDS_MeshNode*                 theNode,
   SMESH::Controls::Area anAreaFunc;
   double totalArea = 0.;
   int nbElems = 0;
-
   // compute new XYZ
-
+  bool notToMoveNode = false;
+  // Do not correct singular nodes
+  if ( !theSurface.IsNull() && (theSurface->IsUPeriodic() || theSurface->IsVPeriodic()) )
+  { 
+    Standard_Real Umin,Umax,Vmin,Vmax;
+    theSurface->Bounds( Umin, Umax, Vmin, Vmax );
+    gp_XY* uv = theUVMap[ theNode ];
+    Standard_Real u = uv->X();
+    Standard_Real v = uv->Y();   
+    notToMoveNode = std::fabs(u - Umin) < 1e-7 || std::fabs(v - Vmin) < 1e-7 || std::fabs(u - Umax) < 1e-7 || std::fabs( v - Vmax ) < 1e-7;
+  }
+  
   SMDS_ElemIteratorPtr elemIt = theNode->GetInverseElementIterator(SMDSAbs_Face);
-  while ( elemIt->more() )
+  while ( elemIt->more() && !notToMoveNode )
   {
     const SMDS_MeshElement* elem = elemIt->next();
     nbElems++;
 
     gp_XYZ elemCenter(0.,0.,0.);
     SMESH::Controls::TSequenceOfXYZ aNodePoints;
-    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
     int nn = elem->NbNodes();
     if(elem->IsQuadratic()) nn = nn/2;
-    int i=0;
-    //while ( itN->more() ) {
-    while ( i<nn ) {
-      const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>( itN->next() );
-      i++;
-      gp_XYZ aP( aNode->X(), aNode->Y(), aNode->Z() );
-      aNodePoints.push_back( aP );
-      if ( !theSurface.IsNull() ) { // smooth in 2D
-        ASSERT( theUVMap.find( aNode ) != theUVMap.end() );
-        gp_XY* uv = theUVMap[ aNode ];
-        aP.SetCoord( uv->X(), uv->Y(), 0. );
-      }
-      elemCenter += aP;
-    }
+    averageByElement( theSurface, theNode, elem, theUVMap, aNodePoints, elemCenter );
+
     double elemArea = anAreaFunc.GetValue( aNodePoints );
     totalArea += elemArea;
     elemCenter /= nn;
     aNewXYZ += elemCenter * elemArea;
   }
   aNewXYZ /= totalArea;
-  if ( !theSurface.IsNull() ) {
+  
+  if ( !theSurface.IsNull() && !notToMoveNode ) {
     theUVMap[ theNode ]->SetCoord( aNewXYZ.X(), aNewXYZ.Y() );
     aNewXYZ = theSurface->Value( aNewXYZ.X(), aNewXYZ.Y() ).XYZ();
   }
 
   // move node
-
-  const_cast< SMDS_MeshNode* >( theNode )->setXYZ(aNewXYZ.X(),aNewXYZ.Y(),aNewXYZ.Z());
+  if ( !notToMoveNode )
+    const_cast< SMDS_MeshNode* >( theNode )->setXYZ(aNewXYZ.X(),aNewXYZ.Y(),aNewXYZ.Z());
 }
 
 //=======================================================================
@@ -4262,7 +4378,8 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         if ( !BRep_Tool::IsClosed( edge, face ))
           continue;
         SMESHDS_SubMesh* sm = aMesh->MeshElements( edge );
-        if ( !sm ) continue;
+        if ( !sm )
+          continue;
         // find out which parameter varies for a node on seam
         double f,l;
         gp_Pnt2d uv1, uv2;
