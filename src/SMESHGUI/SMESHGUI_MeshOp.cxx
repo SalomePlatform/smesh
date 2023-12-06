@@ -2631,7 +2631,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess, QStringList& theEntry
 
   _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh.in());
   if (aMeshSO) {
-    SMESH::SetName(aMeshSO, myDlg->objectText(SMESHGUI_MeshDlg::Obj));
+    if (aSubMeshVar->_is_nil()) SMESH::SetName(aMeshSO, myDlg->objectText(SMESHGUI_MeshDlg::Obj));
     theEntryList.append(aMeshSO->GetID().c_str());
   }
 
