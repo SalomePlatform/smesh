@@ -1270,15 +1270,15 @@ module StdMeshers
     void SetTotalThickness(in double thickness) raises (SALOME::SALOME_Exception);
     void SetNumberLayers(in short numberOfLayers ) raises (SALOME::SALOME_Exception);
     void SetStretchFactor(in double strechFactor ) raises (SALOME::SALOME_Exception);
-    void SetMethod( in VLExtrusionMethod how );
-    void SetGroupName(in string name);
+    void SetMethod( in VLExtrusionMethod how ) raises (SALOME::SALOME_Exception);
+    void SetGroupName(in string name) raises (SALOME::SALOME_Exception);
 
-    GEOM::GEOM_Object GetShrinkGeometry( in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject );
+    GEOM::GEOM_Object GetShrinkGeometry( in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject ) raises (SALOME::SALOME_Exception);
 
     /*!
      * Build the prismatic layer from the shrink mesh
      */
-    boolean AddLayers( in SMESH::SMESH_Mesh sourceMesh, in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject );
+    boolean AddLayers( in SMESH::SMESH_Mesh sourceMesh, in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject ) raises (SALOME::SALOME_Exception);
 
   };
 
