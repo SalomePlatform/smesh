@@ -244,11 +244,12 @@ def run_pylauncher(args):
     del_tmp_folder = True
     try:
        val = int(environ.get("SMESH_KEEP_TMP", "0"))
-       del_tmp_folder = val > 0
+       del_tmp_folder = val < 0
     except Exception as e:
         del_tmp_folder = True
 
-    launcher.clearJobWorkingDir(job_id)
+    if del_tmp_folder:
+        launcher.clearJobWorkingDir(job_id)
 
 def def_arg():
     """ Define and parse arguments for the script """

@@ -61,7 +61,6 @@ SMESH_ParallelMesh::~SMESH_ParallelMesh()
 void SMESH_ParallelMesh::cleanup()
 {
   DeletePoolThreads();
-  std::cout << "Keeping tmp folder" << keepingTmpFolfer() << std::endl;
   if(!keepingTmpFolfer())
   {
     MESSAGE("Set SMESH_KEEP_TMP to > 0 to keep temporary folders")
@@ -78,7 +77,6 @@ void SMESH_ParallelMesh::cleanup()
 bool SMESH_ParallelMesh::keepingTmpFolfer()
 {
   const char* envVar = std::getenv("SMESH_KEEP_TMP");
-  std::cout << "smesh_keep_tmp: " << envVar << std::endl;
 
   if (envVar && (envVar[0] != '\0'))
   {
