@@ -1292,6 +1292,7 @@ void SMESHGUI_MeshOp::createHypothesis(const int      theDim,
       initHypCreator( aCreator );
 
       myDlg->setEnabled( false );
+      myDlg->hide();
       aCreator->create(initParamHyp, aHypName, myDlg, this, SLOT( onHypoCreated( int ) ) );
       dialog = true;
     }
@@ -1323,6 +1324,7 @@ void SMESHGUI_MeshOp::onHypoCreated( int result )
     int obj = myDlg->getActiveObject();
     onActivateObject( obj ); // Issue 0020170. Restore filters
     myDlg->setEnabled( true );
+    myDlg->show();
   }
 
   _PTR(SComponent) aFather = SMESH::getStudy()->FindComponent("SMESH");
@@ -1379,6 +1381,7 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
 
     removeCustomFilters(); // Issue 0020170
     myDlg->setEnabled( false );
+    myDlg->hide();
 
     aCreator->edit( aHyp.in(), aHypItem.second, dlg(), this, SLOT( onHypoEdited( int ) ) );
   }
@@ -1397,6 +1400,7 @@ void SMESHGUI_MeshOp::onHypoEdited( int /*result*/ )
   int obj = myDlg->getActiveObject();
   onActivateObject( obj ); // Issue 0020170. Restore filters
   myDlg->setEnabled( true );
+  myDlg->show();
 }
 
 //================================================================================
