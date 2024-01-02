@@ -60,19 +60,13 @@ smesh = smeshBuilder.New()
 print("Creating Parallel Mesh")
 par_mesh = smesh.ParallelMesh(rubik_cube, name="par_mesh", mesher3D="GMSH")
 
-print("Creating hypoehtesis for netgen")
-NETGEN_3D_Parameters_1 = smesh.CreateHypothesisByAverageLength( 'NETGEN_Parameters',
-                                         'NETGENEngine', 34.641, 0 )
+print("Creating hypoehtesis for gmsh")
+GMSH_3D_Parameters_1 = smesh.CreateHypothesis( 'GMSH_Parameters',
+                                         'libGMSHEngine.so' )
+GMSH_3D_Parameters_1.SetMaxSize(10)
+GMSH_3D_Parameters_1.SetMinSize(0.141421)
 print("Adding hypothesis")
-par_mesh.AddGlobalHypothesis(NETGEN_3D_Parameters_1, mesher="GMSH" )
-
-#Set here particular mesh parameters in 3D
-for algo3d in par_mesh._algo3d:
-    param3d = algo3d.Parameters()
-    param3d.Set2DAlgo(0)
-    param3d.Set3DAlgo(0)
-    param3d.SetSmouthSteps(2)
-    param3d.SetSizeFactor(1.1)
+par_mesh.AddGlobalHypothesis(GMSH_3D_Parameters_1)
 
 print("Setting parallelism method")
 par_mesh.SetParallelismMethod(smeshBuilder.MULTITHREAD)

@@ -462,7 +462,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             obj,name = name,obj
         return Mesh(self, self.geompyD, obj, name)
 
-    def ParallelMesh(self, obj, name=0, split_geom=True, mesher2D="NETGEN", mesher3D="NETGEN"):
+    def ParallelMesh(self, obj, name=0, split_geom=True, mesher2D=None, mesher3D="NETGEN"):
         """
         Create a parallel mesh.
 
@@ -7549,7 +7549,33 @@ class Mesh(metaclass = MeshMeta):
 def _copy_gmsh_param(dim, local_param, global_param):
     if dim==3:
         local_param.SetMaxSize(global_param.GetMaxSize())
-        local_param.SetMinSize(global_param.GetMinSize())        
+        local_param.SetMinSize(global_param.GetMinSize())
+        local_param.Set3DAlgo(global_param.Get3DAlgo())
+        local_param.SetRecombineAll(global_param.GetRecombineAll())
+        local_param.SetSubdivAlgo(global_param.GetSubdivAlgo())
+        local_param.SetRemeshAlgo(global_param.GetRemeshAlgo())
+        local_param.SetRemeshPara(global_param.GetRemeshPara())
+        local_param.SetSmouthSteps(global_param.GetSmouthSteps())
+        local_param.SetSizeFactor(global_param.GetSizeFactor())
+        local_param.SetUseIncomplElem(global_param.GetUseIncomplElem())
+        local_param.SetMeshCurvatureSize(global_param.GetMeshCurvatureSize())
+        local_param.SetSecondOrder(global_param.GetSecondOrder())
+        local_param.SetIs2d(global_param.GetIs2d())
+    elif dim==2:
+        local_param.SetMaxSize(global_param.GetMaxSize())
+        local_param.SetMinSize(global_param.GetMinSize())
+        local_param.Set2DAlgo(global_param.Get2DAlgo())
+        local_param.SetRecomb2DAlgo(global_param.GetRecomb2DAlgo())
+        local_param.SetRecombineAll(global_param.GetRecombineAll())
+        local_param.SetSubdivAlgo(global_param.GetSubdivAlgo())
+        local_param.SetRemeshAlgo(global_param.GetRemeshAlgo())
+        local_param.SetRemeshPara(global_param.GetRemeshPara())
+        local_param.SetSmouthSteps(global_param.GetSmouthSteps())
+        local_param.SetSizeFactor(global_param.GetSizeFactor())
+        local_param.SetUseIncomplElem(global_param.GetUseIncomplElem())
+        local_param.SetMeshCurvatureSize(global_param.GetMeshCurvatureSize())
+        local_param.SetSecondOrder(global_param.GetSecondOrder())
+        local_param.SetIs2d(global_param.GetIs2d())
 
 def _copy_netgen_param(dim, local_param, global_param):
     """
@@ -7784,7 +7810,7 @@ class ParallelMesh(Mesh):
     """
     Surcharge on Mesh for parallel computation of a mesh
     """
-    def __init__(self, smeshpyD, geompyD, geom, split_geom=True, name=0, mesher2D="NETGEN", mesher3D="NETGEN"):
+    def __init__(self, smeshpyD, geompyD, geom, split_geom=True, name=0, mesher2D=None, mesher3D="NETGEN"):
         """
         Create a parallel mesh.
 
@@ -7818,13 +7844,17 @@ class ParallelMesh(Mesh):
         if split_geom:
             self._all_faces, self._solids = _split_geom(geompyD, geom_obj)
 
-            order = []
+            if mesher3D == "NETGEN":
+                self._algo2d = self.Triangle(geom=geom_obj, algo="NETGEN_2D")
+            elif mesher3D == "GMSH":
+                self._algo2d = self.Triangle(geom=geom_obj, algo="GMSH_2D")
+            else:
+                raise ValueError("mesher3D should be either NETGEN or GMSH")
 
-            if ( mesher2D == "NETGEN" ): #Default 2D mesher
-                self._algo2d = self.Triangle(geom=geom_obj, algo="NETGEN_2D")            
 
-            if ( mesher2D != "NETGEN" ):
-                #Means that we want to mesh face of solids in parallel and not the volume
+            if mesher2D is not None:
+                #Means that we want to mesh face of solids in parallel and not
+                #the volume
                 self._algo2d = []
                 #For the moment use AutomaticLength based on finesse
                 self._algo1d = self.Segment().AutomaticLength(0.1)
@@ -7843,9 +7873,8 @@ class ParallelMesh(Mesh):
                     elif ( mesher3D == "GMSH" ):
                         algo3d = self.Tetrahedron(geom=solid, algo="GMSH_3D_Remote")
                         self._algo3d.append(algo3d)
-                        
-        self._param = None
 
+        self._param = None
 
     def GetNbSolids(self):
         """
@@ -7877,7 +7906,7 @@ class ParallelMesh(Mesh):
             raise Exception("You need to set Parallelism method first (SetParallelismMethod)")
         return self._param
 
-    def AddGlobalHypothesis(self, hyp, mesher="NETGEN"):
+    def AddGlobalHypothesis(self, hyp):
         """
         Split hypothesis to apply it to all the submeshes:
         - the 1D+2D
@@ -7887,18 +7916,19 @@ class ParallelMesh(Mesh):
                 hyp: a hypothesis to assign
 
         """
-        if not isinstance(hyp, NETGENPlugin._objref_NETGENPlugin_Hypothesis):
-            raise ValueError("param must come from NETGENPlugin")
-        
-        param2d = self._algo2d.Parameters()        
-        _copy_netgen_param(2, param2d, hyp)
-     
+        if isinstance(hyp, NETGENPlugin._objref_NETGENPlugin_Hypothesis):
+            copy_param = _copy_netgen_param
+        elif isinstance(hyp, GMSHPlugin._objref_GMSHPlugin_Hypothesis):
+            copy_param = _copy_gmsh_param
+        else:
+            raise ValueError("param must come from NETGENPlugin or GMSHPlugin")
+
+        param2d = self._algo2d.Parameters()
+        copy_param(2, param2d, hyp)
+
         for algo3d in self._algo3d:
             param3d = algo3d.Parameters()
-            if ( mesher == "NETGEN" ):
-                _copy_netgen_param(3, param3d, hyp)
-            elif( mesher == "GMSH" ):
-                _copy_gmsh_param(3, param3d, hyp)
+            copy_param(3, param3d, hyp)
 
 
     pass # End of ParallelMesh

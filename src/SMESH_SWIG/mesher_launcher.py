@@ -111,7 +111,6 @@ def get_runner(mesher):
 
 def run_local(args):
     """ Simple Local run """
-    #TODO: Check on how to handle log for windows (through sp.check_output)
     cmd = CMD_TEMPLATE.format(\
         runner=get_runner(args.mesher),
         mesher=args.mesher,
@@ -122,8 +121,6 @@ def run_local(args):
         new_element_file=args.new_element_file,
         log_file=path.join(path.dirname(args.shape_file), "run.log"),
         output_mesh_file=args.output_mesh_file)
-    print("Executing:")
-    print(cmd)
     sp.check_output(cmd, shell=True, cwd=path.dirname(args.shape_file))
 
 def run_pylauncher(args):
