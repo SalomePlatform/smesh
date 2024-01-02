@@ -54,7 +54,7 @@ all_boxes = geompy.MakeGlueFaces(all_boxes, 1e-07)
 geompy.addToStudy(all_boxes, 'Glued_Faces_1')
 
 rubik_cube = geompy.MakeGlueEdges(all_boxes, 1e-07)
-geompy.addToStudy(all_boxes, 'rubik_cube')
+geompy.addToStudy(rubik_cube, 'rubik_cube')
 
 
 smesh = smeshBuilder.New()

@@ -83,6 +83,25 @@ void SMESH_ParallelMesh_i::SetParallelismMethod(CORBA::Long aMethod){
 
 //=============================================================================
 /*!
+ * \brief Get the parallell dimension
+ */
+//=============================================================================
+
+CORBA::Long SMESH_ParallelMesh_i::GetParallelismDimension(){
+  return DownCast()->GetParallelismDimension();
+}
+
+//=============================================================================
+/*!
+ * \brief Set the parallell dimension
+ */
+//=============================================================================
+void SMESH_ParallelMesh_i::SetParallelismDimension(CORBA::Long aDim){
+  DownCast()->SetParallelismDimension(aDim);
+}
+
+//=============================================================================
+/*!
  * \brief Get the number of threads for a parallel computation
  */
 //=============================================================================

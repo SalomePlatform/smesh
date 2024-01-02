@@ -48,6 +48,7 @@ class SMESH_EXPORT SMESH_SequentialMesh: public SMESH_Mesh
   void wait() override {};
 
   bool IsParallel() override {return false;};
+  int GetParallelElement() override {return 0;};
 
   bool ComputeSubMeshes (
             SMESH_Gen* gen,

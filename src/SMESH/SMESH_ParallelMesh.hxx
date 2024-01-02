@@ -81,10 +81,15 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
 
   //
   bool IsParallel() override {return true;};
+  int GetParallelElement() override;
+  int GetDumpElement();
 
   // Parallelims paramaters
   int GetParallelismMethod() {return _method;};
   void SetParallelismMethod(int aMethod) {_method = aMethod;};
+
+  int GetParallelismDimension() {return _paraDim;};
+  void SetParallelismDimension(int aDim) {_paraDim = aDim;};
 
   // Mutlithreading parameters
   int GetNbThreads() {return _NbThreads;};
@@ -134,6 +139,7 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
 #endif
   boost::filesystem::path tmp_folder;
   int _method = ParallelismMethod::MultiThread;
+  int _paraDim = 3;
 
   int _NbThreads = std::thread::hardware_concurrency();
 

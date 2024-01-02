@@ -53,6 +53,9 @@ class SMESH_I_EXPORT SMESH_ParallelMesh_i:
   CORBA::Long GetParallelismMethod();
   void SetParallelismMethod(CORBA::Long aMethod);
 
+  CORBA::Long GetParallelismDimension();
+  void SetParallelismDimension(CORBA::Long aDim);
+
   CORBA::Long GetNbThreads();
   void SetNbThreads(CORBA::Long nbThreads);
 

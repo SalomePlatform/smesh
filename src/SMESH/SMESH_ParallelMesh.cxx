@@ -151,6 +151,34 @@ void SMESH_ParallelMesh::SetNbThreads(long nbThreads)
   _NbThreads=nbThreads;
 };
 
+//=============================================================================
+/*!
+ * \brief Get the element associated to the dimension of the parallelism
+ */
+//=============================================================================
+int SMESH_ParallelMesh::GetParallelElement()
+{
+  if (_paraDim==2){
+    return TopAbs_FACE;
+  }else{
+    return TopAbs_SOLID;
+  }
+};
+
+//=============================================================================
+/*!
+ * \brief Get the element associated to the dimension of the parallelism
+ */
+//=============================================================================
+int SMESH_ParallelMesh::GetDumpElement()
+{
+  if (_paraDim==2){
+    return TopAbs_EDGE;
+  }else{
+    return TopAbs_FACE;
+  }
+};
+
 bool SMESH_ParallelMesh::ComputeSubMeshes(
           SMESH_Gen* gen,
           SMESH_Mesh & aMesh,

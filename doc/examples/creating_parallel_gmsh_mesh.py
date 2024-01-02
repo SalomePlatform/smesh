@@ -54,11 +54,11 @@ all_boxes = geompy.MakeGlueFaces(all_boxes, 1e-07)
 geompy.addToStudy(all_boxes, 'Glued_Faces_1')
 
 rubik_cube = geompy.MakeGlueEdges(all_boxes, 1e-07)
-geompy.addToStudy(all_boxes, 'rubik_cube')
+geompy.addToStudy(rubik_cube, 'rubik_cube')
 
 smesh = smeshBuilder.New()
 print("Creating Parallel Mesh")
-par_mesh = smesh.ParallelMesh(rubik_cube, name="par_mesh", mesher3D="GMSH")
+par_mesh = smesh.ParallelMesh(rubik_cube, name="par_mesh")
 
 print("Creating hypoehtesis for gmsh")
 GMSH_3D_Parameters_1 = smesh.CreateHypothesis( 'GMSH_Parameters',

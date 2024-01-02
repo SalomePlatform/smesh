@@ -45,8 +45,8 @@ boxes = []
 
 #             boxes.append(box)
 
-#With 6 boxes works 
-#But simplify for 2 boxes to also Test possibility of rewritting the 
+#With 6 boxes works
+#But simplify for 2 boxes to also Test possibility of rewritting the
 # input mesh from other parallel tests. In that case this test will break
 # because the input mesh will not match the exported/imported box geometry.
 for i in range(nbox):
@@ -78,12 +78,19 @@ all_boxes = geompy.MakeGlueFaces(all_boxes, 1e-07)
 geompy.addToStudy(all_boxes, 'Glued_Faces_1')
 
 rubik_cube = geompy.MakeGlueEdges(all_boxes, 1e-07)
-geompy.addToStudy(all_boxes, 'rubik_cube')
+geompy.addToStudy(rubik_cube, 'rubik_cube')
 
 
 smesh = smeshBuilder.New()
 print("Creating Parallel Mesh")
-par_mesh = smesh.ParallelMesh(rubik_cube, name="par_mesh", mesher2D="NETGEN_2D_Remote")
+par_mesh = smesh.ParallelMesh(rubik_cube, name="par_mesh")
+
+print("Creating hypoehtesis for netgen")
+NETGEN_2D_Parameters_1 = smesh.CreateHypothesisByAverageLength( 'NETGEN_Parameters_2D',
+                                         'NETGENEngine', 34.641, 0 )
+
+print("Adding hypothesis")
+par_mesh.Add2DGlobalHypothesis(NETGEN_2D_Parameters_1)
 
 print("Setting parallelism method")
 par_mesh.SetParallelismMethod(smeshBuilder.MULTITHREAD)

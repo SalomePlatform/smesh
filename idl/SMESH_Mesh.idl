@@ -1109,6 +1109,9 @@ module SMESH
     long GetParallelismMethod();
     void SetParallelismMethod(in long aMethod);
 
+    long GetParallelismDimension();
+    void SetParallelismDimension(in long aDim);
+
     // Parameters for MutliThreading
     long GetNbThreads();
     void SetNbThreads(in long nbThreads);

@@ -397,6 +397,7 @@ class SMESH_EXPORT SMESH_Mesh
   virtual void wait(){};
 
   virtual bool IsParallel(){throw SALOME_Exception("Calling SMESH_Mesh::IsParallel");return false;};
+  virtual int GetParallelElement(){throw SALOME_Exception("Calling SMESH_Mesh::GetParallelElement");return 0;};
 
   virtual bool ComputeSubMeshes(
             SMESH_Gen* gen,

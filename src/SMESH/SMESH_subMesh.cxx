@@ -1517,7 +1517,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         // check submeshes needed
         // When computing in parallel mode we do not have a additional layer of submesh
         // The check should not be done in parallel as that check is not thread-safe
-        if (_father->HasShapeToMesh() && (!_father->IsParallel() || shape.ShapeType() != TopAbs_SOLID )) {
+        if (_father->HasShapeToMesh() && (!_father->IsParallel() || shape.ShapeType() != _father->GetParallelElement() )) {
           bool subComputed = false, subFailed = false;
           if (!algo->OnlyUnaryInput()) {
             //  --- commented for bos#22320 to compute all sub-shapes at once if possible;

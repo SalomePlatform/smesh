@@ -394,7 +394,7 @@ bool SMESH_Gen::parallelComputeSubMeshes(
     // do not mesh vertices of a pseudo shape
     const TopoDS_Shape&        shape = smToCompute->GetSubShape();
     const TopAbs_ShapeEnum shapeType = shape.ShapeType();
-    // Not doing in parallel 1D and 2D meshes
+    // Not doing in parallel 1D meshes
     if ( !aMesh.HasShapeToMesh() && shapeType == TopAbs_VERTEX )
       continue;
 
@@ -402,22 +402,10 @@ bool SMESH_Gen::parallelComputeSubMeshes(
       // Waiting for all threads for the previous type to end
       aMesh.wait();
 
-      std::string file_name;
-      switch(previousShapeType){
-        case TopAbs_FACE:
-          file_name = "Mesh2D.med";
-          break;
-        case TopAbs_EDGE:
-          file_name = "Mesh1D.med";
-          break;
-        //case TopAbs_VERTEX:
-        //  file_name = "Mesh0D.med";
-        //  break;
-        case TopAbs_SOLID:
-        default:
-          file_name = "";
-          break;
-      }
+      std::string file_name="";
+      if (previousShapeType == aParMesh.GetDumpElement())
+        file_name = "Mesh"+std::to_string(aParMesh.GetParallelismDimension()-1)+"D.med";
+
       if(file_name != "")
       {
         fs::path mesh_file = fs::path(aParMesh.GetTmpFolder()) / fs::path(file_name);
@@ -439,7 +427,7 @@ bool SMESH_Gen::parallelComputeSubMeshes(
       continue;
     }
     // Parallelism is only for 3D parts
-    if(shapeType!=TopAbs_SOLID){
+    if(shapeType!=aMesh.GetParallelElement()){
       compute_function(smToCompute, computeEvent,
                       shapeSM, aShapeOnly, allowedSubShapes,
                       aShapesId);
