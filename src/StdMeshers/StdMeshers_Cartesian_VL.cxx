@@ -1121,7 +1121,7 @@ bool StdMeshers_Cartesian_VL::ViscousBuilder::MakeViscousLayers( SMESH_Mesh &   
 
   // Validate map of shrink+joint geometry elements
   if ( !CheckGeometryMaps(offsetMesh, theShape ) && !isMainShape2D )
-    throw SALOME_Exception("All elements from the shrink geometry were not match to the original geometry\n");
+    throw SALOME_Exception("The shrink geometry does not match or respect the original topology.The viscous layer can't be build");
 
   
   initMDS->ClearMesh(); // avoid mesh superposition on multiple calls of addLayers

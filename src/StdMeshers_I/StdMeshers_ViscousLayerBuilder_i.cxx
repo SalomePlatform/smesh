@@ -188,8 +188,16 @@ CORBA::Boolean StdMeshers_ViscousLayerBuilder_i::AddLayers( SMESH::SMESH_Mesh_pt
   TopoDS_Shape theShape         = StdMeshers_ObjRefUlils::GeomObjectToShape( theShapeObject );
   SMESH_Mesh_i* shrinkMesh_i    = SMESH::DownCast< SMESH_Mesh_i* >( shrinkMesh );
   SMESH_Mesh_i* theFinalMesh_i  = SMESH::DownCast< SMESH_Mesh_i* >( finalMesh );
-  
-  bool success = GetImpl()->AddLayers( shrinkMesh_i->GetImpl(), theFinalMesh_i->GetImpl(), theShape );  
+  bool success = false;
+
+  try 
+  {
+    success = GetImpl()->AddLayers( shrinkMesh_i->GetImpl(), theFinalMesh_i->GetImpl(), theShape );  
+  }
+  catch ( std::exception& exc )
+  {
+    THROW_SALOME_CORBA_EXCEPTION( exc.what(), SALOME::INTERNAL_ERROR  );
+  }
   
   return success;
 }
