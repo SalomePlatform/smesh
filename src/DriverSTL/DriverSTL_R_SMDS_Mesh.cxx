@@ -23,6 +23,7 @@
 #include "DriverSTL_R_SMDS_Mesh.h"
 
 #include <Basics_Utils.hxx>
+#include <Basics_OCCTVersion.hxx>
 
 #include <gp_Pnt.hxx>
 #include <NCollection_DataMap.hxx>
@@ -41,8 +42,12 @@ namespace
     //function : HashCode
     //purpose  :
     //=======================================================================
+#if OCC_VERSION_LARGE < 0x07080000
     inline static Standard_Integer HashCode
     (const gp_Pnt& point,  Standard_Integer Upper)
+#else
+    size_t operator()(const gp_Pnt& point) const
+#endif
     {
       union
       {
@@ -52,14 +57,22 @@ namespace
 
       point.Coord( U.R[0], U.R[1], U.R[2] );
 
+#if OCC_VERSION_LARGE < 0x07080000
       return ::HashCode(U.I[0]/23+U.I[1]/19+U.I[2]/17+U.I[3]/13+U.I[4]/11+U.I[5]/7,Upper);
+#else
+      return static_cast<size_t>(U.I[0]/23+U.I[1]/19+U.I[2]/17+U.I[3]/13+U.I[4]/11+U.I[5]/7);
+#endif
     }
     //=======================================================================
     //function : IsEqual
     //purpose  :
     //=======================================================================
+#if OCC_VERSION_LARGE < 0x07080000
     inline static Standard_Boolean IsEqual
     (const gp_Pnt& point1, const gp_Pnt& point2)
+#else
+    bool operator()(const gp_Pnt& point1, const gp_Pnt& point2) const
+#endif
     {
       static Standard_Real tab1[3], tab2[3];
       point1.Coord(tab1[0],tab1[1],tab1[2]);

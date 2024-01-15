@@ -29,6 +29,7 @@
 #include "SMDS_Mesh.hxx"
 
 #include <Utils_SALOME_Exception.hxx>
+#include <Basics_OCCTVersion.hxx>
 
 #include <Bnd_B3d.hxx>
 #include <NCollection_Map.hxx>
@@ -43,7 +44,7 @@ namespace
   const int theMaxNbFaces = 256; // max number of faces sharing a node
 
   typedef NCollection_DataMap< const SMDS_MeshNode*, const SMDS_MeshNode*, SMESH_Hasher > TNNMap;
-  typedef NCollection_Map< SMESH_Link, SMESH_Link >                                       TLinkMap;
+  typedef NCollection_Map< SMESH_Link, SMESH_TLinkHasher >                                TLinkMap;
 
   //--------------------------------------------------------------------------------
   /*!
@@ -75,7 +76,11 @@ namespace
     const SMDS_MeshNode* IntNode() const { return myIntNode.Node(); }
     const SMDS_MeshNode* Node1() const { return myNode[ myReverse ]; }
     const SMDS_MeshNode* Node2() const { return myNode[ !myReverse ]; }
+  };
 
+  struct CutLinkHasher
+  {
+#if OCC_VERSION_LARGE < 0x07080000
     static Standard_Integer HashCode(const CutLink&         link,
                                      const Standard_Integer upper)
     {
@@ -90,9 +95,23 @@ namespace
                link1.myNode[1] == link2.myNode[1] &&
                link1.myIndex == link2.myIndex );
     }
+#else
+    size_t operator()(const CutLink& link) const
+    {
+      return size_t( link.myNode[0]->GetID() +
+                     link.myNode[1]->GetID() +
+                     link.myIndex );
+    }
+    bool operator()(const CutLink& link1, const CutLink& link2 ) const
+    {
+      return ( link1.myNode[0] == link2.myNode[0] &&
+               link1.myNode[1] == link2.myNode[1] &&
+               link1.myIndex == link2.myIndex );
+    }
+#endif
   };
 
-  typedef NCollection_Map< CutLink, CutLink > TCutLinkMap;
+  typedef NCollection_Map< CutLink, CutLinkHasher > TCutLinkMap;
 
   //--------------------------------------------------------------------------------
   /*!
@@ -274,7 +293,16 @@ namespace
                       TLinkMap&                    theCutOffCoplanarLinks) const;
     void InitLinks() const;
     bool IsCoplanar( const EdgePart* edge ) const;
+    void Dump() const;
 
+  private:
+
+    EdgePart* getTwin( const EdgePart* edge ) const;
+  };
+
+  struct CutFaceHasher
+  {
+#if OCC_VERSION_LARGE < 0x07080000
     static Standard_Integer HashCode(const CutFace& f, const Standard_Integer upper)
     {
       return ::HashCode( FromSmIdType<int>(f.myInitFace->GetID()), upper );
@@ -283,14 +311,20 @@ namespace
     {
       return f1.myInitFace == f2.myInitFace;
     }
-    void Dump() const;
+#else
+    size_t operator()(const CutFace& f) const
+    {
+      return FromSmIdType<int>(f.myInitFace->GetID());
+    }
 
-  private:
-
-    EdgePart* getTwin( const EdgePart* edge ) const;
+    bool operator()(const CutFace& f1, const CutFace& f2) const
+    {
+      return f1.myInitFace == f2.myInitFace;
+    }
+#endif
   };
 
-  typedef NCollection_Map< CutFace, CutFace > TCutFaceMap;
+  typedef NCollection_Map< CutFace, CutFaceHasher > TCutFaceMap;
 
   //--------------------------------------------------------------------------------
   /*!

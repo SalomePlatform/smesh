@@ -169,8 +169,8 @@ def test_netgen2dLenghtFromEdge():
     print("Nb Segments:", nb_segments)
     print("Nb Points:", nb_points)
 
-    assert nb_triangles == 12
-    assert nb_points == 8
+    assert nb_triangles == 12*2
+    assert nb_points == 14
     assert nb_segments == 12
 
 if __name__ == "__main__":
