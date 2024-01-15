@@ -891,7 +891,10 @@ SMESH_Hypothesis::Hypothesis_Status
           ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
       }
       else if (!_father->IsUsedHypothesis( anHyp, this ))
-        ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
+      {
+        if ( anHyp->GetDim() == this->GetAlgo()->GetDim() )
+          ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
+      }
 
       if (SMESH_Hypothesis::IsStatusFatal( ret ))
       {
