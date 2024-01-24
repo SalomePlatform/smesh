@@ -16,9 +16,8 @@ Parallel Computing
 The goal here is to speed up computation by running sub-meshes in parallel
 (multi-threading).
 
-*******
 Concept
-*******
+#######
 
 .. image:: ../images/diagram_parallel_mesh.png
 
@@ -36,9 +35,8 @@ Then we will compute all the solids in parallel. Having done the 1D+2D first
 ensure that all the solids can be computed without any concurrency.
 
 
-******
 How to
-******
+######
 
 You follow the same principle as the creation of a sequential Mesh.
 
