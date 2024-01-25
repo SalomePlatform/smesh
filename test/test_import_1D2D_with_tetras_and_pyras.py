@@ -161,7 +161,7 @@ Face_to_enforce_1 = Mesh_2.GroupOnGeom(Face_to_enforce,'Face_to_enforce',SMESH.F
 
 isDone = Mesh_2.Compute()
 
-Mesh_2.MakeGroup("pyramids", SMESH.VOLUME, CritType=SMESH.FT_ElemGeomType, Threshold=SMESH.Geom_PYRAMID)
+gr_pyramids = Mesh_2.MakeGroup("pyramids", SMESH.VOLUME, CritType=SMESH.FT_ElemGeomType, Threshold=SMESH.Geom_PYRAMID)
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()
@@ -175,5 +175,8 @@ assert abs(mesh_volume-geom_volume)/geom_volume < 1e-7, "Wrong mesh volume"
 min_aspect_ratio, max_aspect_ratio = Mesh_2.GetMinMax(SMESH.FT_AspectRatio3D)
 assert max_aspect_ratio < 200, "Bad aspect ratio 3D: %.1f"%max_aspect_ratio
 
-min_volume, max_volume = Mesh_2.GetMinMax(SMESH.FT_Volume3D)
+# Check min and max volume of pyramids
+min_volume, max_volume = Mesh_2.GetMinMax(SMESH.FT_Volume3D, gr_pyramids)
 assert min_volume > 1e-10, "Bad min volume: %s"%min_volume
+expected_max_volume = 6.829e-8
+assert max_volume < 1.5*expected_max_volume, "Bad max volume: %s"%max_volume
