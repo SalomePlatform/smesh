@@ -1,0 +1,23 @@
+# vtk DataFile Version 2.0
+data
+ASCII
+DATASET UNSTRUCTURED_GRID
+POINTS 5 float
+ 1.5  0.0  0.0 
+ 0.0  1.5  0.0 
+ 1.5  1.5  0.0 
+ 0.0  0.0  0.0 
+-1.5 -1.5  0.0 
+CELLS 2 7
+2 3 4
+3 0 1 2
+CELL_TYPES 2
+3
+5
+POINT_DATA 5
+COLOR_SCALARS lut 4
+1.0  0.0  0.0  1.0
+0.0  1.0  0.0  1.0
+0.0  0.0  1.0  1.0
+0.0  0.0  0.0  1.0
+0.0  0.0  0.0  1.0

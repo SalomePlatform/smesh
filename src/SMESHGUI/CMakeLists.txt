@@ -161,6 +161,7 @@ SET(_moc_HEADERS
   SMESHGUI_InteractiveOp.h
   SMESHGUI_CreateDualMeshDlg.h
   SMESHGUI_CreateDualMeshOp.h
+  SMESHGUI_Meshio.h
 )
 
 # header files / no moc processing
@@ -290,6 +291,7 @@ SET(_other_SOURCES
   SMESHGUI_InteractiveOp.cxx
   SMESHGUI_CreateDualMeshDlg.cxx
   SMESHGUI_CreateDualMeshOp.cxx
+  SMESHGUI_Meshio.cxx
 )
 
 # sources / to compile

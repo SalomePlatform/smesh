@@ -724,6 +724,14 @@
       <translation>GMFファイル</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_MESHIO</source>
+        <translation>他の形式... (meshio)</translation>
+    </message>
+    <message>
+        <source>MEN_EXPORT_MESHIO</source>
+        <translation>他の形式... (meshio)</translation>
+    </message>
+    <message>
       <source>MEN_MERGE</source>
       <translation>節点の結合</translation>
     </message>
@@ -1744,6 +1752,10 @@
       <translation>メッシュをエクスポートすることができません。ディスクの空き領域を確認してください。</translation>
     </message>
     <message>
+        <source>SMESH_EXPORT_FAILED_SHORT</source>
+        <translation>メッシュのエクスポートに失敗しました。</translation>
+    </message>
+    <message>
       <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
       <translation>「%1」メッシュ内で重複するグループの名前です。エクスポートをキャンセルすることができ、名前の変更、結果の MED ファイル名に非グループの場合は研究の名前を一致しません。続行しますか。</translation>
     </message>
@@ -1762,6 +1774,22 @@
     <message>
       <source>SMESH_EXPORT_MED_MESH_NAMES_COLLISION</source>
       <translation>選択したファイルには既に次の名を持つメッシュが含まれています: %1 結果ファイルが正しくない可能性があります。ファイルを上書きしますか。</translation>
+    </message>
+    <message>
+      <source>SMESH_EXPORT_MESHIO_ONLY_MESH</source>
+      <translation>現在の実装では、中間 MED ファイルを介したエクスポートが使用されます。
+ただし、mesio は複数のメッシュを含む MED ファイルの読み取りをサポートしていません。
+選択したメッシュは別のファイルに保存されます。
+
+続けたいですか？</translation>
+    </message>
+    <message>
+        <source>SMESH_MESHIO_NOT_INSTALLED</source>
+        <translation>メシオはインストールされていません！
+操作はキャンセルされます。
+
+次のコマンドで mesio をインストールしてみます。
+pip install meshio[all]</translation>
     </message>
     <message>
       <source>EXPORT_NOT_SUPPORTED</source>

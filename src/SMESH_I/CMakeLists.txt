@@ -117,6 +117,7 @@ SET(SMESHEngine_HEADERS
   SMESH_Homard_i.hxx
   SMESH_SequentialMesh_i.hxx
   SMESH_ParallelMesh_i.hxx
+  SMESH_Meshio.h
 )
 
 # --- sources ---
@@ -147,6 +148,7 @@ SET(SMESHEngine_SOURCES
   MG_ADAPT_i.cxx
   SMESH_Homard_i.cxx
   SMESH_ParallelMesh_i.cxx
+  SMESH_Meshio.cxx
 )
 
 # --- rules ---

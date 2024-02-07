@@ -294,6 +294,14 @@ module SMESH
                                     in boolean              theMakeRequiredGroups,
                                     out SMESH::ComputeError theError)
       raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Create a mesh and import data from any file supported by meshio library
+     */
+    mesh_array CreateMeshesFromMESHIO(in string theFileName,
+                                      out SMESH::DriverMED_ReadStatus theStatus)
+      raises (SALOME::SALOME_Exception);
+
     /*!
      * Create a dual mesh of a Tetrahedron mesh
      *  \param mesh - TetraHedron mesh to create dual from

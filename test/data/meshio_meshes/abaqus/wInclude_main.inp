@@ -1,0 +1,7 @@
+*Heading
+** meshio with *include example
+*Preprint, echo=NO, model=NO, history=NO, contact=NO
+*constraint controls, print=yes
+*Part, name=ParametricModel
+*INCLUDE,INPUT=wInclude_bulk.inp
+*End Part

@@ -5,6 +5,10 @@
 Importing and exporting meshes
 ******************************
 
+==============================
+File formats
+==============================
+
 In MESH there is a functionality allowing import/export of meshes in the following formats:
 
 * **MED**,
@@ -16,6 +20,52 @@ In MESH there is a functionality allowing import/export of meshes in the followi
 
 You can also export a group as a whole mesh.
 
+------------------------------
+Additional file formats with meshio
+------------------------------
+
+It is possible to use additional file formats using **meshio** library.
+However, there are some restrictions because of way it uses in Salome. The main points here are:
+
+* We use intermediate MED file to communicate between Salome and **meshio**.
+* Convertion to the target format performs **meshio convert** command, using given **MED** file.
+* Current **meshio** version doesn't work well with all tested file formats. 
+
+Anyway, you can try to import/export meshes with **meshio** using following formats:
+
+* Abaqus (*.inp)
+* ANSYS msh (*.msh)
+* AVS-UCD (*.avs)
+* CGNS (*.cgns)
+* DOLFIN XML (*.xml)
+* Exodus (*.e *.exo)
+* FLAC3D (*.f3grid)
+* Gmsh 2.2, 4.0, and 4.1 (*.msh)
+* H5M (*.h5m)
+* Kratos/MDPA (*.mdpa)
+* MED/Salome (*.med)
+* Medit (*.mesh *.meshb)
+* Nastran (*.bdf *fem *.nas)
+* Netgen(*.vol *.vol.gz)
+* OBJ (*.obj)
+* OFF (*.off)
+* PERMAS (*.post *.post.gz *.dato *.dato.gz)
+* PLY (*.ply)
+* STL (*.stl)
+* SU2 (*.su2)
+* SVG, 2D output only (*.svg)
+* Tecplot (*.dat)
+* TetGen (*.node *.ele)
+* UGRID (*.ugrid)
+* VTK (*.vtk)
+* VTU (*.vtu)
+* WKT, TIN (*.wkt)
+* XDMF (*.xdmf *.xmf)
+
+==============================
+Import
+==============================
+
 *To import a mesh:*
 
 #. From the **File** menu choose the **Import** item, from its sub-menu select the corresponding format (MED, UNV, STL, GMF and CGNS) of the file containing your mesh.
@@ -24,6 +74,10 @@ You can also export a group as a whole mesh.
 
 .. image:: ../images/meshimportmesh.png
 	:align: center
+
+==============================
+Export
+==============================
 
 *To export a mesh or a group:*
 

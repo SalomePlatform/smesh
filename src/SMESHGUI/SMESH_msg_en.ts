@@ -889,6 +889,14 @@
         <translation>GMF file</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_MESHIO</source>
+        <translation>other formats... (meshio)</translation>
+    </message>
+    <message>
+        <source>MEN_EXPORT_MESHIO</source>
+        <translation>other formats... (meshio)</translation>
+    </message>
+    <message>
         <source>MEN_MERGE</source>
         <translation>Merge Nodes</translation>
     </message>
@@ -1972,6 +1980,10 @@ Probably, there is not enough space on disk, or the version of MED file used is 
 </translation>
     </message>
     <message>
+        <source>SMESH_EXPORT_FAILED_SHORT</source>
+        <translation>Mesh export failed.</translation>
+    </message>
+    <message>
         <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
         <translation>There are duplicated group names in mesh &quot;%1&quot;.
 You can cancel exporting and rename them,
@@ -2002,6 +2014,22 @@ Overwrite the file?</translation>
 meshes with the following names: %1
 The result file may be incorrect.
 Overwrite the file?</translation>
+    </message>
+    <message>
+        <source>SMESH_EXPORT_MESHIO_ONLY_MESH</source>
+        <translation>Current implementation uses export through intermediate MED file.
+However, meshio does not support reading MED files with more than one mesh.
+Selected meshes will be saved into separated files.
+
+Do you want to continue?</translation>
+    </message>
+    <message>
+        <source>SMESH_MESHIO_NOT_INSTALLED</source>
+        <translation>Meshio is not installed!
+Operation will be canceled.
+
+Try to install meshio with a command:
+pip install meshio[all]</translation>
     </message>
     <message>
         <source>EXPORT_NOT_SUPPORTED</source>

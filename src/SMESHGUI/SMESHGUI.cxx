@@ -70,6 +70,7 @@
 #include "SMESHGUI_Measurements.h"
 #include "SMESHGUI_MergeDlg.h"
 #include "SMESHGUI_MeshInfo.h"
+#include "SMESHGUI_Meshio.h"
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_MeshOrderOp.h"
 #include "SMESHGUI_MeshPatternDlg.h"
@@ -213,6 +214,7 @@ namespace
   void Control( int theCommandID );
 
   // Definitions
+
   //================================================================================
   /*!
    * \brief Reads meshes from file
@@ -250,6 +252,12 @@ namespace
               theCommandID == SMESHOp::OpPopupImportGMF ) {
       filter.append( QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)"  );
       filter.append( QObject::tr( "GMF_BINARY_FILES_FILTER") + " (*.meshb)" );
+    }
+    else if (theCommandID == SMESHOp::OpImportMESHIO) {
+      if (!SMESHGUI_Meshio::IsMeshioInstalled())
+        return;
+
+      filter = SMESHGUI_Meshio::GetImportFileFilter();
     }
 
     QString anInitialPath = "";
@@ -366,11 +374,20 @@ namespace
               }
               break;
             }
+          case SMESHOp::OpImportMESHIO:
+            {
+              aMeshes = SMESHGUI_Meshio::ImportMesh(theComponentMesh, filename, errors);
+              break;
+            }
           }
         }
         catch ( const SALOME::SALOME_Exception& S_ex ) {
-          errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
-                         arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
+          const QString exText(S_ex.details.text);
+          if (exText.startsWith("MESHIO"))
+            errors.append('\n' + exText);
+          else
+            errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                          arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
         }
 
         for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ )
@@ -440,8 +457,14 @@ namespace
                          theCommandID == SMESHOp::OpPopupExportCGNS );
     const bool isGMF = ( theCommandID == SMESHOp::OpExportGMF ||
                          theCommandID == SMESHOp::OpPopupExportGMF );
+    const bool isMESHIO = (theCommandID == SMESHOp::OpExportMESHIO);
 
-    const bool multiMeshSupported = ( isMED || isCGNS ); // file can hold several meshes
+    if (isMESHIO && !SMESHGUI_Meshio::IsMeshioInstalled())
+    {
+      return;
+    }
+
+    const bool multiMeshSupported = isMED || isCGNS || isMESHIO; // file can hold several meshes
     if ( selected.Extent() == 0 || ( selected.Extent() > 1 && !multiMeshSupported ))
       return;
     SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
@@ -517,7 +540,7 @@ namespace
     SMESH::SMESH_Mesh_var            aMesh = aMeshOrGroup->GetMesh();
     QString                      aMeshName = (*aMeshIter).second;
 
-    if ( isMED || isCGNS ) // formats where group names must be unique
+    if (isMED || isCGNS || isMESHIO) // formats where group names must be unique
     {
       // check for equal group names within each mesh
       for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
@@ -627,6 +650,7 @@ namespace
     // Get parameters of export operation
 
     QString aFilename;
+    QString aSelectedFilter; // for meshio to get a filter selected by user
     int aFormat =-1;         // for MED version used for write
     bool isOkToWrite = true; // to check MED file version compatibility before adding a mesh in an existing file
 
@@ -872,6 +896,14 @@ namespace
         delete zTolWdg;
       delete fd;
     }
+    else if (isMESHIO)
+    {
+      if (SMESHGUI_Meshio::CheckMeshCount(aMeshList))
+      {
+        aFilename = SMESHGUI_Meshio::GetFileName(aSelectedFilter);
+        MESSAGE("aSelectedFilter: " << aSelectedFilter.toStdString());
+      }
+    }
     else
     {
       return;
@@ -954,16 +986,28 @@ namespace
           toCreateGroups = true;
           aMesh->ExportGMF( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups );
         }
+        else if (isMESHIO)
+        {
+          SMESHGUI_Meshio::ExportMesh(aMeshList, aFilename, aSelectedFilter);
+        }
       }
       catch (const SALOME::SALOME_Exception& S_ex)
       {
         wc.suspend();
+        const QString exText(S_ex.details.text);
+
         if ( S_ex.details.type == SALOME::COMM && // communicate about too large mesh
              strncmp( "format=", S_ex.details.sourceFile.in(), 7 ) == 0 )
 
           SUIT_MessageBox::critical(SMESHGUI::desktop(),
                                     QObject::tr("SMESH_WRN_WARNING"),
                                     QObject::tr(S_ex.details.text.in() ));
+        else if (exText.startsWith("MESHIO"))
+        {
+          SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                   QObject::tr("SMESH_WRN_WARNING"),
+                                   QObject::tr("SMESH_EXPORT_FAILED_SHORT") + "\n\n" + exText);
+        }
         else
           SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                    QObject::tr("SMESH_WRN_WARNING"),
@@ -2573,6 +2617,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpImportSTL:
   case SMESHOp::OpImportCGNS:
   case SMESHOp::OpImportGMF:
+  case SMESHOp::OpImportMESHIO:
   case SMESHOp::OpPopupImportDAT:
   case SMESHOp::OpPopupImportUNV:
   case SMESHOp::OpPopupImportMED:
@@ -2609,6 +2654,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpExportSTL:
   case SMESHOp::OpExportCGNS:
   case SMESHOp::OpExportGMF:
+  case SMESHOp::OpExportMESHIO:
   case SMESHOp::OpPopupExportDAT:
   case SMESHOp::OpPopupExportMED:
   case SMESHOp::OpPopupExportUNV:
@@ -4152,6 +4198,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpImportCGNS, "IMPORT_CGNS" );
 #endif
   createSMESHAction( SMESHOp::OpImportGMF,  "IMPORT_GMF"  );
+  createSMESHAction( SMESHOp::OpImportMESHIO,  "IMPORT_MESHIO" );
   createSMESHAction( SMESHOp::OpPopupImportUNV, "IMPORT_UNV");
   createSMESHAction( SMESHOp::OpPopupImportMED, "IMPORT_MED");
   createSMESHAction( SMESHOp::OpPopupImportSTL, "IMPORT_STL"  );
@@ -4168,6 +4215,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpExportCGNS, "CGNS");
 #endif
   createSMESHAction( SMESHOp::OpExportGMF,      "GMF" );
+  createSMESHAction( SMESHOp::OpExportMESHIO,   "EXPORT_MESHIO" );
   createSMESHAction( SMESHOp::OpPopupExportDAT, "DAT" );
   createSMESHAction( SMESHOp::OpPopupExportMED, "MED" );
   createSMESHAction( SMESHOp::OpPopupExportUNV, "UNV" );
@@ -4417,6 +4465,7 @@ void SMESHGUI::initialize( CAM_Application* app )
       transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 ),
       basicPropId = createMenu( tr( "MEN_BASIC_PROPERTIES" ), measureId, -1, 10 );
 
+  // Import menu
   //createMenu( SMESHOp::OpImportDAT, importId, -1 );
   createMenu( SMESHOp::OpImportUNV,  importId, -1 );
   createMenu( SMESHOp::OpImportMED,  importId, -1 );
@@ -4425,6 +4474,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpImportCGNS, importId, -1 );
 #endif
   createMenu( SMESHOp::OpImportGMF,  importId, -1 );
+  createMenu( SMESHOp::OpImportMESHIO,  importId, -1 ); // formats supported by meshio lib
+
+  // Export menu
   createMenu( SMESHOp::OpExportDAT,  exportId, -1 );
   createMenu( SMESHOp::OpExportMED,  exportId, -1 );
   createMenu( SMESHOp::OpExportUNV,  exportId, -1 );
@@ -4433,6 +4485,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpExportCGNS, exportId, -1 );
 #endif
   createMenu( SMESHOp::OpExportGMF,  exportId, -1 );
+  createMenu( SMESHOp::OpExportMESHIO,  exportId, -1 ); // formats supported by meshio lib
   createMenu( separator(), fileId, 10 );
 
   createMenu( SMESHOp::OpDelete, editId, -1 );
@@ -4854,6 +4907,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 #endif
   createPopupItem( SMESHOp::OpPopupExportGMF,  OB, mesh_group, only_one_non_empty, anId );
   createPopupItem( SMESHOp::OpPopupExportDAT,  OB, mesh_group, only_one_non_empty, anId );
+  createPopupItem( SMESHOp::OpExportMESHIO,    OB, mesh_group, only_one_non_empty, anId );
 
   anId = popupMgr()->insert( tr( "MEN_IMPORT" ), -1, -1 );        // IMPORT submenu
   createPopupItem( SMESHOp::OpPopupImportMED,  OB, smesh, "", anId );

@@ -256,6 +256,10 @@ public:
                                              CORBA::Boolean          theMakeRequiredGroups,
                                              SMESH::ComputeError_out theError);
 
+  //  Create a mesh and import data from any file supported by meshio library
+  SMESH::mesh_array* CreateMeshesFromMESHIO(const char*             theFileName,
+                                            SMESH::DriverMED_ReadStatus& theStatus);
+
   // Create dual mesh of a tetrahedron mesh
   SMESH::SMESH_Mesh_ptr CreateDualMesh(SMESH::SMESH_IDSource_ptr meshPart,
                                        const char*               meshName,

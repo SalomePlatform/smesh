@@ -712,6 +712,17 @@ module SMESH
                           in double             ZTolerance,
                           in boolean            saveNumbers) raises (SALOME::SALOME_Exception);
 
+    /*!
+     * Export a [part of] Mesh to a file with meshio library using an intermediate MED file
+     * @params
+     * - meshPart : a part of mesh to store
+     * - fileName : name of the MED file
+     * - selectedFilter : filter string selected by user in a file dialog.
+     */
+    void ExportPartToMESHIO(in SMESH_IDSource     meshPart,
+                            in string             fileName,
+                            in string             selectedFilter) raises (SALOME::SALOME_Exception);
+
     long long ExportPartToMEDCoupling( in SMESH_IDSource     meshPart,
                                        in boolean            auto_groups,
                                        in boolean            autoDimension,

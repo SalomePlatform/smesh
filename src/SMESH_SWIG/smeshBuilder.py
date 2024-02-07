@@ -741,6 +741,19 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         if error.comment: print("*** CreateMeshesFromGMF() errors:\n", error.comment)
         return Mesh(self, self.geompyD, aSmeshMesh), error
 
+    def CreateMeshesFromMESHIO(self, theFileName):
+        """
+        Create a Mesh object(s) importing data from from any file supported by meshio library.
+
+        Returns:
+                a tuple ( list of class :class:`Mesh` instances,
+                :class:`SMESH.DriverMED_ReadStatus` )
+        """
+
+        aSmeshMeshes, aStatus = SMESH._objref_SMESH_Gen.CreateMeshesFromMESHIO(self, theFileName)
+        aMeshes = [ Mesh(self, self.geompyD, m) for m in aSmeshMeshes ]
+        return aMeshes, aStatus
+
     def Concatenate( self, meshes, uniteIdenticalGroups,
                      mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False,
                      name = "", meshToAppendTo = None):
@@ -2595,6 +2608,47 @@ class Mesh(metaclass = MeshMeta):
         elif not meshPart:
             meshPart = self.mesh
         self.mesh.ExportGMF(meshPart, f, True)
+
+    def ExportMESHIO(
+        self,
+        fileName,
+        selectedFilter,
+        meshPart
+    ):
+        """
+        Exports a part of mesh to a file with meshio library
+        through an intermediate MED file.
+
+        Parametrs described below are the same as for ExportMED() method.
+        However, we know that _pyMesh::Process(const Handle(_pyCommand)& theCommand) method
+        change a position of meshPart argument when dump to a Python script for whatever reason
+        this way:
+        - to 5th place for ExportMED command
+        - to last place for the rest commands
+
+        So, for this method meshPart moved to the end of the args.
+        Look at src/SMESH_I/SMESH_2smeshpy.cxx for related source code.
+
+        The same note is for the name of the method that was dumped as ExportPartToMESHIO(),
+        but then processing just removes PartTo from the middle of the name as it was done
+        for all export methods.
+
+        Parameters:
+                fileName: is the file name
+                selectedFilter: filter string selected by user in a file dialog
+                meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`)
+                        to export instead of the mesh
+        """
+
+        if isinstance(meshPart, Mesh):
+            meshPart = meshPart.GetMesh()
+
+        self.mesh.ExportPartToMESHIO(
+            meshPart,
+            fileName,
+            selectedFilter
+        )
+
 
     def ExportToMED(self, *args, **kwargs):
         """

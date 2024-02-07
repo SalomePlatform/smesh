@@ -112,6 +112,7 @@
 #include <SMESH_BoostTxtArchive.hxx>
 #include <SMESH_SequentialMesh_i.hxx>
 #include <SMESH_ParallelMesh_i.hxx>
+#include "SMESH_Meshio.h"
 
 // to pass CORBA exception through SMESH_TRY
 #define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
@@ -1350,6 +1351,39 @@ namespace
          SALOME::BAD_PARAM );
     }
   }
+
+  //================================================================================
+  /*!
+   * \brief Makes a python dump for a function by iterating the given SObjects 
+   */
+  //================================================================================
+
+  void functionToPythonDump(
+    SMESH_Gen_i* smesh, const std::string& functionName, std::vector<SALOMEDS::SObject_wrap>& sobjects)
+  {
+    TPythonDump aPythonDump(smesh);
+    aPythonDump << "([";
+
+    int i = 0;
+    for (const SALOMEDS::SObject_wrap& so : sobjects)
+    {
+      if (i > 0)
+      {
+        aPythonDump << ", ";
+      }
+
+      if (!so->_is_nil())
+      {
+        aPythonDump << so;
+      }
+      else
+      {
+        aPythonDump << "mesh_" << i;
+      }
+    }
+
+    aPythonDump << "], status) = " << smesh << functionName;
+  }
 }
 
 //=============================================================================
@@ -1649,6 +1683,91 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
   return aMesh._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Create a mesh and import data from any file supported by meshio library
+ */
+//================================================================================
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMESHIO(const char* theFileName,
+                                                       SMESH::DriverMED_ReadStatus& theStatus)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  checkFileReadable(theFileName);
+
+  MESSAGE("Import part with meshio through an intermediate MED file");
+
+  // Create an object that holds a temp file name and
+  // removes the file when goes out of scope.
+  SMESH_Meshio meshio;
+  const QString tempFileName = meshio.CreateTempFileName(theFileName);
+
+  // Convert temp file into a target one with meshio command
+  meshio.Convert(theFileName, tempFileName);
+
+  // We don't need a python dump from SMESH_Gen_i::CreateMeshesFromMED(), so
+  // we can't use this method as is here. The followed code is an edited part of
+  // copy pasted CreateMeshesFromMED().
+
+  // Retrieve mesh names from the file
+  DriverMED_R_SMESHDS_Mesh myReader;
+  myReader.SetFile(tempFileName.toStdString());
+  myReader.SetMeshId(-1);
+  Driver_Mesh::Status aStatus;
+  list<string> aNames = myReader.GetMeshNames(aStatus);
+  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
+  theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
+
+  if (theStatus == SMESH::DRS_OK)
+  {
+    SALOMEDS::StudyBuilder_var aStudyBuilder;
+    aStudyBuilder = getStudyServant()->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+
+    aResult->length(aNames.size());
+    std::vector<SALOMEDS::SObject_wrap> sobjects;
+    int i = 0;
+
+    // Iterate through all meshes and create mesh objects
+    for (const std::string& meshName : aNames)
+    {
+      // create mesh
+      SMESH::SMESH_Mesh_var mesh = createMesh();
+
+      // publish mesh in the study
+      SALOMEDS::SObject_wrap aSO;
+      if (CanPublishInStudy(mesh))
+        aSO = PublishMesh(mesh.in(), meshName.c_str());
+
+      // Save SO to use in a python dump
+      sobjects.emplace_back(aSO);
+
+      // Read mesh data (groups are published automatically by ImportMEDFile())
+      SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>(GetServant(mesh).in());
+      ASSERT(meshServant);
+      SMESH::DriverMED_ReadStatus status1 =
+        meshServant->ImportMEDFile(tempFileName.toUtf8().data(), meshName.c_str());
+      if (status1 > theStatus)
+        theStatus = status1;
+
+      aResult[i++] = SMESH::SMESH_Mesh::_duplicate(mesh);
+      meshServant->GetImpl().GetMeshDS()->Modified();
+    }
+
+    if (!aStudyBuilder->_is_nil())
+      aStudyBuilder->CommitCommand();
+
+    // Python dump
+    const std::string functionName = std::string(".CreateMeshesFromMESHIO(r'") + theFileName + "')";
+    functionToPythonDump(this, functionName, sobjects);
+  }
+
+  // Dump creation of groups
+  for (CORBA::ULong  i = 0; i < aResult->length(); ++i)
+    SMESH::ListOfGroups_var groups = aResult[i]->GetGroups();
+
+  return aResult._retn();
+}
 
 //=============================================================================
 /*!

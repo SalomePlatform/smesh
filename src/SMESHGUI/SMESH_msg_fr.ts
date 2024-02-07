@@ -885,6 +885,14 @@
         <translation>Fichier GMF</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_MESHIO</source>
+        <translation>autres formats... (meshio)</translation>
+    </message>
+    <message>
+        <source>MEN_EXPORT_MESHIO</source>
+        <translation>autres formats... (meshio)</translation>
+    </message>
+    <message>
         <source>MEN_MERGE</source>
         <translation>Fusionner les nœuds</translation>
     </message>
@@ -1967,6 +1975,10 @@ ce qui peut faire planter l'application. Voulez-vous continuer la visualisation 
 Vérifiez l'espace disponible sur le disque.</translation>
     </message>
     <message>
+        <source>SMESH_EXPORT_FAILED_SHORT</source>
+        <translation>Impossible d'exporter le maillage.</translation>
+    </message>
+    <message>
         <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
         <translation>Il y a des noms de groupes dupliqués dans le maillage &quot;%1&quot;.
 Vous pouvez annuler l'exportation et les renommer,
@@ -1997,6 +2009,22 @@ Ecraser le fichier ?</translation>
 des maillages avec les noms suivants: %1
 Le fichier obtenu pourrait être incorrect.
 Ecraser le fichier ?</translation>
+    </message>
+    <message>
+        <source>SMESH_EXPORT_MESHIO_ONLY_MESH</source>
+        <translation>La mise en œuvre actuelle utilise l'exportation via un fichier MED intermédiaire.
+Cependant, meshio ne prend pas en charge la lecture des fichiers MED comportant plusieurs maillages.
+Les maillages sélectionnés seront enregistrés dans des fichiers séparés.
+
+Voulez-vous continuer?</translation>
+    </message>
+    <message>
+        <source>SMESH_MESHIO_NOT_INSTALLED</source>
+        <translation>Meshio n'est pas installé!
+L'opération sera annulée.
+
+Essayez d'installer meshio avec une commande:
+pip install meshio[all]</translation>
     </message>
     <message>
         <source>EXPORT_NOT_SUPPORTED</source>

@@ -57,6 +57,7 @@
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_subMesh_i.hxx"
+#include "SMESH_Meshio.h"
 
 #include <SALOMEDS_Attributes_wrap.hxx>
 #include <SALOMEDS_wrap.hxx>
@@ -4050,6 +4051,55 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                 << saveNumbers
                 << " )";
   SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//================================================================================
+/*!
+ * \brief Export a part of mesh to a file with meshio library
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportPartToMESHIO(SMESH::SMESH_IDSource_ptr meshPart,
+                                      const char*               file,
+                                      const char*               selectedFilter)
+{
+  // Get default MED version
+  SMESH::long_array_var medVersions = GetMEDVersionsCompatibleForAppend();
+  const CORBA::Long version = medVersions[0];
+  MESSAGE("Export part with meshio through MED version: " << version);
+
+  // Default values are the same as for MED export
+  const bool auto_groups = false;
+  const bool overwrite = true;
+  const bool autoDimension = true;
+  const GEOM::ListOfFields fields;
+  const char* geomAssocFields = "";
+  const double ZTolerance = -1.0;
+  const bool saveNumbers = true;
+
+  // Create an object that holds a temp file name and
+  // removes the file when goes out of scope.
+  SMESH_Meshio meshio(selectedFilter);
+  const QString tempFileName = meshio.CreateTempFileName(file);
+
+  // Export a given mesh into the temp file
+  MEDFileSpeCls spe(tempFileName.toUtf8().data(), overwrite, version);
+  this->ExportPartToMEDCommon(spe, meshPart, auto_groups, autoDimension, fields,
+                               geomAssocFields, ZTolerance, saveNumbers);
+
+  // Convert temp file into a target one with meshio command
+  meshio.Convert(tempFileName, file);
+
+  // Prepare python dump
+  SMESH_TRY;
+
+  TPythonDump() << _this() << ".ExportPartToMESHIO("
+                << meshPart << ", r'"
+                << file << "', '"
+                << selectedFilter << "'"
+                << ")";
+
+  SMESH_CATCH(SMESH::throwCorbaException);
 }
 
 //================================================================================

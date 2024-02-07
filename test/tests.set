@@ -131,6 +131,8 @@ SET(SESSION_FREE_TESTS
   doublenodes_polyhedra.py
   shaper_smesh_groups_without_session.py
   ssl_hdf5_symbols_conflicts.py
+  SMESH_MeshioShapes.py
+  SMESH_MeshioFiles.py
   )
 
 # Additional files to install (not tests)

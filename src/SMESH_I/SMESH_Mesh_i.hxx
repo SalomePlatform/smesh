@@ -248,6 +248,10 @@ public:
                        CORBA::Double             ZTolerance,
                        CORBA::Boolean            saveNumbers );
 
+  void ExportPartToMESHIO(SMESH::SMESH_IDSource_ptr meshPart,
+                          const char*               file,
+                          const char*               selectedFilter);
+
   CORBA::LongLong ExportPartToMEDCoupling(SMESH::SMESH_IDSource_ptr meshPart,
                                           CORBA::Boolean            auto_groups,
                                           CORBA::Boolean            autoDim,
