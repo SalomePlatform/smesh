@@ -563,6 +563,14 @@ Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce mai
         <translation>Appliquer le seuil aux faces partagées/internes</translation>
     </message>
     <message>
+        <source>SET_QUANTA</source>
+        <translation>Utiliser Quanta</translation>
+    </message>
+    <message>
+        <source>QUANTA_VALUE</source>
+        <translation>Valeur Quanta</translation>
+    </message>
+    <message>
         <source>AXIS_X</source>
         <translation>Axe X</translation>
     </message>

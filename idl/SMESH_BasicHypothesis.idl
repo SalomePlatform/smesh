@@ -1062,6 +1062,15 @@ module StdMeshers
      */
     void SetToCreateFaces(in boolean toCreate);
     boolean GetToCreateFaces();
+    
+    /*!
+     * Enable creation of mesh faces.
+     */
+    void SetToUseQuanta(in boolean toUseQuanta);
+    boolean GetToUseQuanta();
+
+    void SetQuanta(in double quanta) raises (SALOME::SALOME_Exception);
+    double GetQuanta();
 
     /*!
      * Return axes at which a number of generated hexahedra is maximal

@@ -157,6 +157,19 @@ public:
   void SetToCreateFaces(bool toCreate);
   bool GetToCreateFaces() const { return _toCreateFaces; }
 
+  /*!
+   * \brief Enables use of quanta for hexahedrons at the solid external boundary
+   */
+  void SetToUseQuanta(bool toUseQuanta);
+  bool GetToUseQuanta() const { return _toUseQuanta; }
+
+  /*!
+   * \brief Value of the quanta (volPolyhedron/volHexahedron) to use
+   * \remark value [0.1, 1.0]
+   */
+  void SetQuanta(const double quanta );
+  double GetQuanta() const { return _quanta; }
+
 
   /*!
    * \brief Return true if parameters are well defined
@@ -193,6 +206,8 @@ public:
   bool   _toConsiderInternalFaces;
   bool   _toUseThresholdForInternalFaces;
   bool   _toCreateFaces;
+  bool   _toUseQuanta;
+  double _quanta;
 };
 
 #endif

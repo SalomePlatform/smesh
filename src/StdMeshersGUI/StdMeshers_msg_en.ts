@@ -587,6 +587,14 @@ Consider creating another hypothesis instead of using this one for this mesh/sub
         <translation>Apply Threshold to Shared / Internal Faces</translation>
     </message>
     <message>
+        <source>SET_QUANTA</source>
+        <translation>Set Quanta</translation>
+    </message>
+    <message>
+        <source>QUANTA_VALUE</source>
+        <translation>Quanta Value</translation>
+    </message>
+    <message>
         <source>AXIS_X</source>
         <translation>Axis X</translation>
     </message>

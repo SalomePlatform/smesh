@@ -65,6 +65,8 @@ This dialog allows to define
 * **Create Faces** check-box activates creation on mesh faces.
 * **Consider Shared and Internal Faces** check-box activates treatment of faces shared by solids and internal. By default the algorithm considers only outer boundaries of the geometry.
 * **Apply Threshold to Shared / Internal Faces** check-box activates application of **Threshold** to cells cut by shared and internal faces, that can cause appearance of holes inside the mesh.
+* **Set Quanta** check-box activates application of **Quanta Value** to replace **polyhedrons** by hexahedrons at the boundary of the geometry. 
+* **Quanta Value** the relation between the volume of a polyhedrons and the equivalent hexahedron at the solid boundary. When **Set Quanta** is checked, those elements are replaced by hexahedrons if the volume of the polyhedron divided by the equivalente hexahedron is bigger than **Quanta**.  
 * **Definition mode** allows choosing how Cartesian structured grid is defined. Location of nodes along each grid axis is defined individually:
     
 	* You can specify the **Coordinates** of grid nodes. **Insert** button inserts a node at **Step** distance (negative or positive) from the selected node. **Delete** button removes the selected node. Double click on a coordinate in the list enables its edition. **Note** that node coordinates are measured along directions of axes that can differ from the directions of the Global Coordinate System.

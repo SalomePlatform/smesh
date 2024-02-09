@@ -147,6 +147,7 @@ private slots:
   void             onOptimalAxes(bool);
   void             onResetAxes(bool);
   void             onGridModeChanged(int);
+  void             onSetQuanta(bool);
 
 private:
   QLineEdit*                  myName;
@@ -155,6 +156,8 @@ private:
   QCheckBox*                  myCreateFaces;
   QCheckBox*                  myConsiderInternalFaces;
   QCheckBox*                  myUseThresholdForInternalFaces;
+  QCheckBox*                  mySetQuanta;
+  SMESHGUI_SpinBox*           myQuanta;
 
   StdMeshersGUI::GridAxisTab* myAxisTabs[3];
   QGroupBox*                  myFixedPointGrp;

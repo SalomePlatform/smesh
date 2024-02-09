@@ -418,6 +418,63 @@ CORBA::Boolean StdMeshers_CartesianParameters3D_i::GetToCreateFaces()
   return GetImpl()->GetToCreateFaces();
 }
 
+
+//=======================================================================
+//function : SetToUseQuanta
+//purpose  : Enables use of quanta value.
+//=======================================================================
+
+void  StdMeshers_CartesianParameters3D_i::SetToUseQuanta(CORBA::Boolean toUseQuanta)
+{
+  if ( GetToUseQuanta() == toUseQuanta )
+    return;
+  GetImpl()->SetToUseQuanta( toUseQuanta );
+  SMESH::TPythonDump() << _this() << ".SetToUseQuanta( " << toUseQuanta << " )";
+}
+
+//=======================================================================
+//function : GetToUseQuanta
+//purpose  : Check the value of toUseQuanta option
+//=======================================================================
+
+CORBA::Boolean StdMeshers_CartesianParameters3D_i::GetToUseQuanta()
+{
+  return GetImpl()->GetToUseQuanta();
+}
+
+//=============================================================================
+/*!
+ *  SetQuanta
+ */
+//=============================================================================
+
+void StdMeshers_CartesianParameters3D_i::SetQuanta(CORBA::Double quanta)
+  
+{
+  ASSERT( myBaseImpl );
+  try {
+    this->GetImpl()->SetQuanta(quanta);
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+  }
+
+  if ( GetToUseQuanta() )
+    // Update Python script
+    SMESH::TPythonDump() << _this() << ".SetQuanta( " << SMESH::TVar(quanta) << " )";
+}
+
+//=============================================================================
+/*!
+ *  GetQuanta
+ */
+//=============================================================================
+
+CORBA::Double StdMeshers_CartesianParameters3D_i::GetQuanta()
+{
+  return this->GetImpl()->GetQuanta();
+}
+
 //=======================================================================
 //function : IsGridBySpacing
 //purpose  : Return true if the grid is defined by spacing functions and

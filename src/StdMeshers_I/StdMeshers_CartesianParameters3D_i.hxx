@@ -125,6 +125,17 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
   void SetToCreateFaces(CORBA::Boolean toCreate);
   CORBA::Boolean GetToCreateFaces();
 
+  /*!
+   * Set quanta option to allow replace polyhedrons by hexahedrons
+   */
+  void SetToUseQuanta(CORBA::Boolean toUseQuanta);
+  CORBA::Boolean GetToUseQuanta();
+
+  /*!
+   * Define the quanta value
+   */
+  void SetQuanta(CORBA::Double quanta);
+  CORBA::Double GetQuanta();
 
   /*!
    * \brief Return true if the grid is defined by spacing functions and
