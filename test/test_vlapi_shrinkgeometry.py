@@ -23,7 +23,6 @@ import salome
 salome.salome_init_without_session()
 
 import GEOM
-import SHAPERSTUDY
 from salome.geom import geomBuilder
 from salome.smesh import smeshBuilder
 from salome.shaper import model
@@ -32,7 +31,7 @@ def assertAlmostEqual(a,b,tol):
    if ( abs(a-b) < tol ):
       return True
    else:
-      print( "not close vals", a, b ) 
+      print( "not close vals", a, b )
       return False
 
 
@@ -69,7 +68,7 @@ assert( BoxProperties[2] > ShrinkBoxProperties[2] )
 
 assert( assertAlmostEqual( BoxProperties[2], (10.0)**(3.0), 1e-12 ) )
 #The geometry is shrank in all directions
-assert( assertAlmostEqual( ShrinkBoxProperties[2], (10.0-offset*2)**(3), 1e-12 ) ) 
+assert( assertAlmostEqual( ShrinkBoxProperties[2], (10.0-offset*2)**(3), 1e-12 ) )
 ####END SHRINK THE BOX IN ALL DIRECTIONS
 
 ####SHRINK THE BOX EXCEPT FOR ONE FACE
@@ -80,7 +79,7 @@ viscousBuilder.setBuilderParameters( offset, 4, 1.2, [ selectableFaces[ 0 ] ], T
 ShrinkBox = viscousBuilder.GetShrinkGeometry()
 ShrinkBoxProperties = geompy.BasicProperties(ShrinkBox)
 selectableShrinkFaces = geompy.SubShapeAllSortedCentresIDs(ShrinkBox, geompy.ShapeType["FACE"])
-assert( assertAlmostEqual( ShrinkBoxProperties[2], (10.0-offset*2)**(2)*(10.0-offset), 1e-12 ) ) 
+assert( assertAlmostEqual( ShrinkBoxProperties[2], (10.0-offset*2)**(2)*(10.0-offset), 1e-12 ) )
 ####END SHRINK THE BOX EXCEPT FOR ONE FACE
 
 ####SHRINK THE BOX IN DIRECTION OF ONLY ONE FACE
@@ -88,7 +87,7 @@ assert( assertAlmostEqual( ShrinkBoxProperties[2], (10.0-offset*2)**(2)*(10.0-of
 viscousBuilder.setBuilderParameters( offset, 4, 1.2, [ selectableFaces[ 0 ] ], False ) # Shrink only the faceid
 ShrinkBox = viscousBuilder.GetShrinkGeometry()
 ShrinkBoxProperties = geompy.BasicProperties(ShrinkBox)
-assert( assertAlmostEqual( ShrinkBoxProperties[2], (10.0)**(2)*(10.0-offset), 1e-12 ) ) 
+assert( assertAlmostEqual( ShrinkBoxProperties[2], (10.0)**(2)*(10.0-offset), 1e-12 ) )
 selectableShrinkFaces = geompy.SubShapeAllSortedCentresIDs(ShrinkBox, geompy.ShapeType["FACE"])
 ####END SHRINK THE BOX IN DIRECTION OF ONLY ONE FACE
 
@@ -110,11 +109,11 @@ viscousBuilder.setBuilderParameters( offset, 4, 1.2 )
 ShrinkSphere = viscousBuilder.GetShrinkGeometry()
 ShrinkSphereProperties = geompy.BasicProperties(ShrinkSphere)
 assert( ShrinkSphereProperties[2] < 4.0/3.0*math.pi * Radius**3 )
-assert( assertAlmostEqual( ShrinkSphereProperties[2], 4.0/3.0*math.pi*(10.0-offset)**(3), 1e-12 ) ) 
+assert( assertAlmostEqual( ShrinkSphereProperties[2], 4.0/3.0*math.pi*(10.0-offset)**(3), 1e-12 ) )
 ####END SHRINK THE ENTIRE SPHERE
 
 ####SHRINK THE ENTIRE CYLINDER
-#Test shrinking cylinder 
+#Test shrinking cylinder
 Cylinder = geompy.MakeCylinderRH(10,30)
 MesherCylinder = smesh_builder.Mesh(Cylinder, "Cylinder")
 viscousBuilder = MesherCylinder.ViscousLayerBuilder()
@@ -155,9 +154,9 @@ sBox  = geompy.MakeHalfPartition( box, plane )
 # 4 left, 34 middle, 50 right
 ignoreFaces = [4,34,50]
 geompy.addToStudy( sBox, "SisterBox" )
-MesherSBox = smesh_builder.Mesh( sBox, "SisterBoxMesh") 
+MesherSBox = smesh_builder.Mesh( sBox, "SisterBoxMesh")
 ViscousBuilder = MesherSBox.ViscousLayerBuilder()
-thickness = 20	
+thickness = 20
 numberOfLayers = 10
 stretchFactor = 1.5
 ViscousBuilder.setBuilderParameters( thickness, numberOfLayers, stretchFactor, ignoreFaces )
@@ -197,7 +196,7 @@ assertAlmostEqual( ShrinkFaceProperties[1], (5.0-offset*2.0)**(2.0), 1e-12 )
 ######SHRINK CIRCLE
 Disk = geompy.MakeDiskR(5, 1)
 
-#Test with circle 
+#Test with circle
 MesherCircle = smesh_builder.Mesh(Disk, "Disk")
 viscousBuilder = MesherCircle.ViscousLayerBuilder()
 viscousBuilder.setBuilderParameters( offset, numberOfLayers, 1.2 )

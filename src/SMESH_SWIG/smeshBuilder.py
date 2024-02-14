@@ -7821,13 +7821,24 @@ class ParallelMesh(Mesh):
         if not isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
             raise ValueError("geom argument must be a geometry")
 
-        import SHAPERSTUDY
-        import shaperBuilder
+        try:
+            import SHAPERSTUDY
+            shaper_object = SHAPERSTUDY.SHAPERSTUDY_ORB._objref_SHAPER_Object
+            has_shaper = True
+        except ImportError:
+            shaper_object = int
+            has_shaper = False
+
         # If we have a shaper object converting it into geom (temporary solution)
-        if isinstance(geom, SHAPERSTUDY.SHAPERSTUDY_ORB._objref_SHAPER_Object):
-            self._geom_obj = _shaperstudy2geom(geompyD, geom)
+        if isinstance(geom, shaper_object):
+            geom_obj = _shaperstudy2geom(geompyD, geom)
+        elif isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
+            geom_obj = geom
         else:
-            self._geom_obj = geom
+            msg= ""
+            if not has_shaper:
+                msg = "\nShaper was not compiled"
+            raise Exception("Could not handle geom format {}.{} ".format(type(geom), msg))
 
         # Splitting geometry into one geom containing 1D and 2D elements and a
         # list of 3D elements

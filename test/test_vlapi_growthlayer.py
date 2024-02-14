@@ -23,7 +23,6 @@ import salome
 salome.salome_init_without_session()
 
 import GEOM
-import SHAPERSTUDY
 from salome.geom import geomBuilder
 from salome.smesh import smeshBuilder
 from salome.shaper import model
@@ -32,7 +31,7 @@ def assertAlmostEqual(a,b,tol):
    if ( abs(a-b) < tol ):
       return True
    else:
-      print( "not close vals", a, b ) 
+      print( "not close vals", a, b )
       return False
 
 
@@ -66,7 +65,7 @@ ShrinkBox = viscousBuilder.GetShrinkGeometry()
 MesherShinkBox = smesh_builder.Mesh(ShrinkBox, "ShrinkMesh")
 ShrinkBoxMesh = MesherShinkBox.Tetrahedron(smeshBuilder.NETGEN_1D2D3D)
 
-#Compute 
+#Compute
 success = MesherShinkBox.Compute()
 assert( success )
 assert( MesherShinkBox.NbVolumes() == 5 ) # if Fails! change the default value of volumes when meshing with Netgen!
@@ -82,7 +81,7 @@ ShrinkBox2 = viscousBuilder.GetShrinkGeometry()
 MesherShinkBox2 = smesh_builder.Mesh(ShrinkBox2, "ShrinkMesh2")
 ShrinkBoxMesh2 = MesherShinkBox2.Tetrahedron(smeshBuilder.NETGEN_1D2D3D)
 
-#Compute 
+#Compute
 success = MesherShinkBox2.Compute()
 assert( success )
 
@@ -112,7 +111,7 @@ algo = MesherShinkFace.Segment()
 numOfSegments = 4
 algo.NumberOfSegments(numOfSegments)
 ShrinkFaceMesh = MesherShinkFace.Triangle()
-#Compute 
+#Compute
 success = MesherShinkFace.Compute()
 assert( success )
 numFaceElementShrinkGeom = MesherShinkFace.NbFaces()
@@ -135,7 +134,7 @@ numOfSegments = 12
 algo.NumberOfSegments(numOfSegments)
 ShrinkCircleMesh = MesherShinkCircle.Triangle()
 
-#Compute 
+#Compute
 success = MesherShinkCircle.Compute()
 numFaceElementShrinkGeom = MesherShinkCircle.NbFaces()
 assert( success )
