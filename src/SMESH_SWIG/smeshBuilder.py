@@ -7831,9 +7831,9 @@ class ParallelMesh(Mesh):
 
         # If we have a shaper object converting it into geom (temporary solution)
         if isinstance(geom, shaper_object):
-            geom_obj = _shaperstudy2geom(geompyD, geom)
+            self._geom_obj = _shaperstudy2geom(geompyD, geom)
         elif isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
-            geom_obj = geom
+            self._geom_obj = geom
         else:
             msg= ""
             if not has_shaper:
