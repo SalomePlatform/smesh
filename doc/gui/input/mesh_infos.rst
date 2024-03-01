@@ -8,15 +8,15 @@ The user can obtain information about the selected mesh object (mesh, sub-mesh o
 
 .. |img| image:: ../images/image49.png
 
-To view the **Mesh Information**, select your mesh, sub-mesh or group in the **Object Browser** and invoke **Mesh Information** item from the **Mesh** menu or from the context menu, or click *"Mesh Information"* button |img| in the toolbar. 
+To view the **Mesh Information**, select your mesh, sub-mesh or group in the **Object Browser** and invoke **Mesh Information** item from the **Mesh** menu or from the context menu, or click *"Mesh Information"* button |img| in the toolbar.
 
 
 The **Mesh Information** dialog box provides three tab pages:
 
 * :ref:`Base Info <advanced_mesh_infos_anchor>` - to show base and quantitative information about the selected mesh object.
 * :ref:`Element Info <mesh_element_info_anchor>` - to show detailed information about the selected mesh nodes or elements.
-* :ref:`Additional Info <mesh_addition_info_anchor>` - to show additional information available for the selected mesh, sub-mesh or group object. 
-* :ref:`Quality Info <mesh_quality_info_anchor>` - to show overall quality information about the selected mesh, sub-mesh or group object. 
+* :ref:`Additional Info <mesh_addition_info_anchor>` - to show additional information available for the selected mesh, sub-mesh or group object.
+* :ref:`Quality Info <mesh_quality_info_anchor>` - to show overall quality information about the selected mesh, sub-mesh or group object.
 
 .. _dump_mesh_infos:
 
@@ -68,7 +68,7 @@ The **Element Info** tab page of the dialog box gives detailed information about
 	* Position on a shape (for meshes built on a geometry);
 	* Groups information (names of groups the element belongs to).
 
-	.. image:: ../images/eleminfo2.png 
+	.. image:: ../images/eleminfo2.png
 		:align: center
 
 	.. centered::
@@ -180,7 +180,4 @@ The **Quality Info** tab provides overall information about mesh quality control
 .. note::
 	The plot functionality is available only if the GUI module is built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI module).
 
-See the :ref:`TUI Example <tui_viewing_mesh_infos>`.
-
-
-	
+See the :ref:`TUI Example <tui_viewing_mesh_infos>` for basic mesh information and :ref:`TUI Example <tui_node_element_mesh_infos>`.
