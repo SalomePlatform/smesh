@@ -151,6 +151,7 @@ private:
   void                           updateHypoSets();
   void                           setFilteredAlgoData();
   QStringList                    getHypoNames();
+  void                           logSmeshParams();
 
 private:
 

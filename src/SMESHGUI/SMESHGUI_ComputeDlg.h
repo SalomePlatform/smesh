@@ -95,6 +95,7 @@ protected:
                                                     const QString&);
 
   virtual bool                   isValid( SUIT_Operation* theOp ) const;
+  void                           logMeshSize();
     
 protected slots:
   virtual bool                   onApply();

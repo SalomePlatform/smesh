@@ -127,6 +127,57 @@ LightApp_Dialog* SMESHGUI_MeshOp::dlg() const
 
 //================================================================================
 /*!
+ * \brief Log meshers info
+*/
+//================================================================================
+void SMESHGUI_MeshOp::logSmeshParams()
+{
+  QString mesherType;
+  int curMeshType = myDlg->currentMeshType();
+  switch ( curMeshType ) {
+  case MT_ANY:
+    mesherType = "Any";
+    break;
+  case MT_TRIANGULAR:
+    mesherType = "Triangular";
+    break;
+  case MT_QUADRILATERAL:
+    mesherType = "Quadrilateral";
+    break;
+  case MT_TETRAHEDRAL:
+    mesherType = "Tetrahedral";
+    break;
+  case MT_HEXAHEDRAL:
+    mesherType = "Hexahedral";
+    break;
+  default:
+    mesherType = "";
+  }
+
+  QString aMessage = QString("Mesh type is %1").arg(mesherType);
+  CAM_Application::logStructuredUserEvent( "Mesh",
+                                           "create mesh",
+                                           "",
+                                           "",
+                                           aMessage);
+
+  for ( int dim = 0; dim <= 3; ++dim )
+  {
+    HypothesisData * curAlgo = hypData( dim, Algo, currentHyp( dim, Algo ));
+    if(curAlgo)
+    {
+      aMessage = QString("%1D algorithm is %2").arg(dim).arg(curAlgo->Label);
+      CAM_Application::logStructuredUserEvent( "Mesh",
+                                           "create mesh",
+                                           "",
+                                           "",
+                                           aMessage);
+    }
+  }
+}
+
+//================================================================================
+/*!
  * \brief Creates or edits mesh
   * \retval bool - TRUE if operation is performed successfully, FALSE otherwise
  *
@@ -182,6 +233,7 @@ bool SMESHGUI_MeshOp::onApply()
   {
     if ( myToCreate )
       setDefaultName();
+    //connect(aAction, SIGNAL(triggered(bool)), this, SLOT(logSmeshParams()));
   }
   else
   {
@@ -190,6 +242,7 @@ bool SMESHGUI_MeshOp::onApply()
     SUIT_MessageBox::warning( myDlg, tr( "SMESH_ERROR" ), aMess );
   }
 
+  logSmeshParams();
   myHypoSet = 0;
 
   return aResult;

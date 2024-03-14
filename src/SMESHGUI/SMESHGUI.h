@@ -212,6 +212,7 @@ private:
                                                   const bool = false);
 
   void                            connectView( const SUIT_ViewWindow* );
+  void                            logSmeshGUIEvent(int theCommandID);
  
 
 private :
