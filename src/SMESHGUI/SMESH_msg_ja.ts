@@ -40,6 +40,10 @@
       <translation>タイプで要素をグループ化</translation>
     </message>
     <message>
+      <source>STRUCTUREDCGNS</source>
+      <translation>CGNS 構造化バージョンのエクスポート</translation>
+    </message>
+    <message>
       <source>GMF_ASCII_FILES_FILTER</source>
       <translation>GMFアスキーファイル</translation>
     </message>

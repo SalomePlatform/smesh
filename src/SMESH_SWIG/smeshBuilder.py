@@ -2588,6 +2588,26 @@ class Mesh(metaclass = MeshMeta):
             meshPart = self.mesh
         self.mesh.ExportCGNS(meshPart, f, overwrite, groupElemsByType)
 
+    def ExportStructuredCGNS(self, f, overwrite=1, meshPart=None ):
+        """
+        Export the mesh in a file in Structured CGNS format
+
+        Parameters:
+                f: is the file name
+                overwrite: boolean parameter for overwriting/not overwriting the file
+                meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh               
+        """          
+
+        unRegister = genObjUnRegister()
+        if isinstance( meshPart, list ):
+            meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+            unRegister.set( meshPart )
+        if isinstance( meshPart, Mesh ):
+            meshPart = meshPart.mesh
+        elif not meshPart:
+            meshPart = self.mesh
+        self.mesh.ExportStructuredCGNS(meshPart, f, overwrite)        
+
     def ExportGMF(self, f, meshPart=None):
         """
         Export the mesh in a file in GMF format.

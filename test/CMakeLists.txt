@@ -46,3 +46,22 @@ FOREACH(_test ${GOOD_TESTS})
            COMMAND ${PYTHON_EXECUTABLE} -B ${CMAKE_SOURCE_DIR}/test/test_helper.py ${CMAKE_CURRENT_SOURCE_DIR}/${_test})
   SET_TESTS_PROPERTIES(${testname} PROPERTIES ENVIRONMENT "${tests_env}" LABELS "tests")
 ENDFOREACH()
+
+INCLUDE_DIRECTORIES( 
+  ${PROJECT_SOURCE_DIR}/src/SMESHUtils
+  ${PROJECT_SOURCE_DIR}/src/SMDS
+  )
+
+FOREACH(_test ${CPP_TESTS})
+  GET_FILENAME_COMPONENT(testname ${_test} NAME_WE)
+  SET(testname "TESTS_${testname}")
+  
+  add_executable(${_test} ${_test}.cxx)
+  target_link_libraries(${_test} SMESHUtils SMDS )
+
+  ADD_TEST(NAME ${testname}
+           COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/${_test} )
+  SET_TESTS_PROPERTIES(${testname} PROPERTIES ENVIRONMENT "${tests_env}" LABELS "tests")
+ENDFOREACH()
+
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${CPP_TESTS} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ DESTINATION ${TEST_INSTALL_DIRECTORY})

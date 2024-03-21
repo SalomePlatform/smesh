@@ -44,6 +44,10 @@
         <translation>Groupe les éléments par type</translation>
     </message>
     <message>
+        <source>STRUCTUREDCGNS</source>
+        <translation>Format structuré (uniquement pour les maillages Hexahedron(i,j,k) et Quadrangle: Mapping)</translation>
+    </message>
+    <message>
         <source>GMF_ASCII_FILES_FILTER</source>
         <translation>Fichiers GMF ASCII</translation>
     </message>

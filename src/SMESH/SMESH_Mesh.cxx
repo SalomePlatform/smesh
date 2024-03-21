@@ -53,6 +53,7 @@
 #ifdef WITH_CGNS
 #include "DriverCGNS_Read.hxx"
 #include "DriverCGNS_Write.hxx"
+#include "DriverStructuredCGNS_Write.hxx"
 #endif
 
 #include <GEOMUtils.hxx>
@@ -1682,6 +1683,51 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
 
   if ( res == Driver_Mesh::DRS_TOO_LARGE_MESH )
     throw TooLargeForExport("CGNS");
+
+  if ( res != Driver_Mesh::DRS_OK )
+    throw SALOME_Exception("Export failed");
+}
+//================================================================================
+/*!
+ * \brief Export the mesh to the StructuredCGNS file
+ */
+//================================================================================
+
+void SMESH_Mesh::ExportStructuredCGNS(const char * file, const SMESHDS_Mesh* meshPart, const char * meshName)
+{
+
+  int res = Driver_Mesh::DRS_OK;
+  SMESH_TRY;
+
+#ifdef WITH_CGNS
+  auto myMesh =  meshPart ? (SMESHDS_Mesh*) meshPart : _meshDS;
+  
+  if ( myMesh->HasSomeStructuredGridFilled() )
+  {
+    DriverStructuredCGNS_Write writer;
+    writer.SetFile( file );
+    writer.SetMesh( const_cast<SMESHDS_Mesh*>( myMesh ));
+    writer.SetMeshName( SMESH_Comment("Mesh_") << myMesh->GetPersistentId());
+    if ( meshName && meshName[0] )
+      writer.SetMeshName( meshName );
+
+    res = writer.Perform();
+    if ( res != Driver_Mesh::DRS_OK )
+    {
+      SMESH_ComputeErrorPtr err = writer.GetError();
+      if ( err && !err->IsOK() && !err->myComment.empty() )
+        throw SALOME_Exception(("Export failed: " + err->myComment ).c_str() );
+    }
+  }
+
+#endif
+  SMESH_CATCH( SMESH::throwSalomeEx );
+
+  if ( res == Driver_Mesh::DRS_TOO_LARGE_MESH )
+  {
+    std::cout << "\n\n\n Going into too large mesh file path\n\n\n\n";
+    throw TooLargeForExport("CGNS");
+  }
 
   if ( res != Driver_Mesh::DRS_OK )
     throw SALOME_Exception("Export failed");

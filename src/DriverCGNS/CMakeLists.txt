@@ -50,6 +50,7 @@ SET(_link_LIBRARIES
 SET(MeshDriverCGNS_HEADERS
   DriverCGNS_Read.hxx
   DriverCGNS_Write.hxx
+  DriverStructuredCGNS_Write.hxx
   SMESH_DriverCGNS.hxx
 )
 
@@ -59,6 +60,7 @@ SET(MeshDriverCGNS_HEADERS
 SET(MeshDriverCGNS_SOURCES
   DriverCGNS_Read.cxx
   DriverCGNS_Write.cxx
+  DriverStructuredCGNS_Write.cxx
 )
 
 # --- rules ---

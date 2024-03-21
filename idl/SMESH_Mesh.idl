@@ -756,6 +756,9 @@ module SMESH
                      in string         file,
                      in boolean        overwrite,
                      in boolean        groupElemsByType) raises (SALOME::SALOME_Exception);
+    void ExportStructuredCGNS( in SMESH_IDSource meshPart,
+                                in string         file,
+                                in boolean        overwrite) raises (SALOME::SALOME_Exception);
     void ExportGMF( in SMESH_IDSource  meshPart,
                     in string          file,
                     in boolean         withRequiredGroups) raises (SALOME::SALOME_Exception);

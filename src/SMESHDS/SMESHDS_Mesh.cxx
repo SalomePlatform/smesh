@@ -37,8 +37,7 @@
 #include "SMESHDS_Script.hxx"
 #include "SMESHDS_TSubMeshHolder.hxx"
 
-#include <Standard_ErrorHandler.hxx>
-#include <Standard_OutOfRange.hxx>
+// #include <BRep_Tool.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS_Edge.hxx>
@@ -47,6 +46,9 @@
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Solid.hxx>
 #include <TopoDS_Vertex.hxx>
+
+#include <Standard_ErrorHandler.hxx>
+#include <Standard_OutOfRange.hxx>
 
 #include "utilities.h"
 
@@ -1030,6 +1032,8 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
 
 void SMESHDS_Mesh::ClearMesh()
 {
+  myRegularGrid.Clear();
+
   myScript->ClearMesh();
   SMDS_Mesh::Clear();
 
@@ -1483,6 +1487,7 @@ void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement* anElement,
 //=======================================================================
 SMESHDS_Mesh::~SMESHDS_Mesh()
 {
+  myRegularGrid.Clear();
   // myScript
   delete myScript;
   // submeshes
@@ -2279,4 +2284,82 @@ bool SMESHDS_Mesh::ModifyCellNodes(vtkIdType vtkVolId, std::map<int,int> localCl
 {
   myGrid->ModifyCellNodes(vtkVolId, localClonedNodeIds);
   return true;
+}
+
+/* Create a structured grid associated to the shapeId meshed
+ * @remark the grid dimension (nx, ny, nz) is not associated to a space direction, those dimensions denotes which index 
+ *          run faster in the nested loop defining the nodes of a structured grid.
+ *          for( k in range(0,nz) )
+ *            for( j in range(0,ny) )
+ *              for( i in range(0,nx) )
+ * @param shape been meshed, pass the shape that would be passed to SetNodeOnFace or SetNodeInVolume method.
+ * @param nx, faster dimension
+ * @param ny, medium dimension
+ * @param nz, slower dimension
+ * @return define a new * SMESH_StructuredGrid to the shapeId.
+ */
+void SMESHDS_Mesh::SetStructuredGrid( const TopoDS_Shape & shape, const int nx, const int ny, const int nz )
+{
+  int index = myIndexToShape.FindIndex(shape);
+  if ( index != 0 )
+  {
+    if ( myRegularGrid.IsBound(index) )
+      myRegularGrid.UnBind(index);
+ 
+    myRegularGrid.Bind(index, std::make_shared<SMESHUtils::SMESH_RegularGrid>(index,nx,ny,nz));
+  }
+  
+}
+
+void SMESHDS_Mesh::SetNodeOnStructuredGrid( const TopoDS_Shape & shape, const std::shared_ptr<gp_Pnt>& P, const int iIndex, const int jIndex, const int kIndex )
+{
+  int index = myIndexToShape.FindIndex(shape);
+  if ( index != 0 && myRegularGrid.IsBound(index) )
+    myRegularGrid.Seek(index)->get()->SetNode( P, iIndex, jIndex, kIndex );
+}
+
+void SMESHDS_Mesh::SetNodeOnStructuredGrid( const TopoDS_Shape & shape, const SMDS_MeshNode* P, const int iIndex, const int jIndex, const int kIndex )
+{
+  int index = myIndexToShape.FindIndex(shape);
+  if ( index != 0 && myRegularGrid.IsBound(index) )
+    myRegularGrid.Seek(index)->get()->SetNode( P, iIndex, jIndex, kIndex );
+}
+
+void SMESHDS_Mesh::SetNodeOnStructuredGrid( const TopoDS_Shape & shape, const SMDS_MeshNode* P, const int index )
+{
+  int shapeIndex = myIndexToShape.FindIndex(shape);
+  if ( shapeIndex != 0 && myRegularGrid.IsBound(shapeIndex) )
+    myRegularGrid.Seek(shapeIndex)->get()->SetNode( P, index );
+}
+
+bool SMESHDS_Mesh::HasStructuredGridFilled( const TopoDS_Shape & shape ) const
+{
+  int index = myIndexToShape.FindIndex(shape);
+  if ( index != 0 && myRegularGrid.IsBound(index) )
+    return true;
+  else
+    return false;
+}
+
+bool SMESHDS_Mesh::HasSomeStructuredGridFilled() const
+{
+  bool hasSomeStructuredGrid = false;
+  for ( TopExp_Explorer fEx( myShape, TopAbs_SOLID ); fEx.More(); fEx.Next() )
+  {
+    TopoDS_Solid solid = TopoDS::Solid(fEx.Current());   
+    if ( HasStructuredGridFilled( solid ) ) hasSomeStructuredGrid = true;
+  }
+  for ( TopExp_Explorer fEx( myShape, TopAbs_FACE ); fEx.More(); fEx.Next() )
+  {
+    TopoDS_Face face = TopoDS::Face(fEx.Current());   
+    if ( HasStructuredGridFilled( face ) ) hasSomeStructuredGrid = true;
+  }
+  return hasSomeStructuredGrid;
+}
+
+const std::shared_ptr<SMESHUtils::SMESH_RegularGrid>& SMESHDS_Mesh::GetTheGrid( const TopoDS_Shape & shape )
+{
+  int index = myIndexToShape.FindIndex(shape);
+  if ( index != 0 && myRegularGrid.IsBound(index) )
+    return *myRegularGrid.Seek(index);
 }

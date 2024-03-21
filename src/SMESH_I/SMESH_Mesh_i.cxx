@@ -4511,7 +4511,7 @@ void SMESH_Mesh_i::ExportPartToSTL(::SMESH::SMESH_IDSource_ptr meshPart,
 
 //================================================================================
 /*!
- * \brief Export a part of mesh to an STL file
+ * \brief Export a part of mesh to an CGNS file
  */
 //================================================================================
 
@@ -4543,6 +4543,50 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
 
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportCGNS( "
                 << meshPart<< ", r'" << file << "', " << overwrite << ")";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+#else
+  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
+#endif
+}
+
+//================================================================================
+/*!
+ * \brief Export a part of mesh to an StructuredCGNS file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportStructuredCGNS( SMESH::SMESH_IDSource_ptr meshPart,
+                                          const char*               file,
+                                          CORBA::Boolean            overwrite )
+{
+#ifdef WITH_CGNS
+  SMESH_TRY;
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  PrepareForWriting(file,overwrite);
+
+  std::string meshName("");
+  SALOMEDS::SObject_wrap so = _gen_i->ObjectToSObject( meshPart );
+  if ( !so->_is_nil() )
+  {
+    CORBA::String_var name = so->GetName();
+    meshName = name.in();
+  }
+  SMESH_TRY;
+  
+  SMESH::SMESH_Mesh_var mesh = meshPart->GetMesh();
+  SMESH_Mesh_i*       mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
+  mesh_i->Load();
+  auto myMesh                = mesh_i->GetImpl().GetMeshDS();
+  _impl->ExportStructuredCGNS(file, myMesh, meshName.c_str());
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportStructuredCGNS( "
+                "r'" << file << "', " << overwrite << ", " << meshPart << ")";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 

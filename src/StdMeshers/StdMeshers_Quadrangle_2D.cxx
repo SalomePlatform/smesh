@@ -431,6 +431,16 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
   SMESHDS_Mesh *  meshDS = aMesh.GetMeshDS();
   Handle(Geom_Surface) S = BRep_Tool::Surface(aFace);
   int i,j,    geomFaceID = meshDS->ShapeToIndex(aFace);
+
+  meshDS->SetStructuredGrid( aFace, nbhoriz, nbvertic );
+  for (j = 0; j < nbvertic; j++)
+    for (i = 0; i < nbhoriz; i++)
+    {
+      UVPtStruct& uvPnt = quad->UVPt( i, j );
+      auto P  = std::make_shared<gp_Pnt>( S->Value( uvPnt.u, uvPnt.v ).Coord() );
+      meshDS->SetNodeOnStructuredGrid( aFace, P, i, j );
+    }
+    
   for (i = 1; i < nbhoriz - 1; i++)
     for (j = 1; j < nbvertic - 1; j++)
     {

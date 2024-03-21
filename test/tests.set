@@ -122,6 +122,11 @@ SET(GOOD_TESTS
   SMESH_test5.py
   )
 
+
+SET(CPP_TESTS
+  SMESH_RegularGridTest
+)
+
 # The following tests can be executed without driver, just by python.
 # ----------------------------------------------------------------------------
 

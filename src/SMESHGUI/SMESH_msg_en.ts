@@ -44,6 +44,10 @@
         <translation>Group elements by type</translation>
     </message>
     <message>
+        <source>STRUCTUREDCGNS</source>
+        <translation>Structured version (only for Hexahedron(i,j,k) and Quadrangle: Mapping meshes)</translation>
+    </message>
+    <message>
         <source>GMF_ASCII_FILES_FILTER</source>
         <translation>GMF ASCII files</translation>
     </message>

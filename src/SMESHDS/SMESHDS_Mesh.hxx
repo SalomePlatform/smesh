@@ -30,6 +30,8 @@
 #include "SMESH_SMESHDS.hxx"
 
 #include "SMDS_Mesh.hxx"
+#include "SMESH_Utils.hxx"
+#include "SMESH_RegularGrid.hxx"
 #include "SMESHDS_SubMesh.hxx"
 
 #include <Basics_OCCTVersion.hxx>
@@ -679,6 +681,13 @@ class SMESHDS_EXPORT SMESHDS_Mesh : public SMDS_Mesh
   void CleanDownWardConnectivity();
   void BuildDownWardConnectivity(bool withEdges);
 
+  virtual void SetStructuredGrid( const TopoDS_Shape & shape, const int nx, const int ny, const int nz = 1 );
+  virtual void SetNodeOnStructuredGrid( const TopoDS_Shape & shape, const std::shared_ptr<gp_Pnt>& P, const int iIndex, const int jIndex, const int kIndex = 0 );
+  virtual void SetNodeOnStructuredGrid( const TopoDS_Shape & shape, const SMDS_MeshNode* point, const int iIndex, const int jIndex, const int kIndex = 0 );
+  virtual void SetNodeOnStructuredGrid( const TopoDS_Shape & shape, const SMDS_MeshNode* point, const int index );
+  virtual bool HasStructuredGridFilled( const TopoDS_Shape & shape ) const;
+  virtual bool HasSomeStructuredGridFilled() const;
+  virtual const std::shared_ptr<SMESHUtils::SMESH_RegularGrid>& GetTheGrid( const TopoDS_Shape & shape );
   ~SMESHDS_Mesh();
   
  private:
@@ -701,6 +710,9 @@ class SMESHDS_EXPORT SMESHDS_Mesh : public SMDS_Mesh
 
   int add( const SMDS_MeshElement* elem, SMESHDS_SubMesh* subMesh );
   SMESHDS_SubMesh* getSubmesh( const TopoDS_Shape & shape);
+
+  // Index the regular grid associated to the mesh in the geometry index
+  NCollection_DataMap<int,std::shared_ptr<SMESHUtils::SMESH_RegularGrid>> myRegularGrid;
 };
 
 

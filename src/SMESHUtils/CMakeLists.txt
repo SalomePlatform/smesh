@@ -63,6 +63,8 @@ SET(SMESHUtils_HEADERS
   SMESH_Indexer.hxx
   SMESH_BoostTxtArchive.hxx
   SMESH_MGLicenseKeyGen.hxx
+  SMESH_RegularGrid.hxx
+  SMESH_RegularGridTemplate.hxx
   )
 
 # --- sources ---
@@ -88,6 +90,7 @@ SET(SMESHUtils_SOURCES
   SMESH_PolyLine.cxx
   SMESH_BoostTxtArchive.cxx
   SMESH_MGLicenseKeyGen.cxx
+  SMESH_RegularGrid.cxx
   )
 
 # --- rules ---

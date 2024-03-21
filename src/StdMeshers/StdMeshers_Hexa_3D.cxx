@@ -897,7 +897,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
         // compute internal node coordinates
         gp_XYZ coords;
         SMESH_Block::ShellPoint( params, pointsOnShapes, coords );
-        column[ z ] = helper.AddNode( coords.X(), coords.Y(), coords.Z() );
+        column[ z ] = helper.AddNode( coords.X(), coords.Y(), coords.Z() );            
 
       } // z loop
       if ( toRenumber )
@@ -926,7 +926,6 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 
   // 5) Create hexahedrons
   // ---------------------
-
   for ( x = 0; x < xSize-1; ++x ) {
     for ( y = 0; y < ySize-1; ++y ) {
       vector< const SMDS_MeshNode* >& col00 = columns[ colIndex( x, y )];
@@ -936,12 +935,16 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
       for ( z = 0; z < zSize-1; ++z )
       {
         // bottom face normal of a hexa mush point outside the volume
-        if ( toRenumber )
+        if ( toRenumber )    
+        {
           helper.AddVolume(col00[z], col01[z], col01[z+1], col00[z+1],
-                           col10[z], col11[z], col11[z+1], col10[z+1]);
+                           col10[z], col11[z], col11[z+1], col10[z+1]);                  
+        }              
         else
+        {
           helper.AddVolume(col00[z],   col01[z],   col11[z],   col10[z],
-                           col00[z+1], col01[z+1], col11[z+1], col10[z+1]);
+                           col00[z+1], col01[z+1], col11[z+1], col10[z+1]);          
+        }            
       }
     }
   }
@@ -949,6 +952,11 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   if ( toRenumber )
     renumHelper.DoReplaceNodes();
 
+  meshDS->SetStructuredGrid( aShape, zSize, ySize, xSize );
+  for ( x = 0; x < xSize; ++x )
+    for ( y = 0; y < ySize; ++y )
+      for ( z = 0; z < zSize; ++z )
+        meshDS->SetNodeOnStructuredGrid( aShape, columns[colIndex(x,y)][z], z, y, x );
 
   if ( _blockRenumberHyp )
   {

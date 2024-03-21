@@ -305,6 +305,9 @@ class SMESH_EXPORT SMESH_Mesh
                   const SMESHDS_Mesh* mesh,
                   const char *        meshName = 0,
                   const bool          groupElemsByType = false);
+  void ExportStructuredCGNS(const char *        file,
+                            const SMESHDS_Mesh* mesh,
+                            const char *        meshName = 0);
   void ExportGMF(const char *        file,
                  const SMESHDS_Mesh* mesh,
                  bool                withRequiredGroups = true );

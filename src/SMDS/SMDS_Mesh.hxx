@@ -737,8 +737,7 @@ public:
                               const int                       nbnodes,
                               std::set<const SMDS_MeshNode*>& oldNodes );
 
-  void setNbShapes( size_t nbShapes );
-
+  void setNbShapes( size_t nbShapes );  
 
   // Fields PRIVATE
 
@@ -766,7 +765,7 @@ public:
   double ymin;
   double ymax;
   double zmin;
-  double zmax;
+  double zmax;  
 };
 
 

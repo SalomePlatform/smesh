@@ -218,6 +218,11 @@ public:
   void ExportDAT( const char* file, const CORBA::Boolean renumber );
   void ExportUNV( const char* file, const CORBA::Boolean renumber  );
   void ExportSTL( const char* file, bool isascii );
+
+  void ExportStructuredCGNS(SMESH::SMESH_IDSource_ptr meshPart,
+                            const char*               file,
+                            CORBA::Boolean            overwrite);
+
   void ExportCGNS(SMESH::SMESH_IDSource_ptr meshPart,
                   const char*               file,
                   CORBA::Boolean            overwrite,
@@ -268,7 +273,7 @@ public:
                        CORBA::Boolean            renumber);
   void ExportPartToSTL(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,
-                       CORBA::Boolean            isascii);
+                       CORBA::Boolean            isascii);                       
 
   CORBA::Double GetComputeProgress();
 

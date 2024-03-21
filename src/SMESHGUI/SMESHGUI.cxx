@@ -607,7 +607,7 @@ namespace
     {
       format = "CGNS";
       notSupportedElemTypes.push_back( SMESH::Entity_Ball );
-    }
+    }    
     else if ( isGMF )
     {
       format = "GMF";
@@ -677,6 +677,7 @@ namespace
     bool   toFindOutDim = true;
     bool    saveNumbers = resMgr->booleanValue( "SMESH", "med_save_numbers", true );
     bool     toRenumber = true;
+    bool  structureCGNS = false;
     double         zTol = resMgr->doubleValue( "SMESH", "med_ztolerance", 0. );
 
     QString aFilter, aTitle = QObject::tr("SMESH_EXPORT_MESH");
@@ -697,20 +698,51 @@ namespace
                                             anInitialPath + QString("/") + aMeshName,
                                             aFilter, aTitle, false);
     }
-    else if ( isCGNS || isUNV || isDAT ) // Export to [ CGNS | UNV | DAT ] - one option
+    else if ( isCGNS )
     {
-      const char* theOptionResource = isCGNS ? "cgns_group_elems_by_type" : "export_renumber";
+      const char* theOptionResource = "cgns_group_elems_by_type";
       bool option = resMgr->booleanValue( "SMESH", theOptionResource, false );
 
       QStringList checkBoxes;
-      checkBoxes << QObject::tr( isCGNS ? "CGNS_EXPORT_ELEMS_BY_TYPE" : "SMESH_RENUMBER" );
+      checkBoxes << QObject::tr( "CGNS_EXPORT_ELEMS_BY_TYPE" ) << QObject::tr("STRUCTUREDCGNS");
+
+      SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
+      
+      fd->setWindowTitle( aTitle );
+      fd->setNameFilter( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
+
+      if ( !anInitialPath.isEmpty() )
+        fd->setDirectory( anInitialPath );
+      fd->selectFile( aMeshName );
+      SMESHGUI_FileValidator* fv = new SMESHGUI_FileValidator( fd );
+      fd->setValidator( fv );
+      fd->SetChecked( option, 0 );
+      
+      if ( fd->exec() )
+      {
+        aFilename     = fd->selectedFile();
+        structureCGNS = fd->IsChecked( 1 );        
+      }
+
+      toOverwrite = fv->isOverwrite( aFilename );
+      option      = fd->IsChecked( 0 );
+      SMESHGUI::resourceMgr()->setValue("SMESH", theOptionResource, option );
+      toCreateGroups = option;
+      
+      delete fd;
+    }
+    else if ( isUNV || isDAT ) // Export to [ UNV | DAT ] - one option
+    {
+      const char* theOptionResource = "export_renumber";
+      bool option = resMgr->booleanValue( "SMESH", theOptionResource, false );
+
+      QStringList checkBoxes;
+      checkBoxes << QObject::tr( "SMESH_RENUMBER" );
 
       SalomeApp_CheckFileDlg* fd =
         new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
       fd->setWindowTitle( aTitle );
-      if ( isCGNS )
-        fd->setNameFilter( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
-      else if ( isUNV )
+      if ( isUNV )
         fd->setNameFilter( QObject::tr( "IDEAS_FILES_FILTER" ) + " (*.unv)" );
       else if ( isDAT )
         fd->setNameFilter( QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)" );
@@ -726,25 +758,25 @@ namespace
       toOverwrite    = fv->isOverwrite( aFilename );
       option = fd->IsChecked( 0 );
       SMESHGUI::resourceMgr()->setValue("SMESH", theOptionResource, option );
-      ( isCGNS ? toCreateGroups : toRenumber ) = option;
+      toRenumber = option;
 
       delete fd;
     }
     else if ( isSTL ) // Export to STL
     {
       QMap<QString, int> aFilterMap;
+      QStringList filters;
       aFilterMap.insert( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)", 1 );
       aFilterMap.insert( QObject::tr( "STL_BIN_FILES_FILTER" )   + " (*.stl)", 0 );
-
-      QStringList filters;
+      
       QMap<QString, int>::const_iterator it = aFilterMap.begin();
       for ( ; it != aFilterMap.end(); ++it )
-        filters.push_back( it.key() );
-
+        filters.push_back( it.key() );    
+     
       SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
       fd->setWindowTitle( aTitle );
       fd->setNameFilters( filters );
-      fd->selectNameFilter( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)" );
+
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
@@ -752,7 +784,8 @@ namespace
       while (!is_ok) {
         if ( fd->exec() )
           aFilename = fd->selectedFile();
-        aIsASCII_STL = (aFilterMap[fd->selectedNameFilter()]) == 1 ? true: false;
+        if ( isSTL )
+          aIsASCII_STL = (aFilterMap[fd->selectedNameFilter()]) == 1 ? true: false;
         is_ok = true;
       }
       delete fd;
@@ -987,14 +1020,21 @@ namespace
         else if ( isCGNS )
         {
           aMeshIter = aMeshList.begin();
+
           for( int aMeshIndex = 0; aMeshIter != aMeshList.end(); aMeshIter++, aMeshIndex++ )
           {
             SMESH::SMESH_IDSource_var aMeshOrGroup = (*aMeshIter).first;
             SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
-            aMeshItem->ExportCGNS( aMeshOrGroup,
-                                   aFilename.toUtf8().data(),
-                                   toOverwrite && aMeshIndex == 0,
-                                   toCreateGroups );
+
+            if ( !structureCGNS )
+              aMeshItem->ExportCGNS( aMeshOrGroup,
+                                    aFilename.toUtf8().data(),
+                                    toOverwrite && aMeshIndex == 0,
+                                    toCreateGroups );
+            else                                  
+              aMeshItem->ExportStructuredCGNS( aMeshOrGroup,
+                                                aFilename.toUtf8().data(),
+                                                toOverwrite && aMeshIndex == 0 );
           }
         }
         else if ( isGMF )
@@ -1024,10 +1064,16 @@ namespace
                                    QObject::tr("SMESH_WRN_WARNING"),
                                    QObject::tr("SMESH_EXPORT_FAILED_SHORT") + "\n\n" + exText);
         }
-        else
+        else if ( isMED )
+        {
           SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                    QObject::tr("SMESH_WRN_WARNING"),
                                    QObject::tr("SMESH_EXPORT_FAILED") + SalomeApp_Tools::ExceptionToString(S_ex));
+        }          
+        else
+          SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                   QObject::tr("SMESH_WRN_WARNING"),
+                                   SalomeApp_Tools::ExceptionToString(S_ex));                                           
         wc.resume();
       }
     }
@@ -4150,7 +4196,7 @@ void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QStr
     pix = resMgr->loadPixmap( "SMESH", tr( QString( "ICON_%1" ).arg( po_id ).toLatin1().data() ), false );
   if ( !pix.isNull() )
     icon = QIcon( pix );
-
+  
   QString tooltip    = tr( QString( "TOP_%1" ).arg( po_id ).toLatin1().data() ),
           menu       = tr( QString( "MEN_%1" ).arg( po_id ).toLatin1().data() ),
           status_bar = tr( QString( "STB_%1" ).arg( po_id ).toLatin1().data() );
