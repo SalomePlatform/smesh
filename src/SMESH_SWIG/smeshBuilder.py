@@ -2001,11 +2001,11 @@ class Mesh(metaclass = MeshMeta):
 
         return ok
 
-    def CheckCompute(self, isDone):
+    def CheckCompute(self):
         """
         Check if the mesh was properly compute
         """
-        if not isDone:
+        if not self.mesh.IsComputedOK():
             raise Exception("Could not compute {}".format(self.GetName()))
 
     def GetComputeErrors(self, shape=0 ):

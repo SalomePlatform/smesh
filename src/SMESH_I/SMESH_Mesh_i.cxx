@@ -5954,7 +5954,7 @@ void SMESH_Mesh_i::CreateGroupServants()
  */
 //=============================================================================
 
-bool SMESH_Mesh_i::IsComputedOK()
+CORBA::Boolean SMESH_Mesh_i::IsComputedOK()
 {
   return _impl->IsComputedOK();
 }

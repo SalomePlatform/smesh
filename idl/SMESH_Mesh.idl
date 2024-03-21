@@ -437,6 +437,12 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+    *   Return True if all the submeshes are computed
+    */
+    boolean IsComputedOK()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      *  Get the list of groups existing in the mesh
      */
     ListOfGroups GetGroups()

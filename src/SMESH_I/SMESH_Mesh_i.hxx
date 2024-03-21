@@ -424,15 +424,15 @@ public:
    */
   void CreateGroupServants();
 
-  /*!
-   * \brief Return true if all sub-meshes are computed OK - to update an icon
-   */
-  bool IsComputedOK();
 
 
   // ====================================
   // SMESH_Mesh interface (continuation)
   // ====================================
+  /*!
+   * \brief Return true if all sub-meshes are computed OK - to update an icon
+   */
+  CORBA::Boolean IsComputedOK();
 
   /*!
    * \brief Return groups cantained in _mapGroups by their IDs

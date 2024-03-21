@@ -1016,7 +1016,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   // Concatenate( [mesh1, ...], ... )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
-  // CheckCompute( mesh, isDone )
+  // CheckCompute( mesh )
   // Evaluate( mesh, geom )
   // mesh creation
   TCollection_AsciiString method = theCommand->GetMethod();
@@ -1095,15 +1095,13 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     if ( id_mesh != myMeshes.end() ) {
       theCommand->SetObject( meshID );
       theCommand->RemoveArgs();
-      std::cout << "command: " << theCommand->GetString() << std::endl;
       id_mesh->second->Process( theCommand );
       id_mesh->second->AddProcessedCmd( theCommand );
-      std::cout << "command processed: " << theCommand->GetString() << std::endl;
       return;
     }
   }
 
-  // smeshgen.CheckCompute( mesh, isDone ) --> mesh.CheckCompute(isDone)
+  // smeshgen.CheckCompute( mesh ) --> mesh.CheckCompute()
   if ( method == "CheckCompute" )
   {
     const _pyID& meshID = theCommand->GetArg( 1 );
@@ -1111,7 +1109,6 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     if ( id_mesh != myMeshes.end() ) {
       theCommand->SetObject( meshID );
       theCommand->RemoveArgs();
-      theCommand->SetArg(1, "isDone");
       id_mesh->second->Process( theCommand );
       id_mesh->second->AddProcessedCmd( theCommand );
       return;
@@ -1927,6 +1924,31 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         (*hyp)->MeshComputed( myLastComputeCmd );
     }
     Flush();
+  }
+  // in snapshot mode, clear the previous CheckCompute()
+  else if ( method == "CheckCompute" )
+  {
+    if ( !theGen->IsToKeepAllCommands() ) // !historical
+    {
+      if ( !myLastCheckCmd.IsNull() )
+      {
+        // check if the previously computed mesh has been edited,
+        // if so then we do not clear the previous Compute()
+        bool toClear = true;
+        list< Handle(_pyMeshEditor)>::iterator e = myEditors.begin();
+        for ( ; e != myEditors.end() && toClear; ++e )
+        {
+          list< Handle(_pyCommand)>& cmds = (*e)->GetProcessedCmds();
+          list< Handle(_pyCommand) >::reverse_iterator cmd = cmds.rbegin();
+          if ( cmd != cmds.rend() &&
+               (*cmd)->GetOrderNb() > myLastCheckCmd->GetOrderNb() )
+            toClear = false;
+        }
+        if ( toClear )
+          myLastCheckCmd->Clear();
+      }
+      myLastCheckCmd = theCommand;
+    }
   }
   // ----------------------------------------------------------------------
   else if ( method == "Clear" ) // in snapshot mode, clear all previous commands
