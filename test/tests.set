@@ -42,6 +42,7 @@ SET(BAD_TESTS
   PAL_MESH_041_mesh.py
   PAL_MESH_043_3D.py
   SMESH_BelongToGeom.py
+  SMESH_beta_law.py
   SMESH_box2_tetra.py
   SMESH_box3_tetra.py
   SMESH_box_tetra.py

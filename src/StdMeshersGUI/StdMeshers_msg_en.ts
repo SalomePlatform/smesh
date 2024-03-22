@@ -155,6 +155,10 @@ Consider creating another hypothesis instead of using this one for this mesh/sub
         <translation>Distribution with table density</translation>
     </message>
     <message>
+        <source>SMESH_DISTR_BETALAW</source>
+        <translation>Distribution with Beta Law</translation>
+    </message>
+    <message>
         <source>SMESH_DISTR_TYPE</source>
         <translation>Type of distribution</translation>
     </message>
@@ -309,6 +313,10 @@ Consider creating another hypothesis instead of using this one for this mesh/sub
     <message>
         <source>SMESH_NB_SEGMENTS_SCALE_PARAM</source>
         <translation>Scale Factor</translation>
+    </message>
+    <message>
+        <source>SMESH_NB_SEGMENTS_BETA_PARAM</source>
+        <translation>Expansion coefficient</translation>
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_TITLE</source>

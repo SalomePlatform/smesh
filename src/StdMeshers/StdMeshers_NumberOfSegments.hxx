@@ -72,7 +72,8 @@ public:
     DT_Regular, //!< equidistant distribution
     DT_Scale,   //!< scale distribution
     DT_TabFunc, //!< distribution with density function presented by table
-    DT_ExprFunc //!< distribution with density function presented by expression
+    DT_ExprFunc, //!< distribution with density function presented by expression
+    DT_BetaLaw //!< distribution with Beta Law using parameter beta (expansion coefficient)
   };
 
   /*!
@@ -84,6 +85,11 @@ public:
    * \brief Get distribution type
    */
   DistrType GetDistrType() const;
+
+  /*!
+   * \brief Check if a given int falls into distribution type scope
+   */
+  bool IsValidDistrType(int distrType) const;
 
   /*!
    * \brief Set scale factor for scale distribution
@@ -100,6 +106,21 @@ public:
    * Throws SALOME_Exception if distribution type is not DT_Scale
    */
   double GetScaleFactor() const;
+
+  /*!
+   * \brief Set beta coefficient for Beta Law distribution
+   * \param beta - usually set between 1.01 (narrow mesh) and 1.00001 (very narrow mesh)
+   * 
+   * Throws SALOME_Exception if distribution type is not DT_BetaLaw
+   */
+  virtual void SetBeta(double scaleFactor);
+
+  /*!
+   * \brief Get beta coefficient for Beta Law distribution
+   * 
+   * Throws SALOME_Exception if distribution type is not DT_BetaLaw
+   */
+  double GetBeta() const;
 
   /*!
    * \brief Set table function for distribution DT_TabFunc
@@ -184,6 +205,7 @@ protected:
   smIdType            _numberOfSegments; //!< an edge will be split on to this number of segments
   DistrType           _distrType;        //!< the type of distribution of density function
   double              _scaleFactor;      //!< the scale parameter for DT_Scale
+  double              _beta;             //!< beta coefficient for DT_BetaLaw
   std::vector<double> _table, _distr;    //!< the table for DT_TabFunc, a sequence of pairs of numbers
   std::string         _func;             //!< the expression of the function for DT_ExprFunc
   int                 _convMode;         //!< flag of conversion mode: 0=exponent, 1=cut negative

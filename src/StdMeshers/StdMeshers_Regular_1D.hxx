@@ -106,6 +106,14 @@ protected:
                                 double              theLastU,
                                 std::list<double> & theParameters );
 
+  bool computeBetaLaw(Adaptor3d_Curve& theC3d,
+                      std::list<double>& theParams,
+                      double f,
+                      double theLength,
+                      double beta,
+                      int nbSegments,
+                      bool theReverse);
+
   /*!
    * \brief Return StdMeshers_SegmentLengthAroundVertex assigned to vertex
    */
@@ -117,6 +125,7 @@ protected:
 
   enum ValueIndex {
     SCALE_FACTOR_IND = 0,
+    BETA_IND = 0,
     BEG_LENGTH_IND   = 0,
     END_LENGTH_IND   = 1,
     DEFLECTION_IND   = 0,

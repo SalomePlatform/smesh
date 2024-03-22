@@ -8286,4 +8286,12 @@ pip install meshio[all]</translation>
       <translation>オプション値</translation>
     </message>
   </context>
+<context>
+  <name>SMESHGUI_SpinBoxForbiddendRange</name>
+  <message>
+      <source>VALID_RANGE_NOVAR_MSG</source>
+      <translation>範囲内の浮動小数点値を指定します [%1; %2) U (%3; %4]
+%5 桁の精度</translation>
+  </message>
+</context>
 </TS>

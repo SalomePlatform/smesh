@@ -139,7 +139,7 @@ smIdType StdMeshers_NumberOfSegments::GetNumberOfSegments() const
 
 void StdMeshers_NumberOfSegments::SetDistrType(DistrType typ)
 {
-  if (typ < DT_Regular || typ > DT_ExprFunc)
+  if (!IsValidDistrType(typ))
     throw SALOME_Exception(LOCALIZED("distribution type is out of range"));
 
   if (typ != _distrType)
@@ -158,6 +158,18 @@ void StdMeshers_NumberOfSegments::SetDistrType(DistrType typ)
 StdMeshers_NumberOfSegments::DistrType StdMeshers_NumberOfSegments::GetDistrType() const
 {
   return _distrType;
+}
+
+//================================================================================
+/*!
+ * 
+ */
+//================================================================================
+
+bool StdMeshers_NumberOfSegments::IsValidDistrType(int distrType) const
+{
+  // DistrType is sequential, so we can just check against its first and last values 
+  return distrType >= DT_Regular && distrType <= DT_BetaLaw;
 }
 
 //================================================================================
@@ -196,6 +208,43 @@ double StdMeshers_NumberOfSegments::GetScaleFactor() const
   if (_distrType != DT_Scale)
     throw SALOME_Exception(LOCALIZED("not a scale distribution"));
   return _scaleFactor;
+}
+
+//================================================================================
+/*!
+ * 
+ */
+//================================================================================
+
+void StdMeshers_NumberOfSegments::SetBeta(double beta)
+{
+  if (_distrType != DT_BetaLaw)
+    throw SALOME_Exception(LOCALIZED("not a Beta Law distribution"));
+
+  const double diff = fabs(fabs(_beta) - fabs(beta));
+  if (diff <= PRECISION)
+  {
+    // Check for a special case where we have values with
+    // equal base but opposite signs like -1.01 and 1.01
+    if (std::signbit(_beta) == std::signbit(beta))
+      return;
+  }
+
+  _beta = beta;
+  NotifySubMeshesHypothesisModification();
+}
+
+//================================================================================
+/*!
+ *
+ */
+//================================================================================
+
+double StdMeshers_NumberOfSegments::GetBeta() const
+{
+  if (_distrType != DT_BetaLaw)
+    throw SALOME_Exception(LOCALIZED("not a Beta Law distribution"));
+  return _beta;
 }
 
 //================================================================================
@@ -492,6 +541,9 @@ ostream & StdMeshers_NumberOfSegments::SaveTo(ostream & save)
   case DT_ExprFunc:
     save << " " << _func;
     break;
+  case DT_BetaLaw:
+    save << " " << _beta;
+    break;
   case DT_Regular:
   default:
     break;
@@ -542,7 +594,7 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
   // supposing that this hypothesis was written in the new format
   if (isOK)
   {
-    if (a < DT_Regular || a > DT_ExprFunc)
+    if (!IsValidDistrType(a))
       _distrType = DT_Regular;
     else
       _distrType = (DistrType) a;
@@ -607,6 +659,22 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
       }
     }
     break;
+
+  case DT_BetaLaw:
+    {
+      isOK = static_cast<bool>(load >> b);
+      if (isOK)
+        _beta = b;
+      else
+      {
+        load.clear(ios::badbit | load.rdstate());
+        // this can mean, that the hypothesis is stored in old format
+        _distrType = DT_Regular;
+        _scaleFactor = scale_factor;
+      }
+    }
+    break;
+
   case DT_Regular:
   default:
     break;

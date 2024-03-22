@@ -36,6 +36,7 @@
 #include <SMESHGUI_Utils.h>
 #include <SMESHGUI_HypothesesUtils.h>
 #include <SMESHGUI_SpinBox.h>
+#include <SMESHGUI_SpinBoxForbiddendRange.h>
 
 // IDL includes
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
@@ -65,6 +66,7 @@ StdMeshersGUI_NbSegmentsCreator::StdMeshersGUI_NbSegmentsCreator()
   myNbSeg( 0 ),
   myDistr( 0 ),
   myScale( 0 ),
+  myBeta( 0 ),
   myTable( 0 ),
 #ifndef DISABLE_PLOT2DVIEWER
   myPreview( 0 ),
@@ -73,6 +75,7 @@ StdMeshersGUI_NbSegmentsCreator::StdMeshersGUI_NbSegmentsCreator()
   myConvBox( 0 ),
   myConv( 0 ),
   myLScale( 0 ),
+  myLBeta( 0 ),
   myLTable( 0 ),
   myLExpr( 0 ),
   myInfo( 0 ),
@@ -96,6 +99,7 @@ bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg ) const
   bool res = storeParamsToHypo( data_new );
   res = myNbSeg->isValid( msg, true ) && res;
   res = myScale->isValid( msg, true ) && res;
+  res = myBeta->isValid( msg, true ) && res;
   if ( !res )
     storeParamsToHypo( data_old );
   return res;
@@ -151,6 +155,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   types.append( tr( "SMESH_DISTR_SCALE"   ) );
   types.append( tr( "SMESH_DISTR_TAB"     ) );
   types.append( tr( "SMESH_DISTR_EXPR"    ) );
+  types.append( tr( "SMESH_DISTR_BETALAW" ) );
   myDistr->addItems( types );
   myGroupLayout->addWidget( myDistr, row, 1 );
   row++;
@@ -238,6 +243,14 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
     lay->setStretchFactor( myReversedEdgesHelper, 1 );
   }
 
+  // 7) Beta Law distribution
+  myGroupLayout->addWidget(myLBeta = new QLabel(tr("SMESH_NB_SEGMENTS_BETA_PARAM"), GroupC1), row, 0);
+  myBeta = new SMESHGUI_SpinBoxForbiddendRange(GroupC1);
+  myBeta->RangeStepAndValidator(-1E+5, 1E+5, 0.00001, "parametric_precision");
+  myBeta->SetForbiddenRange(-1.0, 1.0);
+  myGroupLayout->addWidget(myBeta, row, 1);
+  row++;
+
   connect( myNbSeg, SIGNAL( valueChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
   connect( myDistr, SIGNAL( activated( int ) ), this, SLOT( onValueChanged() ) );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SLOT( onValueChanged() ) );
@@ -271,6 +284,8 @@ void StdMeshersGUI_NbSegmentsCreator::retrieveParams() const
   myTable->setData( data.myTable );
   myExpr->setText( data.myExpr );
 
+  myBeta->setValue(data.myBeta);
+
   if ( dlg() )
     dlg()->setMinimumSize( dlg()->minimumSizeHint().width(), dlg()->minimumSizeHint().height() );
 }
@@ -288,7 +303,8 @@ QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
     Regular, //!< equidistant distribution
     Scale,   //!< scale distribution
     TabFunc, //!< distribution with density function presented by table
-    ExprFunc //!< distribution with density function presented by expression
+    ExprFunc, //!< distribution with density function presented by expression
+    BetaLaw //!< distribution with density function presented by expression
   };
   bool hasConv = false;
   switch ( data.myDistrType ) {
@@ -313,6 +329,10 @@ QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
   case ExprFunc:
     valStr += data.myExpr;
     hasConv = true;
+    break;
+
+  case BetaLaw:
+    valStr += tr("SMESH_NB_SEGMENTS_BETA_PARAM") + " = " + QString::number(data.myBeta);
     break;
   }
   if ( hasConv )
@@ -366,6 +386,7 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisDa
 
   h_data.myExpr = distr==3 ? h->GetExpressionFunction() : "1";
   h_data.myConv = distr==2 || distr==3 ? h->ConversionMode() : 1; /*cut negative by default*/
+  h_data.myBeta = distr==4 ? h->GetBeta() : 1.01;
 
   return true;
 }
@@ -394,7 +415,7 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     if( distr==2 || distr==3 )
       h->SetConversionMode( h_data.myConv );
 
-    if( distr==1 || distr==2 || distr==3 ) {
+    if( distr==1 || distr==2 || distr==3 || distr == 4) {
       h->SetReversedEdges( myDirectionWidget->GetListOfIDs() );
       h->SetObjectEntry( myDirectionWidget->GetMainShapeEntry() );
     }
@@ -407,6 +428,12 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     //setting of function must follow after setConversionMode, because otherwise
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user
+
+    if(distr == 4)
+    {
+      h->SetDistrType(distr);
+      h->SetBeta(h_data.myBeta);
+    }
   }
   catch(const SALOME::SALOME_Exception& ex)
   {
@@ -425,6 +452,7 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromWidgets( NbSegmentsHypothesi
   h_data.myDistrType = myDistr->currentIndex();
   h_data.myConv      = myConv->checkedId();
   h_data.myScale     = myScale->value();
+  h_data.myBeta      = myBeta->value();
   myTable->data( h_data.myTable );
   h_data.myExpr      = myExpr->text();
   return true;
@@ -482,6 +510,11 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   if( isFunc )
     myPreview->setConversion( StdMeshersGUI_DistrPreview::Conversion( myConv->checkedId() ) );
 #endif
+
+  // Beta Law UI elements
+  const bool isBetaLaw = distr == 4;
+  myBeta->setVisible(isBetaLaw);
+  myLBeta->setVisible(isBetaLaw);
 
   if ( (QtxComboBox*)sender() == myDistr && dlg() ) {
     QApplication::instance()->processEvents();

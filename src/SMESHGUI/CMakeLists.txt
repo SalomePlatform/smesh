@@ -89,6 +89,7 @@ SET(_moc_HEADERS
   SMESHGUI_CreatePatternDlg.h
   SMESHGUI_NodesDlg.h
   SMESHGUI_SpinBox.h
+  SMESHGUI_SpinBoxForbiddendRange.h
   SMESHGUI_TransparencyDlg.h
   SMESHGUI_ClippingDlg.h
   SMESHGUI_GroupDlg.h
@@ -203,6 +204,7 @@ SET(_other_SOURCES
   SMESHGUI_CreatePatternDlg.cxx
   SMESHGUI_NodesDlg.cxx
   SMESHGUI_SpinBox.cxx
+  SMESHGUI_SpinBoxForbiddendRange.cxx
   SMESHGUI_TransparencyDlg.cxx
   SMESHGUI_ClippingDlg.cxx
   SMESHGUI_GroupDlg.cxx

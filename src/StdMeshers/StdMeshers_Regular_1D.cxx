@@ -209,6 +209,10 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
       _svalue[ EXPR_FUNC_IND ] = hyp->GetExpressionFunction();
       _revEdgesIDs = hyp->GetReversedEdges();
       break;
+    case StdMeshers_NumberOfSegments::DT_BetaLaw:
+      _value[BETA_IND] = hyp->GetBeta();
+      _revEdgesIDs = hyp->GetReversedEdges();
+      break;
     case StdMeshers_NumberOfSegments::DT_Regular:
       break;
     default:
@@ -714,6 +718,74 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
   }
 }
 
+bool StdMeshers_Regular_1D::computeBetaLaw(
+  Adaptor3d_Curve& theC3d,
+  std::list<double>& theParams,
+  double f,
+  double theLength,
+  double beta,
+  int nbSegments,
+  bool theReverse
+  )
+{
+  // Implemented with formula, where h is the position of a point on the segment [0,1]:
+  // ratio=(1+beta)/(beta -1)
+  // zlog=log(ratio)
+  // puiss=exp(zlog*(1-h))
+  // rapp=(1-puiss)/(1+puiss)
+  // f(h) =1+beta*rapp
+  //
+  // Look at https://gitlab.onelab.info/gmsh/gmsh/-/commit/d581b381f2b8639fba40f2e771e2573d1a0f8424
+  // Especially gmsh/src/mesh/meshGEdge.cpp, 507: createPoints()
+
+  if (theReverse)
+  {
+    beta *= -1;
+  }
+
+  MESSAGE("Compute BetaLaw. beta: " << beta);
+
+  // Prepare a temp storage for position values
+  const int nbNewPoints = nbSegments - 1;
+  std::vector<double> t(nbNewPoints);
+
+  // Calculate position values with beta for each point
+  const double zlog = log((1. + beta) / (beta - 1.));
+  for(smIdType i = 0; i < nbNewPoints; i++)
+  {
+    const double eta = (double)(i + 1) / nbSegments;
+    const double power = exp(zlog * (1. - eta));
+    const double ratio = (1. - power) / (1. + power);
+    const double pos = 1.0 + beta * ratio;
+
+    // Check if we need to reverse distribution
+    if (beta > 0)
+    {
+      t[i] = pos;
+    }
+    else
+    {
+      t[nbNewPoints - i - 1] = 1.0 - pos;
+    }
+
+    // Commented to prevent bloated output with a casual debug
+    // MESSAGE("Calculated position " << i << ": " << pos);
+  }
+
+  // Make points for each calculated value
+  for(const auto i : t)
+  {
+    const double abscissa = i * theLength;
+    MESSAGE("abscissa: " << abscissa);
+
+    GCPnts_AbscissaPoint Discret(Precision::Confusion(), theC3d, abscissa, f);
+    if (Discret.IsDone())
+      theParams.push_back(Discret.Parameter());
+  }
+
+  return true;
+}
+
 //=============================================================================
 /*!
  *
@@ -906,6 +978,10 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
                                     theParams);
         }
         break;
+
+      case StdMeshers_NumberOfSegments::DT_BetaLaw:
+        return computeBetaLaw(theC3d, theParams, f, theLength, _value[BETA_IND], nbSegments, theReverse);
+
       case StdMeshers_NumberOfSegments::DT_Regular:
         eltSize = theLength / double( nbSegments );
         break;

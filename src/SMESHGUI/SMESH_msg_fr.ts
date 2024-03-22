@@ -9172,4 +9172,12 @@ en rouge dans le browser.</translation>
         <translation>Taille moyenne</translation>
     </message>
 </context>
+<context>
+    <name>SMESHGUI_SpinBoxForbiddendRange</name>
+    <message>
+        <source>VALID_RANGE_NOVAR_MSG</source>
+        <translation>Spécifier une valeur à virgule flottante dans la plage [%1; %2) U (%3; %4]
+avec une précision de %5 chiffres</translation>
+    </message>
+</context>
 </TS>

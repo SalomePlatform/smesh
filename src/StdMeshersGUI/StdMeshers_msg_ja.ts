@@ -143,6 +143,10 @@
       <translation>密度のテーブル</translation>
     </message>
     <message>
+      <source>SMESH_DISTR_BETALAW</source>
+      <translation>ベータ法による分布</translation>
+    </message>
+    <message>
       <source>SMESH_DISTR_TYPE</source>
       <translation>分布の種類</translation>
     </message>
@@ -293,6 +297,10 @@
     <message>
       <source>SMESH_NB_SEGMENTS_PARAM</source>
       <translation>セグメントの数</translation>
+    </message>
+    <message>
+      <source>SMESH_NB_SEGMENTS_BETA_PARAM</source>
+      <translation>膨張係数</translation>
     </message>
     <message>
       <source>SMESH_NB_SEGMENTS_SCALE_PARAM</source>

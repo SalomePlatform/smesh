@@ -72,6 +72,11 @@ public:
   // Get scalar factor
   CORBA::Double GetScaleFactor();
 
+  // Set beta coefficient for Beta Law distribution
+  void SetBeta(CORBA::Double beta);
+  // Get beta coefficient for Beta Law distribution
+  CORBA::Double GetBeta();
+
   // Set table function for distribution DT_TabFunc
   void SetTableFunction(const SMESH::double_array& table);
   // Get table function for distribution DT_TabFunc

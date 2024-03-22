@@ -9154,4 +9154,12 @@ red in the Object Browser.</translation>
         <translation>Mean Size</translation>
     </message>
 </context>
+<context>
+    <name>SMESHGUI_SpinBoxForbiddendRange</name>
+    <message>
+        <source>VALID_RANGE_NOVAR_MSG</source>
+        <translation>Specify a floating-point value in range [%1; %2) U (%3; %4]
+with %5-digit precision</translation>
+    </message>
+</context>
 </TS>

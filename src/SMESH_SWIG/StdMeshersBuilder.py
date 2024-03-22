@@ -188,7 +188,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetUsePreestimatedLength( length == 0.0 )
         return hyp
 
-    def NumberOfSegments(self, n, s=[], reversedEdges=[], UseExisting=0):
+    def NumberOfSegments(self, n, s=[], reversedEdges=[], UseExisting=0, beta=None):
         """
         Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
 
@@ -199,6 +199,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
                     A list item can also be a tuple (edge, 1st_vertex_of_edge)
             UseExisting: if ==true - searches for an existing hypothesis created with
                     the same parameters, else (default) - create a new one
+            beta: beta coefficient for Beta Law distribution
     
         Returns: 
             an instance of StdMeshers_NumberOfSegments hypothesis
@@ -209,15 +210,22 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             reversedEdges, UseExisting = [], reversedEdges
         entry = self.MainShapeEntry()
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
-        if not s:
-            hyp = self.Hypothesis("NumberOfSegments", [n, reversedEdgeInd, entry],
-                                  UseExisting=UseExisting,
-                                  CompareMethod=self._compareNumberOfSegments)
-        else:
-            hyp = self.Hypothesis("NumberOfSegments", [n,s, reversedEdgeInd, entry],
-                                  UseExisting=UseExisting,
-                                  CompareMethod=self._compareNumberOfSegments)
+
+        args = [n, reversedEdgeInd, entry]
+        if s:
+            args.insert(1, s)
+        elif beta:
+            args.append(beta)
+
+        hyp = self.Hypothesis(
+            "NumberOfSegments", args,
+            UseExisting=UseExisting, CompareMethod=self._compareNumberOfSegments)
+
+        if s:
             hyp.SetScaleFactor(s)
+        elif beta:
+            hyp.SetBeta(s)
+
         hyp.SetNumberOfSegments(n)
         hyp.SetReversedEdges( reversedEdgeInd )
         hyp.SetObjectEntry( entry )

@@ -70,7 +70,7 @@ smesh.UpdateStudy()
 # ---- Creating meshes
 
 box = salome.IDToObject(idbox)
-names = [ "MeshBoxReg", "MeshBoxScale", "MeshBoxTable", "MeshBoxExpr" ]
+names = [ "MeshBoxReg", "MeshBoxScale", "MeshBoxTable", "MeshBoxExpr", "MeshBoxBeta" ]
 
 
 print("-------------------------- Create ", names[0], " mesh")
@@ -82,6 +82,9 @@ smesh.SetName(hyp, "NumberOfSegmentsReg")
 algo = mesh.Triangle()
 algo.MaxElementArea(2500)
 
+mesh.Compute()
+mesh.CheckCompute()
+
 print("-------------------------- Create ", names[1], " mesh")
 mesh = smesh.Mesh(box, names[1])
 algo = mesh.Segment()
@@ -91,6 +94,9 @@ hyp.SetScaleFactor(2)
 smesh.SetName(hyp, "NumberOfSegmentsScale")
 algo = mesh.Triangle()
 algo.MaxElementArea(2500)
+
+mesh.Compute()
+mesh.CheckCompute()
 
 print("-------------------------- Create ", names[2], " mesh")
 mesh = smesh.Mesh(box,names[2])
@@ -103,6 +109,9 @@ smesh.SetName(hyp, "NumberOfSegmentsTable")
 algo = mesh.Triangle()
 algo.MaxElementArea(2500)
 
+mesh.Compute()
+mesh.CheckCompute()
+
 print("-------------------------- Create ", names[3], " mesh")
 mesh = smesh.Mesh(box, names[3])
 algo = mesh.Segment()
@@ -114,6 +123,25 @@ smesh.SetName(hyp, "NumberOfSegmentsExpr")
 algo = mesh.Triangle()
 algo.MaxElementArea(2500)
 
+mesh.Compute()
+mesh.CheckCompute()
+
+print("-------------------------- Create ", names[4], " mesh")
+mesh = smesh.Mesh(box, names[4])
+algo = mesh.Segment()
+hyp = algo.NumberOfSegments(7)
+hyp.SetDistrType(4)
+hyp.SetBeta(1.01)
+smesh.SetName(hyp, "NumberOfSegmentsBeta")
+
+quad_2d = mesh.Quadrangle()
+quad_2d.SetName("Quadrangle_2D")
+
+hexa_3d = mesh.Hexahedron()
+hexa_3d.SetName("Hexa_3D")
+
+mesh.Compute()
+mesh.CheckCompute()
+
 
 salome.sg.updateObjBrowser()
-

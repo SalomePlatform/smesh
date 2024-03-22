@@ -199,6 +199,23 @@ The node distribution is computed so that to have the density function integral 
 .. image:: ../images/distributionwithtabledensity.png
 	:align: center
 
+**Beta Law Distribution** - is given by the following formula (see image below) where **t** is the position of the point in the segment [0, 1].
+
+.. image:: ../images/nbsegment_beta_law_formula.png
+	:align: center
+
+The beta parameter is usually set between 1.01 (narrow mesh) and 1.00001 (very narrow mesh). 
+Values between [-1, 1] are forbidden to ensure validity of the log. 
+Negative values are allowed and result with positions distributed in the opposite direction.
+
+.. image:: ../images/nbsegments_beta_law_dlg.png
+	:align: center
+
+Below is an example of **Beta Law Distribution** for a face that was done using default **Expansion coefficient** value 1.01.
+
+.. image:: ../images/nbsegments_beta_law_example.png
+	:align: center
+
 
 **See Also** a sample TUI Script of :ref:`Defining Number of Segments <tui_deflection_1d>` hypothesis operation.
 

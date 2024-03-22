@@ -155,6 +155,10 @@ Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce mai
         <translation>Distribution avec une table de densités</translation>
     </message>
     <message>
+        <source>SMESH_DISTR_BETALAW</source>
+        <translation>Distribution avec la Loi Bêta</translation>
+    </message>
+    <message>
         <source>SMESH_DISTR_TYPE</source>
         <translation>Type de distribution</translation>
     </message>
@@ -305,6 +309,10 @@ Veuillez plutôt créer une autre hypothèse à la place de celle-ci pour ce mai
     <message>
         <source>SMESH_NB_SEGMENTS_PARAM</source>
         <translation>Nombre de segments</translation>
+    </message>
+    <message>
+        <source>SMESH_NB_SEGMENTS_BETA_PARAM</source>
+        <translation>Coefficient de dilatation</translation>
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_SCALE_PARAM</source>

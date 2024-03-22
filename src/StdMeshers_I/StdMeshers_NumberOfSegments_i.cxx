@@ -236,6 +236,50 @@ CORBA::Double StdMeshers_NumberOfSegments_i::GetScaleFactor()
 
 //=============================================================================
 /*!
+ *  StdMeshers_NumberOfSegments_i::SetBeta
+ *
+ *  Set beta coefficient for Beta Law distribution
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments_i::SetBeta(CORBA::Double beta)
+{
+  ASSERT(myBaseImpl);
+  try {
+    this->GetImpl()->SetBeta(beta);
+    // Update Python script
+    SMESH::TPythonDump() << _this() << ".SetBeta( " << SMESH::TVar(beta) << " )";
+  }
+  catch (SALOME_Exception& S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_NumberOfSegments_i::GetBeta
+ *
+ *  Get beta coefficient for Beta Law distribution
+ */
+//=============================================================================
+
+CORBA::Double StdMeshers_NumberOfSegments_i::GetBeta()
+{
+  ASSERT(myBaseImpl);
+
+  double beta = 1.0;
+  try {
+    beta = this->GetImpl()->GetBeta();
+  }
+  catch (SALOME_Exception& S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+
+  return beta;
+}
+
+//=============================================================================
+/*!
  */
 //=============================================================================
 
