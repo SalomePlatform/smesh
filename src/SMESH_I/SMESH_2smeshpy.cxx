@@ -1013,6 +1013,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
 {
   // there are methods to convert:
   // CreateMesh( shape )
+  // ReloadMesh( shape )
   // Concatenate( [mesh1, ...], ... )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
@@ -1066,6 +1067,13 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     std::list< _pyID > entries = theCommand->GetStudyEntries( theCommand->GetResultValue() );
     Handle(_pyMesh) mesh = new _pyMesh( theCommand, entries.front() );
     AddObject( mesh );
+  }
+  if (method == "ReloadMeshFromFile")
+  {
+    std::cout << "WhatIS" << std::endl;
+    Handle(_pyMesh) mesh = new _pyMesh(theCommand, theCommand->GetResultValue());
+    AddObject(mesh);
+    return;
   }
 
   // CreateHypothesis()

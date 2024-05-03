@@ -269,6 +269,10 @@
         <translation>Informations sur le maillage</translation>
     </message>
     <message>
+        <source>MEN_RELOAD_FROM_FILE</source>
+        <translation>Reload from file</translation>
+    </message>
+    <message>
         <source>MEN_ALL</source>
         <translation>Tous</translation>
     </message>
@@ -3332,6 +3336,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Tous</translation>
     </message>
     <message>
+        <source>STB_RELOAD_FROM_FILE</source>
+        <translation>Reload original mesh from file</translation>
+    </message>
+    <message>
         <source>STB_AREA</source>
         <translation>Aire</translation>
     </message>
@@ -4066,6 +4074,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_ADV_INFO</source>
         <translation>Informations sur le maillage</translation>
+    </message>
+    <message>
+        <source>TOP_RELOAD_FROM_FILE</source>
+        <translation>Reload from file</translation>
     </message>
     <message>
         <source>TOP_ALL</source>

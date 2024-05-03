@@ -252,6 +252,10 @@
       <translation>メッシュに関する情報</translation>
     </message>
     <message>
+        <source>MEN_RELOAD_FROM_FILE</source>
+        <translation>Reload from file</translation>
+    </message>
+    <message>
       <source>MEN_ALL</source>
       <translation>すべて</translation>
     </message>
@@ -2980,6 +2984,10 @@ pip install meshio[all]</translation>
       <translation>メッシュ上の基本的な情報を得る</translation>
     </message>
     <message>
+        <source>STB_RELOAD_FROM_FILE</source>
+        <translation>Reload original mesh from file</translation>
+    </message>
+    <message>
       <source>STB_ALL</source>
       <translation>すべて</translation>
     </message>
@@ -3662,6 +3670,10 @@ pip install meshio[all]</translation>
     <message>
       <source>TOP_ADV_INFO</source>
       <translation>メッシュに関する情報</translation>
+    </message>
+    <message>
+        <source>TOP_RELOAD_FROM_FILE</source>
+        <translation>Reload from file</translation>
     </message>
     <message>
       <source>TOP_ALL</source>

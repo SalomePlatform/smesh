@@ -237,28 +237,53 @@ public:
   // Create empty mesh
   SMESH::SMESH_Mesh_ptr CreateEmptyMesh();
 
+  SMESH::SMESH_Mesh_ptr ReloadMeshFromFile(SMESH::SMESH_Mesh_ptr theMesh);
+
   //  Create a mesh and import data from an UNV file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromUNV( const char* theFileName );
+
+  SMESH::SMESH_Mesh_ptr ReloadMeshesFromUNV(const char*           theFileName,
+                                            SMESH::SMESH_Mesh_ptr sourceMesh);
 
   //  Create mesh(es) and import data from MED file
   SMESH::mesh_array* CreateMeshesFromMED( const char* theFileName,
                                           SMESH::DriverMED_ReadStatus& theStatus );
 
+  SMESH::mesh_array* ReloadMeshesFromMED(const char*                  theFileName,
+                                         SMESH::SMESH_Mesh_ptr        sourceMesh,
+                                         SMESH::DriverMED_ReadStatus& theStatus);
+
   //  Create a mesh and import data from a STL file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName );
+
+  SMESH::SMESH_Mesh_ptr ReloadMeshesFromSTL(const char*           theFileName,
+                                            SMESH::SMESH_Mesh_ptr sourceMesh);
 
   //  Create mesh(es) and import data from CGNS file
   SMESH::mesh_array* CreateMeshesFromCGNS( const char* theFileName,
                                            SMESH::DriverMED_ReadStatus& theStatus );
+
+  SMESH::mesh_array* ReloadMeshesFromCGNS(const char*                  theFileName,
+                                          SMESH::SMESH_Mesh_ptr        sourceMesh, 
+                                          SMESH::DriverMED_ReadStatus& theStatus);
 
   //  Create a mesh and import data from a GMF file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromGMF( const char*             theFileName,
                                              CORBA::Boolean          theMakeRequiredGroups,
                                              SMESH::ComputeError_out theError);
 
+  SMESH::SMESH_Mesh_ptr ReloadMeshesFromGMF(const char* theFileName,
+                                            SMESH::SMESH_Mesh_ptr        sourceMesh,
+                                            CORBA::Boolean          theMakeRequiredGroups,
+                                            SMESH::ComputeError_out theError);
+
   //  Create a mesh and import data from any file supported by meshio library
   SMESH::mesh_array* CreateMeshesFromMESHIO(const char*             theFileName,
                                             SMESH::DriverMED_ReadStatus& theStatus);
+
+  SMESH::mesh_array* ReloadMeshesFromMESHIO(const char* theFileName,
+                                          SMESH::SMESH_Mesh_ptr        sourceMesh,
+                                          SMESH::DriverMED_ReadStatus& theStatus);
 
   // Create dual mesh of a tetrahedron mesh
   SMESH::SMESH_Mesh_ptr CreateDualMesh(SMESH::SMESH_IDSource_ptr meshPart,

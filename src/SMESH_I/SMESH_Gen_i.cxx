@@ -153,6 +153,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
+#include <QStringList>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/list.hpp>
@@ -1330,6 +1331,61 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateEmptyMesh()
   return mesh._retn();
 }
 
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::ReloadMeshFromFile(SMESH::SMESH_Mesh_ptr theMesh)
+{
+  SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
+
+  SMESH::MedFileInfo* aMedInfo = theMesh->GetMEDFileInfo();
+
+  // Get file path and re-import mesh
+  QString aPath = QString(aMedInfo->fileName);
+  QStringList aSplit = aPath.split('.');
+  QStringList anEntryList;
+
+  auto aStudy = getStudyServant();
+
+  SMESH::SMESH_Mesh_ptr aNewMesh;
+
+  SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*> (theMesh->GetMeshPtr());
+  aMesh->GetMeshDS()->ClearMesh();
+
+  if (aSplit.last() == "cgns")
+  {
+    SMESH::DriverMED_ReadStatus res;
+    aMeshes = ReloadMeshesFromCGNS(aPath.toUtf8().constData(), theMesh, res);
+
+    aNewMesh = aMeshes[0];
+
+  }
+  else if (aSplit.last().contains("stl", Qt::CaseSensitivity::CaseInsensitive))
+  {
+    aNewMesh = ReloadMeshesFromSTL(aPath.toUtf8().constData(), theMesh);
+  }
+  else if (aSplit.last().contains("unv", Qt::CaseSensitivity::CaseInsensitive))
+  {
+    aNewMesh = ReloadMeshesFromUNV(aPath.toUtf8().constData(), theMesh);
+  }
+  else if (aSplit.last().contains("mesh", Qt::CaseSensitivity::CaseInsensitive))
+  {
+    SMESH::ComputeError_var res;
+    aNewMesh = ReloadMeshesFromGMF(aPath.toUtf8().constData(), theMesh, true, res.out());
+  }
+  else if (aSplit.last().contains("med", Qt::CaseSensitivity::CaseInsensitive))
+  {
+    SMESH::DriverMED_ReadStatus res;
+    aMeshes = ReloadMeshesFromMED(aPath.toUtf8().constData(), theMesh, res);
+
+    aNewMesh = aMeshes[0];
+  }
+  else
+  {
+    // MeshIO
+  }
+
+  theMesh = SMESH::SMESH_Mesh::_duplicate(aNewMesh);
+  return theMesh;
+}
+
 namespace
 {
   //================================================================================
@@ -1428,6 +1484,36 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   return aMesh._retn();
 }
 
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::ReloadMeshesFromUNV(const char* theFileName, SMESH::SMESH_Mesh_ptr sourceMesh)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  checkFileReadable(theFileName);
+
+  string aFileName;
+  // publish mesh in the study
+  if (CanPublishInStudy(sourceMesh)) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+    SALOMEDS::SObject_wrap aSO = PublishMesh(sourceMesh, aFileName.c_str());
+    aStudyBuilder->CommitCommand();
+    if (!aSO->_is_nil()) {
+      // Update Python script
+      TPythonDump(this) << aSO << " = " << this << ".ReloadMeshesFromUNV(r'" << theFileName << "')";
+    }
+  }
+
+  SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>(GetServant(sourceMesh).in());
+  ASSERT(aServant);
+  aServant->ImportUNVFile(theFileName);
+
+  // Dump creation of groups
+  SMESH::ListOfGroups_var groups = aServant->GetGroups();
+
+  aServant->GetImpl().GetMeshDS()->Modified();
+  return sourceMesh;
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CreateMeshFromMED
@@ -1511,6 +1597,92 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char*                
   return aResult._retn();
 }
 
+SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMED(const char* theFileName, SMESH::SMESH_Mesh_ptr sourceMesh, SMESH::DriverMED_ReadStatus& theStatus)
+{
+  SMESH::ListOfGroups anOldGroups = *sourceMesh->GetGroups();
+  checkFileReadable(theFileName);
+
+#ifdef WIN32
+  char bname[_MAX_FNAME];
+  _splitpath(theFileName, NULL, NULL, bname, NULL);
+  string aFileName = bname;
+#else
+  string aFileName = basename(const_cast<char*>(theFileName));
+#endif
+  // Retrieve mesh names from the file
+  DriverMED_R_SMESHDS_Mesh myReader;
+  myReader.SetFile(theFileName);
+  myReader.SetMeshId(-1);
+  Driver_Mesh::Status aStatus;
+  list<string> aNames = myReader.GetMeshNames(aStatus);
+  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
+  theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
+
+  { // open a new scope to make aPythonDump die before PythonDump in SMESH_Mesh::GetGroups()
+
+    // Python Dump
+    TPythonDump aPythonDump(this);
+    aPythonDump << "([";
+
+    if (theStatus == SMESH::DRS_OK)
+    {
+      SALOMEDS::StudyBuilder_var aStudyBuilder;
+      aStudyBuilder = getStudyServant()->NewBuilder();
+      aStudyBuilder->NewCommand();  // There is a transaction
+
+      aResult->length(aNames.size());
+      int i = 0;
+
+      // Iterate through all meshes and create mesh objects
+      for (const std::string& meshName : aNames)
+      {
+        // Python Dump
+        if (i > 0) aPythonDump << ", ";
+
+        // publish mesh in the study
+        SALOMEDS::SObject_wrap aSO;
+        if (CanPublishInStudy(sourceMesh))
+          aSO = PublishMesh(sourceMesh, meshName.c_str());
+
+        // Python Dump
+        if (!aSO->_is_nil()) {
+          aPythonDump << aSO;
+        }
+        else {
+          aPythonDump << "mesh_" << i;
+        }
+
+        // Read mesh data (groups are published automatically by ImportMEDFile())
+        SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>(GetServant(sourceMesh).in());
+        ASSERT(meshServant);
+        SMESH::DriverMED_ReadStatus status1 =
+          meshServant->ImportMEDFile(theFileName, meshName.c_str());
+        if (status1 > theStatus)
+          theStatus = status1;
+
+        for (unsigned int i = 0; i < anOldGroups.length(); ++i)
+        {
+          //auto X = anOldGroups[i];
+          sourceMesh->RemoveGroup(anOldGroups[i]);
+        }
+        aResult[i++] = SMESH::SMESH_Mesh::_duplicate(sourceMesh);
+
+        meshServant->GetImpl().GetMeshDS()->Modified();
+      }
+      if (!aStudyBuilder->_is_nil())
+        aStudyBuilder->CommitCommand();
+    }
+
+    // Update Python script
+    aPythonDump << "], status) = " << this << ".ReloadMeshesFromMED( r'" << theFileName << "' )";
+  }
+  // Dump creation of groups
+  for (CORBA::ULong i = 0; i < aResult->length(); ++i)
+    SMESH::ListOfGroups_var groups = aResult[i]->GetGroups();
+
+  return aResult._retn();
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CreateMeshFromSTL
@@ -1552,6 +1724,37 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   aServant->ImportSTLFile( theFileName );
   aServant->GetImpl().GetMeshDS()->Modified();
   return aMesh._retn();
+}
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::ReloadMeshesFromSTL(const char* theFileName, SMESH::SMESH_Mesh_ptr sourceMesh)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  checkFileReadable(theFileName);
+
+#ifdef WIN32
+  char bname[_MAX_FNAME];
+  _splitpath(theFileName, NULL, NULL, bname, NULL);
+  string aFileName = bname;
+#else
+  string aFileName = basename(const_cast<char*>(theFileName));
+#endif
+  // publish mesh in the study
+  if (CanPublishInStudy(sourceMesh)) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+    SALOMEDS::SObject_wrap aSO = PublishInStudy(SALOMEDS::SObject::_nil(), sourceMesh, aFileName.c_str());
+    aStudyBuilder->CommitCommand();
+    if (!aSO->_is_nil()) {
+      // Update Python script
+      TPythonDump(this) << aSO << " = " << this << ".ReloadMeshFromSTL(r'" << theFileName << "')";
+    }
+  }
+
+  SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>(GetServant(sourceMesh).in());
+  ASSERT(aServant);
+  aServant->ImportSTLFile(theFileName);
+  aServant->GetImpl().GetMeshDS()->Modified();
+  return sourceMesh;
 }
 
 //================================================================================
@@ -1639,6 +1842,85 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char*               
   return aResult._retn();
 }
 
+SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromCGNS(const char*                  theFileName,
+                                                     SMESH::SMESH_Mesh_ptr        sourceMesh,
+                                                     SMESH::DriverMED_ReadStatus& theStatus)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  checkFileReadable(theFileName);
+
+  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
+
+#ifdef WITH_CGNS
+  // Retrieve nb meshes from the file
+  DriverCGNS_Read myReader;
+  myReader.SetFile(theFileName);
+  Driver_Mesh::Status aStatus;
+  int nbMeshes = myReader.GetNbMeshes(aStatus);
+  theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
+
+  aResult->length(nbMeshes);
+
+  { // open a new scope to make aPythonDump die before PythonDump in SMESH_Mesh::GetGroups()
+
+    // Python Dump
+    TPythonDump aPythonDump(this);
+    aPythonDump << "([";
+
+    if (theStatus == SMESH::DRS_OK)
+    {
+      SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
+      aStudyBuilder->NewCommand();  // There is a transaction
+
+      int i = 0;
+
+      // Iterate through all meshes and create mesh objects
+      for (; i < nbMeshes; ++i)
+      {
+        // Python Dump
+        if (i > 0) aPythonDump << ", ";
+
+        // create mesh
+        aResult[i] = SMESH::SMESH_Mesh::_duplicate(sourceMesh);
+
+        // Read mesh data (groups are published automatically by ImportMEDFile())
+        SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>(GetServant(sourceMesh).in());
+        ASSERT(meshServant);
+        string meshName;
+        SMESH::DriverMED_ReadStatus status1 =
+          meshServant->ImportCGNSFile(theFileName, i, meshName);
+        if (status1 > theStatus)
+          theStatus = status1;
+
+        meshServant->GetImpl().GetMeshDS()->Modified();
+        // publish mesh in the study
+        SALOMEDS::SObject_wrap aSO;
+        if (CanPublishInStudy(sourceMesh))
+          aSO = PublishMesh(sourceMesh, meshName.c_str());
+
+        // Python Dump
+        if (!aSO->_is_nil()) {
+          aPythonDump << aSO;
+        }
+        else {
+          aPythonDump << "mesh_" << i;
+        }
+      }
+      aStudyBuilder->CommitCommand();
+    }
+
+    aPythonDump << "], status) = " << this << ".ReloadMeshesFromCGNS(r'" << theFileName << "')";
+  }
+  // Dump creation of groups
+  for (CORBA::ULong i = 0; i < aResult->length(); ++i)
+    SMESH::ListOfGroups_var groups = aResult[i]->GetGroups();
+#else
+  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
+#endif
+
+  return aResult._retn();
+}
+
 //================================================================================
 /*!
  * \brief Create a mesh and import data from a GMF file
@@ -1680,6 +1962,38 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
   theError = aServant->ImportGMFFile( theFileName, theMakeRequiredGroups );
   aServant->GetImpl().GetMeshDS()->Modified();
   return aMesh._retn();
+}
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::ReloadMeshesFromGMF(const char* theFileName, SMESH::SMESH_Mesh_ptr sourceMesh, CORBA::Boolean theMakeRequiredGroups, SMESH::ComputeError_out theError)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  checkFileReadable(theFileName);
+
+#ifdef WIN32
+  char bname[_MAX_FNAME];
+  _splitpath(theFileName, NULL, NULL, bname, NULL);
+  string aFileName = bname;
+#else
+  string aFileName = basename(const_cast<char*>(theFileName));
+#endif
+  // publish mesh in the study
+  if (CanPublishInStudy(sourceMesh)) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+    SALOMEDS::SObject_wrap aSO = PublishInStudy(SALOMEDS::SObject::_nil(), sourceMesh, aFileName.c_str());
+    aStudyBuilder->CommitCommand();
+    if (!aSO->_is_nil()) {
+      // Update Python script
+      TPythonDump(this) << "(" << aSO << ", error) = " << this << ".ReloadMeshesFromGMF(r'"
+        << theFileName << "', "
+        << theMakeRequiredGroups << " )";
+    }
+  }
+  SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>(GetServant(sourceMesh).in());
+  ASSERT(aServant);
+  theError = aServant->ImportGMFFile(theFileName, theMakeRequiredGroups);
+  aServant->GetImpl().GetMeshDS()->Modified();
+  return sourceMesh;
 }
 
 //================================================================================
@@ -1763,6 +2077,82 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMESHIO(const char* theFileName,
 
   // Dump creation of groups
   for (CORBA::ULong  i = 0; i < aResult->length(); ++i)
+    SMESH::ListOfGroups_var groups = aResult[i]->GetGroups();
+
+  return aResult._retn();
+}
+
+SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMESHIO(const char* theFileName, SMESH::SMESH_Mesh_ptr sourceMesh, SMESH::DriverMED_ReadStatus& theStatus)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  checkFileReadable(theFileName);
+
+  MESSAGE("Import part with meshio through an intermediate MED file");
+
+  // Create an object that holds a temp file name and
+  // removes the file when goes out of scope.
+  SMESH_Meshio meshio;
+  const QString tempFileName = meshio.CreateTempFileName(theFileName);
+
+  // Convert temp file into a target one with meshio command
+  meshio.Convert(theFileName, tempFileName);
+
+  // We don't need a python dump from SMESH_Gen_i::CreateMeshesFromMED(), so
+  // we can't use this method as is here. The followed code is an edited part of
+  // copy pasted CreateMeshesFromMED().
+
+  // Retrieve mesh names from the file
+  DriverMED_R_SMESHDS_Mesh myReader;
+  myReader.SetFile(tempFileName.toStdString());
+  myReader.SetMeshId(-1);
+  Driver_Mesh::Status aStatus;
+  list<string> aNames = myReader.GetMeshNames(aStatus);
+  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
+  theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
+
+  if (theStatus == SMESH::DRS_OK)
+  {
+    SALOMEDS::StudyBuilder_var aStudyBuilder;
+    aStudyBuilder = getStudyServant()->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+
+    aResult->length(aNames.size());
+    std::vector<SALOMEDS::SObject_wrap> sobjects;
+    int i = 0;
+
+    // Iterate through all meshes and create mesh objects
+    for (const std::string& meshName : aNames)
+    {
+      // publish mesh in the study
+      SALOMEDS::SObject_wrap aSO;
+      if (CanPublishInStudy(sourceMesh))
+        aSO = PublishMesh(sourceMesh, meshName.c_str());
+
+      // Save SO to use in a python dump
+      sobjects.emplace_back(aSO);
+
+      // Read mesh data (groups are published automatically by ImportMEDFile())
+      SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>(GetServant(sourceMesh).in());
+      ASSERT(meshServant);
+      SMESH::DriverMED_ReadStatus status1 =
+        meshServant->ImportMEDFile(tempFileName.toUtf8().data(), meshName.c_str());
+      if (status1 > theStatus)
+        theStatus = status1;
+
+      aResult[i++] = SMESH::SMESH_Mesh::_duplicate(sourceMesh);
+      meshServant->GetImpl().GetMeshDS()->Modified();
+    }
+
+    if (!aStudyBuilder->_is_nil())
+      aStudyBuilder->CommitCommand();
+
+    // Python dump
+    const std::string functionName = std::string(".ReloadMeshesFromMESHIO(r'") + theFileName + "')";
+    functionToPythonDump(this, functionName, sobjects);
+  }
+
+  // Dump creation of groups
+  for (CORBA::ULong i = 0; i < aResult->length(); ++i)
     SMESH::ListOfGroups_var groups = aResult[i]->GetGroups();
 
   return aResult._retn();

@@ -258,6 +258,9 @@ module SMESH
     SMESH_Mesh CreateEmptyMesh()
       raises ( SALOME::SALOME_Exception );
 
+    SMESH_Mesh ReloadMeshFromFile(in SMESH_Mesh sourceMesh)
+      raises(SALOME::SALOME_Exception);
+
     /*!
      * Create Mesh object importing data from given UNV file
      * (UNV supported version is I-DEAS 10)
@@ -301,6 +304,7 @@ module SMESH
     mesh_array CreateMeshesFromMESHIO(in string theFileName,
                                       out SMESH::DriverMED_ReadStatus theStatus)
       raises (SALOME::SALOME_Exception);
+
 
     /*!
      * Create a dual mesh of a Tetrahedron mesh

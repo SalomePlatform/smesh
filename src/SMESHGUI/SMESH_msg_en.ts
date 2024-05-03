@@ -273,6 +273,10 @@
         <translation>Mesh Information</translation>
     </message>
     <message>
+        <source>MEN_RELOAD_FROM_FILE</source>
+        <translation>Reload from file</translation>
+    </message>
+    <message>
         <source>MEN_ALL</source>
         <translation>All</translation>
     </message>
@@ -3333,6 +3337,10 @@ Use Display Entity menu command to show them.
         <translation>Show base information about the mesh object</translation>
     </message>
     <message>
+        <source>STB_RELOAD_FROM_FILE</source>
+        <translation>Reload original mesh from file</translation>
+    </message>
+    <message>
         <source>STB_ALL</source>
         <translation>All</translation>
     </message>
@@ -4071,6 +4079,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_ADV_INFO</source>
         <translation>Mesh Information</translation>
+    </message>
+    <message>
+        <source>TOP_RELOAD_FROM_FILE</source>
+        <translation>Reload from file</translation>
     </message>
     <message>
         <source>TOP_ALL</source>

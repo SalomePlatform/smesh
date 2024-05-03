@@ -94,6 +94,7 @@ namespace SMESHOp {
     OpWhatIs                 = 2101,   // MENU MESH  - MESH ELEMENT INFORMATION
     OpStdInfo                = 2102,   // MENU MESH  - MESH STANDARD INFORMATION
     OpFindElementByPoint     = 2103,   // MENU MESH  - FIND ELEMENT BY POINT
+    OpReloadFromFile         = 2104,   // MENU MESH  - RELOAD MESH FROM FILE
     OpUpdate                 = 2200,   // POPUP MENU - UPDATE
     // Controls -----------------------//--------------------------------
     OpFreeNode               = 3000,   // MENU CONTROLS - FREE NODES
