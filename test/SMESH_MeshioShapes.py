@@ -37,6 +37,8 @@ from salome.smesh import smeshBuilder
 
 import SALOME
 
+import platform
+
 # Constants
 EXPORT_TITLE = 'Export'
 IMPORT_TITLE = 'Import'
@@ -92,7 +94,7 @@ def file_extensions():
     Commented formats should be checked on next meshio release to see if the problem was fixed.
     """
 
-    return [
+    extensions = [
         '.avs',
         '.bdf',
         # '.cgns', # meshio IndexError: index 2 is out of bounds for axis 1 with size 2
@@ -131,7 +133,10 @@ def file_extensions():
         '.xmf',
         '.xml'
     ]
+    if platform.system() == 'Windows':
+        extensions = [ext for ext in extensions if not ext in ['.e', '.exo']] # needs to be digged out - presumably an issue about encoding.
 
+    return extensions
 
 def exception_handle(file_name, errors, operation_type, ex_text):
     """

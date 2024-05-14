@@ -42,6 +42,9 @@ public:
   QString CreateTempFileName(const QString& targetFileName);
   void Convert(const QString& sourceFileName, const QString& targetFileName) const;
 
+  static QString GetMeshioVersion();
+  static bool IsModernMeshioVersion();
+  static bool IsMeshioInstalled();
   static bool IsModernPythonVersion();
 
 private:

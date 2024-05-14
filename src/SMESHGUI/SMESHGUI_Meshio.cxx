@@ -137,7 +137,9 @@ const QStringList& SMESHGUI_Meshio::GetExportFileFilter()
     "AVS-UCD (*.avs)",
     "CGNS (*.cgns)",
     "DOLFIN XML (*.xml)",
+#if !defined(WIN32)
     "Exodus (*.e *.exo)",
+#endif
     "FLAC3D (*.f3grid)",
     "Gmsh 2.2 (*.msh)",
     "Gmsh 4.0, and 4.1 (*.msh)",
@@ -241,19 +243,7 @@ QString SMESHGUI_Meshio::GetFileName(QString& selectedFilter, const bool isOpen/
 */
 bool SMESHGUI_Meshio::IsMeshioInstalled()
 {
-  auto IsAbleToCallMeshio = []() -> bool
-  {
-    // Try to call meshio to check if it's present
-    const std::string cmd =
-      SMESH_Meshio::IsModernPythonVersion() ? "meshio --version" : "meshio-info --version";
-
-    const int status = system(cmd.c_str());
-    MESSAGE("status: " << status);
-
-    return status == 0;
-  };
-
-  static const bool isInstalled = IsAbleToCallMeshio();
+  const bool isInstalled = SMESH_Meshio::IsMeshioInstalled();
   if (!isInstalled)
   {
     SUIT_MessageBox::warning(
