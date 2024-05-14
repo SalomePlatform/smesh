@@ -2091,8 +2091,15 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
     if ( ! shrink(_sdVec[iSD]) )      // shrink 2D mesh on FACEs w/o layer
       return _error;
 
-    addBoundaryElements(_sdVec[iSD]); // create quadrangles on prism bare sides
+    bool notMissingFaces = addBoundaryElements(_sdVec[iSD]); // create quadrangles on prism bare sides
 
+    if ( !notMissingFaces )
+    {
+      SMESH_MeshEditor editor( &theMesh );
+      TIDSortedElemSet elements;
+      editor.MakeBoundaryMesh( elements, SMESH_MeshEditor::BND_2DFROM3D );
+    }
+    
     _sdVec[iSD]._done = true;
 
     const TopoDS_Shape& solid = _sdVec[iSD]._solid;
@@ -3412,14 +3419,14 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
   // Find C1 EDGEs
 
   vector< pair< _EdgesOnShape*, gp_XYZ > > dirOfEdges;
-
+  
   for ( size_t iS = 0; iS < edgesByGeom.size(); ++iS ) // check VERTEXes
   {
     _EdgesOnShape& eov = edgesByGeom[iS];
     if ( eov._edges.empty() ||
          eov.ShapeType() != TopAbs_VERTEX ||
          c1VV.Contains( eov._shape ))
-      continue;
+        continue;
     const TopoDS_Vertex& V = TopoDS::Vertex( eov._shape );
 
     // get directions of surrounding EDGEs
@@ -3455,7 +3462,7 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
                 if ( oppV.IsSame( V ))
                   oppV = SMESH_MesherHelper::IthVertex( 1, e );
                 _EdgesOnShape* eovOpp = data.GetShapeEdges( oppV );
-                if ( dirOfEdges[k].second * eovOpp->_edges[0]->_normal < 0 )
+                if ( !eovOpp->_edges.empty() && dirOfEdges[k].second * eovOpp->_edges[0]->_normal < 0 )
                   eov._eosC1.push_back( dirOfEdges[k].first );
               }
               dirOfEdges[k].first = 0;
@@ -12836,6 +12843,7 @@ bool _Mapper2D::ComputeNodePositions()
 
 bool _ViscousBuilder::addBoundaryElements(_SolidData& data)
 {
+  bool addAllBoundaryElements = true;
   SMESH_MesherHelper helper( *_mesh );
 
   vector< const SMDS_MeshNode* > faceNodes;
@@ -12857,7 +12865,7 @@ bool _ViscousBuilder::addBoundaryElements(_SolidData& data)
       map< double, const SMDS_MeshNode* > u2nodes;
       if ( !SMESH_Algo::GetSortedNodesOnEdge( getMeshDS(), E, /*ignoreMedium=*/false, u2nodes))
         continue;
-
+      
       vector< _LayerEdge* > ledges; ledges.reserve( u2nodes.size() );
       TNode2Edge & n2eMap = data._n2eMap;
       map< double, const SMDS_MeshNode* >::iterator u2n = u2nodes.begin();
@@ -12891,12 +12899,14 @@ bool _ViscousBuilder::addBoundaryElements(_SolidData& data)
 
         if ( getMeshDS()->FindElement( faceNodes, SMDSAbs_Face, /*noMedium=*/true))
           continue; // faces already created
-      }
+      }      
       for ( ++u2n; u2n != u2nodes.end(); ++u2n )
-        ledges.push_back( n2eMap[ u2n->second ]);
+        if ( n2eMap[ u2n->second ] != nullptr )
+          ledges.push_back( n2eMap[ u2n->second ]);
+        else /*some boundary elements might be lost because the connectivity of the face is not entirely defined on this edge*/
+          addAllBoundaryElements = false;
 
       // Find out orientation and type of face to create
-
       bool reverse = false, isOnFace;
       TopoDS_Shape F;
 
@@ -13016,5 +13026,5 @@ bool _ViscousBuilder::addBoundaryElements(_SolidData& data)
     } // loop on EDGE's
   } // loop on _SolidData's
 
-  return true;
+  return addAllBoundaryElements;
 }
