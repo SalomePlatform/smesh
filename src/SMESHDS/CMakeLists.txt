@@ -67,7 +67,6 @@ SET(SMESHDS_HEADERS
   SMESHDS_GroupOnGeom.hxx
   SMESHDS_GroupOnFilter.hxx
   SMESH_SMESHDS.hxx
-  SMESHDS_DataMapOfShape.hxx
   SMESH_Controls.hxx
 )
 

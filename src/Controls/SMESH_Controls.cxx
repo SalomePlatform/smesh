@@ -3445,7 +3445,7 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
       return;
 
     const double cosTol = Cos( myToler * M_PI / 180. );
-    NCollection_Map< SMESH_TLink, SMESH_TLink > checkedLinks;
+    NCollection_Map< SMESH_TLink, SMESH_TLinkHasher > checkedLinks;
 
     std::list< std::pair< const SMDS_MeshElement*, gp_Vec > > faceQueue;
     faceQueue.push_back( std::make_pair( face, myNorm ));

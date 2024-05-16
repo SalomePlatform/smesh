@@ -1989,8 +1989,8 @@ SMESH_MeshAlgos::FindSharpEdges( SMDS_Mesh* theMesh,
   std::vector< Edge > resultEdges;
   if ( !theMesh ) return resultEdges;
 
-  typedef std::pair< bool, const SMDS_MeshNode* >                            TIsSharpAndMedium;
-  typedef NCollection_DataMap< SMESH_TLink, TIsSharpAndMedium, SMESH_TLink > TLinkSharpMap;
+  typedef std::pair< bool, const SMDS_MeshNode* >                                  TIsSharpAndMedium;
+  typedef NCollection_DataMap< SMESH_TLink, TIsSharpAndMedium, SMESH_TLinkHasher > TLinkSharpMap;
 
   TLinkSharpMap linkIsSharp;
   Standard_Integer nbBuckets = FromSmIdType<Standard_Integer>( theMesh->NbFaces() );
@@ -2101,8 +2101,8 @@ SMESH_MeshAlgos::SeparateFacesByEdges( SMDS_Mesh* theMesh, const std::vector< Ed
 
   // build map of face edges (SMESH_TLink) and their faces
 
-  typedef std::vector< const SMDS_MeshElement* >                    TFaceVec;
-  typedef NCollection_DataMap< SMESH_TLink, TFaceVec, SMESH_TLink > TFacesByLinks;
+  typedef std::vector< const SMDS_MeshElement* >                          TFaceVec;
+  typedef NCollection_DataMap< SMESH_TLink, TFaceVec, SMESH_TLinkHasher > TFacesByLinks;
   TFacesByLinks facesByLink;
   Standard_Integer nbBuckets = FromSmIdType<Standard_Integer>( theMesh->NbFaces() );
   if ( nbBuckets > 0 )
@@ -2270,7 +2270,7 @@ std::vector< const SMDS_MeshNode*> SMESH_MeshAlgos::GetCommonNodes(const SMDS_Me
 bool SMESH_MeshAlgos::IsOn2DBoundary( const SMDS_MeshNode*                 theNode,
                                       std::vector< const SMDS_MeshNode*> * theNeibors )
 {
-  typedef NCollection_DataMap< SMESH_TLink, int, SMESH_TLink > TLinkCountMap;
+  typedef NCollection_DataMap< SMESH_TLink, int, SMESH_TLinkHasher > TLinkCountMap;
   TLinkCountMap linkCountMap( 10 );
 
   int nbFreeLinks = 0;

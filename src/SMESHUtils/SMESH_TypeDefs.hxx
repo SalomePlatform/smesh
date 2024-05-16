@@ -27,6 +27,8 @@
 #ifndef __SMESH_TypeDefs_HXX__
 #define __SMESH_TypeDefs_HXX__
 
+#include <Basics_OCCTVersion.hxx>
+
 #include "SMESH_Utils.hxx"
 
 #include "SMDS_SetIterator.hxx"
@@ -36,6 +38,7 @@
 
 #include <gp_XYZ.hxx>
 #include <gp_XY.hxx>
+#include <NCollection_Sequence.hxx>
 
 #include <map>
 #include <list>
@@ -156,6 +159,19 @@ struct SMESH_TLink: public NLink
   const SMDS_MeshNode* node2() const { return second; }
 
   // methods for usage of SMESH_TLink as a hasher in NCollection maps
+  //static int HashCode(const SMESH_TLink& link, int aLimit)
+  //{
+  //  return smIdHasher::HashCode( link.node1()->GetID() + link.node2()->GetID(), aLimit );
+  //}
+  //static Standard_Boolean IsEqual(const SMESH_TLink& l1, const SMESH_TLink& l2)
+  //{
+  //  return ( l1.node1() == l2.node1() && l1.node2() == l2.node2() );
+  //}
+};
+// a hasher in NCollection maps
+struct SMESH_TLinkHasher
+{
+#if OCC_VERSION_LARGE < 0x07080000
   static int HashCode(const SMESH_TLink& link, int aLimit)
   {
     return smIdHasher::HashCode( link.node1()->GetID() + link.node2()->GetID(), aLimit );
@@ -164,6 +180,16 @@ struct SMESH_TLink: public NLink
   {
     return ( l1.node1() == l2.node1() && l1.node2() == l2.node2() );
   }
+#else
+  size_t operator()(const SMESH_TLink& link) const
+  {
+    return smIdHasher()( link.node1()->GetID() + link.node2()->GetID() );
+  }
+  bool operator()(const SMESH_TLink& l1, const SMESH_TLink& l2) const
+  {
+    return ( l1.node1() == l2.node1() && l1.node2() == l2.node2() );
+  }
+#endif
 };
 typedef SMESH_TLink SMESH_Link;
 
@@ -218,6 +244,7 @@ typedef SMESH_TNodeXYZ SMESH_NodeXYZ;
 
 struct SMESH_Hasher
 {
+#if OCC_VERSION_LARGE < 0x07080000
   static Standard_Integer HashCode(const SMDS_MeshElement* e, const Standard_Integer upper)
   {
     return smIdHasher::HashCode( e->GetID(), upper );
@@ -226,6 +253,17 @@ struct SMESH_Hasher
   {
     return ( e1 == e2 );
   }
+#else
+  size_t operator()(const SMDS_MeshElement* e) const
+  {
+    return smIdHasher()( e->GetID() );
+  }
+
+  bool operator()(const SMDS_MeshElement* e1, const SMDS_MeshElement* e2) const
+  {
+    return ( e1 == e2 );
+  }
+#endif
 };
 
 //--------------------------------------------------
@@ -262,10 +300,8 @@ typedef std::vector< const SMDS_MeshElement* > SMESH_SequenceOfElemPtr;
 
 // --------------------------------------------------------------------------------
 // class SMESH_SequenceOfNode
-#include <NCollection_DefineSequence.hxx>
-typedef const SMDS_MeshNode* SMDS_MeshNodePtr;
 
-DEFINE_SEQUENCE(SMESH_SequenceOfNode,
-                SMESH_BaseCollectionNodePtr, SMDS_MeshNodePtr)
+typedef const SMDS_MeshNode*                     SMDS_MeshNodePtr;
+typedef NCollection_Sequence< SMDS_MeshNodePtr > SMESH_SequenceOfNode;
 
 #endif

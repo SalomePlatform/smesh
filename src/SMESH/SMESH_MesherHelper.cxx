@@ -3279,6 +3279,16 @@ double SMESH_MesherHelper::getFaceMaxTol( const TopoDS_Shape& face ) const
   return tol;
 }
 
+bool CheckAlmostZero(gp_Vec & vec1,gp_Vec & vec2, gp_Vec & vecref)
+{
+  auto v1   = gp_Dir(vec1);
+  auto v2   = gp_Dir(vec2);
+  auto vref = gp_Dir(vecref);
+  auto XYZ = v1.Crossed (v2);
+  double cond  = XYZ.X()*vref.X()+XYZ.Y()*vref.Y()+XYZ.Z()*vref.Z();
+  return (Abs(cond) <= 1e-12);
+}
+
 //================================================================================
 /*!
  * \brief Return an angle between two EDGEs sharing a common VERTEX with reference
@@ -3341,7 +3351,9 @@ double SMESH_MesherHelper::GetAngle( const TopoDS_Edge &   theE1,
     if ( theE2.Orientation() /*GetSubShapeOri( F, theE2 )*/ == TopAbs_REVERSED )
       vec2.Reverse();
     angle = vec1.AngleWithRef( vec2, vecRef );
-
+    if ( angle < 0. && CheckAlmostZero(vec1,vec2,vecRef))
+      angle*=-1;
+      
     if ( Abs ( angle ) >= 0.99 * M_PI )
     {
       BRep_Tool::Range( theE1, f, l );
