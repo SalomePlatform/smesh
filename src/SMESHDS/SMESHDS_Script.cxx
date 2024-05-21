@@ -35,7 +35,8 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 SMESHDS_Script::SMESHDS_Script(bool theIsEmbeddedMode):
-  myIsEmbeddedMode(theIsEmbeddedMode)
+  myIsEmbeddedMode(theIsEmbeddedMode),
+  myIsModified(true)
 {
   //cerr << "=========================== myIsEmbeddedMode " << myIsEmbeddedMode << endl;
 }

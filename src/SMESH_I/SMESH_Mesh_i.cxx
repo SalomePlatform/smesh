@@ -1414,6 +1414,9 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
         resGroupDS->SMDSGroup().Add( e );
     }
   }
+
+  GetGen()->UpdateGroupIcon(aResGrp);
+
   // Update Python script
   pyDump << aResGrp << " = " << SMESH::SMESH_Mesh_var(_this()) << ".IntersectGroups( "
          << theGroup1 << ", " << theGroup2 << ", '" << theName << "')";
@@ -1500,6 +1503,8 @@ SMESH_Mesh_i::IntersectListOfGroups(const SMESH::ListOfGroups& theGroups,
       resGroupDS->SMDSGroup().Add( e );
   }
 
+  GetGen()->UpdateGroupIcon(aResGrp);
+
   // Update Python script
   pyDump << aResGrp << " = " << SMESH::SMESH_Mesh_var( _this() )
          << ".IntersectListOfGroups( " << theGroups << ", '" << theName << "' )";
@@ -1561,6 +1566,9 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
         resGroupDS->SMDSGroup().Add( e );
     }
   }
+
+  GetGen()->UpdateGroupIcon(aResGrp);
+
   // Update Python script
   pyDump << aResGrp << " = " << SMESH::SMESH_Mesh_var(_this()) << ".CutGroups( "
          << theGroup1 << ", " << theGroup2 << ", '" << theName << "')";
@@ -1660,6 +1668,8 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
     if ( !isIn )
       resGroupDS->SMDSGroup().Add( e );
   }
+
+  GetGen()->UpdateGroupIcon(aResGrp);
 
   // Update Python script
   pyDump << aResGrp << " = " << SMESH::SMESH_Mesh_var( _this() )
@@ -4576,7 +4586,7 @@ void SMESH_Mesh_i::ExportStructuredCGNS( SMESH::SMESH_IDSource_ptr meshPart,
     meshName = name.in();
   }
   SMESH_TRY;
-  
+
   SMESH::SMESH_Mesh_var mesh = meshPart->GetMesh();
   SMESH_Mesh_i*       mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
   mesh_i->Load();

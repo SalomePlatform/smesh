@@ -261,16 +261,19 @@ void SMESH_Group_i::Clear()
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
 
+  SMESH::SMESH_Group_var me = _this();
+
   // Update Python script
-  SMESH::TPythonDump() << SMESH::SMESH_Group_var(_this()) << ".Clear()";
+  SMESH::TPythonDump() << me << ".Clear()";
 
   // Clear the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
     aGroupDS->Clear();
-    return;
+    SMESH_Gen_i* aGen = GetMeshServant()->GetGen();
+    aGen->UpdateGroupIcon(me);
+    Modified(); // notify dependent Filter with FT_BelongToMeshGroup criterion
   }
-  Modified(); // notify dependent Filter with FT_BelongToMeshGroup criterion
 }
 
 //=============================================================================
@@ -301,20 +304,28 @@ SMESH::smIdType  SMESH_Group_i::Add( const SMESH::smIdType_array& theIDs )
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
 
+  SMESH::SMESH_Group_var me = _this();
+
   // Update Python script
-  SMESH::TPythonDump() << "nbAdd = " << SMESH::SMESH_Group_var(_this()) << ".Add( " << theIDs << " )";
+  SMESH::TPythonDump() << "nbAdd = " << me << ".Add( " << theIDs << " )";
 
   // Add elements to the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
+    bool wasEmpty = aGroupDS->IsEmpty();
     int nbAdd = 0;
     for ( CORBA::ULong i = 0; i < theIDs.length(); i++) {
       int anID = (int) theIDs[i];
       if ( aGroupDS->Add( anID ))
         nbAdd++;
     }
-    if ( nbAdd )
+    if ( nbAdd ) {
       Modified(); // notify dependent Filter with FT_BelongToMeshGroup criterion
+      if (wasEmpty) {
+        SMESH_Gen_i* aGen = GetMeshServant()->GetGen();
+        aGen->UpdateGroupIcon(me);
+      }
+    }
     return nbAdd;
   }
   MESSAGE("attempt to add elements to a vague group");
@@ -332,9 +343,10 @@ SMESH::smIdType  SMESH_Group_i::Remove( const SMESH::smIdType_array& theIDs )
   if ( myPreMeshInfo )
     myPreMeshInfo->FullLoadFromFile();
 
+  SMESH::SMESH_Group_var me = _this();
+
   // Update Python script
-  SMESH::TPythonDump() << "nbDel = " << SMESH::SMESH_Group_var(_this())
-                << ".Remove( " << theIDs << " )";
+  SMESH::TPythonDump() << "nbDel = " << me << ".Remove( " << theIDs << " )";
 
   // Remove elements from the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
@@ -345,8 +357,13 @@ SMESH::smIdType  SMESH_Group_i::Remove( const SMESH::smIdType_array& theIDs )
       if ( aGroupDS->Remove( anID ))
         nbDel++;
     }
-    if ( nbDel )
+    if ( nbDel ) {
       Modified(); // notify dependent Filter with FT_BelongToMeshGroup criterion
+      if (aGroupDS->IsEmpty()) {
+        SMESH_Gen_i* aGen = GetMeshServant()->GetGen();
+        aGen->UpdateGroupIcon(me);
+      }
+    }
     return nbDel;
   }
   MESSAGE("attempt to remove elements from a vague group");
@@ -361,24 +378,27 @@ SMESH::smIdType  SMESH_Group_i::Remove( const SMESH::smIdType_array& theIDs )
 
 typedef bool (SMESHDS_Group::*TFunChangeGroup)(const smIdType);
 
-CORBA::Long 
-ChangeByPredicate( SMESH::Predicate_i*       thePredicate,
-                   SMESHDS_GroupBase*        theGroupBase,
-                   SMESH::NotifyerAndWaiter* theGroupImpl,
-                   TFunChangeGroup           theFun)
+CORBA::Long ChangeByPredicate( SMESH::Predicate_i* thePredicate,
+                               SMESHDS_GroupBase*  theGroupBase,
+                               SMESH_GroupBase_i*  theGroup,
+                               TFunChangeGroup     theFun)
 {
   CORBA::Long aNb = 0;
-  if(SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>(theGroupBase)){
+  if (SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>(theGroupBase)) {
     SMESH::Controls::Filter::TIdSequence aSequence;
     const SMDS_Mesh* aMesh = theGroupBase->GetMesh();
     SMESH::Filter_i::GetElementsId(thePredicate,aMesh,aSequence);
     
     CORBA::Long i = 0, iEnd = aSequence.size();
-    for(; i < iEnd; i++)
-      if((aGroupDS->*theFun)(aSequence[i]))
+    for (; i < iEnd; i++)
+      if ((aGroupDS->*theFun)(aSequence[i]))
         aNb++;
-    if ( aNb )
-      theGroupImpl->Modified();
+    if ( aNb ) {
+      theGroup->Modified();
+      SMESH_Gen_i* aGen = theGroup->GetMeshServant()->GetGen();
+      SMESH::SMESH_GroupBase_var aGroup = theGroup->_this();
+      aGen->UpdateGroupIcon(aGroup);
+    }
     return aNb;
   }
   return aNb;
@@ -428,11 +448,16 @@ SMESH::smIdType  SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
         aGroupDS->SMDSGroup().Add( elemIt->next() );
   }
 
-  // Update Python script
-  pd << "nbAdd = " << SMESH::SMESH_Group_var(_this()) << ".AddFrom( " << theSource << " )";
+  SMESH::SMESH_Group_var me = _this();
 
-  if ( prevNb != Size() )
+  // Update Python script
+  pd << "nbAdd = " << me << ".AddFrom( " << theSource << " )";
+
+  if ( prevNb != Size() ) {
+    SMESH_Gen_i* aGen = GetMeshServant()->GetGen();
+    aGen->UpdateGroupIcon(me);
     Modified(); // notify dependent Filter with FT_BelongToMeshGroup criterion
+  }
 
   return Size() - prevNb;
 }
@@ -830,17 +855,18 @@ void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
     myFilter->SetMesh( SMESH::SMESH_Mesh::_nil() ); // to UnRegister() the mesh
   }
 
+  SMESH_Gen_i* aGen = GetMeshServant()->GetGen();
+  SMESH::SMESH_GroupOnFilter_var me = _this();
+
   if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
   {
     grDS->SetPredicate( GetPredicate( myFilter ));
+    aGen->UpdateGroupIcon(me);
     Modified(); // notify dependent Filter with FT_BelongToMeshGroup criterion
   }
 
-  SMESH::SMESH_GroupOnFilter_var me = _this();
-
   // mark the group valid after edition
-  GetMeshServant()->GetGen()->HighLightInvalid( me, false );
-
+  aGen->HighLightInvalid( me, false );
 
   SMESH::TPythonDump()<< me <<".SetFilter( "<< theFilter <<" )";
 }
@@ -1078,4 +1104,3 @@ void SMESH_GroupOnFilter_i::OnBaseObjModified(NotifyerAndWaiter* /*filter*/, boo
   if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
     grDS->SetPredicate( GetPredicate( myFilter )); // group resets its cache
 }
-

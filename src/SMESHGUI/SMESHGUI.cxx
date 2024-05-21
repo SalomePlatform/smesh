@@ -410,9 +410,6 @@ namespace
         {
           _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[i] );
           if ( aMeshSO ) {
-            _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
-            _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
-            aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
             if ( theCommandID == SMESHOp::OpImportUNV ) // mesh names aren't taken from the file for UNV import
               SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
 
@@ -607,7 +604,7 @@ namespace
     {
       format = "CGNS";
       notSupportedElemTypes.push_back( SMESH::Entity_Ball );
-    }    
+    }
     else if ( isGMF )
     {
       format = "GMF";
@@ -707,7 +704,7 @@ namespace
       checkBoxes << QObject::tr( "CGNS_EXPORT_ELEMS_BY_TYPE" ) << QObject::tr("STRUCTUREDCGNS");
 
       SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
-      
+
       fd->setWindowTitle( aTitle );
       fd->setNameFilter( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
 
@@ -717,18 +714,18 @@ namespace
       SMESHGUI_FileValidator* fv = new SMESHGUI_FileValidator( fd );
       fd->setValidator( fv );
       fd->SetChecked( option, 0 );
-      
+
       if ( fd->exec() )
       {
         aFilename     = fd->selectedFile();
-        structureCGNS = fd->IsChecked( 1 );        
+        structureCGNS = fd->IsChecked( 1 );
       }
 
       toOverwrite = fv->isOverwrite( aFilename );
       option      = fd->IsChecked( 0 );
       SMESHGUI::resourceMgr()->setValue("SMESH", theOptionResource, option );
       toCreateGroups = option;
-      
+
       delete fd;
     }
     else if ( isUNV || isDAT ) // Export to [ UNV | DAT ] - one option
@@ -768,11 +765,11 @@ namespace
       QStringList filters;
       aFilterMap.insert( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)", 1 );
       aFilterMap.insert( QObject::tr( "STL_BIN_FILES_FILTER" )   + " (*.stl)", 0 );
-      
+
       QMap<QString, int>::const_iterator it = aFilterMap.begin();
       for ( ; it != aFilterMap.end(); ++it )
-        filters.push_back( it.key() );    
-     
+        filters.push_back( it.key() );
+
       SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
       fd->setWindowTitle( aTitle );
       fd->setNameFilters( filters );
@@ -1031,7 +1028,7 @@ namespace
                                     aFilename.toUtf8().data(),
                                     toOverwrite && aMeshIndex == 0,
                                     toCreateGroups );
-            else                                  
+            else
               aMeshItem->ExportStructuredCGNS( aMeshOrGroup,
                                                 aFilename.toUtf8().data(),
                                                 toOverwrite && aMeshIndex == 0 );
@@ -1069,11 +1066,11 @@ namespace
           SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                    QObject::tr("SMESH_WRN_WARNING"),
                                    QObject::tr("SMESH_EXPORT_FAILED") + SalomeApp_Tools::ExceptionToString(S_ex));
-        }          
+        }
         else
           SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                    QObject::tr("SMESH_WRN_WARNING"),
-                                   SalomeApp_Tools::ExceptionToString(S_ex));                                           
+                                   SalomeApp_Tools::ExceptionToString(S_ex));
         wc.resume();
       }
     }
@@ -4196,7 +4193,7 @@ void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QStr
     pix = resMgr->loadPixmap( "SMESH", tr( QString( "ICON_%1" ).arg( po_id ).toLatin1().data() ), false );
   if ( !pix.isNull() )
     icon = QIcon( pix );
-  
+
   QString tooltip    = tr( QString( "TOP_%1" ).arg( po_id ).toLatin1().data() ),
           menu       = tr( QString( "MEN_%1" ).arg( po_id ).toLatin1().data() ),
           status_bar = tr( QString( "STB_%1" ).arg( po_id ).toLatin1().data() );

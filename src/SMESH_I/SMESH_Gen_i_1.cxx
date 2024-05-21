@@ -607,7 +607,8 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
 //=======================================================================
 
 SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
-                                                const char*           theName)
+                                                const char*           theName,
+                                                const char*           thePixMap)
 {
   if ( !myIsEnablePublish )
     return SALOMEDS::SObject::_nil();
@@ -631,7 +632,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
     else
       aTag++;
 
-    aMeshSO = publish( theMesh, father, aTag, "ICON_SMESH_TREE_MESH_WARN" );
+    aMeshSO = publish( theMesh, father, aTag,
+                       thePixMap ? thePixMap : "ICON_SMESH_TREE_MESH_WARN" );
     if ( aMeshSO->_is_nil() )
       return aMeshSO._retn();
   }
@@ -977,18 +979,13 @@ void SMESH_Gen_i::UpdateIcons( SMESH::SMESH_Mesh_ptr theMesh )
       if ( idSrc->_is_nil() )
         continue;
 
-      SMESH::SMESH_GroupBase_var     grp = SMESH::SMESH_GroupBase::_narrow( obj );
-      SMESH::SMESH_GroupOnFilter_var gof = SMESH::SMESH_GroupOnFilter::_narrow( obj );
-      const bool         isGroup = !grp->_is_nil();
-      const bool isGroupOnFilter = !gof->_is_nil();
-
       bool isEmpty = ( mesh_i->NbNodes() == 0 );
       if ( !isEmpty )
       {
-        if ( isGroupOnFilter ) // GetTypes() can be very long on GroupOnFilter!
-        {
-          SMESH::smIdType_array_var nbByType = mesh_i->GetNbElementsByType();
-          isEmpty = ( nbByType[ grp->GetType() ] == 0 );
+        SMESH::SMESH_GroupBase_var grp = SMESH::SMESH_GroupBase::_narrow( obj );
+        if ( !grp->_is_nil() ) {
+          UpdateGroupIcon(grp);
+          continue;
         }
         else
         {
@@ -1013,15 +1010,44 @@ void SMESH_Gen_i::UpdateIcons( SMESH::SMESH_Mesh_ptr theMesh )
 
       if ( isEmpty )
         SetPixMap( so, "ICON_SMESH_TREE_MESH_WARN");
-      else if ( !isGroup )
-        SetPixMap( so, "ICON_SMESH_TREE_MESH" );
-      else if ( isGroupOnFilter )
-        SetPixMap( so, "ICON_SMESH_TREE_GROUP_ON_FILTER" );
       else
-        SetPixMap( so, "ICON_SMESH_TREE_GROUP" );
+        SetPixMap( so, "ICON_SMESH_TREE_MESH" );
 
     } // loop on sub-meshes or groups
   } // loop on roots
+}
+
+//=======================================================================
+//function : UpdateGroupIcon
+//purpose  : update icon of a group
+//=======================================================================
+
+void SMESH_Gen_i::UpdateGroupIcon( SMESH::SMESH_GroupBase_ptr theGroup )
+{
+  SALOMEDS::SObject_wrap so = ObjectToSObject( theGroup );
+  if ( so->_is_nil() )
+    return;
+
+  SMESH::SMESH_GroupOnFilter_var gof = SMESH::SMESH_GroupOnFilter::_narrow( theGroup );
+  const bool isGroupOnFilter = !gof->_is_nil();
+
+  bool isEmpty = false;
+  if ( isGroupOnFilter ) // GetTypes() can be very long on GroupOnFilter!
+  {
+    SMESH::smIdType_array_var nbByType = theGroup->GetMesh()->GetNbElementsByType();
+    isEmpty = ( nbByType[ theGroup->GetType() ] == 0 );
+  }
+  else
+  {
+    isEmpty = ( theGroup->Size() == 0 );
+  }
+
+  if ( isEmpty )
+    SetPixMap( so, "ICON_SMESH_TREE_MESH_WARN");
+  else if ( isGroupOnFilter )
+    SetPixMap( so, "ICON_SMESH_TREE_GROUP_ON_FILTER" );
+  else
+    SetPixMap( so, "ICON_SMESH_TREE_GROUP" );
 }
 
 //=======================================================================

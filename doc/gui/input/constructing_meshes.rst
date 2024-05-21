@@ -210,6 +210,10 @@ When the Preview dialog is closed, the question about the storage of temporarily
 
 These elements can be kept in the mesh.
 
+Since the mesh, its submesh(es) and group(s) are now not empty, their **Object Browser** icons will be updated accordingly.
+
+	.. image:: ../images/image89.jpg
+		:align: center
 
 .. _submesh_order_anchor:
 

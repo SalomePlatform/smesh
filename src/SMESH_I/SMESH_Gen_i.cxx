@@ -1401,12 +1401,15 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   checkFileReadable( theFileName );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
+
   string aFileName;
+
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
-    SALOMEDS::SObject_wrap aSO = PublishMesh( aMesh.in(), aFileName.c_str() );
+    SALOMEDS::SObject_wrap aSO =
+      PublishMesh( aMesh.in(), aFileName.c_str(), "ICON_SMESH_TREE_MESH_IMPORTED" );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
@@ -1438,13 +1441,6 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char*                
 {
   checkFileReadable( theFileName );
 
-#ifdef WIN32
-  char bname[ _MAX_FNAME ];
-  _splitpath( theFileName, NULL, NULL, bname, NULL );
-  string aFileName = bname;
-#else
-  string aFileName = basename( const_cast<char *>( theFileName ));
-#endif
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetFile( theFileName );
@@ -1481,7 +1477,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char*                
         // publish mesh in the study
         SALOMEDS::SObject_wrap aSO;
         if ( CanPublishInStudy( mesh ) )
-          aSO = PublishMesh( mesh.in(), meshName.c_str() );
+          aSO = PublishMesh( mesh.in(), meshName.c_str(), "ICON_SMESH_TREE_MESH_IMPORTED" );
 
         // Python Dump
         if ( !aSO->_is_nil() ) {
@@ -1529,7 +1525,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   checkFileReadable( theFileName );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
-  //string aFileName;
+
 #ifdef WIN32
   char bname[ _MAX_FNAME ];
   _splitpath( theFileName, NULL, NULL, bname, NULL );
@@ -1537,11 +1533,13 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
 #else
   string aFileName = basename( const_cast<char *>(theFileName) );
 #endif
+
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
-    SALOMEDS::SObject_wrap aSO = PublishInStudy( SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
+    SALOMEDS::SObject_wrap aSO =
+      PublishMesh( aMesh.in(), aFileName.c_str(), "ICON_SMESH_TREE_MESH_IMPORTED" );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
@@ -1616,7 +1614,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char*               
         // publish mesh in the study
         SALOMEDS::SObject_wrap aSO;
         if ( CanPublishInStudy( mesh ) )
-          aSO = PublishMesh( mesh.in(), meshName.c_str() );
+          aSO = PublishMesh( mesh.in(), meshName.c_str(), "ICON_SMESH_TREE_MESH_IMPORTED" );
 
         // Python Dump
         if ( !aSO->_is_nil() ) {
@@ -1667,7 +1665,8 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     aStudyBuilder->NewCommand();  // There is a transaction
-    SALOMEDS::SObject_wrap aSO = PublishInStudy( SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
+    SALOMEDS::SObject_wrap aSO =
+      PublishMesh( aMesh.in(), aFileName.c_str(), "ICON_SMESH_TREE_MESH_IMPORTED" );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
@@ -1737,7 +1736,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMESHIO(const char* theFileName,
       // publish mesh in the study
       SALOMEDS::SObject_wrap aSO;
       if (CanPublishInStudy(mesh))
-        aSO = PublishMesh(mesh.in(), meshName.c_str());
+        aSO = PublishMesh(mesh.in(), meshName.c_str(), "ICON_SMESH_TREE_MESH_IMPORTED");
 
       // Save SO to use in a python dump
       sobjects.emplace_back(aSO);

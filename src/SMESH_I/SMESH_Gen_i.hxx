@@ -524,7 +524,8 @@ public:
   // publishing methods
   SALOMEDS::SComponent_ptr PublishComponent();
   SALOMEDS::SObject_ptr PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
-                                     const char*           theName = 0);
+                                     const char*           theName = 0,
+                                     const char*           thePixMap = 0);
   SALOMEDS::SObject_ptr PublishHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp,
                                            const char*                 theName = 0);
   SALOMEDS::SObject_ptr PublishSubMesh (SMESH::SMESH_Mesh_ptr    theMesh,
@@ -536,6 +537,7 @@ public:
                                       GEOM::GEOM_Object_ptr  theShapeObject,
                                       const char*            theName = 0);
   void UpdateIcons(SMESH::SMESH_Mesh_ptr theMesh);
+  void UpdateGroupIcon(SMESH::SMESH_GroupBase_ptr theGroup);
   void HighLightInvalid(CORBA::Object_ptr theObject, bool isInvalid);
   bool IsInvalid(SALOMEDS::SObject_ptr theObject);
   bool AddHypothesisToShape(SMESH::SMESH_Mesh_ptr       theMesh,
