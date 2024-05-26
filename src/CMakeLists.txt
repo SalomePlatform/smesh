@@ -37,6 +37,7 @@ SET(SUBDIRS_COMMON
   SMESHClient
   SMESH_SWIG
   StdMeshers
+  StdMeshers.test
   StdMeshers_I
   SMESH_PY
   Tools

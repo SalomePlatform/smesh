@@ -127,6 +127,10 @@ SET(CPP_TESTS
   SMESH_RegularGridTest
 )
 
+SET(UNIT_TESTS # Any unit test add in src names space should be added here 
+  HexahedronTest
+)
+
 # The following tests can be executed without driver, just by python.
 # ----------------------------------------------------------------------------
 

@@ -47,8 +47,12 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
   _type           = PARAM_ALGO;
   _shapeType      = 0;  // to be set by algo with TopAbs_Enum
   _param_algo_dim = -1; // to be set by algo parameter
-  StudyContextStruct* myStudyContext = gen->GetStudyContext();
-  myStudyContext->mapHypothesis[hypId] = this;
+  
+  if ( _gen )
+  {
+    StudyContextStruct* myStudyContext = gen->GetStudyContext();
+    myStudyContext->mapHypothesis[hypId] = this;
+  }    
 }
 
 //=============================================================================
@@ -107,16 +111,18 @@ int SMESH_Hypothesis::GetShapeType() const
 void SMESH_Hypothesis::NotifySubMeshesHypothesisModification()
 {
   // for all meshes in study
-
-  StudyContextStruct* myStudyContext = _gen->GetStudyContext();
-  map<int, SMESH_Mesh*>::iterator itm;
-  for (itm = myStudyContext->mapMesh.begin();
-       itm != myStudyContext->mapMesh.end();
-       itm++)
+  if ( _gen )
   {
-    SMESH_Mesh* mesh = (*itm).second;
-    mesh->NotifySubMeshesHypothesisModification( this );
-  }
+    StudyContextStruct* myStudyContext = _gen->GetStudyContext();
+    map<int, SMESH_Mesh*>::iterator itm;
+    for (itm = myStudyContext->mapMesh.begin();
+        itm != myStudyContext->mapMesh.end();
+        itm++)
+    {
+      SMESH_Mesh* mesh = (*itm).second;
+      mesh->NotifySubMeshesHypothesisModification( this );
+    }
+  }    
 }
 
 //=============================================================================
@@ -148,13 +154,16 @@ void SMESH_Hypothesis::SetLibName(const char* theLibName)
 
 SMESH_Mesh* SMESH_Hypothesis::GetMeshByPersistentID(int id) const
 {
-  StudyContextStruct* myStudyContext = _gen->GetStudyContext();
-  map<int, SMESH_Mesh*>::iterator itm = myStudyContext->mapMesh.begin();
-  for ( ; itm != myStudyContext->mapMesh.end(); itm++)
+  if ( _gen )
   {
-    SMESH_Mesh* mesh = (*itm).second;
-    if ( mesh->GetMeshDS()->GetPersistentId() == id )
-      return mesh;
+    StudyContextStruct* myStudyContext = _gen->GetStudyContext();
+    map<int, SMESH_Mesh*>::iterator itm = myStudyContext->mapMesh.begin();
+    for ( ; itm != myStudyContext->mapMesh.end(); itm++)
+    {
+      SMESH_Mesh* mesh = (*itm).second;
+      if ( mesh->GetMeshDS()->GetPersistentId() == id )
+        return mesh;
+    }
   }
   return 0;
 }
