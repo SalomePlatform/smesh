@@ -57,6 +57,74 @@ namespace SMESHUtils
     for (auto node : nodesOfFace(face))
       function(myCoordinates[node],node);      
   }
+
+  template<typename T>
+  std::vector<T> SMESH_RegularGrid::getEdgeIndexLimits( const EdgeType edge ) const
+  {
+    switch ( edge ) {
+      case EdgeType::BOTTOM:
+        return std::vector<T>{1,1,mnx,1};
+        break;
+      case EdgeType::RIGHT:
+        return std::vector<T>{mnx,1,mnx,mny};
+        break;
+      case EdgeType::TOP:
+        return std::vector<T>{mnx,mny,1,mny};
+        break;
+      case EdgeType::LEFT:
+        return std::vector<T>{1,mny,1,1};
+        break;
+      default:
+        return std::vector<T>{1,1,mnx,1};
+        break;
+    }
+  }
+
+  template<typename T>
+  std::vector<T> SMESH_RegularGrid::getFaceIndexLimits( const FaceType face ) const
+  {
+    switch ( face ) {
+      case FaceType::B_BOTTOM:
+        return std::vector<T>{1,1,1,mnx,mny,1};     /*V0-V2*/
+        break;
+      case FaceType::B_RIGHT:
+        return std::vector<T>{mnx,1,1,mnx,mny,mnz}; /*V1-V6*/
+        break;
+      case FaceType::B_BACK:
+        return std::vector<T>{1,mny,1,mnx,mny,mnz}; /*V3-V6*/
+        break;
+      case FaceType::B_LEFT:
+        return std::vector<T>{1,1,1,1,mny,mnz};     /*V0-V7*/
+        break;
+      case FaceType::B_FRONT:
+        return std::vector<T>{1,1,1,mnx,1,mnz};     /*V0-V5*/
+        break;
+      case FaceType::B_TOP:
+        return std::vector<T>{1,1,mnz,mnx,mny,mnz}; /*V4-V6*/
+        break;
+      default:
+        return std::vector<T>{1,1,1,mnx,mny,1};
+        break;
+    }
+  }
+
+  template<typename T>
+  void SMESH_RegularGrid::getAllEdgeIndexLimits(std::vector<std::vector<T>>& allRanges)
+  {
+    this->foreachGridSide( [&]( EdgeType edge )
+    {
+      allRanges.push_back( getEdgeIndexLimits<T>(edge) );
+    });
+  }
+
+  template<typename T>
+  void SMESH_RegularGrid::getAllFaceIndexLimits(std::vector<std::vector<T>>& allRanges)
+  {
+    this->foreachGridFace( [&]( FaceType face )
+    {
+      allRanges.push_back( getFaceIndexLimits<T>(face) );
+    });
+  }
 }
 
 

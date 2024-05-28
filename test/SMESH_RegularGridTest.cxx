@@ -93,7 +93,7 @@ bool testGetCommontInterface1D()
 
   std::vector<int> interface; /* interface at right  */
   regularGrid0->GetEdgeInterfaces( regularGrid1.get(), interface );
-  std::vector<int> expectedRange        = regularGrid0->getEdgeIndexLimits(SMESHUtils::SMESH_RegularGrid::RIGHT);
+  std::vector<int> expectedRange        = regularGrid0->getEdgeIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::RIGHT);
   std::vector<int> expectedDonorRange   = regularGrid1->getEdgeIndexLimitsInverted(SMESHUtils::SMESH_RegularGrid::LEFT);
 
   if ( interface.size() != 1+mny*2+2 ) 
@@ -189,19 +189,19 @@ bool testGetCommontInterface2D()
   regularGrid0->GetFaceInterfaces( regularGrid5.get(), interface[4] );
   regularGrid0->GetFaceInterfaces( regularGrid6.get(), interface[5] );
 
-  expectedRange[0] = regularGrid0->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_BOTTOM);
-  expectedRange[1] = regularGrid0->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_RIGHT);
-  expectedRange[2] = regularGrid0->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_BACK);
-  expectedRange[3] = regularGrid0->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_LEFT);
-  expectedRange[4] = regularGrid0->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_FRONT);
-  expectedRange[5] = regularGrid0->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_TOP);
+  expectedRange[0] = regularGrid0->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_BOTTOM);
+  expectedRange[1] = regularGrid0->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_RIGHT);
+  expectedRange[2] = regularGrid0->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_BACK);
+  expectedRange[3] = regularGrid0->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_LEFT);
+  expectedRange[4] = regularGrid0->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_FRONT);
+  expectedRange[5] = regularGrid0->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_TOP);
 
-  expectedDonorRange[0] = regularGrid1->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_TOP);
-  expectedDonorRange[1] = regularGrid2->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_LEFT);
-  expectedDonorRange[2] = regularGrid3->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_FRONT );
-  expectedDonorRange[3] = regularGrid4->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_RIGHT);
-  expectedDonorRange[4] = regularGrid5->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_BACK);
-  expectedDonorRange[5] = regularGrid6->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_BOTTOM);
+  expectedDonorRange[0] = regularGrid1->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_TOP);
+  expectedDonorRange[1] = regularGrid2->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_LEFT);
+  expectedDonorRange[2] = regularGrid3->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_FRONT );
+  expectedDonorRange[3] = regularGrid4->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_RIGHT);
+  expectedDonorRange[4] = regularGrid5->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_BACK);
+  expectedDonorRange[5] = regularGrid6->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_BOTTOM);
   
   int interfaceSize = 1+6*2+3;
   for ( auto itf : interface )
@@ -285,8 +285,8 @@ bool testGetPartialInterface2D()
   expectedRange[0] = std::vector<int>({4,1,2,5,1,3});
   expectedRange[1] = std::vector<int>({1,4,1,1,2,2});
 
-  expectedDonorRange[0] = regularGrid1->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_FRONT);
-  expectedDonorRange[1] = regularGrid2->getFaceIndexLimits(SMESHUtils::SMESH_RegularGrid::B_LEFT);
+  expectedDonorRange[0] = regularGrid1->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_FRONT);
+  expectedDonorRange[1] = regularGrid2->getFaceIndexLimits<int>(SMESHUtils::SMESH_RegularGrid::B_LEFT);
   
   int interfaceSize = 1+6*2+3;
   for ( auto itf : interface )

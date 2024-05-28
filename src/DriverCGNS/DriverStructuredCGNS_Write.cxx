@@ -290,12 +290,16 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
             grid->GetFaceInterfaces(myMesh->GetTheGrid(neighbourSolid).get(), interface);
             if ( !interface.empty() )
             {
+              std::vector<cgsize_t> interfacecgns( 12 );
+              for (size_t i = 0; i < 12; i++)
+                interfacecgns[i] = cgsize_t(interface[i+1]);              
+                
               int iConn;  
               std::string neigbourZoneName  = GetGroupName(myMesh->ShapeToIndex(neighbourSolid),meshDim);
               neigbourZoneName = neigbourZoneName.empty() ? "ZONESOLID" + std::to_string(myMesh->ShapeToIndex(neighbourSolid)) : neigbourZoneName; 
               std::string interfaceName     = zoneName + "_" + neigbourZoneName + "_" + std::to_string(interface[0]);  
               if(cg_1to1_write(_fn, iBase, iZone, interfaceName.c_str(), neigbourZoneName.c_str(), 
-                                &interface[1], &interface[7], &interface[13], &iConn) != CG_OK) return addMessage(cg_get_error(), /*fatal = */true);
+                                &interfacecgns[0], &interfacecgns[6], &interface[13], &iConn) != CG_OK) return addMessage(cg_get_error(), /*fatal = */true);
             }
 
           }
@@ -398,13 +402,17 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
             grid->GetEdgeInterfaces(myMesh->GetTheGrid(neighbourFace).get(), interface);
            
             if ( !interface.empty() )
-            {              
+            {          
+              std::vector<cgsize_t> interfacecgns( 8 );
+              for (size_t i = 0; i < 8; i++)
+                interfacecgns[i] = cgsize_t(interface[i+1]);    
+
               int iConn;  
               std::string neigbourZoneName  = GetGroupName(myMesh->ShapeToIndex(neighbourFace),meshDim);
               neigbourZoneName = neigbourZoneName.empty() ? "ZONEFACE" + std::to_string(myMesh->ShapeToIndex(neighbourFace)) : neigbourZoneName;
               std::string interfaceName = zoneName + "_" + neigbourZoneName + "_" + std::to_string(interface[0]);
               if(cg_1to1_write(_fn, iBase, iZone, interfaceName.c_str(), neigbourZoneName.c_str(), 
-                                &interface[1], &interface[5], &interface[9], &iConn) != CG_OK) return addMessage(cg_get_error(), /*fatal = */true);
+                                &interfacecgns[0], &interfacecgns[4], &interface[9], &iConn) != CG_OK) return addMessage(cg_get_error(), /*fatal = */true);
               
             }            
           }                     

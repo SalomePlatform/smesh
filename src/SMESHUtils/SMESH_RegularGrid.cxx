@@ -82,31 +82,10 @@ std::tuple<int,int,int> SMESH_RegularGrid::GetIJK(const int index) const
 
 std::vector<int> SMESH_RegularGrid::getEdgeIndexLimitsInverted( const EdgeType edge ) const
 {
-  auto limits = getEdgeIndexLimits( edge );
+  auto limits = getEdgeIndexLimits<int>( edge );
   std::swap(limits[0],limits[2]);
   std::swap(limits[1],limits[3]);
   return limits;
-}
-
-std::vector<int> SMESH_RegularGrid::getEdgeIndexLimits( const EdgeType edge ) const
-{
-  switch ( edge ) {
-    case EdgeType::BOTTOM:
-      return std::vector<int>{1,1,mnx,1};
-      break;
-    case EdgeType::RIGHT:
-      return std::vector<int>{mnx,1,mnx,mny};
-      break;
-    case EdgeType::TOP:
-      return std::vector<int>{mnx,mny,1,mny};
-      break;
-    case EdgeType::LEFT:
-      return std::vector<int>{1,mny,1,1};
-      break;
-    default:
-      return std::vector<int>{1,1,mnx,1};
-      break;
-  }
 }
 
 std::vector<int> SMESH_RegularGrid::getFaceIndexLimits( const int start, const int end ) const
@@ -131,33 +110,6 @@ std::vector<int> SMESH_RegularGrid::getEdgeIndexLimits( const int start, const i
   int iEnd      = std::get<0>(endIJK);
   int jEnd      = std::get<1>(endIJK);  
   return std::vector<int>{iStart+1,jStart+1,iEnd+1,jEnd+1};   
-}
-
-std::vector<int> SMESH_RegularGrid::getFaceIndexLimits( const FaceType face ) const
-{
-  switch ( face ) {
-    case FaceType::B_BOTTOM:
-      return std::vector<int>{1,1,1,mnx,mny,1};     /*V0-V2*/
-      break;
-    case FaceType::B_RIGHT:
-      return std::vector<int>{mnx,1,1,mnx,mny,mnz}; /*V1-V6*/
-      break;
-    case FaceType::B_BACK:
-      return std::vector<int>{1,mny,1,mnx,mny,mnz}; /*V3-V6*/
-      break;
-    case FaceType::B_LEFT:
-      return std::vector<int>{1,1,1,1,mny,mnz};     /*V0-V7*/
-      break;
-    case FaceType::B_FRONT:
-      return std::vector<int>{1,1,1,mnx,1,mnz};     /*V0-V5*/
-      break;
-    case FaceType::B_TOP:
-      return std::vector<int>{1,1,mnz,mnx,mny,mnz}; /*V4-V6*/
-      break;
-    default:
-      return std::vector<int>{1,1,1,mnx,mny,1};
-      break;
-  }
 }
 
 int SMESH_RegularGrid::getEdgeSize( const EdgeType edge ) const
@@ -198,22 +150,6 @@ int SMESH_RegularGrid::getFaceSize( const FaceType edge ) const
   }
 }
 
-
-void SMESH_RegularGrid::getAllEdgeIndexLimits(std::vector<std::vector<int>>& allRanges)
-{
-  this->foreachGridSide( [&]( EdgeType edge )
-  {
-    allRanges.push_back( getEdgeIndexLimits(edge) );
-  });
-}
-
-void SMESH_RegularGrid::getAllFaceIndexLimits(std::vector<std::vector<int>>& allRanges)
-{
-  this->foreachGridFace( [&]( FaceType face )
-  {
-    allRanges.push_back( getFaceIndexLimits(face) );
-  });
-}
 
 std::vector<int> SMESH_RegularGrid::nodesOfFace( SMESH_RegularGrid::FaceType face ) const
 {
@@ -452,8 +388,8 @@ void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * 
          trueCorner[2] &&
          trueCorner[3] )   /*Face to Face interface 100% conform*/
     {
-      interfaceRange = this->getFaceIndexLimits( face );
-      interfaceDonor = grid->getFaceIndexLimits( gridFace );      
+      interfaceRange = this->getFaceIndexLimits<int>( face );
+      interfaceDonor = grid->getFaceIndexLimits<int>( gridFace );      
     }
     else if ( trueCorner[0] || trueCorner[1]  ||
               trueCorner[2] || trueCorner[3] ) /*Partial Face to Face. Only one intersection then all the other 3 vertex are: 2 in the edges 1 inside the face*/
@@ -468,7 +404,7 @@ void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * 
         {       
           if ( nodeToSearch->IsEqual( *sidePoint, tol ) ) 
           {
-            interfaceRange = this->getFaceIndexLimits( face );
+            interfaceRange = this->getFaceIndexLimits<int>( face );
             
             auto startIndex = foundTrueColum(0,trueTable) ? std::get<0>(neighboorVertex) : 
                                 foundTrueColum(2,trueTable) ? std::get<2>(neighboorVertex) : 
@@ -501,7 +437,7 @@ void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * 
                                 this->getFaceIndexLimits( startIndex, nodeIndex) : 
                                   this->getFaceIndexLimits( nodeIndex, startIndex );
 
-            interfaceDonor = grid->getFaceIndexLimits( gridFace );  
+            interfaceDonor = grid->getFaceIndexLimits<int>( gridFace );  
             return;
           }          
         });
@@ -542,7 +478,7 @@ void SMESH_RegularGrid::GetCommontInterface( EdgeType edge, SMESH_RegularGrid * 
     if ( (trueTable[0] || trueTable[1] ) && /*Case start-end vertex are coincident in both edges trivial*/
           (trueTable[2] ||trueTable[3] ) )
     {
-      interfaceRange = this->getEdgeIndexLimits( edge );
+      interfaceRange = this->getEdgeIndexLimits<int>( edge );
       interfaceDonor = grid->getEdgeIndexLimitsInverted( gridEdge );   
     }
     else if ( trueTable[0] || /*Case start OR end vertex are coincident in both edges*/
@@ -559,7 +495,7 @@ void SMESH_RegularGrid::GetCommontInterface( EdgeType edge, SMESH_RegularGrid * 
         {       
           if ( nodeToSearch->IsEqual( *sidePoint, tol ) ) 
           {
-            interfaceRange = this->getEdgeIndexLimits( edge );
+            interfaceRange = this->getEdgeIndexLimits<int>( edge );
             auto startIndex = (trueTable[0] || trueTable[2]) ? neighboorVertex.first : neighboorVertex.second;
             interfaceDonor = startIndex < nodeIndex ? 
                               grid->getEdgeIndexLimits( startIndex, nodeIndex ) : 
@@ -658,7 +594,7 @@ void SMESH_RegularGrid::GetCommontInterface( EdgeType edge, SMESH_RegularGrid * 
 
             if ( startIndex != -1 && endIndex != -1 )
             {
-              interfaceRange = this->getEdgeIndexLimits( edge );
+              interfaceRange = this->getEdgeIndexLimits<int>( edge );
               interfaceDonor = grid->getEdgeIndexLimits( startIndex, endIndex );
             }
           }          

@@ -27,14 +27,6 @@
 //OCC
 #include <Precision.hxx>
 #include <NCollection_Array1.hxx>
-
-//STD
-#include <functional>
-#include <memory>
-
-#include "SMESH_Utils.hxx"
-#include "SMDS_MeshNode.hxx"
-
 #include <gp_Pnt.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -42,8 +34,15 @@
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
+
+//STD
+#include <functional>
+#include <memory>
 #include <vector>
 #include <map>
+
+#include "SMESH_Utils.hxx"
+#include "SMDS_MeshNode.hxx"
 
 class Adaptor3d_Surface;
 class Adaptor2d_Curve2d;
@@ -219,19 +218,23 @@ namespace SMESHUtils
     void GetFaceInterfaces( SMESH_RegularGrid * grid, std::vector<int>& interface );
 
     // \brief Fill the allRanges vector with the boundaries of the grid
-    void getAllEdgeIndexLimits( std::vector<std::vector<int>>& allRanges );
+    template<typename T>
+    void getAllEdgeIndexLimits( std::vector<std::vector<T>>& allRanges );
     
     // \brief Fill the allRanges vector with the boundaries of the grid
-    void getAllFaceIndexLimits( std::vector<std::vector<int>>& allRanges );
+    template<typename T>
+    void getAllFaceIndexLimits( std::vector<std::vector<T>>& allRanges );
 
     // \brief Get limits of the edge in the order (ibegin,jbegin,iend,jend)+1 because index in CGNS are not zero based
-    std::vector<int> getEdgeIndexLimits( const EdgeType edge ) const;
+    template<typename T>
+    std::vector<T> getEdgeIndexLimits( const EdgeType edge ) const;
     
     // \brief Get limits of the edge in the order (iend,jend,ibegin,jbegin)+1 because index in CGNS are not zero based
     std::vector<int> getEdgeIndexLimitsInverted( const EdgeType edge ) const;
 
     // \brief Get limits of the face in the order (ibegin,jbegin,kbegin,iend,jend,kend)+1 because index in CGNS are not zero based
-    std::vector<int> getFaceIndexLimits( SMESH_RegularGrid::FaceType face ) const;
+    template<typename T>
+    std::vector<T> getFaceIndexLimits( SMESH_RegularGrid::FaceType face ) const;
 
     // \brief Return the faceType to which the passed geometrical face belows to
     SMESH_RegularGrid::FaceType getFaceTypeByGeomFace( TopoDS_Shape shapeFace ) const;
