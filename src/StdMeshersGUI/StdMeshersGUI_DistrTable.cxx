@@ -316,9 +316,9 @@ setValue( int r, int c, double v )
     v = funcMinimum( r ); // correct func value according to the valid min value
   if ( c == FuncColumn && v > funcMaximum( r ) )
     v = funcMaximum( r ); // correct func value according to the valid max value
-  else if ( r == ArgColumn && v < argMinimum( r ) )
+  else if ( c != FuncColumn && r == ArgColumn && v < argMinimum( r ) )
     v = argMinimum( r );  // correct arg  value according to the valid min value
-  else if ( r == ArgColumn && v > argMaximum( r ) )
+  else if ( c != FuncColumn && r == ArgColumn && v > argMaximum( r ) )
     v = argMaximum( r );  // correct arg  value according to the valid max value
 
   if ( !item( r, c ) )
