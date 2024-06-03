@@ -9,7 +9,7 @@ Cas tests basés sur les matériels :
 . fissureGauche_2
 + ellipse, ellipse_disque, ellipse_probleme
 
-Copyright 2021 EDF
+Copyright 2021-2024 CEA, EDF
 Gérald NICOLAS
 +33.1.78.19.43.52
 """
