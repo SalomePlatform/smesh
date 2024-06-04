@@ -2152,7 +2152,6 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::computeQuads( SMESH_MesherHelper& theHe
 bool StdMeshers_QuadFromMedialAxis_1D2D::Compute(SMESH_Mesh&         theMesh,
                                                  const TopoDS_Shape& theShape)
 {
-  std::cout << "helper_quad " << theMesh.IsParallel() << std::endl;
   SMESH_MesherHelper helper( theMesh );
   helper.SetSubShape( theShape );
 

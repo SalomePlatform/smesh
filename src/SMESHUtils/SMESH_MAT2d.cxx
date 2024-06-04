@@ -557,7 +557,7 @@ namespace
       double curDeflect = 0.3; //0.01;  //Curvature deflection
       double angDeflect = 0.2; // 0.09; //Angular deflection
 
-      GCPnts_TangentialDeflection discret(c2dAdaptor, angDeflect, curDeflect);
+      GCPnts_TangentialDeflection discret(c2dAdaptor, angDeflect, curDeflect, 10 /*bos [#41122] minimum 10 points of discretization!*/);
       // if ( discret.NbPoints() > 2 )
       // {
       //   cout << endl;
