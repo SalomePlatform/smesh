@@ -98,7 +98,9 @@
 #include <gp_Sphere.hxx>
 #include <gp_Torus.hxx>
 
+//STD
 #include <limits>
+#include <mutex>
 
 #include <boost/container/flat_map.hpp>
 
@@ -116,12 +118,15 @@
 #define _WIN32_WINNT 0x0A00
 #endif
 
+#include <thread>
+#include <algorithm>
 #include <tbb/parallel_for.h>
-//#include <tbb/enumerable_thread_specific.h>
 #endif
 
 using namespace std;
 using namespace SMESH;
+std::mutex _eMutex;
+std::mutex _bMutex;
 
 //=============================================================================
 /*!
@@ -351,7 +356,7 @@ namespace
     mutable vector< TGeomID >    _faceIDs;
 
     B_IntersectPoint(): _node(NULL) {}
-    bool Add( const vector< TGeomID >& fIDs, const SMDS_MeshNode* n=0 ) const;
+    bool Add( const vector< TGeomID >& fIDs, const SMDS_MeshNode* n=NULL ) const;
     TGeomID HasCommonFace( const B_IntersectPoint * other, TGeomID avoidFace=-1 ) const;
     size_t GetCommonFaces( const B_IntersectPoint * other, TGeomID * commonFaces ) const;
     bool IsOnFace( TGeomID faceID ) const;
@@ -749,6 +754,7 @@ namespace
       }
       void Add( const E_IntersectPoint* ip )
       {
+        const std::lock_guard<std::mutex> lock(_eMutex);
         // Possible cases before Add(ip):
         ///  1) _node != 0 --> _Node at hex corner ( _intPoint == 0 || _intPoint._node == 0 )
         ///  2) _node == 0 && _intPoint._node != 0  -->  link intersected by FACE
@@ -1306,6 +1312,7 @@ namespace
   bool B_IntersectPoint::Add( const vector< TGeomID >& fIDs,
                               const SMDS_MeshNode*     n) const
   {
+    const std::lock_guard<std::mutex> lock(_bMutex);
     size_t prevNbF = _faceIDs.size();
 
     if ( _faceIDs.empty() )
@@ -1318,7 +1325,7 @@ namespace
         if ( it == _faceIDs.end() )
           _faceIDs.push_back( fIDs[i] );
       }
-    if ( !_node )
+    if ( !_node && n != NULL )
       _node = n;
 
     return prevNbF < _faceIDs.size();
@@ -3618,6 +3625,35 @@ namespace
 
     return !_volumeDefs._nodes.empty();
   }
+
+  template<typename Type>
+  void computeHexa(Type& hex)
+  {
+    if ( hex ) 
+      hex->computeElements();
+  }
+
+  // Implement parallel computation of Hexa with c++ thread implementation
+  template<typename Iterator, class Function>
+  void parallel_for(const Iterator& first, const Iterator& last, Function&& f, const int nthreads = 1)
+  {
+      const unsigned int group = ((last-first))/std::abs(nthreads);
+
+      std::vector<std::thread> threads;
+      threads.reserve(nthreads);
+      Iterator it = first;
+      for (; it < last-group; it += group) {
+          // to create a thread 
+          // Pass iterators by value and the function by reference!
+          auto lambda = [=,&f](){ std::for_each(it, std::min(it+group, last), f);};
+
+          // stack the threads 
+          threads.push_back( std::thread( lambda ) );
+      }
+
+      std::for_each(it, last, f); // last steps while we wait for other threads
+      std::for_each(threads.begin(), threads.end(), [](std::thread& x){x.join();});
+  }
   //================================================================================
   /*!
    * \brief Create elements in the mesh
@@ -3731,9 +3767,9 @@ namespace
 
     // compute definitions of volumes resulted from hexadron intersection
 #ifdef WITH_TBB
-    tbb::parallel_for ( tbb::blocked_range<size_t>( 0, intHexa.size() ),
-                        ParallelHexahedron( intHexa ),
-                        tbb::simple_partitioner()); // computeElements() is called here
+    auto numOfThreads = std::thread::hardware_concurrency();
+    numOfThreads = (numOfThreads != 0) ? numOfThreads : 1;
+    parallel_for(intHexa.begin(), intHexa.end(), computeHexa<Hexahedron*>, numOfThreads ); 
 #else
     for ( size_t i = 0; i < intHexa.size(); ++i )
       if ( Hexahedron * hex = intHexa[ i ] )
