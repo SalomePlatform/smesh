@@ -1131,6 +1131,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     if     (nbNodes==10) nbNodes=4; // quadratic tetrahedron
     else if(nbNodes==13) nbNodes=5; // quadratic pyramid
     else if(nbNodes==15) nbNodes=6; // quadratic pentahedron
+    else if(nbNodes==18) nbNodes=6; // bi-quadratic pentahedron
     else if(nbNodes==20) nbNodes=8; // quadratic hexahedron
     else if(nbNodes==27) nbNodes=8; // tri-quadratic hexahedron
     else return aQuality;

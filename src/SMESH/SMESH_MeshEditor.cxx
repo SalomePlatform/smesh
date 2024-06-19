@@ -9483,7 +9483,8 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theT
       case SMDSEntity_TriQuad_Hexa:
         NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
                                       nodes[4], nodes[5], nodes[6], nodes[7], id, theForce3d);
-        for ( size_t i = 20; i < nodes.size(); ++i ) // rm central nodes
+        for (size_t i = 8; i < nodes.size(); ++i) // rm central nodes from each edge
+        //for (size_t i = 20; i < nodes.size(); ++i) // rm central nodes from each edge
           if ( nodes[i]->NbInverseElements() == 0 )
             GetMeshDS()->RemoveFreeNode( nodes[i], /*sm=*/0, /*fromGroups=*/true );
         break;
@@ -9496,7 +9497,9 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theT
       case SMDSEntity_BiQuad_Penta:
         NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2],
                                       nodes[3], nodes[4], nodes[5], id, theForce3d);
-        for ( size_t i = 15; i < nodes.size(); ++i ) // rm central nodes
+
+        for (size_t i = 6; i < nodes.size(); ++i) // rm central nodes
+        //for ( size_t i = 15; i < nodes.size(); ++i ) // rm central nodes
           if ( nodes[i]->NbInverseElements() == 0 )
             GetMeshDS()->RemoveFreeNode( nodes[i], /*sm=*/0, /*fromGroups=*/true );
         break;
@@ -13037,15 +13040,58 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
           if (iQuad)
             for ( inode = 1; inode < nbFaceNodes; inode += 2)
               nodes.push_back( nn[inode] ); // add medium nodes
-          int iCenter = vTool.GetCenterNodeIndex(iface); // for HEX27
-          if ( iCenter > 0 )
-            nodes.push_back( vTool.GetNodes()[ iCenter ] );
 
-          if (const SMDS_MeshElement * f = aMesh->FindElement( nodes,
-                                                               SMDSAbs_Face, /*noMedium=*/false ))
-            presentBndElems.push_back( f );
+          // for triangle face for Penta18 (BiQuadratic pentahedron) return -2
+          // because we haven't center node on triangle side, but it's need for create biquadratic face
+          int iCenter = vTool.GetCenterNodeIndex(iface); // for HEX27
+
+          // for triangle faces for Penta18 (BiQuadratic pentahedron) firstly check, exist face or not
+          // if not - create node in middle face
+          if (iCenter == -2)
+          {
+            SMDS_ElemIteratorPtr itF = nodes[0]->GetInverseElementIterator(SMDSAbs_Face);
+            bool isFound = false;
+            while (itF->more())
+            {
+              const SMDS_MeshElement* e = itF->next();
+              int nbNodesToCheck = e->NbNodes();
+              if (nbNodesToCheck == (int)nodes.size() + 1)
+              {
+                for (size_t i = 1; e && i < nodes.size() - 1; ++i)
+                {
+                  int nodeIndex = e->GetNodeIndex(nodes[i]);
+                  if (nodeIndex < 0 || nodeIndex >= nbNodesToCheck)
+                    e = 0;
+                }
+                if (e)
+                {
+                  presentBndElems.push_back(e);
+                  isFound = true;
+                }
+              }
+            }
+
+            if (!isFound)
+            {
+              SMESH_MesherHelper aHelper(*myMesh);
+              double bc[3];
+              vTool.GetFaceBaryCenter(iface, bc[0], bc[1], bc[2]);
+              auto aNodeC = aHelper.AddNode(bc[0], bc[1], bc[2]);
+              nodes.push_back(aNodeC);
+              missingBndElems.push_back(nodes);
+            }
+          }
           else
-            missingBndElems.push_back( nodes );
+          {
+            if (iCenter > 0)
+              nodes.push_back(vTool.GetNodes()[iCenter]);
+
+            if (const SMDS_MeshElement* f = aMesh->FindElement(nodes,
+              SMDSAbs_Face, /*noMedium=*/false))
+              presentBndElems.push_back(f);
+            else
+              missingBndElems.push_back(nodes);
+          }
 
           if ( targetMesh != myMesh )
           {
