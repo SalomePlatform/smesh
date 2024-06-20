@@ -101,6 +101,7 @@
 //STD
 #include <limits>
 #include <mutex>
+#include <thread>
 
 #include <boost/container/flat_map.hpp>
 
@@ -117,8 +118,6 @@
 #define WINVER 0x0A00
 #define _WIN32_WINNT 0x0A00
 #endif
-
-#include <thread>
 #include <algorithm>
 #include <tbb/parallel_for.h>
 #endif
