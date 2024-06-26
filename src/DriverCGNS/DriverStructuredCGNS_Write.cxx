@@ -270,17 +270,34 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
           if(pRange[4] < pRange[1]) {std::swap(pRange[1],pRange[4]);}
           if(pRange[5] < pRange[2]) {std::swap(pRange[2],pRange[5]);}          
           int cgIndexBoco = 0;              
-          std::string boundaryName = boundaryNames[faceId].empty() ? zoneName + "_" + std::to_string(faceId) : boundaryNames[faceId];
+          std::string boundaryName = boundaryNames[faceId];
+          std::string boundaryNameOrig(boundaryName);
+          bool isInGroup = false;
+          if (boundaryName.empty())
+            boundaryName = zoneName + "_" + std::to_string(faceId);
+          else
+            isInGroup = true;
           if ( bNames.count(boundaryName)!=0 )
             boundaryName = boundaryName + "_" + std::to_string(faceId);
           bNames.insert( boundaryName );
           if(cg_boco_write(_fn, iBase, iZone, boundaryName.c_str(), CGNS_ENUMV(BCTypeNull), 
                             CGNS_ENUMV(PointRange), 2, &pRange[0], &cgIndexBoco) != CG_OK) return addMessage(cg_get_error(), /*fatal = */true);
+          // write also the group name as FamilyName in the same node
+          if (isInGroup)
+          {
+            // go to the BC node
+            if(cg_goto(_fn, iBase, "Zone_t", iZone, "ZoneBC_t", 1,
+                  "BC_t", cgIndexBoco, "end") != CG_OK)
+              return addMessage(cg_get_error(), /*fatal = */true);
+            // write the family name
+            if(cg_famname_write(boundaryNameOrig.c_str()) != CG_OK)
+              return addMessage(cg_get_error(), /*fatal = */true);
+          }
           faceId++;
         }
         // End write boundary
         
-        // Writte Interfaces
+        // Write Interfaces
         for ( TopExp_Explorer fEx( shape, TopAbs_SOLID ); fEx.More(); fEx.Next() )
         {
           TopoDS_Solid neighbourSolid = TopoDS::Solid(fEx.Current()); 
@@ -382,17 +399,34 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
           if(pRange[2] < pRange[0]) {std::swap(pRange[0],pRange[2]);}
           if(pRange[1] < pRange[3]) {std::swap(pRange[1],pRange[3]);}          
           int cgIndexBoco = 0;    
-          std::string boundaryName = boundaryNames[edgeId].empty() ? zoneName + "_" + std::to_string(edgeId) : boundaryNames[edgeId];          
+          std::string boundaryName = boundaryNames[edgeId];
+          std::string boundaryNameOrig(boundaryName);
+          bool isInGroup = false;
+          if (boundaryName.empty())
+            boundaryName = zoneName + "_" + std::to_string(edgeId);
+          else
+            isInGroup = true;
           if ( bNames.count(boundaryName)!=0)
             boundaryName = boundaryName + "_" + std::to_string(edgeId);
           bNames.insert( boundaryName );
           if(cg_boco_write(_fn, iBase, iZone, boundaryName.c_str(), CGNS_ENUMV(BCTypeNull), 
                             CGNS_ENUMV(PointRange), 2, &pRange[0], &cgIndexBoco) != CG_OK) return addMessage(cg_get_error(), /*fatal = */true);
+          // write also the group name as FamilyName in the same node
+          if (isInGroup)
+          {
+            // go to the BC node
+            if(cg_goto(_fn, iBase, "Zone_t", iZone, "ZoneBC_t", 1,
+                  "BC_t", cgIndexBoco, "end") != CG_OK)
+              return addMessage(cg_get_error(), /*fatal = */true);
+            // write the family name
+            if(cg_famname_write(boundaryNameOrig.c_str()) != CG_OK)
+              return addMessage(cg_get_error(), /*fatal = */true);
+          }
           edgeId++;
         }
         // End write Boundary
 
-        // Writte Interfaces
+        // Write Interfaces
         for ( TopExp_Explorer fEx( shape, TopAbs_FACE ); fEx.More(); fEx.Next() )
         {
           TopoDS_Face neighbourFace = TopoDS::Face(fEx.Current());
