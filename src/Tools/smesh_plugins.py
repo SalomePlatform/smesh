@@ -62,6 +62,15 @@ except Exception as e:
   pass
 
 try:
+  from mmgplugin.mmgPlug_plugin import Mmg
+  salome_pluginsmanager.AddFunction('ReMesh with MMG',
+                                    'Run MMG',
+                                    Mmg)
+except Exception as e:
+  salome_pluginsmanager.logger.info('ERROR: MMG plug-in is unavailable: {}'.format(e))
+  pass
+
+try:
   from blocFissure.ihm.fissureCoude_plugin import fissureCoudeDlg
   salome_pluginsmanager.AddFunction('Meshed Pipe with a crack (blocFissure plugin)',
                                     'Create a mesh with blocFissure tool',
@@ -88,7 +97,7 @@ try:
                                       'Add a crack in a mesh with Zcracks plug-in',
                                       ZcracksLct)
 except Exception as e:
-  #print 'probleme zcracks'
+  #print 'problem zcracks'
   salome_pluginsmanager.logger.info('ERROR: Zcrack plug-in is unavailable: {}'.format(e))
   pass
 
@@ -99,6 +108,5 @@ try:
                                     'run topological volumic mesher',
                                     TopIIVolMeshLct)
 except Exception as e:
-  #print 'probleme zcracks'
   salome_pluginsmanager.logger.info('ERROR: TopIIVolMesh plug-in is unavailable: {}'.format(e))
   pass
