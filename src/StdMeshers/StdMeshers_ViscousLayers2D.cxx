@@ -1018,7 +1018,7 @@ bool _ViscousBuilder2D::makePolyLines()
     faceBndBox2D.Add( *_polyLineVec[ iPoLine]._segTree->getBox() );
   const double boxTol = 1e-3 * sqrt( faceBndBox2D.SquareExtent() );
 
-  if ( _maxThickness * maxLen2dTo3dRatio > sqrt( faceBndBox2D.SquareExtent() ) / 10 )
+  if ( _maxThickness * maxLen2dTo3dRatio > sqrt( faceBndBox2D.SquareExtent() ) / 2 )
   {
     vector< const _Segment* > foundSegs;
     double maxPossibleThick = 0;
@@ -1041,6 +1041,8 @@ bool _ViscousBuilder2D::makePolyLines()
           foundSegs.clear();
           L2._segTree->GetSegmentsNear( L1._lEdges[iLE]._ray, foundSegs );
           for ( size_t i = 0; i < foundSegs.size(); ++i )
+            // In this block periodically finding strange intersection with parameter close to 0
+            // to investigate
             if ( intersection.Compute( *foundSegs[i], L1._lEdges[iLE]._ray ))
             {
               double  distToL2 = intersection._param2 / L1._lEdges[iLE]._len2dTo3dRatio;
