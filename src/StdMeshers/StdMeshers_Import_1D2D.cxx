@@ -728,9 +728,11 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           {
             const SMDS_MeshNode* n = face->GetNode( i );
             if ( n == startNode || !checkedNodes.insert( n ).second ) continue;
-            helper.CheckNodeU( seamEdge, n, u=0, projTol, /*force=*/true );
-            nodesOnSeam.push_back( make_pair( u, n ));
-            ++nbNodesOnSeam;
+            if(helper.CheckNodeU( seamEdge, n, u=0, projTol, /*force=*/true ))
+            {
+              nodesOnSeam.push_back( make_pair( u, n ));
+              ++nbNodesOnSeam;
+            }
           }
         }
       }
