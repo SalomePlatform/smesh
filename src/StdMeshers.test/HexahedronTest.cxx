@@ -29,10 +29,14 @@
 #include <cppunit/TestAssert.h>
 
 // OCC 
-#include<BRep_Builder.hxx>
-#include<BRepTools.hxx>
+#include <BRep_Builder.hxx>
+#include <BRepTools.hxx>
+#include <BRepPrimAPI_MakeBox.hxx>
+#include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepPrimAPI_MakeSphere.hxx>
+#include <BRepPrimAPI_MakeCone.hxx>
 
-#include<iostream>
+#include <iostream>
 #include <memory>
 
 // Helper functions!
@@ -72,8 +76,12 @@ void loadBrepShape( std::string shapeName, TopoDS_Shape & shape )
 }
 
 // Initialize the grid and intesersectors of grid with the geometry
-void GridInitAndInterserctWithShape( Grid& grid, double gridSpacing, TopoDS_Shape& theShape, 
-                                      std::map< TGeomID, vector< TGeomID > >& edge2faceIDsMap, const int numOfThreads )
+void GridInitAndIntersectWithShape( Grid& grid,
+                                    double gridSpacing,
+                                    double theSizeThreshold,
+                                    const TopoDS_Shape theShape, 
+                                    std::map< TGeomID, vector< TGeomID > >& edge2faceIDsMap,
+                                    const int /*numOfThreads*/ )
 {
   std::vector< TopoDS_Shape > faceVec;
   TopTools_MapOfShape faceMap;
@@ -110,7 +118,7 @@ void GridInitAndInterserctWithShape( Grid& grid, double gridSpacing, TopoDS_Shap
   myHypo->SetGridSpacing(grdSpace, intPnts, 0 ); // Spacing in dir 0
   myHypo->SetGridSpacing(grdSpace, intPnts, 1 ); // Spacing in dir 1
   myHypo->SetGridSpacing(grdSpace, intPnts, 2 ); // Spacing in dir 2
-  myHypo->SetSizeThreshold(4.0);                 // set threshold
+  myHypo->SetSizeThreshold(theSizeThreshold);    // set threshold
   myHypo->GetCoordinates(xCoords, yCoords, zCoords, shapeBox);
   grid.SetCoordinates( xCoords, yCoords, zCoords, axisDirs, shapeBox );
 
@@ -146,7 +154,7 @@ bool testNRTM1()
       grid.InitGeometry( myShape );
       
       std::map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
-      GridInitAndInterserctWithShape( grid, 1.0, myShape, edge2faceIDsMap, numOfThreads );
+      GridInitAndIntersectWithShape( grid, 1.0, 4.0, myShape, edge2faceIDsMap, numOfThreads );
       Hexahedron hex( &grid );
       int nbAdded = hex.MakeElements( helper, edge2faceIDsMap, numOfThreads );
       CPPUNIT_ASSERT_MESSAGE( "Number of computed elements does not match", nbAdded == 1024 );
@@ -155,9 +163,151 @@ bool testNRTM1()
   return true;
 }
 
+// Test fitting of the given shape
+bool testShape (const TopoDS_Shape theShape,
+                const bool toAddEdges,
+                const bool toCreateFaces,
+                const double theGridSpacing,
+                const double theSizeThreshold,
+                const int theNbCreatedExpected)
+{
+  std::unique_ptr<SMESH_Mesh> aMesh( new SMESH_Mesh_Test() );
+  aMesh->ShapeToMesh( theShape );
+  SMESH_MesherHelper helper( *aMesh );
+  Grid grid;
+  grid._helper = &helper;
+  grid._toAddEdges = toAddEdges;
+  grid._toCreateFaces = toCreateFaces;
+  grid._toConsiderInternalFaces = false;
+  grid._toUseThresholdForInternalFaces = false;
+  grid._toUseQuanta = false;
+  grid._sizeThreshold = theSizeThreshold;
+  grid.InitGeometry( theShape );
+
+  std::map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
+  GridInitAndIntersectWithShape( grid, theGridSpacing, theSizeThreshold,
+                                 theShape, edge2faceIDsMap, 1 );
+  Hexahedron hex( &grid );
+  int nbAdded = hex.MakeElements( helper, edge2faceIDsMap, 1 );
+  if (nbAdded != theNbCreatedExpected) {
+    std::stringstream buffer;
+    buffer << "Number of computed elements does not match: obtained " << nbAdded << " != expected " << theNbCreatedExpected;
+    //CPPUNIT_ASSERT_MESSAGE(buffer.str().c_str(), nbAdded == theNbCreatedExpected );
+    //MESSAGE(buffer.str().c_str());
+    //CppUnitTestFramework::Logger::WriteMessage(buffer.str().c_str());
+    std::cerr << buffer.str() << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+// Test some primitive shapes
+bool testPrimitives()
+{
+  bool isOK = true;
+
+  // Test fitting of a box
+  BRepPrimAPI_MakeBox aMakeBox (10, 20, 30);
+  aMakeBox.Build();
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the box!", aMakeBox.IsDone() );      
+  TopoDS_Shape aShape = aMakeBox.Shape();
+
+  // Test exact fitting of a box
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/6))
+    isOK = false;
+  if (!testShape (aShape, /*toAddEdges*/true, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/6))
+    isOK = false;
+
+  // TODO: debug this case
+  //if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/true,
+  //                /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/8))
+  //  isOK = false;
+
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/5, /*theSizeThreshold*/4, /*theNbCreatedExpected*/48))
+    isOK = false;
+
+  // Test not exact fitting of a box
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/7, /*theSizeThreshold*/4, /*theNbCreatedExpected*/12))
+    isOK = false;
+
+  // Test fitting of a cylinder
+  gp_Ax2 anAxes (gp::Origin(), gp::DZ());
+  BRepPrimAPI_MakeCylinder aMakeCyl (anAxes, 20., 30.);
+  aMakeCyl.Build();
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the cylinder!", aMakeCyl.IsDone() );      
+  aShape = aMakeCyl.Shape();
+
+  // test for different threshold values
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/48))
+    isOK = false;
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/2, /*theNbCreatedExpected*/36))
+    isOK = false;
+
+  // Test fitting of a sphere
+  BRepPrimAPI_MakeSphere aMakeSph (anAxes, 30.);
+  aMakeSph.Build();
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the sphere!", aMakeSph.IsDone() );      
+  aShape = aMakeSph.Shape();
+
+  // test for different threshold values
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/136))
+    isOK = false;
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/2, /*theNbCreatedExpected*/88))
+    isOK = false;
+
+  // Test fitting of a cone
+  BRepPrimAPI_MakeCone aMakeCon (anAxes, 30., 0., 40.);
+  aMakeCon.Build();
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the cone!", aMakeCon.IsDone() );      
+  aShape = aMakeCon.Shape();
+
+  // test for different threshold values
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/100, /*theNbCreatedExpected*/72))
+    isOK = false;
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/40))
+    isOK = false;
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/1.5, /*theNbCreatedExpected*/32))
+    isOK = false;
+
+  // truncated cone
+  aMakeCon = BRepPrimAPI_MakeCone(anAxes, 30., 15., 20.);
+  aMakeCon.Build();
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the cone!", aMakeCon.IsDone() );      
+  aShape = aMakeCon.Shape();
+
+  // test for different threshold values
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/100, /*theNbCreatedExpected*/56))
+    isOK = false;
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/36))
+    isOK = false;
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
+                  /*gridSpacing*/10, /*theSizeThreshold*/1.5, /*theNbCreatedExpected*/28))
+    isOK = false;
+
+  return isOK;
+}
+
 // Entry point for test
 int main()
 {
-  auto t0 = testNRTM1();
-  return 0;
+  bool isOK = testNRTM1();
+
+  if (!testPrimitives())
+    isOK = false;
+
+  return isOK ? 0 : 1;
 }
