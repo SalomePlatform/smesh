@@ -24,4 +24,5 @@
 
 SET(UNIT_TESTS
   HexahedronTest
+  HexahedronCanonicalShapesTest
   )
