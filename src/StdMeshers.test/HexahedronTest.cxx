@@ -39,11 +39,12 @@
 #include <iostream>
 #include <memory>
 
+using namespace StdMeshers::Cartesian3D;
+
 // Helper functions!
 // Build Grid
 //      Require building mesh
-//      Require building shape. For test load shapes from memory in .brep files seems the simplest
-//      
+//      Require building shape.
 
 /*!
   * \brief Mock mesh
@@ -78,60 +79,26 @@ void loadBrepShape( std::string shapeName, TopoDS_Shape & shape )
 /*!
   * \brief Initialize the grid and intesersectors of grid with the geometry
   */
-void GridInitAndIntersectWithShape( Grid& grid,
+void GridInitAndIntersectWithShape (Grid& grid,
                                     double gridSpacing,
                                     double theSizeThreshold,
                                     const TopoDS_Shape theShape, 
-                                    std::map< TGeomID, vector< TGeomID > >& edge2faceIDsMap,
-                                    const int /*numOfThreads*/ )
+                                    TEdge2faceIDsMap& edge2faceIDsMap,
+                                    const int theNumOfThreads)
 {
-  std::vector< TopoDS_Shape > faceVec;
-  TopTools_MapOfShape faceMap;
-  TopExp_Explorer fExp;
-  for ( fExp.Init( theShape, TopAbs_FACE ); fExp.More(); fExp.Next() )
-  {
-    bool isNewFace = faceMap.Add( fExp.Current() );
-    if ( !grid._toConsiderInternalFaces )
-      if ( !isNewFace || fExp.Current().Orientation() == TopAbs_INTERNAL )
-        // remove an internal face
-        faceMap.Remove( fExp.Current() );
-  }
-  faceVec.reserve( faceMap.Extent() );
-  faceVec.assign( faceMap.cbegin(), faceMap.cend() );
-  
-  vector<FaceGridIntersector> facesItersectors( faceVec.size() );
-
-  Bnd_Box shapeBox;
-  for ( size_t i = 0; i < faceVec.size(); ++i )
-  {
-    facesItersectors[i]._face   = TopoDS::Face( faceVec[i] );
-    facesItersectors[i]._faceID = grid.ShapeID( faceVec[i] );
-    facesItersectors[i]._grid   = &grid;
-    shapeBox.Add( facesItersectors[i].GetFaceBndBox() );
-  }
   // Canonical axes(i,j,k)
-  double axisDirs[9] = {1.,0.,0.,0.,1.,0.,0.,0.,1.};
-
-  Tools::GetExactBndBox( faceVec, axisDirs, shapeBox );
-  vector<double> xCoords, yCoords, zCoords;  
-  std::unique_ptr<CartesianHypo> myHypo( new CartesianHypo() );  
+  double axisDirs[9] = {1.,0.,0., 0.,1.,0., 0.,0.,1.};
   std::vector<std::string> grdSpace = { std::to_string(gridSpacing) };
   std::vector<double> intPnts;
-  myHypo->SetGridSpacing(grdSpace, intPnts, 0 ); // Spacing in dir 0
-  myHypo->SetGridSpacing(grdSpace, intPnts, 1 ); // Spacing in dir 1
-  myHypo->SetGridSpacing(grdSpace, intPnts, 2 ); // Spacing in dir 2
-  myHypo->SetSizeThreshold(theSizeThreshold);    // set threshold
-  myHypo->GetCoordinates(xCoords, yCoords, zCoords, shapeBox);
-  grid.SetCoordinates( xCoords, yCoords, zCoords, axisDirs, shapeBox );
 
-  for ( size_t i = 0; i < facesItersectors.size(); ++i )
-    facesItersectors[i].Intersect();
-  
-  for ( size_t i = 0; i < facesItersectors.size(); ++i )
-    facesItersectors[i].StoreIntersections();
+  std::unique_ptr<CartesianHypo> aHypo ( new CartesianHypo() );  
+  aHypo->SetAxisDirs(axisDirs);
+  aHypo->SetGridSpacing(grdSpace, intPnts, 0 ); // Spacing in dir 0
+  aHypo->SetGridSpacing(grdSpace, intPnts, 1 ); // Spacing in dir 1
+  aHypo->SetGridSpacing(grdSpace, intPnts, 2 ); // Spacing in dir 2
+  aHypo->SetSizeThreshold(theSizeThreshold);    // set threshold
 
-  grid.ComputeNodes( *grid._helper );
-  grid.GetEdgesToImplement( edge2faceIDsMap, theShape, faceVec );
+  grid.GridInitAndInterserctWithShape(theShape, edge2faceIDsMap, aHypo.get(), theNumOfThreads, false);
 }
 
 /*!
@@ -139,6 +106,10 @@ void GridInitAndIntersectWithShape( Grid& grid,
   */
 bool testNRTM1()
 {
+  TopoDS_Shape aShape;
+  loadBrepShape( "data/HexahedronTest/NRTM1.brep", aShape );
+  CPPUNIT_ASSERT_MESSAGE( "Could not load the brep shape!", !aShape.IsNull() );      
+
   const auto numOfCores = std::thread::hardware_concurrency() == 0 ? 1 : std::thread::hardware_concurrency();
   std::vector<int> numberOfThreads(numOfCores);
   std::iota (std::begin(numberOfThreads), std::end(numberOfThreads), 1);
@@ -147,20 +118,22 @@ bool testNRTM1()
   {
     for (size_t i = 0; i < 10 /*trials*/; i++)
     {
-      TopoDS_Shape myShape;
-      loadBrepShape( "data/HexahedronTest/NRTM1.brep", myShape );
-      CPPUNIT_ASSERT_MESSAGE( "Could not load the brep shape!", !myShape.IsNull() );      
-      std::unique_ptr<SMESH_Mesh> myMesh( new SMESH_Mesh_Test() );
-      myMesh->ShapeToMesh( myShape );
-      SMESH_MesherHelper helper( *myMesh );
+      std::unique_ptr<SMESH_Mesh> aMesh( new SMESH_Mesh_Test() );
+      aMesh->ShapeToMesh( aShape );
+      SMESH_MesherHelper helper( *aMesh );
+
       Grid grid;
       grid._helper = &helper;
-      grid._toAddEdges = false; grid._toCreateFaces = false; grid._toConsiderInternalFaces = false; grid._toUseThresholdForInternalFaces = false; grid._toUseQuanta = false;
+      grid._toAddEdges = false;
+      grid._toCreateFaces = false;
+      grid._toConsiderInternalFaces = false;
+      grid._toUseThresholdForInternalFaces = false;
+      grid._toUseQuanta = false;
       grid._sizeThreshold = 4.0;
-      grid.InitGeometry( myShape );
       
-      std::map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
-      GridInitAndIntersectWithShape( grid, 1.0, 4.0, myShape, edge2faceIDsMap, nThreads );
+      TEdge2faceIDsMap edge2faceIDsMap;
+      GridInitAndIntersectWithShape( grid, 1.0, 4.0, aShape, edge2faceIDsMap, nThreads );
+
       Hexahedron hex( &grid );
       int nbAdded = hex.MakeElements( helper, edge2faceIDsMap, nThreads );
       CPPUNIT_ASSERT_MESSAGE( "Number of computed elements does not match", nbAdded == 1024 );
@@ -174,6 +147,10 @@ bool testNRTM1()
   */
 bool testNRTJ4()
 {
+  TopoDS_Shape aShape;
+  loadBrepShape( "data/HexahedronTest/NRTMJ4.brep", aShape );
+  CPPUNIT_ASSERT_MESSAGE( "Could not load the brep shape!", !aShape.IsNull() );      
+
   const auto numOfCores = std::thread::hardware_concurrency() == 0 ? 1 : std::thread::hardware_concurrency()/2;
   std::vector<int> numberOfThreads(numOfCores);
   std::iota (std::begin(numberOfThreads), std::end(numberOfThreads), 1);
@@ -183,22 +160,22 @@ bool testNRTJ4()
   {
     for (size_t i = 0; i < 10 /*trials*/; i++)
     {
-      TopoDS_Shape myShape;
-      loadBrepShape( "data/HexahedronTest/NRTMJ4.brep", myShape );
-      CPPUNIT_ASSERT_MESSAGE( "Could not load the brep shape!", !myShape.IsNull() );      
-      std::unique_ptr<SMESH_Mesh> myMesh( new SMESH_Mesh_Test() );
-      myMesh->ShapeToMesh( myShape );
-      SMESH_MesherHelper helper( *myMesh );
+      std::unique_ptr<SMESH_Mesh> aMesh( new SMESH_Mesh_Test() );
+      aMesh->ShapeToMesh( aShape );
+      SMESH_MesherHelper helper( *aMesh );
+
       Grid grid;
       grid._helper = &helper;
-      grid._toAddEdges = false; grid._toConsiderInternalFaces = false; grid._toUseThresholdForInternalFaces = false; grid._toUseQuanta = false;
+      grid._toAddEdges = false;
+      grid._toConsiderInternalFaces = false;
+      grid._toUseThresholdForInternalFaces = false;
+      grid._toUseQuanta = false;
       double testThreshold = 1.000001;
       grid._toCreateFaces = true;
       grid._sizeThreshold = testThreshold;
-      grid.InitGeometry( myShape );
       
-      std::map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
-      GridInitAndIntersectWithShape( grid, 2.0, testThreshold, myShape, edge2faceIDsMap, nThreads );
+      TEdge2faceIDsMap edge2faceIDsMap;
+      GridInitAndIntersectWithShape( grid, 2.0, testThreshold, aShape, edge2faceIDsMap, nThreads );
       Hexahedron hex( &grid );
       int nbAdded = hex.MakeElements( helper, edge2faceIDsMap, nThreads );
       CPPUNIT_ASSERT_MESSAGE( "Number of computed elements does not match", nbAdded == 35150 );
@@ -210,6 +187,9 @@ bool testNRTJ4()
 // Entry point for test
 int main()
 {
-  bool isOK = testNRTM1() && testNRTJ4();
+  bool isOK = testNRTM1();
+  if (!testNRTJ4())
+    isOK = false;
+
   return isOK ? 0 : 1;
 }

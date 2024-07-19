@@ -39,11 +39,12 @@
 #include <iostream>
 #include <memory>
 
+using namespace StdMeshers::Cartesian3D;
+
 // Helper functions!
 // Build Grid
 //      Require building mesh
-//      Require building shape. For test load shapes from memory in .brep files seems the simplest
-//      
+//      Require building shape.
 
 /*!
   * \brief Mock mesh
@@ -69,62 +70,27 @@ struct CartesianHypo: public StdMeshers_CartesianParameters3D
 /*!
   * \brief Initialize the grid and intesersectors of grid with the geometry
   */
-void GridInitAndIntersectWithShape( Grid& grid,
+void GridInitAndIntersectWithShape (Grid& grid,
                                     double gridSpacing,
                                     double theSizeThreshold,
                                     const TopoDS_Shape theShape, 
-                                    std::map< TGeomID, vector< TGeomID > >& edge2faceIDsMap,
-                                    const int /*numOfThreads*/ )
+                                    TEdge2faceIDsMap& edge2faceIDsMap,
+                                    const int theNumOfThreads)
 {
-  std::vector< TopoDS_Shape > faceVec;
-  TopTools_MapOfShape faceMap;
-  TopExp_Explorer fExp;
-  for ( fExp.Init( theShape, TopAbs_FACE ); fExp.More(); fExp.Next() )
-  {
-    bool isNewFace = faceMap.Add( fExp.Current() );
-    if ( !grid._toConsiderInternalFaces )
-      if ( !isNewFace || fExp.Current().Orientation() == TopAbs_INTERNAL )
-        // remove an internal face
-        faceMap.Remove( fExp.Current() );
-  }
-  faceVec.reserve( faceMap.Extent() );
-  faceVec.assign( faceMap.cbegin(), faceMap.cend() );
-  
-  vector<FaceGridIntersector> facesItersectors( faceVec.size() );
-
-  Bnd_Box shapeBox;
-  for ( size_t i = 0; i < faceVec.size(); ++i )
-  {
-    facesItersectors[i]._face   = TopoDS::Face( faceVec[i] );
-    facesItersectors[i]._faceID = grid.ShapeID( faceVec[i] );
-    facesItersectors[i]._grid   = &grid;
-    shapeBox.Add( facesItersectors[i].GetFaceBndBox() );
-  }
   // Canonical axes(i,j,k)
   double axisDirs[9] = {1.,0.,0.,0.,1.,0.,0.,0.,1.};
-
-  Tools::GetExactBndBox( faceVec, axisDirs, shapeBox );
-  vector<double> xCoords, yCoords, zCoords;  
-  std::unique_ptr<CartesianHypo> myHypo( new CartesianHypo() );  
   std::vector<std::string> grdSpace = { std::to_string(gridSpacing) };
   std::vector<double> intPnts;
-  myHypo->SetGridSpacing(grdSpace, intPnts, 0 ); // Spacing in dir 0
-  myHypo->SetGridSpacing(grdSpace, intPnts, 1 ); // Spacing in dir 1
-  myHypo->SetGridSpacing(grdSpace, intPnts, 2 ); // Spacing in dir 2
-  myHypo->SetSizeThreshold(theSizeThreshold);    // set threshold
-  myHypo->GetCoordinates(xCoords, yCoords, zCoords, shapeBox);
-  grid.SetCoordinates( xCoords, yCoords, zCoords, axisDirs, shapeBox );
 
-  for ( size_t i = 0; i < facesItersectors.size(); ++i )
-    facesItersectors[i].Intersect();
-  
-  for ( size_t i = 0; i < facesItersectors.size(); ++i )
-    facesItersectors[i].StoreIntersections();
+  std::unique_ptr<CartesianHypo> aHypo ( new CartesianHypo() );  
+  aHypo->SetGridSpacing(grdSpace, intPnts, 0 ); // Spacing in dir 0
+  aHypo->SetGridSpacing(grdSpace, intPnts, 1 ); // Spacing in dir 1
+  aHypo->SetGridSpacing(grdSpace, intPnts, 2 ); // Spacing in dir 2
+  aHypo->SetSizeThreshold(theSizeThreshold);    // set threshold
+  aHypo->SetAxisDirs(axisDirs);
 
-  grid.ComputeNodes( *grid._helper );
-  grid.GetEdgesToImplement( edge2faceIDsMap, theShape, faceVec );
+  grid.GridInitAndInterserctWithShape(theShape, edge2faceIDsMap, aHypo.get(), theNumOfThreads, false);
 }
-
 
 /*!
   * \brief Test runner
@@ -139,6 +105,7 @@ bool testShape (const TopoDS_Shape theShape,
   std::unique_ptr<SMESH_Mesh> aMesh( new SMESH_Mesh_Test() );
   aMesh->ShapeToMesh( theShape );
   SMESH_MesherHelper helper( *aMesh );
+
   Grid grid;
   grid._helper = &helper;
   grid._toAddEdges = toAddEdges;
@@ -147,11 +114,11 @@ bool testShape (const TopoDS_Shape theShape,
   grid._toUseThresholdForInternalFaces = false;
   grid._toUseQuanta = false;
   grid._sizeThreshold = theSizeThreshold;
-  grid.InitGeometry( theShape );
 
-  std::map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
+  TEdge2faceIDsMap edge2faceIDsMap;
   GridInitAndIntersectWithShape( grid, theGridSpacing, theSizeThreshold,
                                  theShape, edge2faceIDsMap, 1 );
+
   Hexahedron hex( &grid );
   int nbAdded = hex.MakeElements( helper, edge2faceIDsMap, 1 );
   if (nbAdded != theNbCreatedExpected) {

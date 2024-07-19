@@ -35,9 +35,12 @@
 #include <tbb/parallel_for.h>
 #endif
 
+using namespace std;
 using namespace SMESH;
-using namespace gridtools;
+using namespace StdMeshers::Cartesian3D;
+
 std::mutex _bMutex;
+
 //=============================================================================
 /*
   * Remove coincident intersection points
@@ -929,8 +932,10 @@ void Grid::ComputeNodes(SMESH_MesherHelper& helper)
   return;
 }
 
-bool Grid::GridInitAndInterserctWithShape( const TopoDS_Shape& theShape, std::map< TGeomID, vector< TGeomID > >& edge2faceIDsMap, 
-                                            const StdMeshers_CartesianParameters3D* hyp, const int numOfThreads, bool computeCanceled )
+bool Grid::GridInitAndInterserctWithShape( const TopoDS_Shape& theShape,
+                                           TEdge2faceIDsMap& edge2faceIDsMap, 
+                                           const StdMeshers_CartesianParameters3D* hyp,
+                                           const int /*numOfThreads*/, bool computeCanceled )
 {
   InitGeometry( theShape );
 
@@ -1088,3 +1093,351 @@ void Tools::GetExactBndBox( const vector< TopoDS_Shape >& faceVec, const double*
   return;
 }
 
+//=============================================================================
+/*
+ * Intersects TopoDS_Face with all GridLine's
+ */
+void FaceGridIntersector::Intersect()
+{
+  FaceLineIntersector intersector;
+  intersector._surfaceInt = GetCurveFaceIntersector();
+  intersector._tol        = _grid->_tol;
+  intersector._transOut   = _face.Orientation() == TopAbs_REVERSED ? Trans_IN : Trans_OUT;
+  intersector._transIn    = _face.Orientation() == TopAbs_REVERSED ? Trans_OUT : Trans_IN;
+
+  typedef void (FaceLineIntersector::* PIntFun )(const GridLine& gridLine);
+  PIntFun interFunction;
+
+  bool isDirect = true;
+  BRepAdaptor_Surface surf( _face );
+  switch ( surf.GetType() ) {
+  case GeomAbs_Plane:
+    intersector._plane = surf.Plane();
+    interFunction = &FaceLineIntersector::IntersectWithPlane;
+    isDirect = intersector._plane.Direct();
+    break;
+  case GeomAbs_Cylinder:
+    intersector._cylinder = surf.Cylinder();
+    interFunction = &FaceLineIntersector::IntersectWithCylinder;
+    isDirect = intersector._cylinder.Direct();
+    break;
+  case GeomAbs_Cone:
+    intersector._cone = surf.Cone();
+    interFunction = &FaceLineIntersector::IntersectWithCone;
+    //isDirect = intersector._cone.Direct();
+    break;
+  case GeomAbs_Sphere:
+    intersector._sphere = surf.Sphere();
+    interFunction = &FaceLineIntersector::IntersectWithSphere;
+    isDirect = intersector._sphere.Direct();
+    break;
+  case GeomAbs_Torus:
+    intersector._torus = surf.Torus();
+    interFunction = &FaceLineIntersector::IntersectWithTorus;
+    //isDirect = intersector._torus.Direct();
+    break;
+  default:
+    interFunction = &FaceLineIntersector::IntersectWithSurface;
+  }
+  if ( !isDirect )
+    std::swap( intersector._transOut, intersector._transIn );
+
+  _intersections.clear();
+  for ( int iDir = 0; iDir < 3; ++iDir ) // loop on 3 line directions
+  {
+    if ( surf.GetType() == GeomAbs_Plane )
+    {
+      // check if all lines in this direction are parallel to a plane
+      if ( intersector._plane.Axis().IsNormal( _grid->_lines[iDir][0]._line.Position(),
+                                               Precision::Angular()))
+        continue;
+      // find out a transition, that is the same for all lines of a direction
+      gp_Dir plnNorm = intersector._plane.Axis().Direction();
+      gp_Dir lineDir = _grid->_lines[iDir][0]._line.Direction();
+      intersector._transition =
+        ( plnNorm * lineDir < 0 ) ? intersector._transIn : intersector._transOut;
+    }
+    if ( surf.GetType() == GeomAbs_Cylinder )
+    {
+      // check if all lines in this direction are parallel to a cylinder
+      if ( intersector._cylinder.Axis().IsParallel( _grid->_lines[iDir][0]._line.Position(),
+                                                    Precision::Angular()))
+        continue;
+    }
+
+    // intersect the grid lines with the face
+    for ( size_t iL = 0; iL < _grid->_lines[iDir].size(); ++iL )
+    {
+      GridLine& gridLine = _grid->_lines[iDir][iL];
+      if ( _bndBox.IsOut( gridLine._line )) continue;
+
+      intersector._intPoints.clear();
+      (intersector.*interFunction)( gridLine ); // <- intersection with gridLine
+      for ( size_t i = 0; i < intersector._intPoints.size(); ++i )
+        _intersections.push_back( std::make_pair( &gridLine, intersector._intPoints[i] ));
+    }
+  }
+
+  if ( _face.Orientation() == TopAbs_INTERNAL )
+  {
+    for ( size_t i = 0; i < _intersections.size(); ++i )
+      if ( _intersections[i].second._transition == Trans_IN ||
+           _intersections[i].second._transition == Trans_OUT )
+      {
+        _intersections[i].second._transition = Trans_INTERNAL;
+      }
+  }
+  return;
+}
+
+#ifdef WITH_TBB
+//================================================================================
+/*
+ * check if its face can be safely intersected in a thread
+ */
+bool FaceGridIntersector::IsThreadSafe(std::set< const Standard_Transient* >& noSafeTShapes) const
+{
+  bool isSafe = true;
+
+  // check surface
+  TopLoc_Location loc;
+  Handle(Geom_Surface) surf = BRep_Tool::Surface( _face, loc );
+  Handle(Geom_RectangularTrimmedSurface) ts =
+    Handle(Geom_RectangularTrimmedSurface)::DownCast( surf );
+  while( !ts.IsNull() ) {
+    surf = ts->BasisSurface();
+    ts = Handle(Geom_RectangularTrimmedSurface)::DownCast(surf);
+  }
+  if ( surf->IsKind( STANDARD_TYPE(Geom_BSplineSurface )) ||
+       surf->IsKind( STANDARD_TYPE(Geom_BezierSurface )))
+    if ( !noSafeTShapes.insert( _face.TShape().get() ).second )
+      isSafe = false;
+
+  double f, l;
+  TopExp_Explorer exp( _face, TopAbs_EDGE );
+  for ( ; exp.More(); exp.Next() )
+  {
+    bool edgeIsSafe = true;
+    const TopoDS_Edge& e = TopoDS::Edge( exp.Current() );
+    // check 3d curve
+    {
+      Handle(Geom_Curve) c = BRep_Tool::Curve( e, loc, f, l);
+      if ( !c.IsNull() )
+      {
+        Handle(Geom_TrimmedCurve) tc = Handle(Geom_TrimmedCurve)::DownCast(c);
+        while( !tc.IsNull() ) {
+          c = tc->BasisCurve();
+          tc = Handle(Geom_TrimmedCurve)::DownCast(c);
+        }
+        if ( c->IsKind( STANDARD_TYPE(Geom_BSplineCurve )) ||
+             c->IsKind( STANDARD_TYPE(Geom_BezierCurve )))
+          edgeIsSafe = false;
+      }
+    }
+    // check 2d curve
+    if ( edgeIsSafe )
+    {
+      Handle(Geom2d_Curve) c2 = BRep_Tool::CurveOnSurface( e, surf, loc, f, l);
+      if ( !c2.IsNull() )
+      {
+        Handle(Geom2d_TrimmedCurve) tc = Handle(Geom2d_TrimmedCurve)::DownCast(c2);
+        while( !tc.IsNull() ) {
+          c2 = tc->BasisCurve();
+          tc = Handle(Geom2d_TrimmedCurve)::DownCast(c2);
+        }
+        if ( c2->IsKind( STANDARD_TYPE(Geom2d_BSplineCurve )) ||
+             c2->IsKind( STANDARD_TYPE(Geom2d_BezierCurve )))
+          edgeIsSafe = false;
+      }
+    }
+    if ( !edgeIsSafe && !noSafeTShapes.insert( e.TShape().get() ).second )
+      isSafe = false;
+  }
+  return isSafe;
+}
+#endif
+
+//================================================================================
+/*
+ * Store an intersection if it is IN or ON the face
+ */
+void FaceLineIntersector::addIntPoint(const bool toClassify)
+{
+  if ( !toClassify || UVIsOnFace() )
+  {
+    F_IntersectPoint p;
+    p._paramOnLine = _w;
+    p._u           = _u;
+    p._v           = _v;
+    p._transition  = _transition;
+    _intPoints.push_back( p );
+  }
+}
+
+//================================================================================
+/*
+ * Intersect a line with a plane
+ */
+void FaceLineIntersector::IntersectWithPlane(const GridLine& gridLine)
+{
+  IntAna_IntConicQuad linPlane( gridLine._line, _plane, Precision::Angular());
+  _w = linPlane.ParamOnConic(1);
+  if ( isParamOnLineOK( gridLine._length ))
+  {
+    ElSLib::Parameters(_plane, linPlane.Point(1) ,_u,_v);
+    addIntPoint();
+  }
+}
+
+//================================================================================
+/*
+ * Intersect a line with a cylinder
+ */
+void FaceLineIntersector::IntersectWithCylinder(const GridLine& gridLine)
+{
+  IntAna_IntConicQuad linCylinder( gridLine._line, _cylinder );
+  if ( linCylinder.IsDone() && linCylinder.NbPoints() > 0 )
+  {
+    _w = linCylinder.ParamOnConic(1);
+    if ( linCylinder.NbPoints() == 1 )
+      _transition = Trans_TANGENT;
+    else
+      _transition = _w < linCylinder.ParamOnConic(2) ? _transIn : _transOut;
+    if ( isParamOnLineOK( gridLine._length ))
+    {
+      ElSLib::Parameters(_cylinder, linCylinder.Point(1) ,_u,_v);
+      addIntPoint();
+    }
+    if ( linCylinder.NbPoints() > 1 )
+    {
+      _w = linCylinder.ParamOnConic(2);
+      if ( isParamOnLineOK( gridLine._length ))
+      {
+        ElSLib::Parameters(_cylinder, linCylinder.Point(2) ,_u,_v);
+        _transition = ( _transition == Trans_OUT ) ? Trans_IN : Trans_OUT;
+        addIntPoint();
+      }
+    }
+  }
+}
+
+//================================================================================
+/*
+ * Intersect a line with a cone
+ */
+void FaceLineIntersector::IntersectWithCone (const GridLine& gridLine)
+{
+  IntAna_IntConicQuad linCone(gridLine._line,_cone);
+  if ( !linCone.IsDone() ) return;
+  gp_Pnt P;
+  gp_Vec du, dv, norm;
+  for ( int i = 1; i <= linCone.NbPoints(); ++i )
+  {
+    _w = linCone.ParamOnConic( i );
+    if ( !isParamOnLineOK( gridLine._length )) continue;
+    ElSLib::Parameters(_cone, linCone.Point(i) ,_u,_v);
+    if ( UVIsOnFace() )
+    {
+      ElSLib::D1( _u, _v, _cone, P, du, dv );
+      norm = du ^ dv;
+      double normSize2 = norm.SquareMagnitude();
+      if ( normSize2 > Precision::Angular() * Precision::Angular() )
+      {
+        double cos = norm.XYZ() * gridLine._line.Direction().XYZ();
+        cos /= sqrt( normSize2 );
+        if ( cos < -Precision::Angular() )
+          _transition = _transIn;
+        else if ( cos > Precision::Angular() )
+          _transition = _transOut;
+        else
+          _transition = Trans_TANGENT;
+      }
+      else
+      {
+        _transition = Trans_APEX;
+      }
+      addIntPoint( /*toClassify=*/false);
+    }
+  }
+}
+
+//================================================================================
+/*
+ * Intersect a line with a sphere
+ */
+void FaceLineIntersector::IntersectWithSphere  (const GridLine& gridLine)
+{
+  IntAna_IntConicQuad linSphere(gridLine._line,_sphere);
+  if ( linSphere.IsDone() && linSphere.NbPoints() > 0 )
+  {
+    _w = linSphere.ParamOnConic(1);
+    if ( linSphere.NbPoints() == 1 )
+      _transition = Trans_TANGENT;
+    else
+      _transition = _w < linSphere.ParamOnConic(2) ? _transIn : _transOut;
+    if ( isParamOnLineOK( gridLine._length ))
+    {
+      ElSLib::Parameters(_sphere, linSphere.Point(1) ,_u,_v);
+      addIntPoint();
+    }
+    if ( linSphere.NbPoints() > 1 )
+    {
+      _w = linSphere.ParamOnConic(2);
+      if ( isParamOnLineOK( gridLine._length ))
+      {
+        ElSLib::Parameters(_sphere, linSphere.Point(2) ,_u,_v);
+        _transition = ( _transition == Trans_OUT ) ? Trans_IN : Trans_OUT;
+        addIntPoint();
+      }
+    }
+  }
+}
+
+//================================================================================
+/*
+ * Intersect a line with a torus
+ */
+void FaceLineIntersector::IntersectWithTorus (const GridLine& gridLine)
+{
+  IntAna_IntLinTorus linTorus(gridLine._line,_torus);
+  if ( !linTorus.IsDone()) return;
+  gp_Pnt P;
+  gp_Vec du, dv, norm;
+  for ( int i = 1; i <= linTorus.NbPoints(); ++i )
+  {
+    _w = linTorus.ParamOnLine( i );
+    if ( !isParamOnLineOK( gridLine._length )) continue;
+    linTorus.ParamOnTorus( i, _u,_v );
+    if ( UVIsOnFace() )
+    {
+      ElSLib::D1( _u, _v, _torus, P, du, dv );
+      norm = du ^ dv;
+      double normSize = norm.Magnitude();
+      double cos = norm.XYZ() * gridLine._line.Direction().XYZ();
+      cos /= normSize;
+      if ( cos < -Precision::Angular() )
+        _transition = _transIn;
+      else if ( cos > Precision::Angular() )
+        _transition = _transOut;
+      else
+        _transition = Trans_TANGENT;
+      addIntPoint( /*toClassify=*/false);
+    }
+  }
+}
+
+//================================================================================
+/*
+ * Intersect a line with a non-analytical surface
+ */
+void FaceLineIntersector::IntersectWithSurface (const GridLine& gridLine)
+{
+  _surfaceInt->Perform( gridLine._line, 0.0, gridLine._length );
+  if ( !_surfaceInt->IsDone() ) return;
+  for ( int i = 1; i <= _surfaceInt->NbPnt(); ++i )
+  {
+    _transition = Transition( _surfaceInt->Transition( i ) );
+    _w = _surfaceInt->WParameter( i );
+    addIntPoint(/*toClassify=*/false);
+  }
+}

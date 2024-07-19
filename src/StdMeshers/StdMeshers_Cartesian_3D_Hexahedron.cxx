@@ -23,8 +23,9 @@
 
 #include "StdMeshers_Cartesian_3D_Hexahedron.hxx"
 
+using namespace std;
 using namespace SMESH;
-using namespace gridtools;
+using namespace StdMeshers::Cartesian3D;
 
 std::mutex _eMutex;
 
@@ -856,8 +857,31 @@ void Hexahedron::computeElements( const Solid* solid, int solidIndex )
 /*!
   * \brief Compute mesh volumes resulted from intersection of the Hexahedron
   */
-void Hexahedron::defineHexahedralFaces( std::vector< _OrientedLink >& splits, std::vector<_Node*>& chainNodes, std::set< TGeomID >& concaveFaces, bool toCheckSideDivision )
+void Hexahedron::defineHexahedralFaces( const Solid* solid, const IsInternalFlag intFlag )
 {
+  std::set< TGeomID > concaveFaces; // to avoid connecting nodes laying on them
+
+  if ( solid->HasConcaveVertex() ) {
+    for ( const E_IntersectPoint* ip : _eIntPoints ) {
+      if ( const ConcaveFace* cf = solid->GetConcave( ip->_shapeID )) {
+        if ( this->hasEdgesAround( cf ))
+          concaveFaces.insert( cf->_concaveFace );
+      }
+    }
+    if ( concaveFaces.empty() || concaveFaces.size() * 3  < _eIntPoints.size() ) {
+      for ( const _Node& hexNode: _hexNodes ) {
+        if ( hexNode._node && hexNode._intPoint && hexNode._intPoint->_faceIDs.size() >= 3 )
+          if ( const ConcaveFace* cf = solid->GetConcave( hexNode._node->GetShapeID() ))
+            if ( this->hasEdgesAround( cf ))
+              concaveFaces.insert( cf->_concaveFace );
+      }
+    }
+  }
+
+  const bool toCheckSideDivision = isImplementEdges() || intFlag & IS_CUT_BY_INTERNAL_FACE;
+
+  std::vector< _OrientedLink > splits;
+  std::vector< _Node* >        chainNodes;
   for ( int iF = 0; iF < 6; ++iF ) // loop on 6 sides of a hexahedron
   {
     _Face& quad = _hexQuads[ iF ] ;
@@ -1028,6 +1052,47 @@ void Hexahedron::defineHexahedralFaces( std::vector< _OrientedLink >& splits, st
 
 //================================================================================
 /*!
+  * \brief get a remaining link to start from, one lying on minimal nb of FACEs
+  */
+Hexahedron::TFaceOfLink Hexahedron::findStartLink(const vector<_OrientedLink*>& freeLinks,
+                                                  std::set<TGeomID>&            usedFaceIDs)
+{
+  TFaceOfLink faceOfLink( -1, -1 );
+  TFaceOfLink facesOfLink[3] = { faceOfLink, faceOfLink, faceOfLink };
+  for ( size_t iL = 0; iL < freeLinks.size(); ++iL ) {
+    if ( freeLinks[ iL ] ) {
+      std::vector< TGeomID > faces = freeLinks[ iL ]->GetNotUsedFaces( usedFaceIDs );
+      if ( faces.size() == 1 ) {
+        faceOfLink = TFaceOfLink( faces[0], iL );
+        if ( !freeLinks[ iL ]->HasEdgeNodes() )
+          break;
+        facesOfLink[0] = faceOfLink;
+      }
+      else if ( facesOfLink[0].first < 0 ) {
+        faceOfLink = TFaceOfLink(( faces.empty() ? -1 : faces[0]), iL );
+        facesOfLink[ 1 + faces.empty() ] = faceOfLink;
+      }
+    }
+  }
+  for ( int i = 0; faceOfLink.first < 0 && i < 3; ++i ) {
+    faceOfLink = facesOfLink[i];
+  }
+
+  if ( faceOfLink.first < 0 ) { // all faces used
+    for ( size_t iL = 0; iL < freeLinks.size() && faceOfLink.first < 1; ++iL ) {
+      _OrientedLink* curLinkLocal = freeLinks[ iL ];
+      if ( curLinkLocal ) {
+        faceOfLink.first = curLinkLocal->FirstNode()->IsLinked( curLinkLocal->LastNode()->_intPoint );
+        faceOfLink.second = iL;
+      }
+    }
+    usedFaceIDs.clear();
+  }
+  return faceOfLink;
+}
+
+//================================================================================
+/*!
   * \brief Compute mesh volumes resulted from intersection of the Hexahedron
   */
 bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
@@ -1041,36 +1106,10 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
   if ( intFlag & IS_CUT_BY_INTERNAL_FACE && !_grid->_toAddEdges ) // Issue #19913
     preventVolumesOverlapping();
 
-  std::set< TGeomID > concaveFaces; // to avoid connecting nodes laying on them
-
-  if ( solid->HasConcaveVertex() )
-  {
-    for ( const E_IntersectPoint* ip : _eIntPoints )
-    {
-      if ( const ConcaveFace* cf = solid->GetConcave( ip->_shapeID ))
-        if ( this->hasEdgesAround( cf ))
-          concaveFaces.insert( cf->_concaveFace );
-    }
-    if ( concaveFaces.empty() || concaveFaces.size() * 3  < _eIntPoints.size() )
-      for ( const _Node& hexNode: _hexNodes )
-      {
-        if ( hexNode._node && hexNode._intPoint && hexNode._intPoint->_faceIDs.size() >= 3 )
-          if ( const ConcaveFace* cf = solid->GetConcave( hexNode._node->GetShapeID() ))
-            if ( this->hasEdgesAround( cf ))
-              concaveFaces.insert( cf->_concaveFace );
-      }
-  }
+  const bool hasEdgeIntersections = !_eIntPoints.empty();
 
   // Create polygons from quadrangles
-  // --------------------------------
-
-  vector< _OrientedLink > splits;
-  vector<_Node*>          chainNodes;
-  _Face*                  coplanarPolyg;
-
-  const bool hasEdgeIntersections = !_eIntPoints.empty();
-  const bool toCheckSideDivision = isImplementEdges() || intFlag & IS_CUT_BY_INTERNAL_FACE;
-  defineHexahedralFaces( splits, chainNodes, concaveFaces, toCheckSideDivision );
+  defineHexahedralFaces( solid, intFlag );
 
   // Create polygons closing holes in a polyhedron
   // ----------------------------------------------
@@ -1080,24 +1119,24 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
     _intNodes[ iN ]._usedInFace = 0;
 
   // add polygons to their links and mark used nodes
-  for ( size_t iP = 0; iP < _polygons.size(); ++iP )
-  {
+  for ( size_t iP = 0; iP < _polygons.size(); ++iP ) {
     _Face& polygon = _polygons[ iP ];
-    for ( size_t iL = 0; iL < polygon._links.size(); ++iL )
-    {
+    for ( size_t iL = 0; iL < polygon._links.size(); ++iL ) {
       polygon._links[ iL ].AddFace( &polygon );
       polygon._links[ iL ].FirstNode()->_usedInFace = &polygon;
     }
   }
+
   // find free links
   vector< _OrientedLink* > freeLinks;
   freeLinks.reserve(20);
   for ( size_t iP = 0; iP < _polygons.size(); ++iP )
   {
     _Face& polygon = _polygons[ iP ];
-    for ( size_t iL = 0; iL < polygon._links.size(); ++iL )
+    for ( size_t iL = 0; iL < polygon._links.size(); ++iL ) {
       if ( polygon._links[ iL ].NbFaces() < 2 )
         freeLinks.push_back( & polygon._links[ iL ]);
+    }
   }
   int nbFreeLinks = freeLinks.size();
   if ( nbFreeLinks == 1 ) return false;
@@ -1123,11 +1162,11 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
   }
 
   std::set<TGeomID> usedFaceIDs;
-  std::vector< TGeomID > faces;
   TGeomID curFace = 0;
   const size_t nbQuadPolygons = _polygons.size();
   E_IntersectPoint ipTmp;
   std::map< TGeomID, std::vector< const B_IntersectPoint* > > tmpAddedFace; // face added to _intPoint
+
   // std::cout << "2\n";
   // create polygons by making closed chains of free links
   size_t iPolygon = _polygons.size();
@@ -1147,9 +1186,11 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
         ( nbFreeLinks < 4 && nbVertexNodes == 0 ))
     {
       // get a remaining link to start from
-      for ( size_t iL = 0; iL < freeLinks.size() && !curLink; ++iL )
-        if (( curLink = freeLinks[ iL ] ))
+      for ( size_t iL = 0; iL < freeLinks.size() && !curLink; ++iL ) {
+        curLink = freeLinks[ iL ];
+        if ( curLink )
           freeLinks[ iL ] = 0;
+      }
       polygon._links.push_back( *curLink );
       --nbFreeLinks;
       do
@@ -1170,109 +1211,70 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
     else // there are intersections with EDGEs
     {
       // get a remaining link to start from, one lying on minimal nb of FACEs
-      {
-        typedef pair< TGeomID, int > TFaceOfLink;
-        TFaceOfLink faceOfLink( -1, -1 );
-        TFaceOfLink facesOfLink[3] = { faceOfLink, faceOfLink, faceOfLink };
-        for ( size_t iL = 0; iL < freeLinks.size(); ++iL )
-          if ( freeLinks[ iL ] )
-          {
-            faces = freeLinks[ iL ]->GetNotUsedFace( usedFaceIDs );
-            if ( faces.size() == 1 )
-            {
-              faceOfLink = TFaceOfLink( faces[0], iL );
-              if ( !freeLinks[ iL ]->HasEdgeNodes() )
-                break;
-              facesOfLink[0] = faceOfLink;
-            }
-            else if ( facesOfLink[0].first < 0 )
-            {
-              faceOfLink = TFaceOfLink(( faces.empty() ? -1 : faces[0]), iL );
-              facesOfLink[ 1 + faces.empty() ] = faceOfLink;
-            }
-          }
-        for ( int i = 0; faceOfLink.first < 0 && i < 3; ++i )
-          faceOfLink = facesOfLink[i];
+      TFaceOfLink faceOfLink = findStartLink(freeLinks, usedFaceIDs);
+      curFace = faceOfLink.first;
+      curLink = freeLinks[ faceOfLink.second ];
+      freeLinks[ faceOfLink.second ] = 0;
 
-        if ( faceOfLink.first < 0 ) // all faces used
-        {
-          for ( size_t iL = 0; iL < freeLinks.size() && faceOfLink.first < 1; ++iL )
-            if (( curLink = freeLinks[ iL ]))
-            {
-              faceOfLink.first = 
-                curLink->FirstNode()->IsLinked( curLink->LastNode()->_intPoint );
-              faceOfLink.second = iL;
-            }
-          usedFaceIDs.clear();
-        }
-        curFace = faceOfLink.first;
-        curLink = freeLinks[ faceOfLink.second ];
-        freeLinks[ faceOfLink.second ] = 0;
-      }
       usedFaceIDs.insert( curFace );
       polygon._links.push_back( *curLink );
       --nbFreeLinks;
 
       // find all links lying on a curFace
-      do
-      {
+      do {
         // go forward from curLink
         curNode = curLink->LastNode();
         curLink = 0;
-        for ( size_t iL = 0; iL < freeLinks.size() && !curLink; ++iL )
+        for ( size_t iL = 0; iL < freeLinks.size() && !curLink; ++iL ) {
           if ( freeLinks[ iL ] &&
-                freeLinks[ iL ]->FirstNode() == curNode &&
-                freeLinks[ iL ]->LastNode()->IsOnFace( curFace ))
-          {
+               freeLinks[ iL ]->FirstNode() == curNode &&
+               freeLinks[ iL ]->LastNode()->IsOnFace( curFace )) {
             curLink = freeLinks[ iL ];
             freeLinks[ iL ] = 0;
             polygon._links.push_back( *curLink );
             --nbFreeLinks;
           }
+        }
       } while ( curLink );
 
       std::reverse( polygon._links.begin(), polygon._links.end() );
 
       curLink = & polygon._links.back();
-      do
-      {
+      do {
         // go backward from curLink
         curNode = curLink->FirstNode();
         curLink = 0;
-        for ( size_t iL = 0; iL < freeLinks.size() && !curLink; ++iL )
+        for ( size_t iL = 0; iL < freeLinks.size() && !curLink; ++iL ) {
           if ( freeLinks[ iL ] &&
-                freeLinks[ iL ]->LastNode() == curNode &&
-                freeLinks[ iL ]->FirstNode()->IsOnFace( curFace ))
-          {
+               freeLinks[ iL ]->LastNode() == curNode &&
+               freeLinks[ iL ]->FirstNode()->IsOnFace( curFace )) {
             curLink = freeLinks[ iL ];
             freeLinks[ iL ] = 0;
             polygon._links.push_back( *curLink );
             --nbFreeLinks;
           }
+        }
       } while ( curLink );
 
       curNode = polygon._links.back().FirstNode();
 
-      if ( polygon._links[0].LastNode() != curNode )
-      {
-        if ( nbVertexNodes > 0 )
-        {
+      if ( polygon._links[0].LastNode() != curNode ) {
+        if ( nbVertexNodes > 0 ) {
           // add links with _vIntNodes if not already used
-          chainNodes.clear();
-          for ( size_t iN = 0; iN < _vIntNodes.size(); ++iN )
+          vector< _Node* > chainNodes;
+          //chainNodes.clear();
+          for ( size_t iN = 0; iN < _vIntNodes.size(); ++iN ) {
             if ( !_vIntNodes[ iN ]->IsUsedInFace() &&
-                  _vIntNodes[ iN ]->IsOnFace( curFace ))
-            {
+                 _vIntNodes[ iN ]->IsOnFace( curFace )) {
               _vIntNodes[ iN ]->_usedInFace = &polygon;
               chainNodes.push_back( _vIntNodes[ iN ] );
             }
+          }
           if ( chainNodes.size() > 1 &&
-                curFace != _grid->PseudoIntExtFaceID() ) /////// TODO
-          {
+               curFace != _grid->PseudoIntExtFaceID() ) { /////// TODO
             sortVertexNodes( chainNodes, curNode, curFace );
           }
-          for ( size_t i = 0; i < chainNodes.size(); ++i )
-          {
+          for ( size_t i = 0; i < chainNodes.size(); ++i ) {
             polygon.AddPolyLink( chainNodes[ i ], curNode );
             curNode = chainNodes[ i ];
             freeLinks.push_back( &polygon._links.back() );
@@ -1290,7 +1292,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
     } // if there are intersections with EDGEs
 
     if ( polygon._links.size() < 2 ||
-          polygon._links[0].LastNode() != polygon._links.back().FirstNode() )
+         polygon._links[0].LastNode() != polygon._links.back().FirstNode() )
     {
       _polygons.clear();
       break; // closed polygon not found -> invalid polyhedron
@@ -1311,7 +1313,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
       if ( iPolygon == _polygons.size()-1 )
         _polygons.pop_back();
     }
-    else // polygon._links.size() >= 2
+    else // polygon._links.size() > 2
     {
       // add polygon to its links
       for ( size_t iL = 0; iL < polygon._links.size(); ++iL )
@@ -1322,7 +1324,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
       if ( /*hasEdgeIntersections &&*/ iPolygon == _polygons.size() - 1 )
       {
         // check that a polygon does not lie on a hexa side
-        coplanarPolyg = 0;
+        _Face* coplanarPolyg = 0;
         for ( size_t iL = 0; iL < polygon._links.size() && !coplanarPolyg; ++iL )
         {
           if ( polygon._links[ iL ].NbFaces() < 2 )
@@ -1332,11 +1334,13 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
           size_t iL2;
           coplanarPolyg = polygon._links[ iL ]._link->_faces[0];
           for ( iL2 = iL + 1; iL2 < polygon._links.size(); ++iL2 )
+          {
             if ( polygon._links[ iL2 ]._link->_faces[0] == coplanarPolyg &&
                   !coplanarPolyg->IsPolyLink( polygon._links[ iL  ]) &&
                   !coplanarPolyg->IsPolyLink( polygon._links[ iL2 ]) &&
                   coplanarPolyg < & _polygons[ nbQuadPolygons ])
               break;
+          }
           if ( iL2 == polygon._links.size() )
             coplanarPolyg = 0;
         }
@@ -1350,11 +1354,13 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
 
           // fill freeLinks with links not shared by coplanarPolyg and polygon
           for ( size_t iL = 0; iL < polygon._links.size(); ++iL )
+          {
             if ( polygon._links[ iL ]._link->_faces[1] &&
                   polygon._links[ iL ]._link->_faces[0] != coplanarPolyg )
             {
               _Face* p = polygon._links[ iL ]._link->_faces[0];
               for ( size_t iL2 = 0; iL2 < p->_links.size(); ++iL2 )
+              {
                 if ( p->_links[ iL2 ]._link == polygon._links[ iL ]._link )
                 {
                   freeLinks.push_back( & p->_links[ iL2 ] );
@@ -1362,8 +1368,11 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
                   freeLinks.back()->RemoveFace( &polygon );
                   break;
                 }
+              }
             }
+          }
           for ( size_t iL = 0; iL < coplanarPolyg->_links.size(); ++iL )
+          {
             if ( coplanarPolyg->_links[ iL ]._link->_faces[1] &&
                   coplanarPolyg->_links[ iL ]._link->_faces[1] != &polygon )
             {
@@ -1371,6 +1380,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
               if ( p == coplanarPolyg )
                 p = coplanarPolyg->_links[ iL ]._link->_faces[1];
               for ( size_t iL2 = 0; iL2 < p->_links.size(); ++iL2 )
+              {
                 if ( p->_links[ iL2 ]._link == coplanarPolyg->_links[ iL ]._link )
                 {
                   // set links of coplanarPolyg in place of used freeLinks
@@ -1395,9 +1405,12 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
                   }
                   break;
                 }
+              }
             }
+          }
           // set coplanarPolyg to be re-created next
           for ( size_t iP = 0; iP < _polygons.size(); ++iP )
+          {
             if ( coplanarPolyg == & _polygons[ iP ] )
             {
               iPolygon = iP;
@@ -1405,6 +1418,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
               _polygons[ iPolygon ]._polyLinks.clear();
               break;
             }
+          }
           _polygons.pop_back();
           usedFaceIDs.erase( curFace );
           continue;
@@ -1415,6 +1429,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
 
     } // end of case ( polygon._links.size() > 2 )
   } // while ( nbFreeLinks > 0 )
+
   // std::cout << "3\n";
   for ( auto & face_ip : tmpAddedFace )
   {
@@ -1435,12 +1450,13 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
   _hasTooSmall = ! checkPolyhedronSize( intFlag & IS_CUT_BY_INTERNAL_FACE, volSize );
 
   for ( size_t i = 0; i < 8; ++i )
+  {
     if ( _hexNodes[ i ]._intPoint == &ipTmp )
       _hexNodes[ i ]._intPoint = 0;
+  }
 
   if ( _hasTooSmall )
     return false; // too small volume
-
 
   // Try to find out names of no-name polygons (issue # 19887)
   if ( _grid->IsToRemoveExcessEntities() && _polygons.back()._name == SMESH_Block::ID_NONE )
@@ -1474,8 +1490,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
     }
   }
 
-
-  /* This call is irrelevant here because _volumeDefs datas are were not filled! 
+  /* This call is irrelevant here because _volumeDefs datas were not filled! 
   or .... it is potentialy filled by other thread?? */
   _volumeDefs._nodes.clear();
   _volumeDefs._quantities.clear();
