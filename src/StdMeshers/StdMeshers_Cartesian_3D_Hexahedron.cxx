@@ -1093,6 +1093,113 @@ Hexahedron::TFaceOfLink Hexahedron::findStartLink(const vector<_OrientedLink*>& 
 
 //================================================================================
 /*!
+  * \brief find coplanar polygon, if any, and set it to be re-created next
+  */
+size_t Hexahedron::findCoplanarPolygon
+       (const _Face& thePolygon,
+        const size_t nbQuadPolygons,
+        std::vector< _OrientedLink* >& freeLinks,
+        int& nbFreeLinks,
+        const E_IntersectPoint ipTmp,
+        std::set< StdMeshers::Cartesian3D::TGeomID >& usedFaceIDs,
+        std::map< StdMeshers::Cartesian3D::TGeomID, std::vector< const B_IntersectPoint* > >& tmpAddedFace,
+        const StdMeshers::Cartesian3D::TGeomID& curFace)
+{
+  size_t iPolygon = _polygons.size() - 1;
+  // check that a polygon does not lie on a hexa side
+  _Face* coplanarPolyg = 0;
+  for ( size_t iL = 0; iL < thePolygon._links.size() && !coplanarPolyg; ++iL ) {
+    if ( thePolygon._links[ iL ].NbFaces() >= 2 ) { // if it's not a just added free link
+      // look for a polygon made on a hexa side and sharing
+      // two or more haxa links
+      size_t iL2;
+      coplanarPolyg = thePolygon._links[ iL ]._link->_faces[0];
+      for ( iL2 = iL + 1; iL2 < thePolygon._links.size(); ++iL2 ) {
+        if ( thePolygon._links[ iL2 ]._link->_faces[0] == coplanarPolyg &&
+             !coplanarPolyg->IsPolyLink( thePolygon._links[ iL  ]) &&
+             !coplanarPolyg->IsPolyLink( thePolygon._links[ iL2 ]) &&
+             coplanarPolyg < & _polygons[ nbQuadPolygons ])
+          break;
+      }
+      if ( iL2 == thePolygon._links.size() )
+        coplanarPolyg = 0;
+    }
+  }
+
+  if ( coplanarPolyg ) { // coplanar polygon found
+    freeLinks.resize( freeLinks.size() - thePolygon._polyLinks.size() );
+    nbFreeLinks -= thePolygon._polyLinks.size();
+
+    ipTmp._faceIDs.resize(1);
+    ipTmp._faceIDs[0] = curFace;
+
+    // fill freeLinks with links not shared by coplanarPolyg and polygon
+    for ( size_t iL = 0; iL < thePolygon._links.size(); ++iL ) {
+      if ( thePolygon._links[ iL ]._link->_faces[1] &&
+           thePolygon._links[ iL ]._link->_faces[0] != coplanarPolyg ) {
+        _Face* p = thePolygon._links[ iL ]._link->_faces[0];
+        for ( size_t iL2 = 0; iL2 < p->_links.size(); ++iL2 ) {
+          if ( p->_links[ iL2 ]._link == thePolygon._links[ iL ]._link ) {
+            freeLinks.push_back( & p->_links[ iL2 ] );
+            ++nbFreeLinks;
+            freeLinks.back()->RemoveFace( &thePolygon );
+            break;
+          }
+        }
+      }
+    }
+    for ( size_t iL = 0; iL < coplanarPolyg->_links.size(); ++iL ) {
+      if ( coplanarPolyg->_links[ iL ]._link->_faces[1] &&
+           coplanarPolyg->_links[ iL ]._link->_faces[1] != &thePolygon ) {
+        _Face* p = coplanarPolyg->_links[ iL ]._link->_faces[0];
+        if ( p == coplanarPolyg )
+          p = coplanarPolyg->_links[ iL ]._link->_faces[1];
+        for ( size_t iL2 = 0; iL2 < p->_links.size(); ++iL2 ) {
+          if ( p->_links[ iL2 ]._link == coplanarPolyg->_links[ iL ]._link ) {
+            // set links of coplanarPolyg in place of used freeLinks
+            // to re-create coplanarPolyg next
+            size_t iL3 = 0;
+            for ( ; iL3 < freeLinks.size() && freeLinks[ iL3 ]; ++iL3 );
+            if ( iL3 < freeLinks.size() )
+              freeLinks[ iL3 ] = ( & p->_links[ iL2 ] );
+            else
+              freeLinks.push_back( & p->_links[ iL2 ] );
+            ++nbFreeLinks;
+            freeLinks[ iL3 ]->RemoveFace( coplanarPolyg );
+            //  mark nodes of coplanarPolyg as lying on curFace
+            for ( int iN = 0; iN < 2; ++iN ) {
+              _Node* n = freeLinks[ iL3 ]->_link->_nodes[ iN ];
+              bool added = false;
+              if ( n->_intPoint ) added = n->_intPoint->Add( ipTmp._faceIDs );
+              else                        n->_intPoint = &ipTmp;
+              if ( added )
+                tmpAddedFace[ ipTmp._faceIDs[0] ].push_back( n->_intPoint );
+            }
+            break;
+          }
+        }
+      }
+    }
+    // set coplanarPolyg to be re-created next
+    for ( size_t iP = 0; iP < _polygons.size(); ++iP ) {
+      if ( coplanarPolyg == & _polygons[ iP ] ) {
+        iPolygon = iP;
+        _polygons[ iPolygon ]._links.clear();
+        _polygons[ iPolygon ]._polyLinks.clear();
+        break;
+      }
+    }
+    _polygons.pop_back();
+    usedFaceIDs.erase( curFace );
+  } // if ( coplanarPolyg )
+  else {
+    iPolygon = _polygons.size();
+  }
+  return iPolygon;
+}
+
+//================================================================================
+/*!
   * \brief Compute mesh volumes resulted from intersection of the Hexahedron
   */
 bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
@@ -1321,112 +1428,13 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
         polygon._links[ iL ].AddFace( &polygon );
         polygon._links[ iL ].Reverse();
       }
-      if ( /*hasEdgeIntersections &&*/ iPolygon == _polygons.size() - 1 )
-      {
-        // check that a polygon does not lie on a hexa side
-        _Face* coplanarPolyg = 0;
-        for ( size_t iL = 0; iL < polygon._links.size() && !coplanarPolyg; ++iL )
-        {
-          if ( polygon._links[ iL ].NbFaces() < 2 )
-            continue; // it's a just added free link
-          // look for a polygon made on a hexa side and sharing
-          // two or more haxa links
-          size_t iL2;
-          coplanarPolyg = polygon._links[ iL ]._link->_faces[0];
-          for ( iL2 = iL + 1; iL2 < polygon._links.size(); ++iL2 )
-          {
-            if ( polygon._links[ iL2 ]._link->_faces[0] == coplanarPolyg &&
-                  !coplanarPolyg->IsPolyLink( polygon._links[ iL  ]) &&
-                  !coplanarPolyg->IsPolyLink( polygon._links[ iL2 ]) &&
-                  coplanarPolyg < & _polygons[ nbQuadPolygons ])
-              break;
-          }
-          if ( iL2 == polygon._links.size() )
-            coplanarPolyg = 0;
-        }
-        if ( coplanarPolyg ) // coplanar polygon found
-        {
-          freeLinks.resize( freeLinks.size() - polygon._polyLinks.size() );
-          nbFreeLinks -= polygon._polyLinks.size();
-
-          ipTmp._faceIDs.resize(1);
-          ipTmp._faceIDs[0] = curFace;
-
-          // fill freeLinks with links not shared by coplanarPolyg and polygon
-          for ( size_t iL = 0; iL < polygon._links.size(); ++iL )
-          {
-            if ( polygon._links[ iL ]._link->_faces[1] &&
-                  polygon._links[ iL ]._link->_faces[0] != coplanarPolyg )
-            {
-              _Face* p = polygon._links[ iL ]._link->_faces[0];
-              for ( size_t iL2 = 0; iL2 < p->_links.size(); ++iL2 )
-              {
-                if ( p->_links[ iL2 ]._link == polygon._links[ iL ]._link )
-                {
-                  freeLinks.push_back( & p->_links[ iL2 ] );
-                  ++nbFreeLinks;
-                  freeLinks.back()->RemoveFace( &polygon );
-                  break;
-                }
-              }
-            }
-          }
-          for ( size_t iL = 0; iL < coplanarPolyg->_links.size(); ++iL )
-          {
-            if ( coplanarPolyg->_links[ iL ]._link->_faces[1] &&
-                  coplanarPolyg->_links[ iL ]._link->_faces[1] != &polygon )
-            {
-              _Face* p = coplanarPolyg->_links[ iL ]._link->_faces[0];
-              if ( p == coplanarPolyg )
-                p = coplanarPolyg->_links[ iL ]._link->_faces[1];
-              for ( size_t iL2 = 0; iL2 < p->_links.size(); ++iL2 )
-              {
-                if ( p->_links[ iL2 ]._link == coplanarPolyg->_links[ iL ]._link )
-                {
-                  // set links of coplanarPolyg in place of used freeLinks
-                  // to re-create coplanarPolyg next
-                  size_t iL3 = 0;
-                  for ( ; iL3 < freeLinks.size() && freeLinks[ iL3 ]; ++iL3 );
-                  if ( iL3 < freeLinks.size() )
-                    freeLinks[ iL3 ] = ( & p->_links[ iL2 ] );
-                  else
-                    freeLinks.push_back( & p->_links[ iL2 ] );
-                  ++nbFreeLinks;
-                  freeLinks[ iL3 ]->RemoveFace( coplanarPolyg );
-                  //  mark nodes of coplanarPolyg as lying on curFace
-                  for ( int iN = 0; iN < 2; ++iN )
-                  {
-                    _Node* n = freeLinks[ iL3 ]->_link->_nodes[ iN ];
-                    bool added = false;
-                    if ( n->_intPoint ) added = n->_intPoint->Add( ipTmp._faceIDs );
-                    else                        n->_intPoint = &ipTmp;
-                    if ( added )
-                      tmpAddedFace[ ipTmp._faceIDs[0] ].push_back( n->_intPoint );
-                  }
-                  break;
-                }
-              }
-            }
-          }
-          // set coplanarPolyg to be re-created next
-          for ( size_t iP = 0; iP < _polygons.size(); ++iP )
-          {
-            if ( coplanarPolyg == & _polygons[ iP ] )
-            {
-              iPolygon = iP;
-              _polygons[ iPolygon ]._links.clear();
-              _polygons[ iPolygon ]._polyLinks.clear();
-              break;
-            }
-          }
-          _polygons.pop_back();
-          usedFaceIDs.erase( curFace );
-          continue;
-        } // if ( coplanarPolyg )
-      } // if ( hasEdgeIntersections ) - search for coplanarPolyg
-
-      iPolygon = _polygons.size();
-
+      if ( /*hasEdgeIntersections &&*/ iPolygon == _polygons.size() - 1 ) {
+        iPolygon = findCoplanarPolygon(polygon, nbQuadPolygons, freeLinks, nbFreeLinks,
+                                       ipTmp, usedFaceIDs, tmpAddedFace, curFace);
+      }
+      else {
+        iPolygon = _polygons.size();
+      }
     } // end of case ( polygon._links.size() > 2 )
   } // while ( nbFreeLinks > 0 )
 
@@ -1531,12 +1539,14 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
   return !_volumeDefs._nodes.empty();
 }
 
+#ifdef WITH_TBB
 template<typename Type>
 void computeHexa(Type& hex)
 {
-  if ( hex ) 
+  if ( hex )
     hex->computeElements();
 }
+#endif
 
 //================================================================================
 /*!
@@ -3684,9 +3694,11 @@ void Hexahedron::getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryE
       if ( nbLinks != 4 ) continue;
       polygon.myNodes.resize( nbLinks );
       polygon.myNodes.back() = 0;
-      for ( size_t iL = 0, iN = nbLinks - 1; iL < nbLinks; ++iL, --iN )
-        if ( ! ( polygon.myNodes[iN] = _polygons[ iF ]._links[ iL ].FirstNode()->Node() ))
+      for ( size_t iL = 0, iN = nbLinks - 1; iL < nbLinks; ++iL, --iN ) {
+        polygon.myNodes[iN] = _polygons[ iF ]._links[ iL ].FirstNode()->Node();
+        if ( ! polygon.myNodes[iN] )
           break;
+      }
       if ( !polygon.myNodes.back() )
         continue;
 

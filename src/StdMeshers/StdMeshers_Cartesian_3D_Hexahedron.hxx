@@ -455,6 +455,15 @@ namespace Cartesian3D
     typedef std::pair< StdMeshers::Cartesian3D::TGeomID, int > TFaceOfLink; // (face, link)
     static TFaceOfLink findStartLink(const std::vector< _OrientedLink* >& freeLinks,
                                      std::set< StdMeshers::Cartesian3D::TGeomID >& usedFaceIDs);
+    size_t findCoplanarPolygon
+           (const _Face& thePolygon,
+            const size_t nbQuadPolygons,
+            std::vector< _OrientedLink* >& freeLinks,
+            int& nbFreeLinks,
+            const E_IntersectPoint ipTmp,
+            std::set< StdMeshers::Cartesian3D::TGeomID >& usedFaceIDs,
+            std::map< StdMeshers::Cartesian3D::TGeomID, std::vector< const B_IntersectPoint* > >& tmpAddedFace,
+            const StdMeshers::Cartesian3D::TGeomID& curFace);
     int  addVolumes( SMESH_MesherHelper& helper );
     void addFaces( SMESH_MesherHelper& helper,
                    const std::vector< const SMDS_MeshElement* > & boundaryVolumes );
