@@ -24,7 +24,7 @@
 #ifndef _SMESH_Cartesian_3D_HEXAHEDRON_HXX_
 #define _SMESH_Cartesian_3D_HEXAHEDRON_HXX_
 
-// BOOST 
+// BOOST
 #include <boost/container/flat_map.hpp>
 
 // STD
@@ -107,7 +107,7 @@ namespace Cartesian3D
       char                    _isInternalFlags;
 
       _Node(const SMDS_MeshNode* n=0, const StdMeshers::Cartesian3D::B_IntersectPoint* ip=0)
-        :_node(n), _intPoint(ip), _usedInFace(0), _isInternalFlags(0) {} 
+        :_node(n), _boundaryCornerNode(0), _intPoint(ip), _usedInFace(0), _isInternalFlags(0) {}
       const SMDS_MeshNode*    Node() const
       { return ( _intPoint && _intPoint->_node ) ? _intPoint->_node : _node; }
       const SMDS_MeshNode*    BoundaryNode() const
@@ -166,7 +166,7 @@ namespace Cartesian3D
       std::vector< const StdMeshers::Cartesian3D::F_IntersectPoint* > _fIntPoints; // GridLine intersections with FACEs
       std::vector< _Node* > _fIntNodes;   // _Node's at _fIntPoints
       std::vector< _Link >  _splits;
-      _Link(): _faces{ 0, 0 } {}
+      _Link(): _nodes{ 0, 0 }, _faces{ 0, 0 } {}
     };
 
     // --------------------------------------------------------------------------------
@@ -337,7 +337,7 @@ namespace Cartesian3D
       StdMeshers::Cartesian3D::TGeomID     _solidID;
       double                               _size;
       const SMDS_MeshElement*              _volume; // new volume
-      std::vector<const SMDS_MeshElement*> _brotherVolume; // produced due to poly split 
+      std::vector<const SMDS_MeshElement*> _brotherVolume; // produced due to poly split
       std::vector< SMESH_Block::TShapeID > _names; // name of side a polygon originates from
 
       _volumeDef(): _next(0), _solidID(0), _size(0), _volume(0) {}
@@ -460,7 +460,7 @@ namespace Cartesian3D
             const size_t nbQuadPolygons,
             std::vector< _OrientedLink* >& freeLinks,
             int& nbFreeLinks,
-            const E_IntersectPoint ipTmp,
+            const E_IntersectPoint& ipTmp,
             std::set< StdMeshers::Cartesian3D::TGeomID >& usedFaceIDs,
             std::map< StdMeshers::Cartesian3D::TGeomID, std::vector< const B_IntersectPoint* > >& tmpAddedFace,
             const StdMeshers::Cartesian3D::TGeomID& curFace);
@@ -485,7 +485,7 @@ namespace Cartesian3D
     bool isInHole() const;
     bool hasStrangeEdge() const;
     bool checkPolyhedronSize( bool isCutByInternalFace, double & volSize ) const;
-    int checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::vector<int>>& splitQuantities, 
+    int checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::vector<int>>& splitQuantities,
                                  std::vector<std::vector<const SMDS_MeshNode*>>& splitNodes );
     const SMDS_MeshElement* addPolyhedronToMesh( _volumeDef* volDef,
                                                  SMESH_MesherHelper& helper,

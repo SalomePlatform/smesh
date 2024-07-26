@@ -277,7 +277,7 @@ Hexahedron::Hexahedron(Grid* grid)
 {
   _polygons.reserve(100); // to avoid reallocation;
 
-  //set nodes shift within grid->_nodes from the node 000 
+  //set nodes shift within grid->_nodes from the node 000
   size_t dx = _grid->NodeIndexDX();
   size_t dy = _grid->NodeIndexDY();
   size_t dz = _grid->NodeIndexDZ();
@@ -365,7 +365,7 @@ Hexahedron::Hexahedron( const Hexahedron& other, size_t i, size_t j, size_t k, i
       tgtLink._link    = _hexLinks + ( srcLink._link - other._hexLinks );
     }
   }
-  
+
   if (SALOME::VerbosityActivated())
     _cellID = cellID;
 }
@@ -572,13 +572,13 @@ void Hexahedron::init( size_t i, size_t j, size_t k, const Solid* solid )
   {
     _hexNodes[iN]._isInternalFlags = 0;
 
-    // Grid  node 
+    // Grid  node
     _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _grid->_nodeShift[iN] ];
     _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _grid->_nodeShift[iN] ];
 
-    if ( _grid->_allBorderNodes[ _origNodeInd + _grid->_nodeShift[iN] ] ) 
+    if ( _grid->_allBorderNodes[ _origNodeInd + _grid->_nodeShift[iN] ] )
       _hexNodes[iN]._boundaryCornerNode = _grid->_allBorderNodes [ _origNodeInd + _grid->_nodeShift[iN] ];
-    
+
     if ( _hexNodes[iN]._node && !solid->Contains( _hexNodes[iN]._node->GetShapeID() ))
       _hexNodes[iN]._node = 0;
 
@@ -1100,7 +1100,7 @@ size_t Hexahedron::findCoplanarPolygon
         const size_t nbQuadPolygons,
         std::vector< _OrientedLink* >& freeLinks,
         int& nbFreeLinks,
-        const E_IntersectPoint ipTmp,
+        const E_IntersectPoint& ipTmp,
         std::set< StdMeshers::Cartesian3D::TGeomID >& usedFaceIDs,
         std::map< StdMeshers::Cartesian3D::TGeomID, std::vector< const B_IntersectPoint* > >& tmpAddedFace,
         const StdMeshers::Cartesian3D::TGeomID& curFace)
@@ -1472,7 +1472,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
     gp_XYZ uvwCenter = 0.5 * ( _grid->_coords[0][_i] + _grid->_coords[0][_i+1] ) * _grid->_axes[0] +
                        0.5 * ( _grid->_coords[1][_j] + _grid->_coords[1][_j+1] ) * _grid->_axes[1] +
                        0.5 * ( _grid->_coords[2][_k] + _grid->_coords[2][_k+1] ) * _grid->_axes[2];
-                       
+
     for ( size_t i = _polygons.size() - 1; _polygons[i]._name == SMESH_Block::ID_NONE; --i )
     {
       _Face& face = _polygons[ i ];
@@ -1485,7 +1485,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
         {
           gp_XYZ p = SMESH_NodeXYZ( n->Node() );
           _grid->ComputeUVW( p, uvw.ChangeCoord().ChangeData() );
-          bb.Add( uvw );  
+          bb.Add( uvw );
         }
       }
       gp_Pnt pMin = bb.CornerMin();
@@ -1498,7 +1498,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
     }
   }
 
-  /* This call is irrelevant here because _volumeDefs datas were not filled! 
+  /* This call is irrelevant here because _volumeDefs datas were not filled!
   or .... it is potentialy filled by other thread?? */
   _volumeDefs._nodes.clear();
   _volumeDefs._quantities.clear();
@@ -1553,8 +1553,8 @@ void computeHexa(Type& hex)
   * \brief Create elements in the mesh
   */
 int Hexahedron::MakeElements(SMESH_MesherHelper&                      helper,
-                              const map< TGeomID, vector< TGeomID > >& edge2faceIDsMap, 
-                                const int numOfThreads )
+                             const map< TGeomID, vector< TGeomID > >& edge2faceIDsMap,
+                             const int numOfThreads )
 {
   SMESHDS_Mesh* mesh = helper.GetMeshDS();
 
@@ -1604,7 +1604,7 @@ int Hexahedron::MakeElements(SMESH_MesherHelper&                      helper,
   TGeomID solidIDs[20];
   vector< Hexahedron* > intHexa; intHexa.reserve( nbIntHex );
   vector< const SMDS_MeshElement* > boundaryVolumes; boundaryVolumes.reserve( nbIntHex * 1.1 );
-  
+
   for ( size_t i = 0; i < allHexa.size(); ++i )
   {
     // initialize this by not cut allHexa[ i ]
@@ -1660,10 +1660,10 @@ int Hexahedron::MakeElements(SMESH_MesherHelper&                      helper,
       intHexa.push_back( hex );
     }
   }
-  
+
   // compute definitions of volumes resulted from hexadron intersection
 #ifdef WITH_TBB
-  parallel_for(intHexa.begin(), intHexa.end(), computeHexa<Hexahedron*>, numOfThreads ); 
+  parallel_for(intHexa.begin(), intHexa.end(), computeHexa<Hexahedron*>, numOfThreads );
 #else
   for ( size_t i = 0; i < intHexa.size(); ++i )
     if ( Hexahedron * hex = intHexa[ i ] )
@@ -1686,7 +1686,7 @@ int Hexahedron::MakeElements(SMESH_MesherHelper&                      helper,
   for ( size_t i = 0; i < intHexa.size(); ++i )
     if ( Hexahedron * hex = intHexa[ i ] )
       nbAdded += hex->addVolumes( helper );
-  
+
   // fill boundaryVolumes with volumes neighboring too small skipped volumes
   if ( _grid->_toCreateFaces )
   {
@@ -2586,7 +2586,7 @@ bool Hexahedron::isOutPoint( _Link& link, int iP,
     GeomAPI_ProjectPointOnSurf& proj = helper.GetProjector( face, loc, 0.1*_grid->_tol );
     gp_Pnt testPnt = pOnLink.Transformed( loc.Transformation().Inverted() );
     proj.Perform( testPnt );
-    if ( proj.IsDone() && proj.NbPoints() > 0 )       
+    if ( proj.IsDone() && proj.NbPoints() > 0 )
     {
       Standard_Real u,v;
       proj.LowerDistanceParameters( u,v );
@@ -2807,9 +2807,9 @@ int Hexahedron::addVolumes( SMESH_MesherHelper& helper )
       }
     } // loop to get nodes
 
-    const SMDS_MeshElement* v = 0;      
+    const SMDS_MeshElement* v = 0;
     if ( !volDef->_quantities.empty() )
-    {                      
+    {
       if ( !useQuanta )
       {
         // split polyhedrons of with disjoint volumes
@@ -2834,13 +2834,12 @@ int Hexahedron::addVolumes( SMESH_MesherHelper& helper )
       {
         const double quanta = _grid->_quanta;
         double polyVol      = volDef->_size;
-        double hexaVolume   = _sideLength[0] * _sideLength[1] * _sideLength[2];          
+        double hexaVolume   = _sideLength[0] * _sideLength[1] * _sideLength[2];
         if ( hexaVolume > 0.0 && polyVol/hexaVolume >= quanta /*set the volume if the relation is satisfied*/)
           v = helper.AddVolume( _hexNodes[0].BoundaryNode(), _hexNodes[2].BoundaryNode(),
                                 _hexNodes[3].BoundaryNode(), _hexNodes[1].BoundaryNode(),
                                 _hexNodes[4].BoundaryNode(), _hexNodes[6].BoundaryNode(),
                                 _hexNodes[7].BoundaryNode(), _hexNodes[5].BoundaryNode() );
-        
       }
     }
     else
@@ -3062,9 +3061,9 @@ bool Hexahedron::checkPolyhedronSize( bool cutByInternalFace, double & volume) c
   *        In case more than one polyhedron is detected. The function return the set of quantities and nodes defining separates elements.
   *        Reference to issue #bos[38521][EDF] Generate polyhedron with separate volume.
   */
-int Hexahedron::checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::vector<int>>& splitQuantities, 
+int Hexahedron::checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::vector<int>>& splitQuantities,
                                           std::vector<std::vector<const SMDS_MeshNode*>>& splitNodes )
-{  
+{
   int mySet = 1;
   std::map<int,int> numberOfSets; // define set id with the number of faces associated!
   if ( !volDef->_quantities.empty() )
@@ -3084,7 +3083,7 @@ int Hexahedron::checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::ve
       elementSet.insert( volDef->_nodes[ n ].Node()->GetID() );
       splitNodes.back().push_back( volDef->_nodes[ n ].Node() );
     }
-    
+
     numberOfSets.insert( std::pair<int,int>(mySet,1) );
     while ( connectedFaces != allFaces.size() )
     {
@@ -3099,7 +3098,7 @@ int Hexahedron::checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::ve
           for (int n = 0; n < connectivity[ innerId ]; n++)
           {
             int nodeId = volDef->_nodes[ accum + n ].Node()->GetID();
-            if ( elementSet.count( nodeId ) != 0 ) 
+            if ( elementSet.count( nodeId ) != 0 )
               faceCounter++;
           }
           if ( faceCounter >= 2 ) // found coincidences nodes
@@ -3158,17 +3157,17 @@ int Hexahedron::checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::ve
         if ( k.second <= 2 )
           allMoreThan2Faces &= false;
       }
-      
+
       if ( allMoreThan2Faces )
-      {        
+      {
         // The separate objects are suspect to be closed
-        return numberOfSets.size();        
+        return numberOfSets.size();
       }
       else
       {
         // Have to index the last face nodes to the final set
         // contrary case return as it were a valid polyhedron for backward compatibility
-        return 1;  
+        return 1;
       }
     }
   }
@@ -3180,7 +3179,7 @@ int Hexahedron::checkPolyhedronValidity( _volumeDef* volDef, std::vector<std::ve
 /*!
   * \brief add original or separated polyhedrons to the mesh
   */
-const SMDS_MeshElement* Hexahedron::addPolyhedronToMesh( _volumeDef* volDef,  SMESH_MesherHelper& helper, const std::vector<const SMDS_MeshNode*>& nodes, 
+const SMDS_MeshElement* Hexahedron::addPolyhedronToMesh( _volumeDef* volDef,  SMESH_MesherHelper& helper, const std::vector<const SMDS_MeshNode*>& nodes,
                                                           const std::vector<int>& quantities )
 {
   const SMDS_MeshElement* v = helper.AddPolyhedralVolume( nodes, quantities );
@@ -3471,10 +3470,10 @@ void Hexahedron::addFaces( SMESH_MesherHelper&                       helper,
   SMESH_MeshEditor::ElemFeatures face( SMDSAbs_Face );
   SMESHDS_Mesh* meshDS = helper.GetMeshDS();
 
-  bool isQuantaSet =  _grid->_toUseQuanta;    
+  bool isQuantaSet =  _grid->_toUseQuanta;
   // check if there are internal or shared FACEs
   bool hasInternal = ( !_grid->_geometry.IsOneSolid() ||
-                        _grid->_geometry._soleSolid.HasInternalFaces() );   
+                        _grid->_geometry._soleSolid.HasInternalFaces() );
 
   for ( size_t iV = 0; iV < boundaryVolumes.size(); ++iV )
   {
@@ -3727,7 +3726,7 @@ void Hexahedron::getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryE
         if ( _grid->IsInternal( faceID ) ||
               _grid->IsShared( faceID ) //||
               //_grid->IsBoundaryFace( faceID ) -- commented for #19887
-              ) 
+              )
           break; // create only if a new face will be used by other 3D algo
       }
 
@@ -3761,7 +3760,7 @@ void Hexahedron::getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryE
       {
         _bro->setIsMarked( true );
         boundaryElems.push_back( _bro );
-      }        
+      }
     }
   }
 }
@@ -3778,7 +3777,7 @@ void Hexahedron::removeExcessSideDivision(const vector< Hexahedron* >& allHexa)
 {
   if ( ! _volumeDefs.IsPolyhedron() )
     return; // not a polyhedron
-    
+
   // look for a divided side adjacent to a small hexahedron
 
   int di[6] = { 0, 0, 0, 0,-1, 1 };

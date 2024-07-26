@@ -19,7 +19,7 @@
 //  File   : HexahedronTest.cxx
 //  Module : SMESH
 //  Purpose: Implement unit tests for StdMeshers_Cartesian_3D_Hexahedron class to reproduce bugs that manifest in integration tests.
-//            The main difference between this unit test and integration tests is the fine grained control we have over the class methods and the hability to diagnose/solve bugs before the code goes into production enviroment. 
+//            The main difference between this unit test and integration tests is the fine grained control we have over the class methods and the hability to diagnose/solve bugs before the code goes into production enviroment.
 //            This test class can be used as reference for the development of future tests in other stdMesh algorithms
 
 #include "StdMeshers_Cartesian_3D_Hexahedron.hxx"
@@ -28,7 +28,7 @@
 // CPP TEST
 #include <cppunit/TestAssert.h>
 
-// OCC 
+// OCC
 #include <BRep_Builder.hxx>
 #include <BRepTools.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
@@ -62,10 +62,10 @@ struct SMESH_Mesh_Test: public SMESH_Mesh
   */
 struct CartesianHypo: public StdMeshers_CartesianParameters3D
 {
-  CartesianHypo() : StdMeshers_CartesianParameters3D(0/*zero hypoId*/, nullptr/*NULL generator*/) 
+  CartesianHypo() : StdMeshers_CartesianParameters3D(0/*zero hypoId*/, nullptr/*NULL generator*/)
   {
   }
-}; 
+};
 
 /*!
   * \brief Shape loader
@@ -73,7 +73,7 @@ struct CartesianHypo: public StdMeshers_CartesianParameters3D
 void loadBrepShape( std::string shapeName, TopoDS_Shape & shape )
 {
   BRep_Builder b;
-  BRepTools::Read(shape, shapeName.c_str(), b);  
+  BRepTools::Read(shape, shapeName.c_str(), b);
 }
 
 /*!
@@ -82,7 +82,7 @@ void loadBrepShape( std::string shapeName, TopoDS_Shape & shape )
 void GridInitAndIntersectWithShape (Grid& grid,
                                     double gridSpacing,
                                     double theSizeThreshold,
-                                    const TopoDS_Shape theShape, 
+                                    const TopoDS_Shape theShape,
                                     TEdge2faceIDsMap& edge2faceIDsMap,
                                     const int theNumOfThreads)
 {
@@ -91,7 +91,7 @@ void GridInitAndIntersectWithShape (Grid& grid,
   std::vector<std::string> grdSpace = { std::to_string(gridSpacing) };
   std::vector<double> intPnts;
 
-  std::unique_ptr<CartesianHypo> aHypo ( new CartesianHypo() );  
+  std::unique_ptr<CartesianHypo> aHypo ( new CartesianHypo() );
   aHypo->SetAxisDirs(axisDirs);
   aHypo->SetGridSpacing(grdSpace, intPnts, 0 ); // Spacing in dir 0
   aHypo->SetGridSpacing(grdSpace, intPnts, 1 ); // Spacing in dir 1
@@ -108,7 +108,7 @@ bool testNRTM1()
 {
   TopoDS_Shape aShape;
   loadBrepShape( "data/HexahedronTest/NRTM1.brep", aShape );
-  CPPUNIT_ASSERT_MESSAGE( "Could not load the brep shape!", !aShape.IsNull() );      
+  CPPUNIT_ASSERT_MESSAGE( "Could not load the brep shape!", !aShape.IsNull() );
 
   const auto numOfCores = std::thread::hardware_concurrency() == 0 ? 1 : std::thread::hardware_concurrency();
   std::vector<int> numberOfThreads(numOfCores);
@@ -130,15 +130,18 @@ bool testNRTM1()
       grid._toUseThresholdForInternalFaces = false;
       grid._toUseQuanta = false;
       grid._sizeThreshold = 4.0;
-      
+
       TEdge2faceIDsMap edge2faceIDsMap;
       GridInitAndIntersectWithShape( grid, 1.0, 4.0, aShape, edge2faceIDsMap, nThreads );
+
+      SMESH_subMesh * aSubMesh = aMesh->GetSubMesh(aShape);
+      aSubMesh->DependsOn(); // init sub-meshes
 
       Hexahedron hex( &grid );
       int nbAdded = hex.MakeElements( helper, edge2faceIDsMap, nThreads );
       CPPUNIT_ASSERT_MESSAGE( "Number of computed elements does not match", nbAdded == 1024 );
     }
-  }  
+  }
   return true;
 }
 
@@ -149,7 +152,7 @@ bool testNRTJ4()
 {
   TopoDS_Shape aShape;
   loadBrepShape( "data/HexahedronTest/NRTMJ4.brep", aShape );
-  CPPUNIT_ASSERT_MESSAGE( "Could not load the brep shape!", !aShape.IsNull() );      
+  CPPUNIT_ASSERT_MESSAGE( "Could not load the brep shape!", !aShape.IsNull() );
 
   const auto numOfCores = std::thread::hardware_concurrency() == 0 ? 1 : std::thread::hardware_concurrency()/2;
   std::vector<int> numberOfThreads(numOfCores);
@@ -173,14 +176,19 @@ bool testNRTJ4()
       double testThreshold = 1.000001;
       grid._toCreateFaces = true;
       grid._sizeThreshold = testThreshold;
-      
+
       TEdge2faceIDsMap edge2faceIDsMap;
-      GridInitAndIntersectWithShape( grid, 2.0, testThreshold, aShape, edge2faceIDsMap, nThreads );
+      GridInitAndIntersectWithShape( grid, 2.0, testThreshold,
+                                     aShape, edge2faceIDsMap, nThreads );
+
+      SMESH_subMesh * aSubMesh = aMesh->GetSubMesh(aShape);
+      aSubMesh->DependsOn(); // init sub-meshes
+
       Hexahedron hex( &grid );
       int nbAdded = hex.MakeElements( helper, edge2faceIDsMap, nThreads );
       CPPUNIT_ASSERT_MESSAGE( "Number of computed elements does not match", nbAdded == 35150 );
     }
-  }  
+  }
   return true;
 }
 

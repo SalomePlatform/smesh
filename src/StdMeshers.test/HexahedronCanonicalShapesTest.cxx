@@ -19,7 +19,7 @@
 //  File   : HexahedronCanonicalShapesTest.cxx
 //  Module : SMESH
 //  Purpose: Implement unit tests for StdMeshers_Cartesian_3D_Hexahedron class to reproduce bugs that manifest in integration tests.
-//            The main difference between this unit test and integration tests is the fine grained control we have over the class methods and the hability to diagnose/solve bugs before the code goes into production enviroment. 
+//            The main difference between this unit test and integration tests is the fine grained control we have over the class methods and the hability to diagnose/solve bugs before the code goes into production enviroment.
 //            This test class can be used as reference for the development of future tests in other stdMesh algorithms
 
 #include "StdMeshers_Cartesian_3D_Hexahedron.hxx"
@@ -28,7 +28,7 @@
 // CPP TEST
 #include <cppunit/TestAssert.h>
 
-// OCC 
+// OCC
 #include <BRep_Builder.hxx>
 #include <BRepTools.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
@@ -62,10 +62,10 @@ struct SMESH_Mesh_Test: public SMESH_Mesh
   */
 struct CartesianHypo: public StdMeshers_CartesianParameters3D
 {
-  CartesianHypo() : StdMeshers_CartesianParameters3D(0/*zero hypoId*/, nullptr/*NULL generator*/) 
+  CartesianHypo() : StdMeshers_CartesianParameters3D(0/*zero hypoId*/, nullptr/*NULL generator*/)
   {
   }
-}; 
+};
 
 /*!
   * \brief Initialize the grid and intesersectors of grid with the geometry
@@ -73,7 +73,7 @@ struct CartesianHypo: public StdMeshers_CartesianParameters3D
 void GridInitAndIntersectWithShape (Grid& grid,
                                     double gridSpacing,
                                     double theSizeThreshold,
-                                    const TopoDS_Shape theShape, 
+                                    const TopoDS_Shape theShape,
                                     TEdge2faceIDsMap& edge2faceIDsMap,
                                     const int theNumOfThreads)
 {
@@ -82,7 +82,7 @@ void GridInitAndIntersectWithShape (Grid& grid,
   std::vector<std::string> grdSpace = { std::to_string(gridSpacing) };
   std::vector<double> intPnts;
 
-  std::unique_ptr<CartesianHypo> aHypo ( new CartesianHypo() );  
+  std::unique_ptr<CartesianHypo> aHypo ( new CartesianHypo() );
   aHypo->SetGridSpacing(grdSpace, intPnts, 0 ); // Spacing in dir 0
   aHypo->SetGridSpacing(grdSpace, intPnts, 1 ); // Spacing in dir 1
   aHypo->SetGridSpacing(grdSpace, intPnts, 2 ); // Spacing in dir 2
@@ -119,6 +119,9 @@ bool testShape (const TopoDS_Shape theShape,
   GridInitAndIntersectWithShape( grid, theGridSpacing, theSizeThreshold,
                                  theShape, edge2faceIDsMap, 1 );
 
+  SMESH_subMesh * aSubMesh = aMesh->GetSubMesh(theShape);
+  aSubMesh->DependsOn(); // init sub-meshes
+
   Hexahedron hex( &grid );
   int nbAdded = hex.MakeElements( helper, edge2faceIDsMap, 1 );
   if (nbAdded != theNbCreatedExpected) {
@@ -144,7 +147,7 @@ bool testPrimitives()
   // Test fitting of a box
   BRepPrimAPI_MakeBox aMakeBox (10, 20, 30);
   aMakeBox.Build();
-  CPPUNIT_ASSERT_MESSAGE( "Could not create the box!", aMakeBox.IsDone() );      
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the box!", aMakeBox.IsDone() );
   TopoDS_Shape aShape = aMakeBox.Shape();
 
   // Test exact fitting of a box
@@ -155,10 +158,9 @@ bool testPrimitives()
                   /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/6))
     isOK = false;
 
-  // TODO: debug this case
-  //if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/true,
-  //                /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/8))
-  //  isOK = false;
+  if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/true,
+                  /*gridSpacing*/10, /*theSizeThreshold*/4, /*theNbCreatedExpected*/6))
+    isOK = false;
 
   if (!testShape (aShape, /*toAddEdges*/false, /*toCreateFaces*/false,
                   /*gridSpacing*/5, /*theSizeThreshold*/4, /*theNbCreatedExpected*/48))
@@ -173,7 +175,7 @@ bool testPrimitives()
   gp_Ax2 anAxes (gp::Origin(), gp::DZ());
   BRepPrimAPI_MakeCylinder aMakeCyl (anAxes, 20., 30.);
   aMakeCyl.Build();
-  CPPUNIT_ASSERT_MESSAGE( "Could not create the cylinder!", aMakeCyl.IsDone() );      
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the cylinder!", aMakeCyl.IsDone() );
   aShape = aMakeCyl.Shape();
 
   // test for different threshold values
@@ -187,7 +189,7 @@ bool testPrimitives()
   // Test fitting of a sphere
   BRepPrimAPI_MakeSphere aMakeSph (anAxes, 30.);
   aMakeSph.Build();
-  CPPUNIT_ASSERT_MESSAGE( "Could not create the sphere!", aMakeSph.IsDone() );      
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the sphere!", aMakeSph.IsDone() );
   aShape = aMakeSph.Shape();
 
   // test for different threshold values
@@ -201,7 +203,7 @@ bool testPrimitives()
   // Test fitting of a cone
   BRepPrimAPI_MakeCone aMakeCon (anAxes, 30., 0., 40.);
   aMakeCon.Build();
-  CPPUNIT_ASSERT_MESSAGE( "Could not create the cone!", aMakeCon.IsDone() );      
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the cone!", aMakeCon.IsDone() );
   aShape = aMakeCon.Shape();
 
   // test for different threshold values
@@ -218,7 +220,7 @@ bool testPrimitives()
   // truncated cone
   aMakeCon = BRepPrimAPI_MakeCone(anAxes, 30., 15., 20.);
   aMakeCon.Build();
-  CPPUNIT_ASSERT_MESSAGE( "Could not create the cone!", aMakeCon.IsDone() );      
+  CPPUNIT_ASSERT_MESSAGE( "Could not create the cone!", aMakeCon.IsDone() );
   aShape = aMakeCon.Shape();
 
   // test for different threshold values
