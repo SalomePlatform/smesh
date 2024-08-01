@@ -365,7 +365,9 @@ QString SMESH_Meshio::GetConvertOptArgs() const
     return "-o ansys";
   else if (mySelectedFilter.startsWith("Gmsh 2"))
     return "-o gmsh22";
-  else if (mySelectedFilter.startsWith("Gmsh 4"))
+  else if (mySelectedFilter.startsWith("Gmsh 4.0"))
+    return "-o gmsh40";
+  else if (mySelectedFilter.startsWith("Gmsh 4.1"))
     return "-o gmsh";
 
   return {};
