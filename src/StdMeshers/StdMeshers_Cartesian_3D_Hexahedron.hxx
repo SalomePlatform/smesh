@@ -156,17 +156,22 @@ namespace Cartesian3D
       }
 
       void Add( const StdMeshers::Cartesian3D::E_IntersectPoint* ip );
+      void clear();
     };
 
     // --------------------------------------------------------------------------------
     struct _Link // link connecting two _Node's
     {
-      _Node* _nodes[2];
-      _Face* _faces[2]; // polygons sharing a link
+      static const std::size_t nodesNum = 2;
+
+      _Node* _nodes[nodesNum];
+      _Face* _faces[nodesNum]; // polygons sharing a link
       std::vector< const StdMeshers::Cartesian3D::F_IntersectPoint* > _fIntPoints; // GridLine intersections with FACEs
       std::vector< _Node* > _fIntNodes;   // _Node's at _fIntPoints
       std::vector< _Link >  _splits;
       _Link(): _nodes{ 0, 0 }, _faces{ 0, 0 } {}
+
+      void clear();
     };
 
     // --------------------------------------------------------------------------------
@@ -388,9 +393,12 @@ namespace Cartesian3D
     };
 
     // topology of a hexahedron
-    _Node _hexNodes [8];
-    _Link _hexLinks [12];
-    _Face _hexQuads [6];
+    static const std::size_t HEX_NODES_NUM = 8;
+    static const std::size_t HEX_LINKS_NUM = 12;
+    static const std::size_t HEX_QUADS_NUM = 6;
+    _Node _hexNodes [HEX_NODES_NUM];
+    _Link _hexLinks [HEX_LINKS_NUM];
+    _Face _hexQuads [HEX_QUADS_NUM];
 
     // faces resulted from hexahedron intersection
     std::vector< _Face > _polygons;
@@ -426,6 +434,8 @@ namespace Cartesian3D
     Hexahedron(const Hexahedron& other, size_t i, size_t j, size_t k, int cellID );
     void init( size_t i, size_t j, size_t k, const Solid* solid=0 );
     void init( size_t i );
+    void clearNodesLinkedToNull(const Solid* solid, SMESH_MesherHelper& helper);
+    bool isSplittedLink(const Solid* solid, SMESH_MesherHelper& helper, const Hexahedron::_Link& linkIn) const;
     void setIJK( size_t i );
     /*Auxiliary methods to extract operations from monolitic compute method*/
     void defineHexahedralFaces( const Solid* solid, const IsInternalFlag intFlag );

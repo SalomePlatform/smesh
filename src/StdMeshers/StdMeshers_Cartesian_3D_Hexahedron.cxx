@@ -393,6 +393,28 @@ void Hexahedron::_Node::Add( const E_IntersectPoint* ip )
     _node = _intPoint->_node = node;
 }
 
+void Hexahedron::_Node::clear()
+{
+  _node = nullptr;
+  _boundaryCornerNode = nullptr;
+  _intPoint = nullptr;
+  _usedInFace = nullptr;
+  _isInternalFlags = IS_NOT_INTERNAL;
+}
+
+void Hexahedron::_Link::clear()
+{
+  for (std::size_t i = 0; i < nodesNum; ++i)
+  {
+    if (_nodes[i])
+      _nodes[i]->clear();
+  }
+
+  _fIntPoints.clear();
+  _fIntNodes.clear();
+  _splits.clear();
+}
+
 //================================================================================
 /*!
   * \brief Return IDs of SOLIDs interfering with this Hexahedron
@@ -606,6 +628,8 @@ void Hexahedron::init( size_t i, size_t j, size_t k, const Solid* solid )
     // this method can be called in parallel, so use own helper
     SMESH_MesherHelper helper( *_grid->_helper->GetMesh() );
 
+    clearNodesLinkedToNull(solid, helper);
+
     // Create sub-links (_Link::_splits) by splitting links with _Link::_fIntPoints
     // ---------------------------------------------------------------
     _Link split;
@@ -797,6 +821,104 @@ void Hexahedron::init( size_t i, size_t j, size_t k, const Solid* solid )
   return;
 
 } // init( _i, _j, _k )
+
+//================================================================================
+/*!
+  * \brief Clear nodes linked to null by not splitted links.
+  * Exclude from computation all nodes those linked to null without any splits in links.
+  * This prevents building non-planar faces in cases when the source geometry surface
+  * coincident with an intermediate grid plane.
+  */
+void Hexahedron::clearNodesLinkedToNull(const Solid* solid, SMESH_MesherHelper& helper)
+{
+  for (std::size_t i = 0; i < HEX_LINKS_NUM; ++i)
+  {
+    _Link& link = _hexLinks[i];
+
+    if (isSplittedLink(solid, helper, link))
+      continue;
+
+    // Links where both nodes are valid should have itself as a split.
+    // Check if we have at least one null node here for a chance if we have
+    // some unexpected edge case.
+    _Node* n1 = link._nodes[0];
+    _Node* n2 = link._nodes[1];
+
+    if (!n1->_node || !n2->_node)
+    {
+      link.clear();
+    }
+  }
+}
+
+//================================================================================
+/*!
+  * \brief Returns true if the link will be splitted on the Hexaedron initialization
+  */
+bool Hexahedron::isSplittedLink(const Solid* solid, SMESH_MesherHelper& helper, const Hexahedron::_Link& linkIn) const
+{
+  _Link split;
+
+  _Link link = linkIn;
+  link._fIntNodes.clear();
+  link._fIntNodes.reserve( link._fIntPoints.size() );
+
+  std::vector<_Node> intNodes;
+  intNodes.reserve(link._fIntPoints.size());
+
+  for ( size_t i = 0; i < link._fIntPoints.size(); ++i )
+    if ( solid->ContainsAny( link._fIntPoints[i]->_faceIDs ))
+    {
+      intNodes.emplace_back(nullptr, link._fIntPoints[i]);
+      link._fIntNodes.push_back( & intNodes.back() );
+    }
+
+  link._splits.clear();
+  split._nodes[ 0 ] = link._nodes[0];
+  bool isOut = ( ! link._nodes[0]->Node() );
+  bool checkTransition = false;
+  for ( size_t i = 0; i < link._fIntNodes.size(); ++i )
+  {
+    const bool isGridNode = ( ! link._fIntNodes[i]->Node() );
+    if ( !isGridNode ) // intersection non-coincident with a grid node
+    {
+      if ( split._nodes[ 0 ]->Node() && !isOut )
+      {
+        return true;
+      }
+      split._nodes[ 0 ] = link._fIntNodes[i];
+      checkTransition = true;
+    }
+    else // FACE intersection coincident with a grid node (at link ends)
+    {
+      checkTransition = ( i == 0 && link._nodes[0]->Node() );
+    }
+    if ( checkTransition )
+    {
+      const vector< TGeomID >& faceIDs = link._fIntNodes[i]->_intPoint->_faceIDs;
+      if ( _grid->IsInternal( faceIDs.back() ))
+        isOut = false;
+      else if ( faceIDs.size() > 1 || _eIntPoints.size() > 0 )
+        isOut = isOutPoint( link, i, helper, solid );
+      else
+      {
+        bool okTransi = _grid->IsCorrectTransition( faceIDs[0], solid );
+        switch ( link._fIntNodes[i]->FaceIntPnt()->_transition ) {
+        case Trans_OUT: isOut = okTransi;  break;
+        case Trans_IN : isOut = !okTransi; break;
+        default:
+          isOut = isOutPoint( link, i, helper, solid );
+        }
+      }
+    }
+  }
+  if ( link._nodes[ 1 ]->Node() && split._nodes[ 0 ]->Node() && !isOut )
+  {
+    return true;
+  }
+
+  return false;
+}
 
 //================================================================================
 /*!
