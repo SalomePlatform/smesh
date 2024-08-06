@@ -32,7 +32,7 @@
 class SMDS_EXPORT SMDS_FaceOfNodes: public SMDS_CellOfNodes
 {
  public:
-  void Print(std::ostream & OS) const;
+  virtual void Print(std::ostream & OS) const override;
   SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                    const SMDS_MeshNode* node2,
                    const SMDS_MeshNode* node3);

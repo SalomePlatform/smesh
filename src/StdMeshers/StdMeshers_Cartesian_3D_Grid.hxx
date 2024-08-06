@@ -539,6 +539,9 @@ namespace Cartesian3D
       {
         threads.emplace_back(f, std::ref(*it));
       }
+
+      // This line for debug in sequential mode
+      // std::for_each(it, last, f);
     }
     else
     {

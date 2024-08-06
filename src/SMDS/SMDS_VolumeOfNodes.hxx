@@ -62,7 +62,7 @@ class SMDS_EXPORT SMDS_VolumeOfNodes: public SMDS_CellOfNodes
                    const int            nbNodes);
   ~SMDS_VolumeOfNodes();
 
-  void Print(std::ostream & OS) const;
+  virtual void Print(std::ostream & OS) const override;
   int NbFaces() const;
   int NbNodes() const;
   int NbEdges() const;

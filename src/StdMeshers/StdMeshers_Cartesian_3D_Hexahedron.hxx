@@ -157,6 +157,24 @@ namespace Cartesian3D
 
       void Add( const StdMeshers::Cartesian3D::E_IntersectPoint* ip );
       void clear();
+
+      friend std::ostream& operator<<(std::ostream& os, const _Node& node)
+      {
+        if (node._node)
+        {
+          os << "Node at hexahedron corner: ";
+          node._node->Print(os); 
+        }
+        else if (node._intPoint && node._intPoint->_node)
+        {
+          os << "Node at intersection point: ";
+          node._intPoint->_node->Print(os); // intersection point
+        }
+        else
+          os << "mesh node is null\n";
+
+        return os;
+      }
     };
 
     // --------------------------------------------------------------------------------
@@ -172,6 +190,25 @@ namespace Cartesian3D
       _Link(): _nodes{ 0, 0 }, _faces{ 0, 0 } {}
 
       void clear();
+
+      friend std::ostream& operator<<(std::ostream& os, const _Link& link)
+      {
+        os << "Link:\n";
+
+        for (std::size_t i = 0; i < nodesNum; ++i)
+        {
+          if (link._nodes[i])
+            os << *link._nodes[i];
+          else
+            os << "link node with index " << i << " is null\n";
+        }
+
+        os << "_fIntPoints: " << link._fIntPoints.size() << '\n';
+        os << "_fIntNodes: " << link._fIntNodes.size() << '\n';
+        os << "_splits: " << link._splits.size() << '\n';
+
+        return os;
+      }
     };
 
     // --------------------------------------------------------------------------------
@@ -240,6 +277,16 @@ namespace Cartesian3D
             _link->_faces[1] = 0;
           }
         }
+      }
+
+      friend std::ostream& operator<<(std::ostream& os, const _OrientedLink& link)
+      {
+        if (link._link)
+          os << "Oriented " << *link._link;
+        else
+          os << "Oriented link is null\n";
+
+        return os;
       }
     };
 
@@ -313,6 +360,34 @@ namespace Cartesian3D
         l._nodes[1] = n1;
         _polyLinks.push_back( l );
         _links.push_back( _OrientedLink( &_polyLinks.back() ));
+      }
+
+      friend std::ostream& operator<<(std::ostream& os, const _Face& face)
+      {
+        os << "Face " << face._name << '\n';
+
+        os << "Links on GridLines: \n";
+        for (const auto& link : face._links)
+        {
+          os << link;
+        }
+
+        os << "Links added to close a polygonal face: \n";
+        for (const auto& link : face._polyLinks)
+        {
+          os << link;
+        }
+
+        os << "Nodes at intersection with EDGEs: \n";
+        for (const auto node : face._eIntNodes)
+        {
+          if (node)
+          {
+            os << *node;
+          }
+        }
+
+        return os;
       }
     };
 
