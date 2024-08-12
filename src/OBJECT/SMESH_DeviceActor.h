@@ -46,6 +46,7 @@ class vtkLookupTable;
 class vtkImplicitBoolean;
 class vtkPassThrough;
 class vtkPlaneCollection;
+class vtkTriangleFilter;
 
 class VTKViewer_Transform;
 class VTKViewer_TransformFilter;
@@ -182,6 +183,7 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
 
   bool myStoreClippingMapping;
   VTKViewer_GeometryFilter *myGeomFilter;
+  vtkTriangleFilter* myTriangleFilter = nullptr;
   VTKViewer_TransformFilter *myTransformFilter;
   std::vector<vtkPassThrough*> myPassFilter;
 
