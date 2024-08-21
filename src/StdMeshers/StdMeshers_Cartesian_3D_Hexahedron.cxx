@@ -2934,6 +2934,21 @@ int Hexahedron::addVolumes( SMESH_MesherHelper& helper )
     {
       if ( !useQuanta )
       {
+        // Try to find and fix geometry issues
+        const bool isDivided = volDef->divideOverlappingPolygons();
+        const bool isRemoved = volDef->removeOpenEdgesPolygons();
+
+        // Update nodes if the geometry was changed
+        if (isDivided || isRemoved)
+        {
+          nodes.clear();
+          nodes.resize(volDef->_nodes.size());
+          for (size_t i = 0; i < nodes.size(); ++i)
+          {
+            nodes[i] = volDef->_nodes[i].Node();
+          }
+        }
+
         // split polyhedrons of with disjoint volumes
         std::vector<std::vector<int>> splitQuantities;
         std::vector<std::vector< const SMDS_MeshNode* > > splitNodes;
@@ -3173,6 +3188,330 @@ bool Hexahedron::checkPolyhedronSize( bool cutByInternalFace, double & volume) c
   double initVolume = _sideLength[0] * _sideLength[1] * _sideLength[2];
 
   return volume > initVolume / _grid->_sizeThreshold;
+}
+
+//================================================================================
+/*!
+  * \brief Returns an index of the first node of the given polygon in the _nodes container.
+  */
+ int Hexahedron::_volumeDef::getStartNodeIndex(const int polygon) const
+ {
+  return std::accumulate(_quantities.begin(), _quantities.begin() + polygon, 0);
+ }
+
+//================================================================================
+/*!
+  * \brief Returns a vector of sets of edges like {{ nodeId1, nodeId2 }, { nodeId2, nodeId3 }}
+  *        where an index of element in the vector is an index of polygon in the volume.
+  *        Nodes ids in the pairs are sorted, so index of a first node is always less than second.
+  */
+std::vector<std::set<std::pair<int, int>>> Hexahedron::_volumeDef::getPolygonsEdges() const
+{
+  if (_quantities.empty())
+    return {};
+
+  const int numOfPolygons = _quantities.size();
+  std::vector<std::set<std::pair<int, int>>> polygonsEdges(numOfPolygons);
+
+  auto storeEdge = [&](const int polygon, const int idx1, const int idx2) -> void
+  {
+    const int firstNode = _nodes[idx1].Node()->GetID();
+    const int secondNode = _nodes[idx2].Node()->GetID();
+
+    polygonsEdges[polygon].emplace(
+      std::min(firstNode, secondNode), std::max(firstNode, secondNode));
+  };
+
+  // Go over all polygons in this volume
+  int numOfNodesCounter = 0;
+  for (int i = 0; i < numOfPolygons; ++i)
+  {
+    const int numOfNodesInPolygon = _quantities[i];
+
+    // Iterate pairs of nodes for each edge
+    const int lastIndex = numOfNodesCounter + numOfNodesInPolygon - 1;
+    for (int j = numOfNodesCounter; j < lastIndex; ++j)
+    {
+      storeEdge(i, j, j + 1);
+    }
+
+    // Store an edge connected last and first nodes to close the polygon
+    storeEdge(i, lastIndex, numOfNodesCounter);
+
+    numOfNodesCounter += numOfNodesInPolygon;
+  }
+
+  // Debug output
+  // MESSAGE("Collected edges for " << numOfPolygons << " polygons: ");
+  // for (size_t i = 0; i < polygonsEdges.size(); ++i)
+  // {
+  //   MESSAGE("Polygon " << i << ": ");
+  //   int j = 0;
+  //   for (const auto& edge : polygonsEdges[i])
+  //   {
+  //     MESSAGE("Edge " << j++ << ": " << edge.first << ", " << edge.second);
+  //   }
+  // }
+
+  return polygonsEdges;
+}
+
+//================================================================================
+/*!
+  * \brief Finds in the volume a polygon with such a set of edges that is a subset
+  *        of edges of other polygon. Returns a map where a key is a larger polygon,
+  *        the value - is a smaller polygon that is a subset of larger, followed by
+  *        two nodes those we need to connect in a process of cutting of the first polygon.
+  *        If the second poly is a complete clone of the first one, both nodes will be -1.
+  */
+std::map<int, std::vector<int>> Hexahedron::_volumeDef::findOverlappingPolygons() const
+{
+  std::vector<std::set<std::pair<int, int>>> polygonsEdges = getPolygonsEdges();
+  if (polygonsEdges.empty())
+    return {};
+
+  auto isOverlappedSet = [](const std::set<std::pair<int, int>>& set1,
+                            const std::set<std::pair<int, int>>& set2,
+                            std::set<std::pair<int, int>>& diff) -> bool
+  {
+    diff.clear();
+
+    if (set1.size() > set2.size())
+      std::set_difference(set2.begin(), set2.end(), set1.begin(), set1.end(), std::inserter(diff, diff.begin()));
+    else
+      std::set_difference(set1.begin(), set1.end(), set2.begin(), set2.end(), std::inserter(diff, diff.begin()));
+
+    return diff.size() <= 1;
+  };
+
+  // The key is a larger polygon, the value - is a smaller polygon that is a subset of larger,
+  // followed by two nodes those we need to connect in a process of cutting of the first polygon.
+  std::map<int, std::vector<int>> overlappedPolygons;
+
+  // Check all the polygons one by one
+  const int numOfPolygons = polygonsEdges.size();
+  for (int i = 0; i < numOfPolygons - 1; ++i)
+  {
+    const auto& edges = polygonsEdges[i];
+
+    bool isOverlapped = false;
+    int largerPolygon = i;
+    int smallerPolygon = -1;
+    std::set<std::pair<int, int>> diff;
+
+    for (int j = i + 1; j < numOfPolygons; ++j)
+    {
+      const auto& otherEdges = polygonsEdges[j];
+
+      if (isOverlappedSet(edges, otherEdges, diff))
+      {
+        isOverlapped = true;
+        smallerPolygon = j;
+
+        if (edges.size() < otherEdges.size())
+        {
+          largerPolygon = j;
+          smallerPolygon = i;
+        }
+
+        // At this moment don't expect more than two overlapped polygons.
+        // TODO: check if we need to consider the case of multiple polygons.
+        break;
+      }
+    }
+
+    // Store results
+    if (isOverlapped)
+    {
+      int node1 = diff.empty() ? -1 : diff.begin()->first;
+      int node2 = diff.empty() ? -1 : diff.begin()->second;
+
+      overlappedPolygons.emplace(largerPolygon, std::vector<int> { smallerPolygon, node1, node2 });
+    }
+  }
+
+  return overlappedPolygons;
+}
+
+//================================================================================
+/*!
+  * \brief Finds in the volume a polygon with such a set of edges that is a subset
+  *        of edges of other polygon. Then we can remove these edges from a larger
+  *        polygon and have as a result two connected polygons those are
+  *        next to each other instead of being overlapped.
+  *        We can't just delete the smaller polygon, because it could be a part of
+  *        separated volume that can be revealed later in checkPolyhedronValidity().
+  *        Returns true if at least one polygon was changed.
+  */
+bool Hexahedron::_volumeDef::divideOverlappingPolygons()
+{
+  // The key is a larger polygon, the value - is a smaller polygon that is a subset of larger,
+  // followed by two nodes those we need to connect in a process of cutting of the first polygon.
+  const std::map<int, std::vector<int>> overlappedPolygons = findOverlappingPolygons();
+  if (overlappedPolygons.empty())
+    return false;
+
+  // Here we have at least one pair of overlapped polygons.
+  // The smaller one should stay intact, but the larger need to be reduced by nodes
+  // of the smaller one except nodes for the close edge.
+  std::set<int> nodesIndexesToErase;
+  std::map<int, int> quantsUpdatedValues;
+  for (auto polygon = overlappedPolygons.rbegin(); polygon != overlappedPolygons.rend(); ++polygon)
+  {
+    const int largerPolygon = polygon->first;
+    const int smallerPolygon = polygon->second[0];
+    const int edgeNode1 = polygon->second[1];
+    const int startNodeIndex = getStartNodeIndex(largerPolygon);
+
+    MESSAGE("Overlapped: " << largerPolygon << ", " << smallerPolygon << ". Edge node: " << edgeNode1 << ", " << polygon->second[2]);
+
+    // We expect to have valid ids here, exclude the case when both polygons are the same (-1 node).
+    if (edgeNode1 != -1)
+    {
+      // Remove redundant nodes from the larger polygon
+      const int otherStartNodeIndex = getStartNodeIndex(smallerPolygon);
+      const int edgeNode2 = polygon->second[2];
+
+      quantsUpdatedValues[largerPolygon] = _quantities[largerPolygon];
+      SCRUTE(quantsUpdatedValues[largerPolygon]);
+
+      for (int i = startNodeIndex; i < startNodeIndex + _quantities[largerPolygon]; ++i)
+      {
+        const int thisNodeId = _nodes[i].Node()->GetID();
+        MESSAGE("thisNodeId " << thisNodeId << " at index " << i);
+
+        // Skip nodes from the close edge
+        if (thisNodeId == edgeNode1 || thisNodeId == edgeNode2)
+          continue;
+
+        for (int j = otherStartNodeIndex; j < otherStartNodeIndex + _quantities[smallerPolygon]; ++j)
+        {
+          const int otherNodeId = _nodes[j].Node()->GetID();
+          MESSAGE("otherNodeId " << otherNodeId << " at index " << j);
+
+          if (thisNodeId == otherNodeId)
+          {
+            // Add to be erased later
+            nodesIndexesToErase.insert(i);
+            --quantsUpdatedValues[largerPolygon];
+            MESSAGE("Set to erase node " << thisNodeId << " at index " << i);
+
+            break;
+          }
+        }
+      }
+    }
+    else
+    {
+      MESSAGE("Polygons are identical!!!");
+
+      // Don't erase a polygon right now to prevent a mess with polygons and nodes ids
+      const int endNodeIndex = startNodeIndex + _quantities[largerPolygon];
+      for (int i = startNodeIndex; i < endNodeIndex; ++i)
+      {
+        nodesIndexesToErase.insert(i);
+      }
+      quantsUpdatedValues[largerPolygon] = 0;
+    }
+  }
+
+  // Erase all nodes from collected indexes in reverse order
+  for (auto nodeIdx = nodesIndexesToErase.rbegin(); nodeIdx != nodesIndexesToErase.rend(); ++nodeIdx)
+  {
+    MESSAGE("Erased node on index " << *nodeIdx);
+    _nodes.erase(_nodes.begin() + *nodeIdx);
+  }
+
+  // Update quantities
+  for (const auto& quantUpdate : quantsUpdatedValues)
+  {
+    MESSAGE("Quantity for a polygon " << quantUpdate.first << " updated from " << _quantities[quantUpdate.first] << " to " << quantUpdate.second);
+    _quantities[quantUpdate.first] = quantUpdate.second;
+  }
+
+  // Now check if we have completely deleted polygons here and erase them
+  _quantities.erase(std::remove(_quantities.begin(), _quantities.end(), 0), _quantities.end());
+
+  return true;
+}
+
+//================================================================================
+/*!
+  * \brief Finds polygons with at least one edge not connected to any other polygon,
+  *        and removes all of them. Returns true if at least polygon one was removed.
+  */
+bool Hexahedron::_volumeDef::removeOpenEdgesPolygons()
+{
+  if (_quantities.empty())
+  {
+    MESSAGE("Volume doesn't have any polygons");
+    return false;
+  }
+
+  // Check every polygon if it has at least one edge not connected to other polygon
+  const int numOfPolygons = _quantities.size();
+  std::vector<std::set<std::pair<int, int>>> edgesByPolygon = getPolygonsEdges();
+
+  // Check if nodes pairs presented in other polygons
+  for (int i = 0; i < numOfPolygons - 1; ++i)
+  {
+    auto& edges = edgesByPolygon[i];
+
+    for (auto edge = edges.begin(); edge != edges.end(); /* ++edge */)
+    {
+      // Iterate other polygons to find matching pairs
+      bool edgeFound = false;
+      for (int j = i + 1; j < numOfPolygons; ++j)
+      {
+        auto& otherEdges = edgesByPolygon[j];
+        auto foundEdge = otherEdges.find(*edge);
+        if (foundEdge != otherEdges.end())
+        {
+          // We can have more than two the same edges in the volume.
+          // For example, when two parts of the volume connected by one polygon.
+          // So, we can't break here and must continue to search.
+          otherEdges.erase(foundEdge);
+          edgeFound = true;
+        }
+      }
+
+      if (edgeFound)
+      {
+        auto curEdge = edge;
+        ++edge;
+        edges.erase(curEdge);
+      }
+      else
+        ++edge;
+    }
+  }
+
+  // At this point for correct polyhedron all pairs of edges must be erased.
+  // Check if we have some edges without pairs and remove related polygons.
+  bool isRemoved = false;
+  for (int i = edgesByPolygon.size() - 1; i >= 0; --i)
+  {
+    if (edgesByPolygon[i].empty())
+      continue;
+
+    MESSAGE("Found not connected edges for polygon " << i << " :");
+    for (auto& edge : edgesByPolygon[i])
+    {
+      MESSAGE("Edge: " << edge.first << ", " << edge.second);
+    }
+
+    // Erase redundant nodes
+    auto first = _nodes.begin() + getStartNodeIndex(i);
+    auto last = first + _quantities[i];
+    _nodes.erase(first, last);
+
+    // Erase quantities
+    _quantities.erase(_quantities.begin() + i);
+
+    isRemoved = true;
+  }
+
+  return isRemoved;
 }
 
 //================================================================================

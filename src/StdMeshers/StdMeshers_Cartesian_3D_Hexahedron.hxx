@@ -409,6 +409,24 @@ namespace Cartesian3D
         { return static_cast< const StdMeshers::Cartesian3D::E_IntersectPoint* >( _intPoint ); }
         _ptr Ptr() const { return Node() ? (_ptr) Node() : (_ptr) EdgeIntPnt(); }
         bool operator==(const _nodeDef& other ) const { return Ptr() == other.Ptr(); }
+
+        friend std::ostream& operator<<(std::ostream& os, const _nodeDef& node)
+        {
+          if (node._node)
+          {
+            os << "Node at hexahedron corner: ";
+            node._node->Print(os); 
+          }
+          else if (node._intPoint && node._intPoint->_node)
+          {
+            os << "Node at intersection point: ";
+            node._intPoint->_node->Print(os); // intersection point
+          }
+          else
+            os << "mesh node is null\n";
+
+          return os;
+        }
       };
 
       std::vector< _nodeDef >              _nodes;
@@ -442,6 +460,11 @@ namespace Cartesian3D
       bool IsPolyhedron() const { return ( !_quantities.empty() ||
                                            ( _next && !_next->_quantities.empty() )); }
 
+      std::vector<std::set<std::pair<int, int>>> getPolygonsEdges() const;
+      int getStartNodeIndex(const int polygon) const;
+      std::map<int, std::vector<int>> findOverlappingPolygons() const;
+      bool divideOverlappingPolygons();
+      bool removeOpenEdgesPolygons();
 
       struct _linkDef: public std::pair<_ptr,_ptr> // to join polygons in removeExcessSideDivision()
       {
@@ -463,6 +486,22 @@ namespace Cartesian3D
         {
           _next = next;
           next->_prev = this;
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const _linkDef& link)
+        {
+          os << "Link def:\n";
+
+          os << link._node1;
+          if (link.first)
+            os << "first: " << link.first;
+
+          if (link.second)
+            os << "second: " << link.second;
+
+          os << "_loopIndex: " << link._loopIndex << '\n';
+
+          return os;
         }
       };
     };
