@@ -628,7 +628,7 @@ void Hexahedron::init( size_t i, size_t j, size_t k, const Solid* solid )
     // this method can be called in parallel, so use own helper
     SMESH_MesherHelper helper( *_grid->_helper->GetMesh() );
 
-    clearNodesLinkedToNull(solid, helper);
+    // clearNodesLinkedToNull(solid, helper);
 
     // Create sub-links (_Link::_splits) by splitting links with _Link::_fIntPoints
     // ---------------------------------------------------------------
@@ -2935,11 +2935,11 @@ int Hexahedron::addVolumes( SMESH_MesherHelper& helper )
       if ( !useQuanta )
       {
         // Try to find and fix geometry issues
-        const bool isDivided = volDef->divideOverlappingPolygons();
-        const bool isRemoved = volDef->removeOpenEdgesPolygons();
+        const bool hasDividedPolygons = volDef->divideOverlappingPolygons();
+        const bool hasFixedOpenEdges = volDef->fixOpenEdgesPolygons();
 
         // Update nodes if the geometry was changed
-        if (isDivided || isRemoved)
+        if (hasDividedPolygons || hasFixedOpenEdges)
         {
           nodes.clear();
           nodes.resize(volDef->_nodes.size());
@@ -3258,6 +3258,62 @@ std::vector<std::set<std::pair<int, int>>> Hexahedron::_volumeDef::getPolygonsEd
 
 //================================================================================
 /*!
+  * \brief Finds polygons with at least one edge not connected to any other polygon.
+  *        Returns a vector of sets of edges like {{ nodeId1, nodeId2 }, { nodeId2, nodeId3 }}
+  *        where an index of element in the vector is an index of polygon in the volume.
+  *        Nodes ids in the pairs are sorted, so index of a first node is always less than second.
+  */
+std::vector<std::set<std::pair<int, int>>> Hexahedron::_volumeDef::findOpenEdges() const
+{
+  if (_quantities.empty())
+  {
+    MESSAGE("Volume doesn't have any polygons");
+    return {};
+  }
+
+  // Check every polygon if it has at least one edge not connected to other polygon
+  const int numOfPolygons = _quantities.size();
+  std::vector<std::set<std::pair<int, int>>> edgesByPolygon = getPolygonsEdges();
+
+  // Check if nodes pairs presented in other polygons
+  for (int i = 0; i < numOfPolygons - 1; ++i)
+  {
+    auto& edges = edgesByPolygon[i];
+
+    for (auto edge = edges.begin(); edge != edges.end(); /* ++edge */)
+    {
+      // Iterate other polygons to find matching pairs
+      bool edgeFound = false;
+      for (int j = i + 1; j < numOfPolygons; ++j)
+      {
+        auto& otherEdges = edgesByPolygon[j];
+        auto foundEdge = otherEdges.find(*edge);
+        if (foundEdge != otherEdges.end())
+        {
+          // We can have more than two the same edges in the volume.
+          // For example, when two parts of the volume connected by one polygon.
+          // So, we can't break here and must continue to search.
+          otherEdges.erase(foundEdge);
+          edgeFound = true;
+        }
+      }
+
+      if (edgeFound)
+      {
+        auto curEdge = edge;
+        ++edge;
+        edges.erase(curEdge);
+      }
+      else
+        ++edge;
+    }
+  }
+
+  return edgesByPolygon;
+}
+
+//================================================================================
+/*!
   * \brief Finds in the volume a polygon with such a set of edges that is a subset
   *        of edges of other polygon. Returns a map where a key is a larger polygon,
   *        the value - is a smaller polygon that is a subset of larger, followed by
@@ -3415,6 +3471,9 @@ bool Hexahedron::_volumeDef::divideOverlappingPolygons()
     }
   }
 
+  if (nodesIndexesToErase.empty())
+    return false;
+
   // Erase all nodes from collected indexes in reverse order
   for (auto nodeIdx = nodesIndexesToErase.rbegin(); nodeIdx != nodesIndexesToErase.rend(); ++nodeIdx)
   {
@@ -3432,6 +3491,174 @@ bool Hexahedron::_volumeDef::divideOverlappingPolygons()
   // Now check if we have completely deleted polygons here and erase them
   _quantities.erase(std::remove(_quantities.begin(), _quantities.end(), 0), _quantities.end());
 
+  // Make sure we didn't create some new mess
+  divideOverlappingPolygons();
+
+  return true;
+}
+
+//================================================================================
+/*!
+  * \brief Finds polygons with at least one edge not connected to any other polygon,
+  *        and tries to cap them with new polygons or just remove as invalid.
+  *        Returns true if any of this changes were made.
+  */
+bool Hexahedron::_volumeDef::fixOpenEdgesPolygons()
+{
+  std::vector<std::set<std::pair<int, int>>> edgesByPolygon = findOpenEdges();
+  if (edgesByPolygon.empty())
+    return false;
+
+  const bool wasCapped = capOpenEdgesPolygons(edgesByPolygon);
+  if (wasCapped)
+  {
+    // The volume's geometry was changed, we need to collect edges again
+    edgesByPolygon = findOpenEdges();
+  }
+
+  const bool wasRemoved = removeOpenEdgesPolygons(edgesByPolygon);
+  if (!wasCapped && !wasRemoved)
+  {
+    return false;
+  }
+
+  // Make sure we didn't create some new mess
+  fixOpenEdgesPolygons();
+
+  return true;
+}
+
+//================================================================================
+/*!
+  * \brief Finds polygons with at least one edge not connected to any other polygon,
+  *        and tries to cap them with new polygons. Returns true if at least one polygon
+  *        was created.
+  */
+bool Hexahedron::_volumeDef::capOpenEdgesPolygons(const std::vector<std::set<std::pair<int, int>>>& edgesByPolygon)
+{
+  // Check if we can cap this edges with a new polygon.
+  // At this moment we don't interesting in relations of edges
+  // with other polygons, just if it's possible to connect them.
+  std::set<std::pair<int, int>> freeEdges;
+  for (int i = edgesByPolygon.size() - 1; i >= 0; --i)
+  {
+    if (edgesByPolygon[i].empty())
+      continue;
+
+    for (auto& edge : edgesByPolygon[i])
+    {
+      freeEdges.insert(edge);
+    }
+  }
+
+  // If we don't have free edges, then nothing to do here
+  if (freeEdges.empty())
+  {
+    return false;
+  }
+
+  // Consider a simple case where all the edges could form a closed polygon.
+  // First edge will form the first and the last node in the vector.
+  const size_t freeNodesNum = freeEdges.size() * 2 - 1;
+  std::vector<int> nodes(freeNodesNum);
+
+  auto findNode = [&](const std::pair<int, int>& edge, const int node, const int index) -> bool
+  {
+    if (edge.first == node)
+    {
+      nodes[index] = edge.second;
+      return true;
+    }
+    else if (edge.second == node)
+    {
+      nodes[index] = edge.first;
+      return true;
+    }
+
+    return false;
+  };
+
+  size_t firstIdx = 0;
+  size_t lastIdx = freeNodesNum - 1;
+  for (auto curEdge = freeEdges.begin(); curEdge != freeEdges.end(); ++curEdge)
+  {
+    // Store current nodes
+    int firstNode = curEdge->first;
+    int lastNode = curEdge->second;
+    nodes[firstIdx++] = firstNode;
+    nodes[lastIdx--] = lastNode;
+
+    // Try to find connected nodes in other edges
+    auto otherEdge = curEdge;
+    ++otherEdge;
+    bool firstFound = false;
+    bool lastFound = false;
+
+    while (otherEdge != freeEdges.end())
+    {
+      if (!firstFound)
+      {
+        firstFound = findNode(*otherEdge, firstNode, firstIdx);
+        if (firstFound)
+        {
+          auto edgeToRemove = otherEdge;
+          ++otherEdge;
+          freeEdges.erase(edgeToRemove);
+
+          continue;
+        }
+      }
+
+      if (!lastFound)
+      {
+        lastFound = findNode(*otherEdge, lastNode, lastIdx);
+        if (lastFound)
+        {
+          auto edgeToRemove = otherEdge;
+          ++otherEdge;
+          freeEdges.erase(edgeToRemove);
+
+          continue;
+        }
+      }
+
+      if (firstFound && lastFound)
+        break;
+
+      ++otherEdge;
+    }
+
+    // If we didn't find a node to connect for one edge,
+    // then we can't build a polygon here.
+    // TODO: add ability to create a polygon from part of the given edge?
+    if (!firstFound || !lastFound)
+      return false;
+
+    ++firstIdx;
+    --lastIdx;
+  }
+
+  // Now we collected all the nodes for a new polygon
+  // and need to add quantities and nodes to the volume.
+  // TODO: add a check if this polygon is planar?
+  _quantities.push_back(freeNodesNum);
+
+  // Update storage
+  const size_t newNodesNum = _nodes.size() + freeNodesNum;
+  if (_nodes.capacity() < newNodesNum)
+    _nodes.reserve(newNodesNum);
+
+  // Find nodes by ids and store them
+  for (size_t i = 0; i < freeNodesNum; ++i)
+  {
+    auto nodeIt = std::find_if(_nodes.begin(), _nodes.end(),
+      [&](const _nodeDef& node) { return node.Node()->GetID() == nodes[i]; });
+
+    _nodes.push_back(*nodeIt);
+  }
+
+  MESSAGE("New polygon to cap open edges at index " << _quantities.size() - 1 << ", quant: " << _quantities.back());
+
   return true;
 }
 
@@ -3440,52 +3667,8 @@ bool Hexahedron::_volumeDef::divideOverlappingPolygons()
   * \brief Finds polygons with at least one edge not connected to any other polygon,
   *        and removes all of them. Returns true if at least polygon one was removed.
   */
-bool Hexahedron::_volumeDef::removeOpenEdgesPolygons()
+bool Hexahedron::_volumeDef::removeOpenEdgesPolygons(const std::vector<std::set<std::pair<int, int>>>& edgesByPolygon)
 {
-  if (_quantities.empty())
-  {
-    MESSAGE("Volume doesn't have any polygons");
-    return false;
-  }
-
-  // Check every polygon if it has at least one edge not connected to other polygon
-  const int numOfPolygons = _quantities.size();
-  std::vector<std::set<std::pair<int, int>>> edgesByPolygon = getPolygonsEdges();
-
-  // Check if nodes pairs presented in other polygons
-  for (int i = 0; i < numOfPolygons - 1; ++i)
-  {
-    auto& edges = edgesByPolygon[i];
-
-    for (auto edge = edges.begin(); edge != edges.end(); /* ++edge */)
-    {
-      // Iterate other polygons to find matching pairs
-      bool edgeFound = false;
-      for (int j = i + 1; j < numOfPolygons; ++j)
-      {
-        auto& otherEdges = edgesByPolygon[j];
-        auto foundEdge = otherEdges.find(*edge);
-        if (foundEdge != otherEdges.end())
-        {
-          // We can have more than two the same edges in the volume.
-          // For example, when two parts of the volume connected by one polygon.
-          // So, we can't break here and must continue to search.
-          otherEdges.erase(foundEdge);
-          edgeFound = true;
-        }
-      }
-
-      if (edgeFound)
-      {
-        auto curEdge = edge;
-        ++edge;
-        edges.erase(curEdge);
-      }
-      else
-        ++edge;
-    }
-  }
-
   // At this point for correct polyhedron all pairs of edges must be erased.
   // Check if we have some edges without pairs and remove related polygons.
   bool isRemoved = false;

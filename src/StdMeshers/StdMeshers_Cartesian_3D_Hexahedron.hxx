@@ -461,10 +461,13 @@ namespace Cartesian3D
                                            ( _next && !_next->_quantities.empty() )); }
 
       std::vector<std::set<std::pair<int, int>>> getPolygonsEdges() const;
+      std::vector<std::set<std::pair<int, int>>> findOpenEdges() const;
       int getStartNodeIndex(const int polygon) const;
       std::map<int, std::vector<int>> findOverlappingPolygons() const;
       bool divideOverlappingPolygons();
-      bool removeOpenEdgesPolygons();
+      bool fixOpenEdgesPolygons();
+      bool capOpenEdgesPolygons(const std::vector<std::set<std::pair<int, int>>>& edgesByPolygon);
+      bool removeOpenEdgesPolygons(const std::vector<std::set<std::pair<int, int>>>& edgesByPolygon);
 
       struct _linkDef: public std::pair<_ptr,_ptr> // to join polygons in removeExcessSideDivision()
       {
