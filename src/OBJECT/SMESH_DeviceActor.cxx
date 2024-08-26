@@ -257,7 +257,8 @@ SMESH_DeviceActor
     myTriangleFilter->SetInputConnection(myGeomFilter->GetOutputPort());
 
     anId++; // 4
-    myPassFilter[ anId ]->SetInputConnection( myTriangleFilter->GetOutputPort() );
+    // myPassFilter[ anId ]->SetInputConnection( myTriangleFilter->GetOutputPort() );
+    myPassFilter[ anId ]->SetInputConnection( myGeomFilter->GetOutputPort() );
     myPassFilter[ anId + 1 ]->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
     anId++; // 5
