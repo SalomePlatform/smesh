@@ -3509,15 +3509,15 @@ bool Hexahedron::_volumeDef::fixOpenEdgesPolygons()
   if (edgesByPolygon.empty())
     return false;
 
-  const bool wasCapped = capOpenEdgesPolygons(edgesByPolygon);
-  if (wasCapped)
-  {
-    // The volume's geometry was changed, we need to collect edges again
-    edgesByPolygon = findOpenEdges();
-  }
+  // const bool wasCapped = capOpenEdgesPolygons(edgesByPolygon);
+  // if (wasCapped)
+  // {
+  //   // The volume's geometry was changed, we need to collect edges again
+  //   edgesByPolygon = findOpenEdges();
+  // }
 
   const bool wasRemoved = removeOpenEdgesPolygons(edgesByPolygon);
-  if (!wasCapped && !wasRemoved)
+  if (/* !wasCapped &&  */!wasRemoved)
   {
     return false;
   }
