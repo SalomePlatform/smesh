@@ -3559,7 +3559,7 @@ bool Hexahedron::_volumeDef::capOpenEdgesPolygons(const std::vector<std::set<std
 
   // Consider a simple case where all the edges could form a closed polygon.
   // First edge will form the first and the last node in the vector.
-  const size_t freeNodesNum = freeEdges.size() * 2 - 1;
+  const size_t freeNodesNum = freeEdges.size();
   std::vector<int> nodes(freeNodesNum);
 
   auto findNode = [&](const std::pair<int, int>& edge, const int node, const int index) -> bool
@@ -3580,7 +3580,7 @@ bool Hexahedron::_volumeDef::capOpenEdgesPolygons(const std::vector<std::set<std
 
   size_t firstIdx = 0;
   size_t lastIdx = freeNodesNum - 1;
-  for (auto curEdge = freeEdges.begin(); curEdge != freeEdges.end(); ++curEdge)
+  for (auto curEdge = freeEdges.begin(); curEdge != freeEdges.end() && (lastIdx - firstIdx) > 1; ++curEdge)
   {
     // Store current nodes
     int firstNode = curEdge->first;
@@ -3652,7 +3652,7 @@ bool Hexahedron::_volumeDef::capOpenEdgesPolygons(const std::vector<std::set<std
   for (size_t i = 0; i < freeNodesNum; ++i)
   {
     auto nodeIt = std::find_if(_nodes.begin(), _nodes.end(),
-      [&](const _nodeDef& node) { return node.Node()->GetID() == nodes[i]; });
+      [&](const _nodeDef& node) { return node.Node() && node.Node()->GetID() == nodes[i]; });
 
     _nodes.push_back(*nodeIt);
   }
