@@ -70,6 +70,8 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkCellData.h>
+#include <vtkTriangleFilter.h>
+#include <vtkGeometryFilter.h>
 
 // Qt includes
 #include <QComboBox>
@@ -108,6 +110,8 @@ namespace SMESH
     SALOME_Actor* myFaceOrientation;
     vtkPolyDataMapper* myFaceOrientationDataMapper;
     SMESH_FaceOrientationFilter* myFaceOrientationFilter;
+    vtkSmartPointer<vtkGeometryFilter> myGeometryFilter = nullptr;
+    vtkSmartPointer<vtkTriangleFilter> myTriangleFilter = nullptr;
 
   public:
     TElementSimulation (SalomeApp_Application* theApplication)
@@ -120,9 +124,15 @@ namespace SMESH
 
       myGrid = vtkUnstructuredGrid::New();
 
+      myGeometryFilter = vtkSmartPointer<vtkGeometryFilter>::New();
+      myGeometryFilter->SetInputData(myGrid);
+
+      myTriangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
+      myTriangleFilter->SetInputConnection(myGeometryFilter->GetOutputPort());
+
       // Create and display actor
       myMapper = vtkDataSetMapper::New();
-      myMapper->SetInputData(myGrid);
+      myMapper->SetInputConnection(myTriangleFilter->GetOutputPort());
 
       myPreviewActor = SALOME_Actor::New();
       myPreviewActor->PickableOff();
@@ -148,7 +158,7 @@ namespace SMESH
 
       // Orientation of faces
       myFaceOrientationFilter = SMESH_FaceOrientationFilter::New();
-      myFaceOrientationFilter->SetInputData(myGrid);
+      myFaceOrientationFilter->SetInputConnection(myTriangleFilter->GetOutputPort());
 
       myFaceOrientationDataMapper = vtkPolyDataMapper::New();
       myFaceOrientationDataMapper->SetInputConnection(myFaceOrientationFilter->GetOutputPort());
@@ -208,6 +218,9 @@ namespace SMESH
 
       myGrid->InsertNextCell(theType,anIds);
       anIds->Delete();
+
+      myGeometryFilter->Update();
+      myTriangleFilter->Update();
 
       myGrid->Modified();
 

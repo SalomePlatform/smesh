@@ -119,6 +119,8 @@ SET(StdMeshers_HEADERS
   StdMeshers_ViscousLayers2D.hxx
   StdMeshers_Projection_1D2D.hxx
   StdMeshers_CartesianParameters3D.hxx
+  StdMeshers_Cartesian_3D_Grid.hxx
+  StdMeshers_Cartesian_3D_Hexahedron.hxx
   StdMeshers_Cartesian_3D.hxx
   StdMeshers_Cartesian_VL.hxx
   StdMeshers_QuadFromMedialAxis_1D2D.hxx
@@ -184,6 +186,8 @@ SET(StdMeshers_SOURCES
   StdMeshers_ViscousLayers2D.cxx
   StdMeshers_Projection_1D2D.cxx
   StdMeshers_CartesianParameters3D.cxx
+  StdMeshers_Cartesian_3D_Grid.cxx
+  StdMeshers_Cartesian_3D_Hexahedron.cxx
   StdMeshers_Cartesian_3D.cxx
   StdMeshers_Cartesian_VL.cxx
   StdMeshers_Adaptive1D.cxx

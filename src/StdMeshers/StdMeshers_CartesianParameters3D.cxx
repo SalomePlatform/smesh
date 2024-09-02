@@ -361,9 +361,13 @@ void StdMeshers_CartesianParameters3D::ComputeCoordinates(const double    x0,
         ++iCell;
       }
     }
-    const double lastCellLen = coords.back() - coords[ coords.size() - 2 ];
-    if ( fabs( coords.back() - p1 ) > 0.5 * lastCellLen )
+    if (coords.size() < 2)
       coords.push_back ( p1 );
+    else {
+      const double lastCellLen = coords.back() - coords[ coords.size() - 2 ];
+      if ( fabs( coords.back() - p1 ) > 0.5 * lastCellLen )
+        coords.push_back ( p1 );
+    }
   }
 
   // correct coords if a forced point is too close to a neighbor node

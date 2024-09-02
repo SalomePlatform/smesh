@@ -142,7 +142,7 @@ public:
 
   SMDS_Mesh* GetMesh() const;
 
-  void Print(std::ostream & OS) const;
+  virtual void Print(std::ostream & OS) const;
 
   friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
   friend class SMDS_ElementFactory;

@@ -43,6 +43,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkShrinkFilter.h>
 #include <vtkShrinkPolyData.h>
+#include <vtkTriangleFilter.h>
 
 #include <vtkProperty.h>
 #include <vtkPolyData.h>
@@ -109,6 +110,7 @@ SMESH_DeviceActor
   myMergeFilter = vtkMergeFilter::New();
 
   myGeomFilter = VTKViewer_GeometryFilter::New();
+  myTriangleFilter = vtkTriangleFilter::New();
 
   myTransformFilter = VTKViewer_TransformFilter::New();
 
@@ -153,6 +155,7 @@ SMESH_DeviceActor
   myFaceOrientation->Delete();
 
   myGeomFilter->Delete();
+  myTriangleFilter->Delete();
 
   myTransformFilter->Delete();
 
@@ -251,8 +254,10 @@ SMESH_DeviceActor
 
     anId++; // 3
     myGeomFilter->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
+    myTriangleFilter->SetInputConnection(myGeomFilter->GetOutputPort());
 
     anId++; // 4
+    // myPassFilter[ anId ]->SetInputConnection( myTriangleFilter->GetOutputPort() );
     myPassFilter[ anId ]->SetInputConnection( myGeomFilter->GetOutputPort() );
     myPassFilter[ anId + 1 ]->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
