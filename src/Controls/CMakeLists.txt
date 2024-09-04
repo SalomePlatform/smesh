@@ -51,13 +51,15 @@ SET(_link_LIBRARIES
 # header files / no moc processing
 SET(SMESHControls_HEADERS
   SMESH_ControlsDef.hxx
+  SMESH_ControlsClassifier.hxx
 )
 
 # --- sources ---
 
 # sources / static
 SET(SMESHControls_SOURCES
-  SMESH_Controls.cxx 
+  SMESH_Controls.cxx
+  SMESH_ControlsClassifier.cxx
 )
 
 # --- rules ---

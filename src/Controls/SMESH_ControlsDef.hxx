@@ -26,6 +26,7 @@
 #include "SMESH_Controls.hxx"
 
 #include "SMESH_TypeDefs.hxx"
+#include "SMESH_ControlsClassifier.hxx"
 
 #include <Bnd_B3d.hxx>
 #include <GeomAPI_ProjectPointOnCurve.hxx>
@@ -988,7 +989,6 @@ namespace SMESH{
 
     private:
 
-      struct Classifier;
       struct OctreeClassifier;
 
       void clearClassifiers();

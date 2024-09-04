@@ -23,6 +23,8 @@
 
 #include "StdMeshers_Cartesian_3D_Hexahedron.hxx"
 
+#include <numeric>
+
 using namespace std;
 using namespace SMESH;
 using namespace StdMeshers::Cartesian3D;

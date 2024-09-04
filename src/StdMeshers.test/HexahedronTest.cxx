@@ -38,6 +38,7 @@
 
 #include <iostream>
 #include <memory>
+#include <numeric>
 
 using namespace StdMeshers::Cartesian3D;
 
