@@ -80,6 +80,40 @@ namespace SMESHUtils
     }
   }
 
+  /*    Define vertex numeration convention for vertex and face index limits!
+  *
+  *               V7                           V6
+  *                +--------+--------+--------+
+  *               /        /        /        /|
+  *              +--------+--------+--------+ |
+  *             /        /        /        /| |
+  *            +--------+--------+--------+ | +
+  *           /        /        /     V5 /| |/|
+  *       V4 +--------+--------+--------+ | + |
+  *          |     |                    | |/| |
+  *          |     |                    | + | +
+  *          |     |                    |/| |/|
+  *          +     |                    | + |
+  *          |     |                    | |/| |
+  *          |     +-------+----------+-| + | + V2
+  *          |    / V3                  |/| |/
+  *          +   /                      | +
+  *          |  /                       | |/
+  *          | /                        | +
+  *          |/                         |/
+  *          +--------+--------+--------+
+  *         V0                          V1
+  * 
+  * Canonical cartesian axis orientation
+  * 
+  *         ^   ^ j (or y)
+  * k (or z)|  /
+  *         | /
+  *         |/
+  *         +------> i (or x)
+  * 
+  * 
+  */
   template<typename T>
   std::vector<T> SMESH_RegularGrid::getFaceIndexLimits( const FaceType face ) const
   {

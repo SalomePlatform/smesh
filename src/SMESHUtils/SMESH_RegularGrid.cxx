@@ -335,6 +335,63 @@ std::tuple<int,int,int,int> SMESH_RegularGrid::getFaceLimits( const FaceType fac
   }
 }
 
+// Find the left bottom corner of the box face from the 4 points and return its index
+// Auxiliary for the GetCommontInterface function
+static int findLeftBottomCorner(auto& V0, auto& V1, auto& V2, auto& V3)
+{
+  // Find the left bottom corner of the box face from the 4 points
+  auto isLeftBottom = [](const std::shared_ptr<gp_Pnt>& a, const std::shared_ptr<gp_Pnt>& b) {
+    return (a->X() < b->X()) || 
+           (a->X() == b->X() && a->Y() < b->Y()) || 
+           (a->X() == b->X() && a->Y() == b->Y() && a->Z() < b->Z());
+  };
+
+  int index = 0;
+
+  if (isLeftBottom(V1, V0)) {
+    index = 1;
+  }
+  if (isLeftBottom(V2, (index == 1 ? V1 : V0))) {
+    index = 2;
+  }
+  if (isLeftBottom(V3, (index == 2 ? V2 : (index == 1 ? V1 : V0)))) {
+    index = 3;
+  }
+
+  return index;
+}
+
+// This function transforms the index limits of a face based on the position of the left bottom corner.
+// It ensures that the face limits are correctly oriented by swapping indices if necessary.
+// Auxiliary for the GetCommontInterface function
+void SMESH_RegularGrid::transformIndexLimits(FaceType face, std::vector<int>& faceLimits, auto& V0, auto& V1, auto& V2, auto& V3)
+{
+  int indexOfLeftBottom = findLeftBottomCorner(V0, V1, V2, V3);
+  if(indexOfLeftBottom == 0)
+    return;
+
+  if(indexOfLeftBottom == 1)
+  {
+    std::swap(faceLimits[0],faceLimits[3]);
+    std::swap(faceLimits[1],faceLimits[4]);
+    std::swap(faceLimits[2],faceLimits[5]);
+    return;
+  }
+
+  if(face == FaceType::B_BOTTOM || face == FaceType::B_TOP)
+  {
+    indexOfLeftBottom == 2? std::swap(faceLimits[0],faceLimits[3]) : std::swap(faceLimits[1],faceLimits[4]);
+  }
+  else if(face == FaceType::B_RIGHT || face == FaceType::B_LEFT)
+  {
+    indexOfLeftBottom == 2? std::swap(faceLimits[1],faceLimits[4]) : std::swap(faceLimits[2],faceLimits[5]);
+  }
+  else if(face == FaceType::B_BACK || face == FaceType::B_FRONT)
+  {
+    indexOfLeftBottom == 2? std::swap(faceLimits[0],faceLimits[3]) : std::swap(faceLimits[2],faceLimits[5]);
+  }
+}
+
 void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * grid, std::vector<int>& interface )
 {
   const double tol = Precision::Confusion(); /*confusion is 1e-7, the recommended tolerance to find coincident points in 3D*/
@@ -368,12 +425,11 @@ void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * 
     auto neighboorVertex = grid->getFaceLimits( gridFace );
 
     auto v4 = grid->GetNode(std::get<0>(neighboorVertex));
-    auto v5 = grid->GetNode(std::get<1>(neighboorVertex));  
+    auto v5 = grid->GetNode(std::get<1>(neighboorVertex));
     auto v6 = grid->GetNode(std::get<2>(neighboorVertex));
     auto v7 = grid->GetNode(std::get<3>(neighboorVertex));
 
-
-    std::vector<bool> trueTable({ v0->IsEqual(*v4,tol),v0->IsEqual(*v5,tol),v0->IsEqual(*v6,tol),v0->IsEqual(*v7,tol),                                  
+    std::vector<bool> trueTable({ v0->IsEqual(*v4,tol),v0->IsEqual(*v5,tol),v0->IsEqual(*v6,tol),v0->IsEqual(*v7,tol),
                                   v1->IsEqual(*v4,tol),v1->IsEqual(*v5,tol),v1->IsEqual(*v6,tol),v1->IsEqual(*v7,tol),
                                   v2->IsEqual(*v4,tol),v2->IsEqual(*v5,tol),v2->IsEqual(*v6,tol),v2->IsEqual(*v7,tol),
                                   v3->IsEqual(*v4,tol),v3->IsEqual(*v5,tol),v3->IsEqual(*v6,tol),v3->IsEqual(*v7,tol)});
@@ -389,7 +445,7 @@ void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * 
          trueCorner[3] )   /*Face to Face interface 100% conform*/
     {
       interfaceRange = this->getFaceIndexLimits<int>( face );
-      interfaceDonor = grid->getFaceIndexLimits<int>( gridFace );      
+      interfaceDonor = grid->getFaceIndexLimits<int>( gridFace );
     }
     else if ( trueCorner[0] || trueCorner[1]  ||
               trueCorner[2] || trueCorner[3] ) /*Partial Face to Face. Only one intersection then all the other 3 vertex are: 2 in the edges 1 inside the face*/
@@ -401,7 +457,7 @@ void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * 
         auto nodeToSearch = trueCorner[0] ? v1 : trueCorner[2] ? v3 : trueCorner[1] ? v0 : v2;
 
         grid->foreachNodeOnFace( gridFace, [&] (const std::shared_ptr<gp_Pnt> sidePoint, const int nodeIndex) 
-        {       
+        {
           if ( nodeToSearch->IsEqual( *sidePoint, tol ) ) 
           {
             interfaceRange = this->getFaceIndexLimits<int>( face );
@@ -415,7 +471,7 @@ void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * 
                               grid->getFaceIndexLimits( startIndex, nodeIndex ) : 
                                 grid->getFaceIndexLimits( nodeIndex, startIndex );
             return;
-          }          
+          }
         });
       }
       // 2) face > gridEdge
@@ -437,23 +493,27 @@ void SMESH_RegularGrid::GetCommontInterface( FaceType face, SMESH_RegularGrid * 
                                 this->getFaceIndexLimits( startIndex, nodeIndex) : 
                                   this->getFaceIndexLimits( nodeIndex, startIndex );
 
-            interfaceDonor = grid->getFaceIndexLimits<int>( gridFace );  
+            interfaceDonor = grid->getFaceIndexLimits<int>( gridFace );
             return;
-          }          
+          }
         });
-      }      
+      }
     }
 
     if ( !interfaceRange.empty() && !interfaceDonor.empty() )
-    {      
+    {
+      // Transform the index limits of the face based on the position of the left bottom corner
+      transformIndexLimits(face, interfaceRange, v0, v1, v2, v3);
+      transformIndexLimits(gridFace, interfaceDonor, v4, v5, v6, v7);
+
       tranformationRange  = this->computeTransformation( face, gridFace, interfaceRange, interfaceDonor );
       tranformationDonor  = grid->computeTransformation( gridFace, face, interfaceDonor, interfaceRange );
       interface           = std::vector<int>{(int)face}+interfaceRange+interfaceDonor+tranformationRange;
       auto dualInterface  = std::vector<int>{(int)face}+interfaceDonor+interfaceRange+tranformationDonor;
       this->setInterface( face, grid->id(), interface );
       grid->setInterface( gridFace, this->id(), dualInterface );
-    }    
-  });    
+    }
+  });
 }
 
 void SMESH_RegularGrid::GetCommontInterface( EdgeType edge, SMESH_RegularGrid * grid, std::vector<int>& interface )
