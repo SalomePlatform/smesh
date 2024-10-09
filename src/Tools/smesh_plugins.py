@@ -71,6 +71,13 @@ except Exception as e:
   pass
 
 try:
+  from meshbooleanplugin.mesh_boolean_plugin import MeshBoolean
+  salome_pluginsmanager.AddFunction('Boolean Mesh Operations', 'Perform boolean operations on meshes', MeshBoolean)
+except Exception as e:
+  salome_pluginsmanager.logger.info('ERROR: MeshBoolean plug-in is unavailable: {}'.format(e))
+  pass
+
+try:
   from blocFissure.ihm.fissureCoude_plugin import fissureCoudeDlg
   salome_pluginsmanager.AddFunction('Meshed Pipe with a crack (blocFissure plugin)',
                                     'Create a mesh with blocFissure tool',
