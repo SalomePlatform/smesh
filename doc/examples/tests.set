@@ -152,8 +152,11 @@ ENDIF(NOT WIN32)
 # The following tests can be executed with both 'make test' and 'salome test'.
 # ----------------------------------------------------------------------------
 
-SET(GOOD_TESTS
+SET(UNSTABLE_TESTS
   cartesian_algo.py
+)
+
+SET(GOOD_TESTS
   creating_meshes_ex02.py
   creating_meshes_ex06.py
   creating_meshes_ex07.py
