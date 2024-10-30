@@ -337,7 +337,10 @@ std::tuple<int,int,int,int> SMESH_RegularGrid::getFaceLimits( const FaceType fac
 
 // Find the left bottom corner of the box face from the 4 points and return its index
 // Auxiliary for the GetCommontInterface function
-static int findLeftBottomCorner(auto& V0, auto& V1, auto& V2, auto& V3)
+static int findLeftBottomCorner(const std::shared_ptr<gp_Pnt>& V0, 
+                                const std::shared_ptr<gp_Pnt>& V1,
+                                const std::shared_ptr<gp_Pnt>& V2,
+                                const std::shared_ptr<gp_Pnt>& V3)
 {
   // Find the left bottom corner of the box face from the 4 points
   auto isLeftBottom = [](const std::shared_ptr<gp_Pnt>& a, const std::shared_ptr<gp_Pnt>& b) {
@@ -364,7 +367,12 @@ static int findLeftBottomCorner(auto& V0, auto& V1, auto& V2, auto& V3)
 // This function transforms the index limits of a face based on the position of the left bottom corner.
 // It ensures that the face limits are correctly oriented by swapping indices if necessary.
 // Auxiliary for the GetCommontInterface function
-void SMESH_RegularGrid::transformIndexLimits(FaceType face, std::vector<int>& faceLimits, auto& V0, auto& V1, auto& V2, auto& V3)
+void SMESH_RegularGrid::transformIndexLimits(FaceType face,
+                                             std::vector<int>& faceLimits,
+                                             const std::shared_ptr<gp_Pnt>& V0, 
+                                             const std::shared_ptr<gp_Pnt>& V1,
+                                             const std::shared_ptr<gp_Pnt>& V2, 
+                                             const std::shared_ptr<gp_Pnt>& V3)
 {
   int indexOfLeftBottom = findLeftBottomCorner(V0, V1, V2, V3);
   if(indexOfLeftBottom == 0)

@@ -356,7 +356,12 @@ namespace SMESHUtils
     // This function transforms the index limits of a face based on the position of the left bottom corner.
     // It ensures that the face limits are correctly oriented by swapping indices if necessary.
     // Auxiliary for the GetCommontInterface function
-    void transformIndexLimits(FaceType face, std::vector<int>& faceLimits, auto& V0, auto& V1, auto& V2, auto& V3);
+    void transformIndexLimits(FaceType face, 
+                              std::vector<int>& faceLimits, 
+                              const std::shared_ptr<gp_Pnt>& V0, 
+                              const std::shared_ptr<gp_Pnt>& V1,
+                              const std::shared_ptr<gp_Pnt>& V2, 
+                              const std::shared_ptr<gp_Pnt>& V3);
 
   private:
     int myId;
