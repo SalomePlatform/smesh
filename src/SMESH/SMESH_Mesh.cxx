@@ -86,6 +86,8 @@
 namespace fs=boost::filesystem;
 #endif
 
+#include <unordered_set>
+
 // maximum stored group name length in MED file
 #define MAX_MED_GROUP_NAME_LENGTH 80
 
@@ -713,6 +715,8 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
         }
       }
     }
+
+    ret = CheckHypothesesOnSubMeshes(subMesh, anHyp, event);
   }
   HasModificationsToDiscard(); // to reset _isModified flag if a mesh becomes empty
   GetMeshDS()->Modified();
@@ -1000,6 +1004,78 @@ SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
 
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
   return anHyp;
+}
+
+//================================================================================
+/*!
+ * \brief Iterates hypotesis for all sub-meshes of the given sub-mesh and checks
+  algo state with the given event. The goal is to address hypothesis those are
+  not directly affected by changing of an algorithm of the given sub-shape.
+  It is essential to rebuild propagation chains of such hypotheses, otherwise the chains
+  are being cleared after editing of the algorithm and never rebuilt again.
+  * \param subMesh - the main sub-mesh to check sub-meshes of
+  * \param anHyp - the hypothesis changed on the given sub-mesh, we need to skip it from checking
+  * \param event - the given event
+  * \retval SMESH_Hypothesis::Hypothesis_Status - HYP_OK if no errors found, otherwise the most severe error
+ */
+//================================================================================
+SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh::CheckHypothesesOnSubMeshes(
+  SMESH_subMesh* subMesh,
+  const SMESH_Hypothesis* anHyp,
+  const SMESH_subMesh::algo_event event) const
+{
+  SMESH_Hypothesis::Hypothesis_Status ret = SMESH_Hypothesis::Hypothesis_Status::HYP_OK;
+
+  // Cache the processed hypotheses for performance reasons.
+  // Given hypothesis is already processed, so should be skipped.
+  std::unordered_set<const SMESH_Hypothesis*> processedHypotheses = { anHyp };
+
+  // Look through sub-meshes of the given sub-mesh
+  SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false, false);
+  while (smIt->more())
+  {
+    const SMESH_subMesh* sm = smIt->next();
+    const SMESH_Algo* algo = sm->GetAlgo();
+    if (!algo)
+      continue;
+
+    const SMESH_HypoFilter* hypoKind = algo->GetCompatibleHypoFilter(false);
+    if (!hypoKind)
+      continue;
+
+    std::list <const SMESHDS_Hypothesis*> usedHyps;
+    if (!GetHypotheses(sm, *hypoKind, usedHyps, true))
+      continue;
+
+    // Look through hypotheses used by algo
+    for (const auto* usedHyp : usedHyps)
+    {
+      SMESH_Hypothesis* hyp = GetHypothesis(usedHyp->GetID());
+      if (hyp == anHyp)
+        continue;
+
+      if (processedHypotheses.find(hyp) != processedHypotheses.end())
+        continue;
+
+      processedHypotheses.insert(hyp); // Cache the hypothesis pointer
+
+      // Hypoteses restricted by Propagation only because of failed tests.
+      // It's ok for now, because this method was created to fix propagation issue.
+      // It should be investigated more if we find similar issues with other hypotheses.
+      const char* hypName = hyp->GetName();
+      if (strcmp(hypName, "Propagation") != 0)
+        continue;
+
+      const SMESH_Hypothesis::Hypothesis_Status ret2 = subMesh->SubMeshesAlgoStateEngine(event, hyp, true);
+      if (ret2 > ret)
+      {
+        ret = ret2;
+        break;
+      }
+    }
+  }
+
+  return ret;
 }
 
 //=============================================================================

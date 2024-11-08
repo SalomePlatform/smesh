@@ -109,6 +109,8 @@ SET(GOOD_TESTS
   ex31_dimGroup.py
   PAL_MESH_043_2D.py
   SMESH_AdvancedEditor.py
+  SMESH_algo_switch_box.py
+  SMESH_algo_switch_face.py
   SMESH_blocks.py
   SMESH_box.py
   SMESH_BuildCompound.py
