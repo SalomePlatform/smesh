@@ -122,23 +122,25 @@ import sys
 import importlib
 import importlib.util
 
-plugin_dirs = os.getenv("SMESH_PYPLUGIN_DIR").split(":")
-# reverse plugin_dirs list to call smesh python plugin in good order
-plugin_dirs.reverse()
-for plg_dir in plugin_dirs:
-  if os.path.exists(plg_dir):
-    sys.path.insert(0, plg_dir)
-    #for filename in sorted(
-    #        filter(lambda x: os.path.isfile(os.path.join(plg_dir, x)),
-    #        os.listdir(plg_dir))):
-    for filename in os.listdir(plg_dir):
-      if filename.endswith(".py"):
-          f = os.path.join(plg_dir, filename)
-          try:
-            module_name = os.path.splitext(os.path.basename(f))[0]
-            _specs = importlib.util.find_spec(module_name)
-            _module = importlib.util.module_from_spec(_specs)
-            _specs.loader.exec_module(_module)
-            _module.init()
-          except:
-            print("Can not load python plugin from {}".format(plg_dir))
+smesh_pyplugin_dir = os.getenv("SMESH_PYPLUGIN_DIR")
+if smesh_pyplugin_dir:
+  plugin_dirs = smesh_pyplugin_dir.split(":")
+  # reverse plugin_dirs list to call smesh python plugin in good order
+  plugin_dirs.reverse()
+  for plg_dir in plugin_dirs:
+    if os.path.exists(plg_dir):
+      sys.path.insert(0, plg_dir)
+      #for filename in sorted(
+      #        filter(lambda x: os.path.isfile(os.path.join(plg_dir, x)),
+      #        os.listdir(plg_dir))):
+      for filename in os.listdir(plg_dir):
+        if filename.endswith(".py"):
+            f = os.path.join(plg_dir, filename)
+            try:
+              module_name = os.path.splitext(os.path.basename(f))[0]
+              _specs = importlib.util.find_spec(module_name)
+              _module = importlib.util.module_from_spec(_specs)
+              _specs.loader.exec_module(_module)
+              _module.init()
+            except:
+              print("Can not load python plugin from {}".format(plg_dir))
