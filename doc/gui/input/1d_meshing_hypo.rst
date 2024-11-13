@@ -1,4 +1,5 @@
 .. _a1d_meshing_hypo_page:
+.. |larr|   unicode:: U+02190 .. LEFTWARDS ARROW
 
 *********************
 1D Meshing Hypotheses
@@ -57,7 +58,7 @@ Adaptive hypothesis
 Arithmetic Progression hypothesis
 #################################
 
-**Arithmetic Progression** hypothesis allows to split edges into segments with a length that changes in arithmetic progression (Lk = Lk-1 + d) beginning from a given starting length and up to a given end length.
+**Arithmetic Progression** hypothesis allows to split edges into segments with a length that changes in arithmetic progression (L\ :sub:`k`\  |larr| L\ :sub:`k-1`\  + d) beginning from a given starting length and up to a given end length.
 
 The splitting direction is defined by the orientation of the underlying geometrical edge. **Reverse Edges** list box allows specifying the edges, for which the splitting should be made in the direction opposite to their orientation. This list box is usable only if a geometry object is selected for meshing. In this case it is possible to select edges to be reversed either directly picking them in the 3D viewer or by selecting the edges or groups of edges in the Object Browser. Use 
 **Add** button to add the selected edges to the list.
@@ -82,7 +83,7 @@ The splitting direction is defined by the orientation of the underlying geometri
 Geometric Progression hypothesis
 ################################
 
-**Geometric Progression** hypothesis allows splitting edges into segments with a length that changes in geometric progression (Lk = Lk-1 * d) starting from a given **Start Length** and with a given **Common Ratio**.
+**Geometric Progression** hypothesis allows splitting edges into segments with a length that changes in geometric progression (L\ :sub:`k`\  |larr| L\ :sub:`k-1`\  * d) starting from a given **Start Length** and with a given **Common Ratio**.
 
 The splitting direction is defined by the orientation of the underlying geometrical edge.
 **Reverse Edges** list box allows specifying the edges, for which the splitting should be made in the direction opposite to their orientation. This list box is usable only if a geometry object is selected for meshing. In this case it is possible to select edges to be reversed either directly picking them in the 3D viewer or by selecting the edges or groups of edges in the Object Browser. Use **Add** button to add the selected edges to the list.
@@ -177,7 +178,7 @@ You can set the type of node distribution for this hypothesis in the **Hypothesi
 
 **Scale Distribution** - length of segments gradually changes depending on the **Scale Factor**, which is a ratio of the first segment length to the last segment length.
 
-Length of segments changes in geometric progression with the common ratio (A) depending on the **Scale Factor** (S) and **Number of Segments** (N) as follows: A = S**(1/(N-1)). For an edge of length L, length of the first segment is L * (1 - A)/(1 - A**N)
+Length of segments changes in geometric progression with the common ratio (A) depending on the **Scale Factor** (S) and **Number of Segments** (N) as follows: A = S\ :sup:`(1/(N-1))`\ . For an edge of length L, length of the first segment is L * (1 - A)/(1 - A\ :sup:`N`\ )
 
 .. image:: ../images/a-nbsegments2.png
 	:align: center
