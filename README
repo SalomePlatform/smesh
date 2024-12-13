@@ -45,7 +45,7 @@ site:
 
 * Check Release Notes and Software Requirements of the latest SALOME release at
 
-  <https://www.salome-platform.org/?page_id=15/>
+  <https://github.com/SalomePlatform/.github/wiki/SAT/>
 
 Note: SALOME Mesh module needs SALOME KERNEL, SALOME GUI and SALOME Geometry as
 pre-requisites.
