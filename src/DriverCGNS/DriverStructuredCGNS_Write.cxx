@@ -81,7 +81,60 @@ std::string DriverStructuredCGNS_Write::GetGroupName( const int shapeToIndex, in
       }
     }
   }
-  return std::string("");
+  // else by convention, create a group called ZONESOLID or ZONEFACE
+  std::string emptyZoneName("ZONE");
+  if (dim == 3)
+    emptyZoneName += "SOLID";
+  else
+    emptyZoneName += "FACE";
+  return emptyZoneName;
+}
+
+void DriverStructuredCGNS_Write::GetGroupNamesMap( const TopoDS_Shape& shape, int dim, std::map<size_t, std::string>& groupNameMapById )
+{
+  // get all zone names
+  // get a unique name for each zone name
+  std::map<std::string, size_t> countGroupName;
+  std::map<size_t, std::string> originalGroupNameMapById;
+  TopAbs_ShapeEnum exploreType;
+  if (dim == 3)
+    exploreType = TopAbs_SOLID;
+  else
+    exploreType = TopAbs_FACE;
+  size_t i = 0;
+  for ( TopExp_Explorer fEx( shape, exploreType ); fEx.More(); fEx.Next(), ++i )
+  {
+    size_t solidId;
+    if (dim == 3)
+    {
+      auto currentSolid = TopoDS::Solid(fEx.Current()); 
+      solidId = myMesh->ShapeToIndex(currentSolid);
+    }
+    else
+    {
+      auto currentSolid = TopoDS::Face(fEx.Current()); 
+      solidId = myMesh->ShapeToIndex(currentSolid);
+    }
+    std::string zoneName = GetGroupName(solidId, dim);
+    // store the original group name
+    originalGroupNameMapById[solidId] = zoneName;
+    // update the frequency count
+    countGroupName[zoneName]++;
+    // append frequency count to end of the string
+    size_t count = countGroupName[zoneName];
+    zoneName += "_"+std::to_string(count);
+    // store the name with suffix
+    groupNameMapById[solidId] = zoneName;
+  }
+  // don't use the group with suffix if there is only one solid with this name
+  for (auto const& pair : originalGroupNameMapById)
+  {
+    size_t solidId = pair.first;
+    std::string zoneName = pair.second;
+    size_t count = countGroupName[zoneName];
+    if (count == 1)
+      groupNameMapById[solidId] = zoneName;
+  }
 }
 
 void DriverStructuredCGNS_Write::CheckForGroupNameOnFaceInterfaces( const SMESHUtils::SMESH_RegularGrid* grid, std::vector<std::string>& boundaryNames )
@@ -196,7 +249,10 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
 
   if ( meshDim == 3 )
   {
-    std::set<std::string> zNames;
+    // get a map of unique names for each solid
+    std::map<size_t, std::string> groupNameMapById;
+    GetGroupNamesMap(shape, meshDim, groupNameMapById);
+    // Fill the cgns info for each solid
     for ( TopExp_Explorer fEx( shape, TopAbs_SOLID ); fEx.More(); fEx.Next() )
     {
       TopoDS_Solid currentSolid = TopoDS::Solid(fEx.Current()); 
@@ -210,11 +266,8 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
 
         cgsize_t size[9] = {imax, jmax, kmax, imax - 1, jmax - 1, kmax - 1, 0, 0, 0};
 
-        std::string zoneName = GetGroupName(myMesh->ShapeToIndex(currentSolid),meshDim);
-        zoneName = zoneName.empty() ? "ZONESOLID" + std::to_string(myMesh->ShapeToIndex(currentSolid)) : zoneName;       
-        if ( zNames.count(zoneName) != 0 )
-          zoneName = zoneName + "_" + std::to_string(myMesh->ShapeToIndex(currentSolid));        
-        zNames.insert( zoneName );      
+        size_t currentSolidId = myMesh->ShapeToIndex(currentSolid);
+        std::string zoneName = groupNameMapById[currentSolidId];
         // write Zone
         int iZone;
         if(cg_zone_write(_fn, iBase, zoneName.c_str(), size,
@@ -309,12 +362,13 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
             {
               std::vector<cgsize_t> interfacecgns( 12 );
               for (size_t i = 0; i < 12; i++)
-                interfacecgns[i] = cgsize_t(interface[i+1]);              
+                interfacecgns[i] = cgsize_t(interface[i+1]);
                 
               int iConn;  
-              std::string neigbourZoneName  = GetGroupName(myMesh->ShapeToIndex(neighbourSolid),meshDim);
-              neigbourZoneName = neigbourZoneName.empty() ? "ZONESOLID" + std::to_string(myMesh->ShapeToIndex(neighbourSolid)) : neigbourZoneName; 
-              std::string interfaceName     = zoneName + "_" + neigbourZoneName + "_" + std::to_string(interface[0]);  
+              size_t neighbourSolidId = myMesh->ShapeToIndex(neighbourSolid);
+              std::string neigbourZoneName = groupNameMapById[neighbourSolidId];
+              // interfaceName must be unique (it should be by construction)
+              std::string interfaceName     = zoneName + "_" + neigbourZoneName;  
               if(cg_1to1_write(_fn, iBase, iZone, interfaceName.c_str(), neigbourZoneName.c_str(), 
                                 &interfacecgns[0], &interfacecgns[6], &interface[13], &iConn) != CG_OK) return addMessage(cg_get_error(), /*fatal = */true);
             }
@@ -326,7 +380,9 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
   }
   else if ( meshDim == 2 )
   {    
-    std::set<std::string> zNames;
+    // get a map of unique names for each face
+    std::map<size_t, std::string> groupNameMapById;
+    GetGroupNamesMap(shape, meshDim, groupNameMapById);
     for ( TopExp_Explorer fEx( shape, TopAbs_FACE ); fEx.More(); fEx.Next() )
     {
       TopoDS_Face currentFace = TopoDS::Face(fEx.Current());      
@@ -339,12 +395,9 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
         int iZone;
         cgsize_t size[6] = {imax, jmax, imax - 1, jmax - 1, 0, 0};
 
-        std::string zoneName = GetGroupName(myMesh->ShapeToIndex(currentFace),meshDim);
-        zoneName = zoneName.empty() ? "ZONEFACE" + std::to_string(myMesh->ShapeToIndex(currentFace)) : zoneName; 
-        
-        if ( zNames.count(zoneName) != 0 )
-          zoneName = zoneName + "_" + std::to_string(myMesh->ShapeToIndex(currentFace));        
-        zNames.insert( zoneName );      
+        size_t currentFaceId = myMesh->ShapeToIndex(currentFace);
+        std::string zoneName = groupNameMapById[currentFaceId];
+            
         // write Zone
         if(cg_zone_write(_fn, iBase, zoneName.c_str(), size,
                       CGNS_ENUMV(Structured), &iZone) != CG_OK)
@@ -441,10 +494,10 @@ Driver_Mesh::Status DriverStructuredCGNS_Write::Perform()
               for (size_t i = 0; i < 8; i++)
                 interfacecgns[i] = cgsize_t(interface[i+1]);    
 
-              int iConn;  
-              std::string neigbourZoneName  = GetGroupName(myMesh->ShapeToIndex(neighbourFace),meshDim);
-              neigbourZoneName = neigbourZoneName.empty() ? "ZONEFACE" + std::to_string(myMesh->ShapeToIndex(neighbourFace)) : neigbourZoneName;
-              std::string interfaceName = zoneName + "_" + neigbourZoneName + "_" + std::to_string(interface[0]);
+              int iConn;
+              size_t neighbourFaceId = myMesh->ShapeToIndex(neighbourFace);
+              std::string neigbourZoneName  = groupNameMapById[neighbourFaceId];
+              std::string interfaceName = zoneName + "_" + neigbourZoneName;
               if(cg_1to1_write(_fn, iBase, iZone, interfaceName.c_str(), neigbourZoneName.c_str(), 
                                 &interfacecgns[0], &interfacecgns[4], &interface[9], &iConn) != CG_OK) return addMessage(cg_get_error(), /*fatal = */true);
               

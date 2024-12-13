@@ -25,6 +25,7 @@
 
 // occt
 #include <TopoDS.hxx>
+#include <TopoDS_Shape.hxx>
 
 // smesh
 #include "SMESH_DriverCGNS.hxx"
@@ -65,6 +66,11 @@ public:
 
 private:
   int _fn; //!< file index
+  /*!
+  * \brief Get the map between a solid (or face) id and its unique name.
+  * Add a suffix if needed to avoid duplicate group name.
+  */
+  void GetGroupNamesMap( const TopoDS_Shape& shape, int dim, std::map<size_t, std::string>& groupNameMapById );
 };
 
 #endif
