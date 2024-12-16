@@ -492,6 +492,105 @@ static void compensateError(double a1, double an,
   }
 }
 
+
+//================================================================================
+/*!
+ * \brief adjust internal node parameters so that the last segment length == an,
+ *        and by distributing the error for the total length of curve segments
+ *        in relation to the target length computed from the current parameters
+ *  \param a1 - the first segment length
+ *  \param an - the last segment length
+ *  \param U1 - the first edge parameter
+ *  \param Un - the last edge parameter
+ *  \param length - the edge length
+ *  \param C3d - the edge curve
+ *  \param theParams - internal node parameters to adjust
+ */
+//================================================================================
+
+static void distributeError(double a1, double an,
+                            double U1, double Un,
+                            double            length,
+                            Adaptor3d_Curve&  C3d,
+                            list<double> &    theParams)
+{
+  // Compute the error of the total length based in the current curve parameters
+  double tol   = Min( Precision::Confusion(), 0.01 * Min(a1, an) );
+  double totalLength = 0.0;
+  double prevParam = U1;
+  list<double> segLengths;
+  list<double>::iterator itU = theParams.begin();
+  for ( ; itU != theParams.end(); ++itU )
+  {
+    // Compute the curve length between two adjacent parameters and sum them up
+    double curLength = GCPnts_AbscissaPoint::Length(C3d, prevParam, *itU, tol);
+    segLengths.push_back(curLength);
+    totalLength += curLength;
+    prevParam = *itU;
+  }
+  // Calculate the error between the total length of all segments based on given parameters
+  // and the target length of the edge itself
+  double error = totalLength - length;
+  // Compute the sum of all internal segments (= total computed length minus the length of
+  // the start and end segments)
+  double midLength = totalLength - (a1 + an);
+
+  // We only need to distribute the error, if the current parametrization is not correct,
+  // and if there are multiple internal segments
+  smIdType nPar = theParams.size();
+  if ( a1 + an <= length && nPar > 1 && fabs(error) > tol )
+  {
+    // Update the length of each internal segment (start and end length are given and not changed)
+    double newTotalLength = 0.0;
+    double newLength;
+    double relError = error / midLength;
+    list<double> newSegLengths;
+    list<double>::iterator itL = segLengths.begin();
+    for ( ; itL != segLengths.end(); ++itL )
+    {
+      // Do not update, but copy the first and the last segment lengths
+      newLength = *itL;
+      if (itL != segLengths.begin() && itL != --segLengths.end())
+      {
+        newLength -= newLength * relError;
+      }
+      newSegLengths.push_back(newLength);
+      newTotalLength += newLength;
+    }
+    bool reverse = ( U1 > Un );
+
+    // Update the parameters of the curve based on the new lengths
+    double curveLength, tol2, U;
+    double prevU = U1;
+    itU = theParams.begin();
+    itL = newSegLengths.begin();
+    for ( ; itU != theParams.end(); ++itU, ++itL )
+    {
+      curveLength = (reverse ? -(*itL) : *itL);
+      tol2        = Min( Precision::Confusion(), fabs(curveLength) / 100. );
+      GCPnts_AbscissaPoint Discret( tol2, C3d, curveLength, prevU );
+      if ( !Discret.IsDone() )
+      {
+        return;
+      }
+      U = Discret.Parameter();
+
+      double sign = reverse ? -1 : 1;
+      if ( sign*U1 < sign*U && sign*U < sign*Un )
+      {
+        *itU = U;
+      }
+      else
+      {
+        *itU = (sign*U >= sign*Un ? Un : U1);
+        break;
+      }
+      prevU = U;
+    }
+  }
+}
+
+
 //================================================================================
 /*!
  * \brief Class used to clean mesh on edges when 0D hyp modified.
@@ -1042,8 +1141,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       return error ( SMESH_Comment("Invalid segment lengths (")<<a1<<" and "<<an<<") "<<
                      "for an edge of length "<<theLength);
 
-    double q = ( an - a1 ) / ( 2 *theLength/( a1 + an ) - 1 );
-    int    n = int(fabs(q) > numeric_limits<double>::min() ? ( 1+( an-a1 )/q ) : ( 1+theLength/a1 ));
+    // Compute first the number of segments and then the arithmetic increment based on that number
+    int    n = static_cast<int>(2 * theLength / ( a1 + an ) + 0.5);
+    double q = (n > 1 ? ( an - a1 ) / (n - 1) : 0.0);
 
     double      U1 = theReverse ? l : f;
     double      Un = theReverse ? f : l;
@@ -1054,19 +1154,23 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       eltSize = -eltSize;
       q = -q;
     }
-    while ( n-- > 0 && eltSize * ( Un - U1 ) > 0 ) {
+    for (int i=0; i<n; i++) {
       // computes a point on a curve <theC3d> at the distance <eltSize>
       // from the point of parameter <param>.
       GCPnts_AbscissaPoint Discret( tol, theC3d, eltSize, param );
       if ( !Discret.IsDone() ) break;
       param = Discret.Parameter();
-      if ( param > f && param < l )
-        theParams.push_back( param );
-      else
-        break;
+      theParams.push_back( param );
       eltSize += q;
     }
-    compensateError( a1, an, U1, Un, theLength, theC3d, theParams );
+
+    distributeError( a1, an, U1, Un, theLength, theC3d, theParams );
+
+    // Do not include the parameter for the start or end of an edge in the list of parameters
+    // NOTE: it is required to correctly distribute the error
+    if (fabs(theParams.front() - U1) < tol) theParams.pop_front();
+    if (fabs(theParams.back() - Un) < tol)  theParams.pop_back();
+
     if ( theReverse ) theParams.reverse(); // NPAL18025
 
     return true;
