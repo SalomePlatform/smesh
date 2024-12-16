@@ -86,6 +86,8 @@ class SMESHDS_EXPORT SMESHDS_SubMesh : public SMDS_ElementHolder
   virtual void tmpClear();
   virtual void add( const SMDS_MeshElement* element );
   virtual void compact() {}
+  // Commented out to avoid SMESH_netgen_runner_1D2D3D test failure
+  // virtual void clear() override { Clear(); }
 
  private:
 

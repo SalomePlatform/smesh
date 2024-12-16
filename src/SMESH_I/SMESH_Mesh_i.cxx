@@ -3483,7 +3483,6 @@ void SMESH_Mesh_i::onHypothesisModified(int theHypID, bool theUpdateIcons)
 
 void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 {
-  MESSAGE("SMESH_Mesh_i::SetImpl");
   _impl = impl;
   if ( _impl )
     _impl->SetCallUp( new TCallUp_i(this));
@@ -3497,7 +3496,6 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 
 ::SMESH_Mesh & SMESH_Mesh_i::GetImpl()
 {
-  MESSAGE("SMESH_Mesh_i::GetImpl()");
   return *_impl;
 }
 

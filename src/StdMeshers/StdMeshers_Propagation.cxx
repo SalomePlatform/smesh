@@ -579,6 +579,14 @@ namespace {
     case HAS_PROPAG_HYP: {  // propag hyp on this submesh
       // --------------------------------------------------------
       switch ( event ) {
+      case SMESH_subMesh::ADD_FATHER_ALGO:
+      {
+        DBGMSG("HAS_PROPAG_HYP propagation to ADD_FATHER_ALGO " << subMesh->GetId());
+
+        // Rebuild propagation chain after an algo was added on father submesh
+        buildPropagationChain(subMesh);
+        break;
+      }
       case SMESH_subMesh::REMOVE_HYP:
       case SMESH_subMesh::REMOVE_FATHER_HYP: // remove propagation hyp
         if ( isPropagHyp && !getProagationHyp( subMesh ))

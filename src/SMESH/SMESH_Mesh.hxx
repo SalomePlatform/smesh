@@ -175,6 +175,11 @@ class SMESH_EXPORT SMESH_Mesh
 
   SMESH_Hypothesis * GetHypothesis(const int aHypID) const;
 
+  SMESH_Hypothesis::Hypothesis_Status CheckHypothesesOnSubMeshes(
+    SMESH_subMesh* subMesh,
+    const SMESH_Hypothesis* anHyp,
+    const SMESH_subMesh::algo_event event) const;
+
   const std::list<SMESHDS_Command*> & GetLog();
 
   void ClearLog();
