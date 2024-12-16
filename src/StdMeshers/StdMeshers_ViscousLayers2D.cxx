@@ -1867,26 +1867,30 @@ bool _ViscousBuilder2D::shrink()
         Geom2dAdaptor_Curve edgeCurve( pcurve, Min( uf, ul ), Max( uf, ul ));
         Geom2dAdaptor_Curve seg2Curve( seg2Line );
         Geom2dInt_GInter     curveInt( edgeCurve, seg2Curve, 1e-7, 1e-7 );
+
+        // In the older version length2D was set to this value only inside the !convex if block
+        // But it seems that length2D can be set here anyway, because if not set valid value of length2D here,
+        // it will be calculated later using length1D, and it can be not valid in cases if length1D is too large or too small.
+        length2D = L2->_lEdges[iFSeg2]._length2D;
+
+        /*  convex VERTEX
+         *                     L  seg2
+         *                    |  o---o---
+         *                    | /    |
+         *                    |/     |  L2
+         *                    x------x---      */
+        /* concave VERTEX
+         *                     o-----o---
+         *                      \    |
+         *                       \   |  L2
+         *                        x--x---
+         *                       /
+         *                    L /               */
         isConvex = ( curveInt.IsDone() && !curveInt.IsEmpty() );
-        if ( isConvex ) {
-          /*                   convex VERTEX */
+        if ( isConvex )
+        {
           length1D = Abs( u - curveInt.Point( 1 ).ParamOnFirst() );
-          double maxDist2d = 2 * L2->_lEdges[ iLSeg2 ]._length2D;
-          isConvex = ( length1D < maxDist2d * len1dTo2dRatio );
-          /*                                          |L  seg2
-           *                                          |  o---o---
-           *                                          | /    |
-           *                                          |/     |  L2
-           *                                          x------x---      */
-        }
-        if ( !isConvex ) { /* concave VERTEX */   /*  o-----o---
-                                                   *   \    |
-                                                   *    \   |  L2
-                                                   *     x--x---
-                                                   *    /
-                                                   * L /               */
-          length2D = L2->_lEdges[ iFSeg2 ]._length2D;
-          //if ( L2->_advancable ) continue;
+          length2D = Max(length2D, length1D / len1dTo2dRatio);
         }
       }
       else // L2 is advancable but in the face adjacent by L
