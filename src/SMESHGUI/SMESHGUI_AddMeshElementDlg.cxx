@@ -867,7 +867,15 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
   mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
 
   if (aList.Extent() != 1)
+  {
+    if(aList.Extent() > 1)
+    {
+      SUIT_MessageBox::warning( this, tr( "SMESH_WRN_WARNING" ), tr( "SEVERAL_GROUPS_IN_SELECTION" ) );
+      mySelectionMgr->clearSelected();
+    }
+
     return;
+  }
 
   Handle(SALOME_InteractiveObject) anIO = aList.First();
   myEntry = anIO->getEntry();

@@ -1435,6 +1435,11 @@ Please, select a mesh and try again</translation>
 Please enter a name of new group to be created or choose an existing one.</translation>
     </message>
     <message>
+        <source>SEVERAL_GROUPS_IN_SELECTION</source>
+        <translation>You are probably trying to select objects belonging to different groups. 
+Please select only objects from the same group.</translation>
+    </message>
+    <message>
         <source>MESH_GEOM_GRP_CHOSEN</source>
         <translation>Group on geometry is chosen: %1.
 Do you want to convert it to the standalone group?</translation>

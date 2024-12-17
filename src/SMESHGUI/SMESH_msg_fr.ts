@@ -1431,6 +1431,11 @@ Choisissez un maillage et essayez de nouveau</translation>
 Indiquez le nom d'un nouveau groupe à créer ou choisissez un groupe existant.</translation>
     </message>
     <message>
+        <source>SEVERAL_GROUPS_IN_SELECTION</source>
+        <translation>Vous essayez probablement de sélectionner des objets appartenant à des groupes différents.
+=Veuillez ne sélectionner que des objets d un seul groupe.</translation>
+    </message>
+    <message>
         <source>MESH_GEOM_GRP_CHOSEN</source>
         <translation>Un groupe lié à la géométrie est choisi: %1.
 Voulez-vous le convertir en un groupe autonome ?</translation>
