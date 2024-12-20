@@ -230,7 +230,7 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     }
 
     // remove free nodes
-    if ( /*SMESHDS_SubMesh * smDS = */meshDS->MeshElements( helper.GetSubShapeID() ))
+    //if ( SMESHDS_SubMesh * smDS = meshDS->MeshElements( helper.GetSubShapeID() ))
     {
       std::vector< const SMDS_MeshNode* > nodesToRemove;
       // get intersection nodes
