@@ -25,6 +25,7 @@ INCLUDE_DIRECTORIES(
   ${HDF5_INCLUDE_DIRS}
   ${MEDFILE_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${SALOMEBOOTSTRAP_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${GUI_INCLUDE_DIRS}
   ${GEOM_INCLUDE_DIRS}
@@ -61,7 +62,7 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeNotification}
   ${KERNEL_ResourcesManager}
   ${KERNEL_SalomeResourcesManager}
-  ${KERNEL_SALOMEBasics}
+  ${SALOMEBOOTSTRAP_SALOMEBasics}
   ${KERNEL_SalomeContainer}
   ${KERNEL_SalomeNS}
   ${KERNEL_Registry}
@@ -70,7 +71,7 @@ SET(_link_LIBRARIES
   ${KERNEL_TOOLSDS}
   ${KERNEL_SalomeGenericObj}
   ${KERNEL_SalomeIDLKERNEL}
-  ${KERNEL_SALOMELocalTrace}
+  ${SALOMEBOOTSTRAP_SALOMELocalTrace}
   ${KERNEL_SalomeKernelHelpers}
   ${KERNEL_SalomeDS}
   ${KERNEL_SalomeCatalog}

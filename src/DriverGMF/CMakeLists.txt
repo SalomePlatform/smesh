@@ -20,6 +20,7 @@
 # --- options ---
 # additional include directories
 INCLUDE_DIRECTORIES(
+  ${SALOMEBOOTSTRAP_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${OpenCASCADE_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
@@ -38,7 +39,7 @@ ADD_DEFINITIONS(
 
 SET(_link_LIBRARIES
   ${Boost_LIBRARIES}
-  ${KERNEL_SALOMEBasics}
+  ${SALOMEBOOTSTRAP_SALOMEBasics}
   MeshDriver
   SMESHUtils
 )

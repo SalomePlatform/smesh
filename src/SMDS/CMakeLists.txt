@@ -20,6 +20,7 @@
 # --- options ---
 # additional include directories
 INCLUDE_DIRECTORIES(
+  ${SALOMEBOOTSTRAP_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
@@ -31,8 +32,9 @@ ADD_DEFINITIONS(
 
 # libraries to link to
 SET(_link_LIBRARIES
-  ${KERNEL_SALOMELocalTrace}
   ${KERNEL_OpUtil}
+  ${SALOMEBOOTSTRAP_SALOMELocalTrace}
+  ${SALOMEBOOTSTRAP_SALOMEException}
   VTK::CommonCore
   VTK::CommonDataModel
 )

@@ -20,6 +20,7 @@
 # --- options ---
 # additional include directories
 INCLUDE_DIRECTORIES(
+  ${SALOMEBOOTSTRAP_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${OpenCASCADE_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
@@ -39,7 +40,7 @@ SET(_link_LIBRARIES
    ${OpenCASCADE_FoundationClasses_LIBRARIES}
    ${OpenCASCADE_ModelingData_LIBRARIES}
    ${Boost_LIBRARIES}
-   SALOMEException
+   ${SALOMEBOOTSTRAP_SALOMEException}
    SMDS
 )
 
