@@ -41,6 +41,8 @@ SET(_link_LIBRARIES
    ${OpenCASCADE_ModelingData_LIBRARIES}
    ${Boost_LIBRARIES}
    ${SALOMEBOOTSTRAP_SALOMEException}
+   ${KERNEL_OpUtil}
+   ${SALOMEBOOTSTRAP_SALOMEException}
    SMDS
 )
 

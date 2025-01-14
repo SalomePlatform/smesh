@@ -83,7 +83,9 @@ bool SMDS_MeshVolume::ChangeNodes(const std::vector<const SMDS_MeshNode*>& nodes
 
   vtkIdType nFaces = 0;
   vtkIdType const *tmp(nullptr);
-  getGrid()->GetFaceStream( GetVtkID(), nFaces, tmp );
+  vtkIdType cellId( GetVtkID() );
+  SMDS_UnstructuredGrid *ugrid( getGrid() );
+  ugrid->GetFaceStream( cellId, nFaces, tmp );
   vtkIdType *ptIds = const_cast<vtkIdType*>( tmp );
 
   // stream size and nb faces should not change
@@ -103,14 +105,25 @@ bool SMDS_MeshVolume::ChangeNodes(const std::vector<const SMDS_MeshNode*>& nodes
   {
     return false;
   }
-
+  // VTK_POLYHEDRON
   // update ptIds
+  vtkCellArray *faceLocations = ugrid->GetPolyhedronFaceLocations();
+  vtkCellArray *faces = ugrid->GetPolyhedronFaces();
+  vtkIdType *faceLocO = ( (vtkIdTypeArray *)faceLocations->GetOffsetsArray() )->GetPointer(0);
+  vtkIdType *faceLocC = ( (vtkIdTypeArray *)faceLocations->GetConnectivityArray())->GetPointer(0);
+  vtkIdType *faceO = ((vtkIdTypeArray *)faces->GetOffsetsArray())->GetPointer(0);
+  vtkIdType *faceC = ((vtkIdTypeArray *)faces->GetConnectivityArray())->GetPointer(0);
+
   size_t iP = 0, iN = 0;
+  if( faceLocO[ cellId + 1 ] - faceLocO[ cellId ] != quantities.size() )
+    THROW_SALOME_EXCEPTION( "Number of faces of polyhedron mismatch " << quantities.size() << " whereas in SD there are " << faceLocO[ cellId + 1 ] - faceLocO[ cellId ] );
   for ( size_t i = 0; i < quantities.size(); ++i )
   {
-    ptIds[ iP++ ] = quantities[ i ]; // nb face nodes
+    vtkIdType faceId = faceLocC[ faceLocO[ cellId ] + i ];
+    if( faceO[ faceId + 1 ] - faceO[ faceId ] != quantities[ i ] )
+      THROW_SALOME_EXCEPTION( "Number of pts in face #" << i << " # of points mismatch " << quantities[ i ] << " whereas in SD there are " << faceO[ faceId + 1 ] - faceO[ faceId ] );
     for ( int j = 0; j < quantities[ i ]; ++j )
-      ptIds[ iP++ ] = nodes[ iN++ ]->GetVtkID();
+      faceC[ faceO[ faceId ] + j ] = nodes[ iN++ ]->GetVtkID();
   }
   return true;
 }
