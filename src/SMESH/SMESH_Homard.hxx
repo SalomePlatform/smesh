@@ -1,6 +1,6 @@
 //  HOMARD HOMARD : implementation of HOMARD idl descriptions
 //
-// Copyright (C) 2011-2024  CEA, EDF
+// Copyright (C) 2011-2025  CEA, EDF
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public

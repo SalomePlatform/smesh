@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2024  CEA, EDF, OPEN CASCADE
+# Copyright (C) 2012-2025  CEA, EDF, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -38,7 +38,7 @@ ENDIF()
 
 # Versioning
 # ===========
-SALOME_SETUP_VERSION(9.13.0)
+SALOME_SETUP_VERSION(9.14.0)
 MESSAGE(STATUS "Building ${PROJECT_NAME_UC} ${${PROJECT_NAME_UC}_VERSION} from \"${${PROJECT_NAME_UC}_GIT_SHA1}\"")
 
 
