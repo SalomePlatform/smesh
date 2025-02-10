@@ -55,6 +55,7 @@ SET(_link_LIBRARIES
   ${KERNEL_OpUtil}
   ${OpenCASCADE_ModelingAlgorithms_LIBRARIES} 
   ${OpenCASCADE_ModelingData_LIBRARIES}
+  ${OpenCASCADE_DETools_LIBRARIES}
   ${GEOM_GEOMUtils}
   SMESHimpl
   SMESHDS
