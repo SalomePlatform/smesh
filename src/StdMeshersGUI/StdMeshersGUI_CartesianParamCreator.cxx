@@ -795,8 +795,9 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   QGridLayout* argGroupLayout = new QGridLayout( GroupC1 );
   argGroupLayout->setSpacing( SPACING );
   argGroupLayout->setMargin( MARGIN );
-  argGroupLayout->setColumnStretch( 0, 0 );
+  argGroupLayout->setColumnStretch( 0, 1 );
   argGroupLayout->setColumnStretch( 1, 1 );
+
 
   int row = 0;
   // 0)  name
@@ -820,26 +821,26 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   // 2)  "Implement edges"
   myAddEdges = new QCheckBox( tr("ADD_EDGES"), GroupC1 );
   argGroupLayout->addWidget( myAddEdges, row, 0, 1, 2 );
-  row++;
-  myCreateFaces = new QCheckBox( tr("CREATE_FACES"), GroupC1 );
-  argGroupLayout->addWidget( myCreateFaces, row, 0, 1, 2 );
-  row++;
   myConsiderInternalFaces = new QCheckBox( tr("CONSIDER_INTERNAL_FACES"), GroupC1 );
-  argGroupLayout->addWidget( myConsiderInternalFaces, row, 0, 1, 2 );
-  row++;
-  myUseThresholdForInternalFaces = new QCheckBox( tr("USE_THRESHOLD_FOR_INTERNAL_FACES"), GroupC1 );
-  argGroupLayout->addWidget( myUseThresholdForInternalFaces, row, 0, 1, 2 );
-  row++;
-  mySetQuanta = new QCheckBox( tr("SET_QUANTA"), GroupC1 );
-  argGroupLayout->addWidget( mySetQuanta, row, 0, 1, 2 );
+  argGroupLayout->addWidget( myConsiderInternalFaces, row, 1, 1, 2 );
   row++;
 
-  argGroupLayout->addWidget( new QLabel( tr("QUANTA_VALUE"), GroupC1 ), row, 0 );
+  myCreateFaces = new QCheckBox( tr("CREATE_FACES"), GroupC1 );
+  argGroupLayout->addWidget( myCreateFaces, row, 0, 1, 2 );
+  myUseThresholdForInternalFaces = new QCheckBox( tr("USE_THRESHOLD_FOR_INTERNAL_FACES"), GroupC1 );
+  argGroupLayout->addWidget( myUseThresholdForInternalFaces, row, 1, 1, 2 );
+  row++;
+
+  mySetQuanta = new QCheckBox( tr("SET_QUANTA"), GroupC1 );
+  argGroupLayout->addWidget( mySetQuanta, row, 0, 1, 2 );
+  argGroupLayout->addWidget( new QLabel( tr("QUANTA_VALUE"), GroupC1 ), row, 1 );
   myQuanta = new SMESHGUI_SpinBox( GroupC1 );
   myQuanta->setAcceptNames( false );
   myQuanta->RangeStepAndValidator( 1e-6, 1, 0.05, "length_precision" );
   myQuanta->setEnabled(false);
   argGroupLayout->addWidget( myQuanta, row, 1 );  
+  fr->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  fr->setLayout(argGroupLayout);
   row++;
 
   // 3)  Grid definition
@@ -850,7 +851,10 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   tabWdg->addTab( myAxisTabs[ 0 ], tr( "AXIS_X" ) );
   tabWdg->addTab( myAxisTabs[ 1 ], tr( "AXIS_Y" ) );
   tabWdg->addTab( myAxisTabs[ 2 ], tr( "AXIS_Z" ) );
+  tabWdg->setMinimumSize(QSize(80, 50));
   argGroupLayout->addWidget( tabWdg, row, 0, 1, 2 );
+  argGroupLayout->setRowStretch(row, 1);
+  
   row++;
 
   QPixmap aPix = SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT"));
