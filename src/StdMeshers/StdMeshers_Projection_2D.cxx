@@ -1619,7 +1619,7 @@ namespace {
     list< int > tgtNbEW, srcNbEW;
     int tgtNbW = SMESH_Block::GetOrderedEdges( TopoDS::Face( theTgtFace ), tgtEdges, tgtNbEW );
 
-    TopTools_IndexedMapOfShape tgtVV, srcVV;
+    TopTools_IndexedMapOfShape tgtVV, srcVV, srcVVtemp;
     for ( const TopoDS_Edge& tgtEdge : tgtEdges )
       tgtVV.Add( SMESH_MesherHelper::IthVertex( 0, tgtEdge ));
     // if ( tgtVV.Size() < 2 )
@@ -1636,14 +1636,16 @@ namespace {
     {
       const TopoDS_Face& srcFace = TopoDS::Face( faceExp.Current() );
 
+      srcEdges.clear();
+      srcNbEW.clear();
       int srcNbW = SMESH_Block::GetOrderedEdges( srcFace, srcEdges, srcNbEW );
       if ( tgtNbW != srcNbW )
         continue;
 
-      srcVV.Clear( false );
+      srcVVtemp.Clear( false );
       for ( const TopoDS_Edge& srcEdge : srcEdges )
-        srcVV.Add( SMESH_MesherHelper::IthVertex( 0, srcEdge ));
-      if ( srcVV.Extent() != tgtVV.Extent() )
+        srcVVtemp.Add( SMESH_MesherHelper::IthVertex( 0, srcEdge ));
+      if ( srcVVtemp.Extent() != tgtVV.Extent() )
         continue;
 
       // make srcFace computed
@@ -1675,9 +1677,9 @@ namespace {
 
       gp_Lin line;
       double vertexDist;
-      for ( int iSrcV0 = 1; iSrcV0 <= srcVV.Size(); ++iSrcV0 )
+      for ( int iSrcV0 = 1; iSrcV0 <= srcVVtemp.Size(); ++iSrcV0 )
       {
-        const gp_Pnt srcP0 = BRep_Tool::Pnt( TopoDS::Vertex( srcVV( iSrcV0 )));
+        const gp_Pnt srcP0 = BRep_Tool::Pnt( TopoDS::Vertex( srcVVtemp( iSrcV0 )));
         try {
           line.SetDirection( gp_Vec( srcP0, tgtP0 ));
         }
@@ -1695,7 +1697,7 @@ namespace {
             iTgtV = ( iTgtV + 1           ) % nbVV;
             iSrcV = ( iSrcV + iDir + nbVV ) % nbVV;
             gp_Pnt tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtVV( iTgtV + 1 )));
-            gp_Pnt srcP = BRep_Tool::Pnt( TopoDS::Vertex( srcVV( iSrcV + 1 )));
+            gp_Pnt srcP = BRep_Tool::Pnt( TopoDS::Vertex( srcVVtemp( iSrcV + 1 )));
             line.SetLocation( tgtP );
             correspond = ( line.SquareDistance( srcP ) < tol * tol );
             vertexDist += tgtP.SquareDistance( srcP );
@@ -1711,6 +1713,11 @@ namespace {
             piercingLine    = line;
             assocSrcFace  = srcFace;
             assocTol      = tol;
+            srcVV.Clear(false);
+            for ( const TopoDS_Shape& srcVtemp : srcVVtemp )
+            {
+              srcVV.Add( srcVtemp );
+            }
           }
           break;
         }
