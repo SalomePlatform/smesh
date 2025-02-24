@@ -2346,6 +2346,38 @@ namespace
 
     return true;
   }
+
+  //-----------------------------------------------------------------------------
+  /*!
+   * \brief Solves issues like the ProjectionSource2D source face cannot be found in a mesh index
+            after geometry was modified. In this case the shape is being searched by its name
+            and set to hypothesis again. It works only if the shapes entry name wasn't changed.
+   */
+  void updateHypObjectsDependOn(
+    const SMESHDS_Hypothesis* hypToUpdate, const std::map<int, SMESH::SMESH_Hypothesis_ptr>& mapHypo)
+  {
+    MESSAGE("Check if we need to update objects those hypothesis depends on");
+    if (!hypToUpdate)
+      return;
+
+    const std::string hypName = hypToUpdate->GetName();
+    SCRUTE(hypName);
+
+    auto id_hypptr = mapHypo.find(hypToUpdate->GetID());
+    if (id_hypptr == mapHypo.end())
+      return;
+
+    SMESH::SMESH_Hypothesis_var hyp = SMESH::SMESH_Hypothesis::_narrow(id_hypptr->second);
+    SMESH_Hypothesis_i* hyp_i = SMESH::DownCast<SMESH_Hypothesis_i*>(hyp);
+
+    std::vector<std::string> entryArray;
+    std::vector<int>         subIDArray;
+    if (!hyp_i->getObjectsDependOn(entryArray, subIDArray))
+      return;
+
+    hyp_i->setObjectsDependOn(entryArray, subIDArray);
+    MESSAGE("Updated objects depends on for hypothesis " << hypName);
+  }
 }
 
 //=============================================================================
@@ -2627,7 +2659,10 @@ void SMESH_Mesh_i::CheckGeomModif( bool theIsBreakLink )
     const THypList& hyps = ids2Hyps[i].second;
     THypList::const_iterator h = hyps.begin();
     for ( ; h != hyps.end(); ++h )
+    {
+      updateHypObjectsDependOn(*h, _mapHypo);
       _impl->AddHypothesis( s, (*h)->GetID() );
+    }
   }
 
   {
