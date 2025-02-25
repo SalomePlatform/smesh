@@ -33,6 +33,7 @@
 #include "SMESH_Controls.hxx"
 #include "SMESH_TypeDefs.hxx"
 #include "SMESH_ComputeError.hxx"
+#include "SMDS_VolumeTool.hxx"
 
 #include <utilities.h>
 
@@ -61,6 +62,7 @@ class TopoDS_Vertex;
 class gp_Ax1;
 class gp_Pnt;
 class gp_Vec;
+class SMDS_VolumeTool;
 
 // ============================================================
 /*!
@@ -245,8 +247,12 @@ public:
    *        If facet ID < 0, element is split into tetrahedra,
    *        else a hexahedron is split into prisms so that the given facet is
    *        split into triangles
+   *        if avoidOverConstrainedVolumes is True , the split method will choose the variant
+   *        with no over-constrained volumes. 
    */
-  void SplitVolumes (const TFacetOfElem & theElems, const int theMethodFlags);
+  void SplitVolumes (const TFacetOfElem & theElems,
+                     const int theMethodFlags,
+                     const bool avoidOverConstrainedVolumes = false );
 
   /*!
    * \brief For hexahedra that will be split into prisms, finds facets to
@@ -269,6 +275,12 @@ public:
    *  \param elems - elements to split
    */
   void SplitBiQuadraticIntoLinear(TIDSortedElemSet& theElems);
+
+  /*!
+   * \brief Return true if one of the tetras included in the variant will be
+   * an overconstrained tetra
+   */
+  bool isVariantOverConstrained(SMDS_VolumeTool& vol, const int* connVariants);
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
 

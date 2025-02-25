@@ -263,6 +263,8 @@ public:
                                   SMESH::NumericalFunctor_ptr   Criterion);
   void           SplitVolumesIntoTetra(SMESH::SMESH_IDSource_ptr elems,
                                        CORBA::Short             methodFlags);
+  void           SplitVolumesIntoTetraAvoidOverConstrainedVolumes(SMESH::SMESH_IDSource_ptr elems,
+                                                                  CORBA::Short              methodFlags);
   void           SplitHexahedraIntoPrisms(SMESH::SMESH_IDSource_ptr  elems,
                                           const SMESH::PointStruct & startHexPoint,
                                           const SMESH::DirStruct&    facetToSplitNormal,

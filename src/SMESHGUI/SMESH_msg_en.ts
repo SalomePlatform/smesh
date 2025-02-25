@@ -7511,6 +7511,14 @@ It is impossible to read point coordinates from file</translation>
         <source>ALL_DOMAINS</source>
         <translation>All domains</translation>
     </message>
+    <message>
+        <source>ADVANCED_OPTIONS</source>
+        <translation>Advanced options</translation>
+    </message>
+    <message>
+        <source>AVOID_GENERATING_OVER_CONSTRAINED_VOLUMES</source>
+        <translation>Avoid generating over-constrained volumes </translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_PrecisionDlg</name>

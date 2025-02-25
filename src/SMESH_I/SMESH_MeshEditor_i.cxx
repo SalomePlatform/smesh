@@ -2277,11 +2277,42 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
     while ( volIt->more() )
       elemSet.insert( elemSet.end(), make_pair( volIt->next(), noneFacet ));
 
-  getEditor().SplitVolumes( elemSet, int( methodFlags ));
+  getEditor().SplitVolumes( elemSet, int( methodFlags ), false );
   declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
 
   TPythonDump() << this << ".SplitVolumesIntoTetra( "
-                << elems << ", " << methodFlags << " )";
+                << elems << ", " << methodFlags << ","
+                << false << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//============================================================================================
+/*!
+ * \brief Split volumic elements into tetrahedrons and avoid creating over-constrained volumes
+ */
+//============================================================================================
+
+void SMESH_MeshEditor_i::SplitVolumesIntoTetraAvoidOverConstrainedVolumes(SMESH::SMESH_IDSource_ptr elems,
+                                                                          CORBA::Short              methodFlags
+                                                                          )
+{
+  SMESH_TRY;
+  initData();
+
+  ::SMESH_MeshEditor::TFacetOfElem elemSet;
+  const int noneFacet = -1;
+  prepareIdSource( elems );
+  if ( SMDS_ElemIteratorPtr volIt = myMesh_i->GetElements( elems, SMESH::VOLUME ))
+    while ( volIt->more() )
+      elemSet.insert( elemSet.end(), make_pair( volIt->next(), noneFacet ));
+
+  getEditor().SplitVolumes( elemSet, int( methodFlags ), true );
+  declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
+
+  TPythonDump() << this << ".SplitVolumesIntoTetra( "
+                << elems << ", " << methodFlags << ","
+                << true << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }

@@ -5086,7 +5086,7 @@ class Mesh(metaclass = MeshMeta):
         """
         return self.editor.BestSplit(IDOfQuad, self.smeshpyD.GetFunctor(theCriterion))
 
-    def SplitVolumesIntoTetra(self, elems, method=smeshBuilder.Hex_5Tet ):
+    def SplitVolumesIntoTetra(self, elems, method=smeshBuilder.Hex_5Tet, avoidOverConstrainedVolumes=False ):
         """
         Split volumic elements into tetrahedrons
 
@@ -5095,6 +5095,7 @@ class Mesh(metaclass = MeshMeta):
                 method:  flags passing splitting method:
                         smesh.Hex_5Tet, smesh.Hex_6Tet, smesh.Hex_24Tet.
                         smesh.Hex_5Tet - to split the hexahedron into 5 tetrahedrons, etc.
+                avoidOverConstrainedVolume: if True, choose variants that comply with no over-constrained volumes
 
         Note:
                 This operation can create gaps in numeration of elements.
@@ -5106,7 +5107,10 @@ class Mesh(metaclass = MeshMeta):
         if ( isinstance( elems, list )):
             elems = self.editor.MakeIDSource(elems, SMESH.VOLUME)
             unRegister.set( elems )
-        self.editor.SplitVolumesIntoTetra(elems, method)
+        if avoidOverConstrainedVolumes:
+            self.editor.SplitVolumesIntoTetraAvoidOverConstrainedVolumes(elems, method)
+        else:
+            self.editor.SplitVolumesIntoTetra(elems, method)
         return
 
     def SplitBiQuadraticIntoLinear(self, elems=None):

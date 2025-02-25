@@ -42,6 +42,7 @@ SET(SMESH_WITH_MG
   blocFissure_06_without_session.py
   test_import_1D2D_with_tetras_and_pyras.py
   test_smeshplugins.py
+  split_overconstrained_box.py
 )
 IF(NOT WIN32)
   LIST(APPEND SMESH_WITH_MG

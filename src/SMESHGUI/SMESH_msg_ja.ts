@@ -6757,6 +6757,14 @@ pip install meshio[all]</translation>
       <source>ALL_DOMAINS</source>
       <translation>すべてのドメイン</translation>
     </message>
+    <message>
+      <source>ADVANCED_OPTIONS</source>
+      <translation>詳細オプション</translation>
+    </message>
+    <message>
+      <source>AVOID_GENERATING_OVER_CONSTRAINED_VOLUMES</source>
+      <translation>過剰に制約されたボリュームの生成を避ける</translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_PrecisionDlg</name>

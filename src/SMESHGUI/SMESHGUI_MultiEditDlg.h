@@ -168,6 +168,8 @@ protected:
   int                       myEntityType;
 
   QString                   myHelpFileName;
+  QGroupBox*                myAdvancedGrp;
+  QCheckBox*                myAvoidOverConstrainedChk;
 };
 
 /*!

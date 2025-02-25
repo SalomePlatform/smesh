@@ -2153,6 +2153,8 @@ namespace
       const_cast<TSplitMethod&>(splitMethod)._connectivity = nullptr;
       const_cast<TSplitMethod&>(splitMethod)._ownConn = false;
     }
+    // Assignment operator (to remove compilation warning)
+    TSplitMethod& operator=(const TSplitMethod& other) = default;
     bool hasFacet( const TTriangleFacet& facet ) const
     {
       if ( _nbCorners == 4 )
@@ -2186,21 +2188,50 @@ namespace
 
   //=======================================================================
   /*!
+   * \brief Return true if one of the tetras included in the variant will be
+   * an overconstrained tetra
+   */
+  //=======================================================================
+  bool isVariantOverConstrained(SMDS_VolumeTool& vol, const int* connVariants)
+  {
+    std::vector<const SMDS_MeshNode*> tetraNodes;
+    const SMDS_MeshNode** volNodes = vol.GetNodes();
+    int i = 0;
+    while (connVariants[i] != -1) {
+      tetraNodes.push_back(volNodes[connVariants[i]]);
+      i += 1;
+      if (tetraNodes.size() == 4) {
+        bool isCurrentTetraOverConstrained = true; 
+        for (const SMDS_MeshNode* node : tetraNodes) {
+          if (node->NbInverseElements(SMDSAbs_Face) == 0) {
+              isCurrentTetraOverConstrained = false; 
+          }
+        }
+        if (isCurrentTetraOverConstrained) {
+          return true; 
+        }
+        tetraNodes.clear(); 
+        }
+    }
+    return false; 
+  }
+
+  //=======================================================================
+  /*!
    * \brief return TSplitMethod for the given element to split into tetrahedra
    */
   //=======================================================================
-
-  TSplitMethod getTetraSplitMethod( SMDS_VolumeTool& vol, const int theMethodFlags)
+  TSplitMethod getTetraSplitMethod( SMDS_VolumeTool& vol,
+                                    const int theMethodFlags,
+                                    const bool avoidOverConstrainedVolumes )
   {
     const int iQ = vol.Element()->IsQuadratic() ? 2 : 1;
-
     // at HEXA_TO_24 method, each face of volume is split into triangles each based on
     // an edge and a face barycenter; tertaherdons are based on triangles and
     // a volume barycenter
     const bool is24TetMode = ( theMethodFlags == SMESH_MeshEditor::HEXA_TO_24 );
 
     // Find out how adjacent volumes are split
-
     vector < list< TTriangleFacet > > triaSplitsByFace( vol.NbFaces() ); // splits of each side
     int hasAdjacentSplits = 0, maxTetConnSize = 0;
     for ( int iF = 0; iF < vol.NbFaces(); ++iF )
@@ -2242,7 +2273,6 @@ namespace
     }
 
     // Among variants of split method select one compliant with adjacent volumes
-
     TSplitMethod method;
     if ( !vol.Element()->IsPoly() && !is24TetMode )
     {
@@ -2270,25 +2300,31 @@ namespace
       default:
         nbVariants = 0;
       }
-      for ( int variant = 0; variant < nbVariants && method._nbSplits == 0; ++variant )
+      for (int variant = 0; variant < nbVariants && method._nbSplits == 0; ++variant)
       {
         // check method compliance with adjacent tetras,
         // all found splits must be among facets of tetras described by this method
-        method = TSplitMethod( nbTet, connVariants[variant] );
-        if ( hasAdjacentSplits && method._nbSplits > 0 )
+        method = TSplitMethod(nbTet, connVariants[variant]);
+        bool facetCreated = true;
+        bool is_overConstrained=false;
+        if (hasAdjacentSplits && method._nbSplits > 0)
         {
-          bool facetCreated = true;
-          for ( size_t iF = 0; facetCreated && iF < triaSplitsByFace.size(); ++iF )
+          for (size_t iF = 0; facetCreated && iF < triaSplitsByFace.size(); ++iF)
           {
             list< TTriangleFacet >::const_iterator facet = triaSplitsByFace[iF].begin();
             for ( ; facetCreated && facet != triaSplitsByFace[iF].end(); ++facet )
               facetCreated = method.hasFacet( *facet );
           }
-          if ( !facetCreated )
-            method = TSplitMethod(0); // incompatible method
         }
+        // check the variant will not produce over constrained tetras
+        if (avoidOverConstrainedVolumes)
+          is_overConstrained = isVariantOverConstrained( vol, connVariants[variant]);
+
+        if (!facetCreated || is_overConstrained)
+          method = TSplitMethod(0); // incompatible method
       }
     }
+
     if ( method._nbSplits < 1 )
     {
       // No standard method is applicable, use a generic solution:
@@ -2393,6 +2429,7 @@ namespace
 
     return method;
   }
+
   //=======================================================================
   /*!
    * \brief return TSplitMethod to split haxhedron into prisms
@@ -2577,10 +2614,12 @@ namespace
 //           If facet ID < 0, element is split into tetrahedra,
 //           else a hexahedron is split into prisms so that the given facet is
 //           split into triangles
+//           Avoid over-constrained volumes if true (only for tetras)
 //=======================================================================
 
 void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
-                                     const int            theMethodFlags)
+                                     const int            theMethodFlags,
+                                     const bool avoidOverConstrainedVolumes )
 {
   SMDS_VolumeTool    volTool;
   SMESH_MesherHelper helper( *GetMesh()), fHelper(*GetMesh());
@@ -2591,7 +2630,7 @@ void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
 
   SMESH_SequenceOfElemPtr newNodes, newElems;
 
-  // map face of volume to it's baricenrtic node
+  // map face of volume to its baricenrtic node
   map< TVolumeFaceKey, const SMDS_MeshNode* > volFace2BaryNode;
   double bc[3];
   vector<const SMDS_MeshElement* > splitVols;
@@ -2610,7 +2649,7 @@ void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
     if ( !volTool.Set( elem, /*ignoreCentralNodes=*/false )) continue; // strange...
 
     TSplitMethod splitMethod = ( facetToSplit < 0  ?
-                                 getTetraSplitMethod( volTool, theMethodFlags ) :
+                                 getTetraSplitMethod( volTool, theMethodFlags, avoidOverConstrainedVolumes) :
                                  getPrismSplitMethod( volTool, theMethodFlags, facetToSplit ));
     if ( splitMethod._nbSplits < 1 ) continue;
 

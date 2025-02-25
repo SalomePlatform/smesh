@@ -456,6 +456,18 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * \brief Split volumic elements into tetrahedrons
+     * \and choose variants that comply with no over-constrained volumes
+     *  \param elems - elements to split
+     *  \param methodFlags - flags passing splitting method:
+     *         1 - split the hexahedron into 5 tetrahedrons
+     *         2 - split the hexahedron into 6 tetrahedrons
+     *         3 - split the hexahedron into 24 tetrahedrons
+     */
+    void SplitVolumesIntoTetraAvoidOverConstrainedVolumes(in SMESH_IDSource elems, in short methodFlags)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * \brief Split hexahedra into triangular prisms
      *  \param elems - elements to split
      *  \param startHexPoint - a point used to find a hexahedron for which \a facetToSplitNormal

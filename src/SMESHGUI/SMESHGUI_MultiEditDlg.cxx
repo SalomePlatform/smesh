@@ -266,7 +266,7 @@ QWidget* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool 
   aGrpLayout->addWidget(myGroupChk,1,0);
   aGrpLayout->addWidget(myGroupBtn,1,1);
   aGrpLayout->addWidget(myGroup,1,2);
-  
+
   aMainGrpLayout->addWidget(mySelGrp);
   aMainGrpLayout->addWidget(myCriterionGrp);
   aMainGrpLayout->addWidget(aGrp);
@@ -1639,6 +1639,17 @@ SMESHGUI_SplitVolumesDlg::SMESHGUI_SplitVolumesDlg(SMESHGUI* theModule)
     myChoiceWidget->show();
   }
 
+  // Advanced Options
+  myAdvancedGrp = new QGroupBox(tr("ADVANCED_OPTIONS"),  myCriterionGrp->parentWidget()->parentWidget());
+  QGridLayout* advancedGrpLayout = new QGridLayout(myAdvancedGrp);
+  advancedGrpLayout->setMargin(MARGIN);
+  advancedGrpLayout->setSpacing(SPACING);
+
+  myAvoidOverConstrainedChk = new QCheckBox(tr("AVOID_GENERATING_OVER_CONSTRAINED_VOLUMES"), myAdvancedGrp);
+  advancedGrpLayout->addWidget(myAvoidOverConstrainedChk,0,0);
+  myCriterionGrp->parentWidget()->layout()->addWidget(myAdvancedGrp);
+
+
   on3d2dChanged( 0 );
   Init();
 }
@@ -1683,8 +1694,21 @@ bool SMESHGUI_SplitVolumesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
     }
     else
     {
-      theEditor->SplitVolumesIntoTetra( obj, myGroupChoice->checkedId()+1 );
+      if (myAvoidOverConstrainedChk->isChecked() )
+      {
+        theEditor->SplitVolumesIntoTetraAvoidOverConstrainedVolumes(
+          obj,
+          myGroupChoice->checkedId()+1);
+
+      }
+      else
+      {
+        theEditor->SplitVolumesIntoTetra( 
+          obj,
+          myGroupChoice->checkedId()+1);
+      }
     }
+    
   }
   catch ( const SALOME::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
@@ -1721,6 +1745,7 @@ void SMESHGUI_SplitVolumesDlg::on3d2dChanged(int isPrism)
     myGroupChoice->button(2)->hide();
     myGroupChoice->button(0)->setText( tr("SPLIT_HEX_TO_2_PRISMS"));
     myGroupChoice->button(1)->setText( tr("SPLIT_HEX_TO_4_PRISMS"));
+    myAdvancedGrp->hide();
   }
   else
   {
@@ -1730,7 +1755,9 @@ void SMESHGUI_SplitVolumesDlg::on3d2dChanged(int isPrism)
     myGroupChoice->button(0)->setText( tr("SPLIT_HEX_TO_5_TETRA"));
     myGroupChoice->button(1)->setText( tr("SPLIT_HEX_TO_6_TETRA"));
     myGroupChoice->button(2)->setText( tr("SPLIT_HEX_TO_24_TETRA"));
+    myAdvancedGrp->show();
   }
+
   SMESHGUI_MultiEditDlg::on3d2dChanged( !myEntityType );
   myEntityType = 1; // == VOLUME
   myChoiceWidget->hide();

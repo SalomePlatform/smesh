@@ -7529,6 +7529,14 @@ Il y a trop peu de points dans le fichier </translation>
         <source>ALL_DOMAINS</source>
         <translation>Tous les domaines</translation>
     </message>
+    <message>
+        <source>ADVANCED_OPTIONS</source>
+        <translation>Options avancées</translation>
+    </message>
+    <message>
+    <source>AVOID_GENERATING_OVER_CONSTRAINED_VOLUMES</source>
+    <translation>Ne pas générer de volumes sur-contraints</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_PrecisionDlg</name>

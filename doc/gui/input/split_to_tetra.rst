@@ -46,7 +46,7 @@ tetrahedra or hexahedra into prisms. 2D mesh is modified accordingly.
 		* If **All domains** option is off, the operation stops when all hehexedra adjacent to the start hexahedron are split into prisms. Else the operation tries to continue splitting starting from  another hexahedron closest to the **Hexa location**. 
 
    * **Select from** set of fields allows choosing a sub-mesh or an existing group whose elements will be added to the list as you click **Add** button.
-
+   * The **Advanced options** group appears only when **Tetrahedron** element type is selected. If **Avoid generating over-constrained volumes** is checked, the splitting algorithm generates tetrahedra which are not over-constrained. When all the nodes of a tetrahedron are lying on faces elements, it can lead to errors in solver computation if these faces have boundary conditions (with Finite Element Method ot Volume Element Method). Tick this option to avoid such elements.
 
 #. Click **Apply** or **Apply and Close** button to confirm the operation.
 
