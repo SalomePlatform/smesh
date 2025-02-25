@@ -1205,12 +1205,20 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   initPart += "from salome.smesh import smeshBuilder\n";
   if ( importGeom && isMultiFile )
   {
-    initPart += ("\n## import GEOM dump file ## \n"
+    initPart += ("\n## import GEOM or SHAPERSTUDY dump file ## \n"
                  "import string, os, sys, re, inspect\n"
-                 "thisFile   = inspect.getfile( inspect.currentframe() )\n"
-                 "thisModule = os.path.splitext( os.path.basename( thisFile ))[0]\n"
-                 "sys.path.insert( 0, os.path.dirname( thisFile ))\n"
-                 "exec(\"from \"+re.sub(\"SMESH$\",\"GEOM\",thisModule)+\" import *\")\n\n");
+                 "this_file   = inspect.getfile( inspect.currentframe() )\n"
+                 "this_module = os.path.splitext( os.path.basename( this_file ))[0]\n"
+                 "module_geom = re.sub(\"SMESH$\", \"GEOM\", this_module)\n"
+                 "module_shaperstudy = re.sub(\"SMESH$\", \"SHAPERSTUDY\", this_module)\n"
+                 "geom_path = os.path.join(os.path.dirname(this_file), module_geom + \".py\")\n"
+                 "shaperstudy_path = os.path.join(os.path.dirname(this_file), module_shaperstudy + \".py\")\n"
+                 "if os.path.exists(geom_path):\n"
+                 "  exec(f\"from {module_geom} import *\")\n"
+                 "if os.path.exists(shaperstudy_path):\n"
+                 "  exec(f\"from {module_shaperstudy} import *\")\n"
+                 "\n"
+                 );
   }
   // import python files corresponding to plugins if they are used in anUpdatedScript
   {
@@ -1308,10 +1316,16 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       "\n\tpass"
       "\n"
       "\nif __name__ == '__main__':"
+      "\n\tgeom_file = re.sub('SMESH$', 'GEOM', thisModule) + '.py'"
+      "\n\tshaperstudy_file = re.sub('SMESH$', 'SHAPERSTUDY', thisModule) + '.py'"
+      "\n\tif os.path.exists(geom_file):"
+      "\n\t\tselected_file = geom_file"
+      "\n\telif os.path.exists(shaperstudy_file):"
+      "\n\t\tselected_file = shaperstudy_file"
+      "\n\texec(f'import {selected_file[:-3]} as module_dump')"
+      "\n\tmodule_dump.RebuildData()"
+      "\n\texec(f'from {selected_file[:-3]} import *')"
       "\n\tSMESH_RebuildData = RebuildData"
-      "\n\texec('import '+re.sub('SMESH$','GEOM',thisModule)+' as GEOM_dump')"
-      "\n\tGEOM_dump.RebuildData()"
-      "\n\texec('from '+re.sub('SMESH$','GEOM',thisModule)+' import * ')"
       "\n\tSMESH_RebuildData()";
   }
   anUpdatedScript += "\n";
