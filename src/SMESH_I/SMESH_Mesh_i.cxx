@@ -2686,32 +2686,34 @@ void SMESH_Mesh_i::CheckGeomModif( bool theIsBreakLink )
         g->GetGroupDS()->SetColor( data._color );
     }
 
-    if ( !sameTopology )
+    std::map< int, int >::iterator o2n = old2newIDs.begin();
+    for ( ; o2n != old2newIDs.end(); ++o2n )
     {
-      std::map< int, int >::iterator o2n = old2newIDs.begin();
-      for ( ; o2n != old2newIDs.end(); ++o2n )
+      int newID = o2n->second, oldID = o2n->first;
+      if ( newID == oldID || !_mapSubMesh.count( oldID ))
+        continue;
+      if ( newID > 0 )
       {
-        int newID = o2n->second, oldID = o2n->first;
-        if ( newID == oldID || !_mapSubMesh.count( oldID ))
-          continue;
-        if ( newID > 0 )
-        {
-          _mapSubMesh   [ newID ] = _impl->GetSubMeshContaining( newID );
-          _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
-          _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
-        }
-        _mapSubMesh.   erase(oldID);
-        _mapSubMesh_i. erase(oldID);
-        _mapSubMeshIor.erase(oldID);
-        if ( newID > 0 )
-          _mapSubMesh_i [ newID ]->changeLocalId( newID );
+        _mapSubMesh   [ newID ] = _impl->GetSubMeshContaining( newID );
+        _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
+        _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
       }
+      _mapSubMesh.   erase(oldID);
+      _mapSubMesh_i. erase(oldID);
+      _mapSubMeshIor.erase(oldID);
+      if ( newID > 0 )
+        _mapSubMesh_i [ newID ]->changeLocalId( newID );
     }
 
     // update _mapSubMesh
     std::map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
     for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
-      i_sm->second = _impl->GetSubMesh( meshDS->IndexToShape( i_sm->first ));
+    {
+      if(_impl->GetSubMesh( meshDS->IndexToShape( i_sm->first )))
+      {
+        i_sm->second = _impl->GetSubMesh( meshDS->IndexToShape( i_sm->first ));
+      }
+    }
   }
 
   if ( !sameTopology )
