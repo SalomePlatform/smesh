@@ -830,7 +830,8 @@ namespace
       const TVDEdge* edge = inSeg._cell->incident_edge();
       do {
         edge = edge->next(); // Returns the CCW next edge within the cell.
-        if ( edge->is_primary() && !inSeg.isExternal( edge ) )
+        // Check for valid vertexes to avoid crash (bos#44752)
+        if ( edge->is_primary() && edge->vertex0() && edge->vertex1() && !inSeg.isExternal( edge ) )
           inSeg._edges.push_back( edge ); // edge equidistant from two InSegments
         else
           hasSecondary = true;

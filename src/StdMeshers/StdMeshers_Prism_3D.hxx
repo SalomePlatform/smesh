@@ -111,6 +111,7 @@ namespace Prism_3D
 
     size_t NbWires() const { return myNbEdgesInWires.size(); }
 
+    inline TPrismTopo()    { Clear(); }
     void Clear();
     void SetUpsideDown();
   };

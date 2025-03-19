@@ -3553,6 +3553,7 @@ namespace Prism_3D
     myBottomEdges.clear();
     myNbEdgesInWires.clear();
     myWallQuads.clear();
+    myNotQuadOnTop = false;
     myAlgoSM = nullptr;
   }
 
