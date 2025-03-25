@@ -12,20 +12,39 @@ Editing groups
 
 
 
-   The following dialog box will appear (if the selected group is **standalone**, else this dialog looks different):
+   The following dialog box will appear for **standalone group**:
 
 	.. image:: ../images/editgroup.png
 		:align: center
 
-   In this dialog box you can modify the name and the color of your group despite of its type. You can add or remove the elements composing a **standalone group**. You can change criteria of the filter of a **group on filter**. For more information see :ref:`creating_groups_page` page.
+   In this dialog box you can modify the name and the color of your group. And you can add or remove the elements composing the group.
+
+
+   The following dialog box will appear for **group on geometry**:
+
+	.. image:: ../images/editgroup_on_geom.png
+		:align: center
+
+   In this dialog box you can modify only the name and the color of your group.
+
+
+   The following dialog box will appear for **group on filter**:
+
+	.. image:: ../images/editgroup_on_filter.png
+		:align: center
+
+   In this dialog box you can modify the name, the color and the criteria of the filter of your group.
+
+
+   For more information see :ref:`creating_groups_page` page.
 
 #. Click the **Apply** or **Apply and Close** button to confirm modification of the group.
 
 
 .. _convert_to_standalone:
 
-Convert to stanalone group
-==========================
+Convert to standalone group
+===========================
 
 *To convert an existing group on geometry or a group on filer into a standalone group and modify its contents:*
 

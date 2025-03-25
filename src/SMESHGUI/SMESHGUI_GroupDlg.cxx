@@ -755,8 +755,8 @@ void SMESHGUI_GroupDlg::updateButtons()
   }
   else
   {
-    myGeomGroupBtn->setEnabled( meshHasGeom );
-    myGeomGroupLine->setEnabled( meshHasGeom );
+    myGeomGroupBtn->setEnabled( meshHasGeom && myCreate );
+    myGeomGroupLine->setEnabled( meshHasGeom && myCreate );
   }
 
   myOKBtn->setEnabled(enable);
