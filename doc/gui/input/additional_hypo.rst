@@ -153,8 +153,8 @@ The Viscous Layer API receive the same parameters as the Viscous Layers Hypothes
 
 * The constructor ``ViscousLayerBuilder()``
 * The parameters definitions ``setBuilderParameters(...)``
-* The ``GetShrinkGeometry()`` method that returns the shrink version of the original geomtry.
-* The ``AddLayers( shrinkMesh )`` method that returns the complet version of the mesh (shrink+viscous layer)
+* The ``GetShrinkGeometry()`` method that returns the shrink version of the original geometry.
+* The ``AddLayers( shrinkMesh )`` method that returns the complete version of the mesh (shrink+viscous layer)
 
 **See also** a sample TUI script of a :ref:`tui_viscous_layers_api`.
 

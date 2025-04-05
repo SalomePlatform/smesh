@@ -41,7 +41,7 @@ Offset 2D elements in mesh, submesh, group or elements from filter.
 	.. image:: ../images/offset_filter_for_faces_gui.png
 		:align: center
 	
-	* Define the desired criterias and then click the **Apply and Close** button to confirm the selection of elements.
+	* Define the desired criteria and then click the **Apply and Close** button to confirm the selection of elements.
 	* Set **Offset** value and mesh creation **options** as done for the first case.
 
 #. Click the **Apply** or **Apply and Close** button to confirm the operation.

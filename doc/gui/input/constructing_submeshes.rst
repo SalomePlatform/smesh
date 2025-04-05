@@ -24,7 +24,7 @@ certain sub-shape, thus to get a locally coarser or finer mesh, to get
 elements of different types in the same mesh, etc.
 
 A sub-mesh can be meshed individually. To achieve this, select a
-sub-mesh and either invoke **Compute Sub-mesh** vai the contextual
+sub-mesh and either invoke **Compute Sub-mesh** via the contextual
 menu in the Object Browser or invoke **Mesh > Compute** menu.
 
 .. _submesh_shape_section: 

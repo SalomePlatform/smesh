@@ -54,7 +54,7 @@ dual_Mesh_1 = smesh.CreateDualMesh( Mesh_1, 'dual_Mesh_1', True)
 assert(dual_Mesh_1.NbPolyhedrons() > 0)
 assert(dual_Mesh_1.NbTetras() == 0)
 
-# Creating Dual mesh withour projection on shape
+# Creating Dual mesh without projection on shape
 dual_Mesh_2 = smesh.CreateDualMesh( Mesh_1, 'dual_Mesh_2', False)
 
 assert(dual_Mesh_2.NbPolyhedrons() > 0)
