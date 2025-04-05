@@ -51,7 +51,7 @@ The list of input parameters are:
 
 Parallel distributed mode
 -----------------
-For larger meshes suitable for distributed-memory solvers (domain-decomposition) the distributed parallel meshing mode can be activated via the check-box **Parallel distributed**. This requires the user to provide the number of processors to be used for parallel meshing and how to partition the mesh in each direction (X, Y, Z). Then,  **topIIvol_DistMesher** computing tool is called for creating embarassingly parallel distributed meshes for the given DEM point-cloud. These volumetric mesh partitions can be displayed in SALOME by ticking the "Display mesh" check-box.
+For larger meshes suitable for distributed-memory solvers (domain-decomposition) the distributed parallel meshing mode can be activated via the check-box **Parallel distributed**. This requires the user to provide the number of processors to be used for parallel meshing and how to partition the mesh in each direction (X, Y, Z). Then,  **topIIvol_DistMesher** computing tool is called for creating embarrassingly parallel distributed meshes for the given DEM point-cloud. These volumetric mesh partitions can be displayed in SALOME by ticking the "Display mesh" check-box.
 
 The list of input parameters are:
 

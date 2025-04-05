@@ -70,7 +70,7 @@ Window of the graphical interface
 Tore parameters
 
 
-- **Exemple**: fills the panels with a test-case
+- **Example**: fills the panels with a test-case
 
 - **Reset**: clears all the parameters
 

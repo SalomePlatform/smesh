@@ -20,7 +20,7 @@ Mesh Module: Modification > Reorient faces
 
 4) Verify that the crack front edges don't stop right at the Box surface.
 
-**Here are some advices :**
+**Here is some advice :**
 
 *To move the crack:*
 
