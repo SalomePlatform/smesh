@@ -46,7 +46,7 @@ boxes = []
 #             boxes.append(box)
 
 #With 6 boxes works
-#But simplify for 2 boxes to also Test possibility of rewritting the
+#But simplify for 2 boxes to also Test possibility of rewriting the
 # input mesh from other parallel tests. In that case this test will break
 # because the input mesh will not match the exported/imported box geometry.
 for i in range(nbox):

@@ -28,7 +28,7 @@ It is possible to use additional file formats using **meshio** library.
 However, there are some restrictions because of way it uses in Salome. The main points here are:
 
 * We use intermediate MED file to communicate between Salome and **meshio**.
-* Convertion to the target format performs **meshio convert** command, using given **MED** file.
+* Conversion to the target format performs **meshio convert** command, using given **MED** file.
 * Current **meshio** version doesn't work well with all tested file formats. 
 
 Anyway, you can try to import/export meshes with **meshio** using following formats:

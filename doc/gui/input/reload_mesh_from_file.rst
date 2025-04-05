@@ -12,7 +12,7 @@ This operation allows reload original imported mesh, which was modified by diffe
 #. Select a mesh(es) (and display it in the 3D Viewer if you are going to pick elements by mouse).
 #. From popup menu click on the *Reload from file* item
 
-Each selected mesh will be updated to orignal state with saving display properties
+Each selected mesh will be updated to original state with saving display properties
 
 .. image:: ../images/reload_mesh_orig_mesh.png 
 	:align: center

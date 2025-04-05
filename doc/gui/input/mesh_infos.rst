@@ -91,7 +91,7 @@ The **Additional Info** tab page of the dialog box provides an additional inform
 For a mesh object, the following information is shown:
 
 * Name
-* Type: based on geomerty, imported, standalone
+* Type: based on geometry, imported, standalone
 * Shape (if mesh is based on geometry)
 * File (if mesh is imported from the file)
 * Groups
