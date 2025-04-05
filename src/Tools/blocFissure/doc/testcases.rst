@@ -153,7 +153,7 @@ To check the installation of salome, the test cases can be computed by the salom
 Running test cases
 =====================================
 
-The test cases can be runned by the following instructions::
+The test cases can be executed via the following instructions::
 
     from blocFissure.CasTests.blocFissureTest import blocFissureTest
     BLOCFISSURE_TEST = blocFissureTest(list_of_cases)

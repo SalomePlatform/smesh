@@ -93,7 +93,7 @@ class InputDialog(GenericDialog):
         # indexation.
         self.MESHTYPE_ICONS = {}
         meshTypeIndex = InputData.MESHTYPES.CONCRETE
-        self.__ui.cmbMeshType.setItemText(meshTypeIndex, "Béton")
+        self.__ui.cmbMeshType.setItemText(meshTypeIndex, "BÃ©ton")
         icon = QIcon()
         icon.addFile(os.path.join(iconfolder,"concrete.png"))
         self.__ui.cmbMeshType.setItemIcon(meshTypeIndex, icon)
@@ -273,7 +273,7 @@ class InputDialog(GenericDialog):
             meshName = str(tblItem.text())
             self.__inputModel.takeRow(row)
             # Don't forget to remove this entry from the mesh object
-            # internal dictionnary
+            # internal dictionary
             self.__delInputFromMap(meshName)
 
     def __delInputFromMap(self, meshName):
@@ -331,7 +331,7 @@ class InputDialog(GenericDialog):
         dictInputData={}
         dictInputData[INPUTDATA_KEY_FILES] = self.__dictInputFiles.values()
 
-        # Get the list of additionnal parameters
+        # Get the list of additional parameters
         dictInputParameters = {}
         dictInputParameters[PARAM_KEY_NBITER] = self.__ui.txtParamNbIter.value()
         dictInputParameters[PARAM_KEY_RMAXRMIN] = self.__ui.txtParamRmaxRmin.value()
