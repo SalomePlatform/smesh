@@ -25,7 +25,7 @@ File to send files on remote ressource
 from os import environ, path
 
 from argparse import ArgumentParser
-import pydefx
+
 import pylauncher
 
 def create_launcher():
