@@ -64,7 +64,7 @@ namespace
 
 //=============================================================================
 /*!
- * \brief Get the parallellism method
+ * \brief Get the parallelism method
  */
 //=============================================================================
 
@@ -74,7 +74,7 @@ CORBA::Long SMESH_ParallelMesh_i::GetParallelismMethod(){
 
 //=============================================================================
 /*!
- * \brief Set the parallellism method
+ * \brief Set the parallelism method
  */
 //=============================================================================
 void SMESH_ParallelMesh_i::SetParallelismMethod(CORBA::Long aMethod){
@@ -83,7 +83,7 @@ void SMESH_ParallelMesh_i::SetParallelismMethod(CORBA::Long aMethod){
 
 //=============================================================================
 /*!
- * \brief Get the parallell dimension
+ * \brief Get the parallel dimension
  */
 //=============================================================================
 
@@ -93,7 +93,7 @@ CORBA::Long SMESH_ParallelMesh_i::GetParallelismDimension(){
 
 //=============================================================================
 /*!
- * \brief Set the parallell dimension
+ * \brief Set the parallel dimension
  */
 //=============================================================================
 void SMESH_ParallelMesh_i::SetParallelismDimension(CORBA::Long aDim){
@@ -120,7 +120,7 @@ void SMESH_ParallelMesh_i::SetNbThreads(CORBA::Long nbThreads){
 
 //=============================================================================
 /*!
- * \brief Get the ressource to connect to
+ * \brief Get the resource to connect to
  */
 //=============================================================================
 char* SMESH_ParallelMesh_i::GetResource(){
@@ -129,7 +129,7 @@ char* SMESH_ParallelMesh_i::GetResource(){
 
 //=============================================================================
 /*!
- * \brief Set the ressource to connect to
+ * \brief Set the resource to connect to
  */
 //=============================================================================
 void SMESH_ParallelMesh_i::SetResource(const char* aResource){
@@ -138,7 +138,7 @@ void SMESH_ParallelMesh_i::SetResource(const char* aResource){
 
 //=============================================================================
 /*!
- * \brief Get the number of processor to use on ressource
+ * \brief Get the number of processor to use on resource
  */
 //=============================================================================
 CORBA::Long SMESH_ParallelMesh_i::GetNbProc(){
@@ -147,7 +147,7 @@ CORBA::Long SMESH_ParallelMesh_i::GetNbProc(){
 
 //=============================================================================
 /*!
- * \brief Set the number of processor to use on ressource
+ * \brief Set the number of processor to use on resource
  */
 //=============================================================================
 void SMESH_ParallelMesh_i::SetNbProc(CORBA::Long nbProcs){
@@ -156,7 +156,7 @@ void SMESH_ParallelMesh_i::SetNbProc(CORBA::Long nbProcs){
 
 //=============================================================================
 /*!
- * \brief Get the number of processor per node to use on ressource
+ * \brief Get the number of processor per node to use on resource
  */
 //=============================================================================
 CORBA::Long SMESH_ParallelMesh_i::GetNbProcPerNode(){
@@ -165,7 +165,7 @@ CORBA::Long SMESH_ParallelMesh_i::GetNbProcPerNode(){
 
 //=============================================================================
 /*!
- * \brief Set the number of processor per node to use on ressource
+ * \brief Set the number of processor per node to use on resource
  */
 //=============================================================================
 void SMESH_ParallelMesh_i::SetNbProcPerNode(CORBA::Long nbProcPerNodes){
@@ -174,7 +174,7 @@ void SMESH_ParallelMesh_i::SetNbProcPerNode(CORBA::Long nbProcPerNodes){
 
 //=============================================================================
 /*!
- * \brief Get the number of node to use on ressource
+ * \brief Get the number of node to use on resource
  */
 //=============================================================================
 CORBA::Long SMESH_ParallelMesh_i::GetNbNode(){
@@ -183,7 +183,7 @@ CORBA::Long SMESH_ParallelMesh_i::GetNbNode(){
 
 //=============================================================================
 /*!
- * \brief Set the number of node to use on ressource
+ * \brief Set the number of node to use on resource
  */
 //=============================================================================
 void SMESH_ParallelMesh_i::SetNbNode(CORBA::Long nbNodes){
@@ -192,7 +192,7 @@ void SMESH_ParallelMesh_i::SetNbNode(CORBA::Long nbNodes){
 
 //=============================================================================
 /*!
- * \brief Get the wckey to use on ressource
+ * \brief Get the wckey to use on resource
  */
 //=============================================================================
 char* SMESH_ParallelMesh_i::GetWcKey(){
@@ -201,7 +201,7 @@ char* SMESH_ParallelMesh_i::GetWcKey(){
 
 //=============================================================================
 /*!
- * \brief Set the wckey to use on ressource
+ * \brief Set the wckey to use on resource
  */
 //=============================================================================
 void SMESH_ParallelMesh_i::SetWcKey(const char* wcKey){
@@ -210,7 +210,7 @@ void SMESH_ParallelMesh_i::SetWcKey(const char* wcKey){
 
 //=============================================================================
 /*!
- * \brief Get the walltime to use on ressource
+ * \brief Get the walltime to use on resource
  */
 //=============================================================================
 char* SMESH_ParallelMesh_i::GetWalltime(){
@@ -219,7 +219,7 @@ char* SMESH_ParallelMesh_i::GetWalltime(){
 
 //=============================================================================
 /*!
- * \brief Set the walltime to use on ressource
+ * \brief Set the walltime to use on resource
  */
 //=============================================================================
 void SMESH_ParallelMesh_i::SetWalltime(const char* walltime){

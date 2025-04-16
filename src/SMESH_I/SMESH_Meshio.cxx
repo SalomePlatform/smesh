@@ -177,7 +177,7 @@ QString SMESH_Meshio::GetMeshioVersion()
       return meshioVersionEnv;
     }
 
-    // Try to gess a version by installed Python version
+    // Try to guess a version by installed Python version
     const QString meshioVersionByPython = IsModernPythonVersion() ? "5" : "4";
     MESSAGE("meshio version was defined by Python version: " << meshioVersionByPython.toStdString());
 

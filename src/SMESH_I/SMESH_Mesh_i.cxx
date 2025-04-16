@@ -6098,7 +6098,7 @@ CORBA::Boolean SMESH_Mesh_i::IsComputedOK()
 
 //=============================================================================
 /*!
- * \brief Return groups cantained in _mapGroups by their IDs
+ * \brief Return groups contained in _mapGroups by their IDs
  */
 //=============================================================================
 
@@ -6782,7 +6782,7 @@ class SMESH_DimHyp
 
     // check hypothesises for concurrence (skip first as algorithm)
     size_t nbSame = 0;
-    // pointers should be same, because it is referened from mesh hypothesis partition
+    // pointers should be same, because it is referenced from mesh hypothesis partition
     list <const SMESHDS_Hypothesis*>::const_iterator hypIt = _hypotheses.begin();
     list <const SMESHDS_Hypothesis*>::const_iterator otheEndIt = theOther->_hypotheses.end();
     for ( hypIt++ /*skip first as algo*/; hypIt != _hypotheses.end(); hypIt++ )
@@ -7219,7 +7219,7 @@ void SMESH_Mesh_i::convertMeshOrder (const TListOfListOfInt&     theIdsOrder,
   theResOrder.length( listIndx );
 
   if ( theIsDump ) {
-    // finilise python dump
+    // finalise python dump
     aPythonDump << " ]";
     aPythonDump << " = " << SMESH::SMESH_Mesh_var(_this()) << ".GetMeshOrder()";
   }

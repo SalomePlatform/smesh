@@ -6671,7 +6671,7 @@ SMESH_MeshEditor_i::DoubleNodeElemGroupInRegion(SMESH::SMESH_GroupBase_ptr theEl
  *  \param [in] theGrpList - groups
  *  \param [in] theMeshDS -  mesh
  *  \param [out] theElemSet - set of elements
- *  \param [in] theIsNodeGrp - is \a theGrpList includes goups of nodes
+ *  \param [in] theIsNodeGrp - is \a theGrpList includes groups of nodes
  */
 //================================================================================
 
