@@ -2515,6 +2515,26 @@ void _pyMesh::addFatherMesh( const Handle(_pyMesh)& mesh )
   if ( !mesh.IsNull() && mesh->GetID() != GetID() )
   {
     //myFatherMeshes.push_back( mesh );
+
+    // Do not add again, if this mesh is already a child of the mesh
+    list< Handle(_pyMesh) >::iterator meshIt = mesh->myChildMeshes.begin();
+    for ( ; meshIt != mesh->myChildMeshes.end(); ++meshIt )
+      if ( (*meshIt)->GetID() == GetID() )
+      {
+        MESSAGE("Warning: this mesh " << GetID() << " is already a child of mesh " << mesh->GetID());
+        return;
+      }
+
+    // Do not make the other mesh our father, if it is already a child of us
+    meshIt = myChildMeshes.begin();
+    for ( ; meshIt != myChildMeshes.end(); ++meshIt )
+      if ( (*meshIt)->GetID() == mesh->GetID() )
+      {
+        MESSAGE("Warning: this mesh " << GetID() << " is already a father of mesh " << mesh->GetID());
+        return;
+      }
+
+    // add this mesh to the list of child meshes
     mesh->myChildMeshes.push_back( this );
 
     // protect last Compute() from clearing by the next Compute()
