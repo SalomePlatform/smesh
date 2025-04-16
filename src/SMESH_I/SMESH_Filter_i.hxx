@@ -315,7 +315,7 @@ namespace SMESH
 
   /*
     Class       : MultiConnection_i
-    Description : Functor for calculating number of faces conneted to the edge
+    Description : Functor for calculating number of faces connected to the edge
   */
   class SMESH_I_EXPORT MultiConnection_i: public virtual POA_SMESH::MultiConnection,
                                           public virtual NumericalFunctor_i
@@ -327,7 +327,7 @@ namespace SMESH
   
   /*
     Class       : MultiConnection2D_i
-    Description : Functor for calculating number of faces conneted to the edge
+    Description : Functor for calculating number of faces connected to the edge
   */
   class SMESH_I_EXPORT MultiConnection2D_i: public virtual POA_SMESH::MultiConnection2D,
                                             public virtual NumericalFunctor_i

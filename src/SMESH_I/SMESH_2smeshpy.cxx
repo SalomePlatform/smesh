@@ -2249,7 +2249,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
 
 //================================================================================
 /*!
- * \brief Return True if addition of accesor method is needed
+ * \brief Return True if addition of accessor method is needed
  */
 //================================================================================
 

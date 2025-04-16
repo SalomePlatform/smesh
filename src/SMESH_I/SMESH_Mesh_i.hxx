@@ -444,7 +444,7 @@ public:
   CORBA::Boolean IsComputedOK();
 
   /*!
-   * \brief Return groups cantained in _mapGroups by their IDs
+   * \brief Return groups contained in _mapGroups by their IDs
    */
   SMESH::ListOfGroups* GetGroups(const std::list<int>& groupIDs) const;
 

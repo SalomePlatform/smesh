@@ -630,7 +630,7 @@ namespace SMESH {
 
   /*
     Class       : MultiConnection_i
-    Description : Functor for calculating number of faces conneted to the edge
+    Description : Functor for calculating number of faces connected to the edge
   */
   MultiConnection_i::MultiConnection_i()
   {
@@ -675,7 +675,7 @@ namespace SMESH {
 
   /*
     Class       : MultiConnection2D_i
-    Description : Functor for calculating number of faces conneted to the edge
+    Description : Functor for calculating number of faces connected to the edge
   */
   MultiConnection2D_i::MultiConnection2D_i()
   {

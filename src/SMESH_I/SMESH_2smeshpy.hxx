@@ -223,7 +223,7 @@ struct ExportedMeshData
 
 // -------------------------------------------------------------------------------------
 /*!
- * \brief A container of strings groupped by prefix. It is used for a faster search of
+ * \brief A container of strings grouped by prefix. It is used for a faster search of
  *        objects requiring to KeepAgrCmds() in commands. A speed up is gained because
  *        only a common prefix (e.g. "aArea") of many object IDs is searched in a command
  *        and not every object ID

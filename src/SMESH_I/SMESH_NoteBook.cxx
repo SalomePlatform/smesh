@@ -863,7 +863,7 @@ void SMESH_NoteBook::ProcessLayerDistribution()
       }
     }
   }
-  // 3) ... and replase variables ...
+  // 3) ... and replace variables ...
 
   for ( size_t i = 0; i < _commands.size(); i++ ) {
     for ( size_t j = 0; j < aLDS.size(); j++ ) {
