@@ -1616,7 +1616,7 @@ bool SMESH_Pattern::
         double parDif = par2 - par1;
         if ( Abs( parDif ) <= DBL_MIN )
           continue;
-        // find iso-lines intersecting a bounadry
+        // find iso-lines intersecting a boundary
         double toler = tol[ 1 - iDir ];
         double minPar = Min ( par1, par2 );
         double maxPar = Max ( par1, par2 );

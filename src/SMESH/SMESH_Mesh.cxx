@@ -1008,7 +1008,7 @@ SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
 
 //================================================================================
 /*!
- * \brief Iterates hypotesis for all sub-meshes of the given sub-mesh and checks
+ * \brief Iterates hypothesis for all sub-meshes of the given sub-mesh and checks
   algo state with the given event. The goal is to address hypothesis those are
   not directly affected by changing of an algorithm of the given sub-shape.
   It is essential to rebuild propagation chains of such hypotheses, otherwise the chains
@@ -1059,7 +1059,7 @@ SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh::CheckHypothesesOnSubMeshes(
 
       processedHypotheses.insert(hyp); // Cache the hypothesis pointer
 
-      // Hypoteses restricted by Propagation only because of failed tests.
+      // Hypothesis restricted by Propagation only because of failed tests.
       // It's ok for now, because this method was created to fix propagation issue.
       // It should be investigated more if we find similar issues with other hypotheses.
       const char* hypName = hyp->GetName();

@@ -55,7 +55,7 @@ bool SMESH_DriverMesh::diffMEDFile(const std::string mesh_file1, const std::stri
 }
 
 std::string getMeshName(std::string mesh_file){
-  // TODO: Memory leak but desctructor private check with AG
+  // TODO: Memory leak but destructor private check with AG
   MEDFileUMesh * myMedMesh = MEDFileUMesh::New(mesh_file);
 
   return myMedMesh->getLevel0Mesh()->getName();

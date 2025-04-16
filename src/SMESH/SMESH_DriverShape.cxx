@@ -156,7 +156,7 @@ int SMESH_DriverShape::importShape(const std::string shape_file, TopoDS_Shape& a
   } else if (type == ".step"){
     return importSTEPShape(shape_file, aShape);
   } else {
-    throw SALOME_Exception("Unknow format for importShape: " + type);
+    throw SALOME_Exception("Unknown format for importShape: " + type);
   }
 #else
   return 0;
@@ -180,7 +180,7 @@ int SMESH_DriverShape::exportShape(const std::string shape_file, const TopoDS_Sh
   } else if (type == ".step"){
     return exportSTEPShape(shape_file, aShape);
   } else {
-    throw SALOME_Exception("Unknow format for exportShape: " + type);
+    throw SALOME_Exception("Unknown format for exportShape: " + type);
   }
 #else
   return 0;

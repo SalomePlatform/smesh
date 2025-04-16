@@ -84,14 +84,14 @@ class SMESH_EXPORT SMESH_ParallelMesh: public SMESH_Mesh
   int GetParallelElement() override;
   int GetDumpElement();
 
-  // Parallelims paramaters
+  // Parallelims parameters
   int GetParallelismMethod() {return _method;};
   void SetParallelismMethod(int aMethod) {_method = aMethod;};
 
   int GetParallelismDimension() {return _paraDim;};
   void SetParallelismDimension(int aDim) {_paraDim = aDim;};
 
-  // Mutlithreading parameters
+  // Multithreading parameters
   int GetNbThreads() {return _NbThreads;};
   void SetNbThreads(long nbThreads);
 

@@ -53,7 +53,7 @@ static std::string removeFile(std::string fileName, int& notOk)
   std::string errStr;
   notOk = std::remove(fileName.c_str());
   if (notOk) errStr = ToComment("\n error while removing file : ") << fileName;
-  else       errStr = ToComment("\n file : ") << fileName << " succesfully deleted! \n ";
+  else       errStr = ToComment("\n file : ") << fileName << " successfully deleted! \n ";
 
   return errStr;
 }

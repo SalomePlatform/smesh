@@ -3588,7 +3588,7 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
     }
 
     // search elements to fuse starting from startElem or links of elements
-    // fused earlyer - startLinks
+    // fused earlier - startLinks
     list< SMESH_TLink > startLinks;
     while ( startElem || !startLinks.empty() ) {
       while ( !startElem && !startLinks.empty() ) {
@@ -3854,7 +3854,7 @@ void SMESH_MeshEditor::GetLinkedNodes( const SMDS_MeshNode* theNode,
 
 //=======================================================================
 //function : averageBySurface
-//purpose  : Auxiliar function to treat properly nodes in periodic faces in the laplacian smoother
+//purpose  : Auxiliary function to treat properly nodes in periodic faces in the laplacian smoother
 //=======================================================================
 void averageBySurface( const Handle(Geom_Surface)& theSurface, const SMDS_MeshNode* refNode, 
                         TIDSortedElemSet& nodeSet, map< const SMDS_MeshNode*, gp_XY* >& theUVMap, double * coord )
@@ -3975,7 +3975,7 @@ void correctTheValue( Standard_Real Umax, Standard_Real Umin, Standard_Real Vmax
 
 //=======================================================================
 //function : averageByElement
-//purpose  : Auxiliar function to treat properly nodes in periodic faces in the centroidal smoother
+//purpose  : Auxiliary function to treat properly nodes in periodic faces in the centroidal smoother
 //=======================================================================
 void averageByElement( const Handle(Geom_Surface)& theSurface, const SMDS_MeshNode* refNode, const SMDS_MeshElement* elem,
                         map< const SMDS_MeshNode*, gp_XY* >& theUVMap, SMESH::Controls::TSequenceOfXYZ& aNodePoints, 
@@ -4537,7 +4537,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     } // smoothing iterations
 
     // MESSAGE(" Face id: " << *fId <<
-    //         " Nb iterstions: " << it <<
+    //         " Nb iterations: " << it <<
     //         " Displacement: " << maxDisplacement <<
     //         " Aspect Ratio " << maxRatio);
 

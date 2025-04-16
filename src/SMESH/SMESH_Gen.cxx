@@ -346,7 +346,7 @@ void SMESH_Gen::send_mesh(SMESH_Mesh& aMesh, std::string file_name)
   int ret = myProcess.exitCode();
 
   if(ret != 0 || !finished){
-  // Run crahed
+  // Run crashed
     std::string msg = "Issue with send_files: \n";
     msg += "See log for more details: " + log_file.string() + "\n";
     msg += cmd + "\n";
@@ -596,7 +596,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &                aMesh,
         smWithAlgoSupportingSubmeshes[0].push_front( shDim2smIt->second );
 
     // ======================================================
-    // Apply all-dimensional algorithms supporing sub-meshes
+    // Apply all-dimensional algorithms supporting sub-meshes
     // ======================================================
 
     std::vector< SMESH_subMesh* > smVec;
@@ -1042,7 +1042,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
 //=======================================================================
 //function : checkMissing
 //purpose  : notify on missing hypothesis
-//           Return false if algo or hipothesis is missing
+//           Return false if algo or hypothesis is missing
 //=======================================================================
 
 static bool checkMissing(SMESH_Gen*                aGen,
