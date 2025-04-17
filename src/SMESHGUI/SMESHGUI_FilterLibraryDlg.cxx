@@ -1150,7 +1150,7 @@ const SMESHGUI_FilterTable* SMESHGUI_FilterLibraryDlg::GetTable() const
 
 //=======================================================================
 // name    : SMESHGUI_FilterLibraryDlg::onEntityTypeChanged
-// Purpose : SLOT. Called when entiyt type changed
+// Purpose : SLOT. Called when entity type changed
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::onEntityTypeChanged(const int /*theType*/)
 {

@@ -219,7 +219,7 @@ void SMESHGUI_Meshio::ExportMesh(const meshList& aMeshList, const QString& targe
 }
 
 /*!
-  Opens file dialog and returns a choosen target name
+  Opens file dialog and returns a chosen target name
 */
 QString SMESHGUI_Meshio::GetFileName(QString& selectedFilter, const bool isOpen/* = false*/)
 {

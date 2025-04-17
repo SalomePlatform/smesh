@@ -1785,7 +1785,7 @@ void SMESHGUI_PrecomputeOp::stopOperation()
 
 //================================================================================
 /*!
- * \brief reinitialize dialog after operaiton become active again
+ * \brief reinitialize dialog after operation become active again
  */
 //================================================================================
 

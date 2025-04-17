@@ -301,7 +301,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   aTopLayout->addWidget( myOriginDimGrp );
   /******************************************************************************/
 
-  // Destribution
+  // Distribution
   myDistributionGrp = new QGroupBox ( tr( "SMESH_DISTRIBUTION_SCALARBAR" ), this );
   myDistributionGrp->setCheckable(true);
   QHBoxLayout* aDistributionGrpLayout = new QHBoxLayout( myDistributionGrp );

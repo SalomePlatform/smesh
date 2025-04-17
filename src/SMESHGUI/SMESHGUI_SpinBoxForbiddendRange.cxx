@@ -109,7 +109,7 @@ void SMESHGUI_SpinBoxForbiddendRange::SetForbiddenRange(const double min, const 
 
 //=================================================================================
 // function : checkRange()
-// purpose  : adds checking against forbidden range to the parent's inmplementation
+// purpose  : adds checking against forbidden range to the parent's implementation
 //=================================================================================
 bool SMESHGUI_SpinBoxForbiddendRange::checkRange(const double value) const
 {

@@ -1995,7 +1995,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int /*col*/,
   }
   aTable->setEditable( nbCompareSigns == 3, row, 1);
 
-  // enable/desable Threshold
+  // enable/disable Threshold
   if ( aCriterionType == SMESH::FT_GroupColor ||
        anIsComboCriterion ||
        anIsIntCriterion ||
