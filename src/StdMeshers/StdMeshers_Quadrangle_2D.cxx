@@ -5047,7 +5047,7 @@ bool StdMeshers_Quadrangle_2D::getEnforcedUV()
     {
       if ( isStrictCheck && iP < nbPoints )
         return error
-          (TComm("Classification of an enforced point ralative to the face boundary failed - ")
+          (TComm("Classification of an enforced point relative to the face boundary failed - ")
            << points[ iP ].X() << ", "<< points[ iP ].Y() << ", "<< points[ iP ].Z() << " )");
     }
     }

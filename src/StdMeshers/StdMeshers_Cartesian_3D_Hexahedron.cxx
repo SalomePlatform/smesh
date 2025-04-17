@@ -855,7 +855,7 @@ void Hexahedron::clearNodesLinkedToNull(const Solid* solid, SMESH_MesherHelper& 
 
 //================================================================================
 /*!
-  * \brief Returns true if the link will be splitted on the Hexaedron initialization
+  * \brief Returns true if the link will be split on the Hexaedron initialization
   */
 bool Hexahedron::isSplittedLink(const Solid* solid, SMESH_MesherHelper& helper, const Hexahedron::_Link& linkIn) const
 {
@@ -1623,7 +1623,7 @@ bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
   }
 
   /* This call is irrelevant here because _volumeDefs datas were not filled!
-  or .... it is potentialy filled by other thread?? */
+  or .... it is potentially filled by other thread?? */
   _volumeDefs._nodes.clear();
   _volumeDefs._quantities.clear();
   _volumeDefs._names.clear();

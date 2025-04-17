@@ -2731,7 +2731,7 @@ _SegmentTree::box_type* _SegmentTree::buildRootBox()
 
 //================================================================================
 /*!
- * \brief Redistrubute _segments among children
+ * \brief Redistribute _segments among children
  */
 //================================================================================
 

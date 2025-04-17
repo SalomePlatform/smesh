@@ -81,7 +81,7 @@ struct STDMESHERS_EXPORT FaceQuadStruct
     const UVPtStruct& Last()  const {
       return GetUVPtStruct()[ to-nbNodeOut-(IsReversed() ? -1 : +1)];
     }
-    // some sortcuts
+    // some shortcuts
     const std::vector<UVPtStruct>& GetUVPtStruct(bool isXConst=0, double constValue=0) const
     { return nbNodeOut ?
         grid->SimulateUVPtStruct( NbPoints()-nbNodeOut-1, isXConst, constValue ) :

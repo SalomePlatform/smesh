@@ -189,7 +189,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
   int iMap;
   if ( shape2ShapeMaps[0].Extent() == shape2ShapeMaps[1].Extent() )
   {
-    // choose an assiciation by shortest distance between VERTEXes
+    // choose an association by shortest distance between VERTEXes
     double dist1 = 0, dist2 = 0;
     TopTools_DataMapIteratorOfDataMapOfShapeShape ssIt( shape2ShapeMaps[0]._map1to2 );
     for (; ssIt.More(); ssIt.Next() )

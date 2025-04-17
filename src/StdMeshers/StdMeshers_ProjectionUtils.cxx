@@ -170,7 +170,7 @@ namespace {
         if ( (++eIt) != eBackIt )
           --eBackIt;
     }
-    SHOW_LIST("ATFER REVERSE", edges)
+    SHOW_LIST("AFTER REVERSE", edges)
   }
 
   //================================================================================
