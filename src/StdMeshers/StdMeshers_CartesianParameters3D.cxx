@@ -157,7 +157,7 @@ namespace
 
     if ( internalPoints.size() != spaceFunctions.size() + 1 )
       throw SALOME_Exception
-        (SMESH_Comment("Numbre of internal points mismatch number of functions for ") << axis);
+        (SMESH_Comment("Number of internal points mismatch number of functions for ") << axis);
 
     for ( size_t i = 0; i < spaceFunctions.size(); ++i )
       spaceFunctions[i] =

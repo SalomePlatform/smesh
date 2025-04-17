@@ -12365,7 +12365,7 @@ bool _SmoothNode::Smooth(int&                  nbBad,
   }
   else if ( how == CENTROIDAL && _simplices.size() > 3 )
   {
-    // average centers of diagonals wieghted with their reciprocal lengths
+    // average centers of diagonals weighted with their reciprocal lengths
     if ( _simplices.size() == 4 )
     {
       double w1 = 1. / ( uv[2]-uv[0] ).SquareModulus();

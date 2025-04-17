@@ -410,7 +410,7 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
 
   double totalVol = pyrad1Vol + pyrad2Vol;
   // The new Apex can't be computed based in an arithmetic median, 
-  // Geometric mediam is considered to be better
+  // Geometric median is considered to be better
   // gp_XYZ Pnew = /*( nbI*Pi + nbJ*Pj ) / (nbI+nbJ);*/ 0.5 * ( Pi + Pj );
   ASSERT( totalVol > 0. );
   gp_XYZ Pnew = Pi * pyrad1Vol/totalVol + Pj * pyrad2Vol/totalVol;

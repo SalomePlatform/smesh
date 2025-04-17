@@ -1406,7 +1406,7 @@ void SMESHGUI_MeshOp::onHypoCreated( int result )
 //================================================================================
 void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
 {
-  // Speicfies dimension of hypothesis to be created
+  // Specifies dimension of hypothesis to be created
   int aDim = getTabDim( sender(), myDlg );
   if (aDim == -1)
     return;

@@ -75,9 +75,9 @@ class STDMESHERS_EXPORT StdMeshers_ViscousLayerBuilder: public SMESH_2D_Algo
 
    /*!
    * \brief Compute a shrink version of the geometry. 
-   *        Use the BRepOffset_MakeOffset to perfom the operations for Solids. 
+   *        Use the BRepOffset_MakeOffset to perform the operations for Solids. 
    *        Use BRepBuilderAPI_MakeFace to perform the operation for planar faces.
-   * \remark For possitive offsets, planar faces are shrink in all directions BRepBuilderAPI_MakeFace does not support coarse grained edge selection.
+   * \remark For positive offsets, planar faces are shrink in all directions BRepBuilderAPI_MakeFace does not support coarse grained edge selection.
     * \param theMesh - the built mesh
     * \param theShape - the geometry to be shrink
     * \retval TopoDS_Shape - a new shape of the shrink geometry

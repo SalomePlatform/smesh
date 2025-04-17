@@ -125,7 +125,7 @@ namespace SMESH
   QString GetMessageOnAlgoStateErrors( const algo_error_array& );
 
   SMESHGUI_EXPORT
-  // name of proprty saving plug-in of a hypothesis
+  // name of property saving plug-in of a hypothesis
   inline const char* Plugin_Name() { return "PLUGIN_NAME"; }
 }
 

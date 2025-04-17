@@ -3920,7 +3920,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
 
     // edge columns
     int id = MeshDS()->ShapeToIndex( *edgeIt );
-    bool isForward = true; // meaningless for intenal wires
+    bool isForward = true; // meaningless for internal wires
     myShapeIndex2ColumnMap[ id ] = make_pair( & faceColumns, isForward );
     // columns for vertices
     // 1

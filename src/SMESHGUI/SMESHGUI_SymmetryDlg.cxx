@@ -278,7 +278,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  // Costruction of the logical filter
+  // Construction of the logical filter
   SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (SMESH::MESHorSUBMESH);
   SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (SMESH::GROUP);
 

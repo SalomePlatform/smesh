@@ -202,7 +202,7 @@ istream & StdMeshers_QuadrangleParams::LoadFrom(istream & load)
 
 //================================================================================
 /*!
- * \brief Redifined method
+ * \brief Redefined method
  * \param theMesh - the built mesh
  * \param theShape - the geometry of interest
  * \retval bool - true if parameter values have been successfully defined

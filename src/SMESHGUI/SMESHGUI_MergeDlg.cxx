@@ -257,7 +257,7 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   GroupKeepLayout->addWidget( RemoveKeepButton, 2, 4, 1, 1 );
   GroupKeepLayout->setRowStretch(3, 5);
 
-  // Costruction of the logical filter
+  // Construction of the logical filter
   QList<SUIT_SelectionFilter*> aListOfFilters;
   aListOfFilters << new SMESH_TypeFilter (SMESH::SUBMESH)
                  << new SMESH_TypeFilter (SMESH::GROUP);

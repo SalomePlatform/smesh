@@ -41,7 +41,7 @@ class SMESH_Gen;
   /*!
    * This hypothesis specifies a meshed edge to take a mesh pattern from
    * and optionally association of vertices between the source edge and a
-   * target one (where a hipothesis is assigned to)
+   * target one (where a hypothesis is assigned to)
    */
 // =========================================================
 

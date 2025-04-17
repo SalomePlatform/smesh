@@ -283,7 +283,7 @@ namespace Cartesian3D
   struct B_IntersectPoint
   {
     // This two class members are being updated in a non thread safe way.
-    // See Add method modify _node and _faceIDs class members dinamicaly during execution
+    // See Add method modify _node and _faceIDs class members dynamically during execution
     // of Hexahedron.compute() method.
     // std::mutex _mutex;
     mutable const SMDS_MeshNode*   _node;

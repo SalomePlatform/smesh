@@ -297,7 +297,7 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
         names[i] = names[i].trimmed();
       myDlg->selectObject( names, types, ids );
 
-      // enable/desable "new mesh" button
+      // enable/disable "new mesh" button
       bool isMesh = true;
       for ( int i = 0; i < ids.count() && isMesh; ++i )
       {

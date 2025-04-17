@@ -107,13 +107,13 @@ namespace SMESH
       }
     } 
     catch ( SALOME::SALOME_Exception& exc ) {
-      INFOS( "Follow exception was cought:\n\t" << exc.details.text );
+      INFOS( "Follow exception was caught:\n\t" << exc.details.text );
     }
     catch ( const std::exception& exc ) {
-      INFOS( "Follow exception was cought:\n\t" << exc.what() );
+      INFOS( "Follow exception was caught:\n\t" << exc.what() );
     } 
     catch ( ... ) {
-      INFOS( "Unknown exception was cought !!!" );
+      INFOS( "Unknown exception was caught !!!" );
     }
     return aNodeId;
   }

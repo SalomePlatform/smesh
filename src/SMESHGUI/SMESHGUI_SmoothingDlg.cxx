@@ -261,7 +261,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
 
   mySMESHGUI->SetActiveDialogBox(this);
 
-  // Costruction of the logical filter for the elements: mesh/sub-mesh/group
+  // Construction of the logical filter for the elements: mesh/sub-mesh/group
   QList<SUIT_SelectionFilter*> aListOfFilters;
   aListOfFilters << new SMESH_TypeFilter(SMESH::MESHorSUBMESH) << new SMESH_TypeFilter(SMESH::GROUP);
 

@@ -156,7 +156,7 @@ SMESHGUI_3TypesSelector::SMESHGUI_3TypesSelector( QWidget * parent ):
   connect( mySelectBtnGrp, SIGNAL(buttonClicked (int)),           SLOT(onSelectType(int)));
   connect(mySelectionMgr, SIGNAL( currentSelectionChanged()),     SLOT(selectionIntoArgument()));
 
-  // Costruction of the logical filter for the elements: mesh/sub-mesh/group
+  // Construction of the logical filter for the elements: mesh/sub-mesh/group
   QList<SUIT_SelectionFilter*> aListOfFilters;
   aListOfFilters.append(new SMESH_TypeFilter (SMESH::MESH));
   aListOfFilters.append(new SMESH_TypeFilter (SMESH::SUBMESH_VERTEX));

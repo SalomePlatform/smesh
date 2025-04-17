@@ -335,7 +335,7 @@ namespace // internal utils
   }
   //================================================================================
   /*!
-   * \brief Prepare data for search of trinagles in GetMinDistInSphere()
+   * \brief Prepare data for search of triangles in GetMinDistInSphere()
    */
   //================================================================================
 
@@ -700,7 +700,7 @@ namespace // internal utils
   }
   //================================================================================
   /*!
-   * \brief Redistrubute element boxes among children
+   * \brief Redistribute element boxes among children
    */
   //================================================================================
 
