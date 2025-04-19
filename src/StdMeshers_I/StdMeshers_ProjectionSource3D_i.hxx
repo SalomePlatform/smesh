@@ -42,7 +42,7 @@ class SMESH_Gen;
 /*!
  * This hypothesis specifies a meshed shell or solid to take a mesh pattern from
  * and optionally association of vertices between the source shape and a
- * target one (where a hipothesis is assigned to)
+ * target one (where a hypothesis is assigned to)
  */
 // =========================================================
 

@@ -167,9 +167,9 @@ GEOM::GEOM_Object_ptr StdMeshers_ViscousLayerBuilder_i::GetShrinkGeometry( SMESH
     BRepTools::Write(shrinkGeometry, streamShape);
     //Returns the number of bytes that have been stored in the stream's buffer.
     int size = streamShape.str().size();
-    //Allocate octect buffer of required size
+    //Allocate octet buffer of required size
     CORBA::Octet* OctetBuf = SALOMEDS::TMPFile::allocbuf(size);
-    //Copy ostrstream content to the octect buffer
+    //Copy ostrstream content to the octet buffer
     memcpy(OctetBuf, streamShape.str().c_str(), size);
     //Create and return TMPFile
     SALOMEDS::TMPFile_var SeqFile = new SALOMEDS::TMPFile(size,size,OctetBuf,1);

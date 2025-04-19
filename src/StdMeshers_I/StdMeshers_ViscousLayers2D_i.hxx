@@ -75,7 +75,7 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers2D_i:
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 
   // Sets sub-mesh event listeners to clear sub-meshes of edges
-  // shrinked by viscous layers
+  // shrunk by viscous layers
   virtual void  UpdateAsMeshesRestored();
 
 
