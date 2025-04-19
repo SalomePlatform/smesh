@@ -590,7 +590,7 @@ void SMESH_RegularGrid::GetCommontInterface( EdgeType edge, SMESH_RegularGrid * 
         });
       }      
     }
-    else  /*Case nor start nor end are coincident in both edges but one of the edges can be embemded completly in the other*/
+    else  /*Case nor start nor end are coincident in both edges but one of the edges can be embemded completely in the other*/
     {
       // Discard quickly non parallel and far edges
       auto v01 = v1->Coord()-v0->Coord();
@@ -616,7 +616,7 @@ void SMESH_RegularGrid::GetCommontInterface( EdgeType edge, SMESH_RegularGrid * 
           bool isFirstVertex  = t.first >= 0. && t.first <= 1.; 
           bool isSecondVertex = t.second >= 0. && t.second <= 1.;
 
-          if ( v01Module > v23Module && (isFirstVertex && isSecondVertex) /*100% edge embeded in the other && edge>gridEdge*/ )
+          if ( v01Module > v23Module && (isFirstVertex && isSecondVertex) /*100% edge embedded in the other && edge>gridEdge*/ )
           {
             int startIndex  = -1;
             int endIndex    = -1;
@@ -641,7 +641,7 @@ void SMESH_RegularGrid::GetCommontInterface( EdgeType edge, SMESH_RegularGrid * 
               interfaceDonor = grid->getEdgeIndexLimitsInverted( gridEdge );
             }             
           }
-          else if ( (isFirstVertex && isSecondVertex) /*100% edge embeded in the other && gridEdge>edge*/  )
+          else if ( (isFirstVertex && isSecondVertex) /*100% edge embedded in the other && gridEdge>edge*/  )
           {
             int startIndex  = -1;
             int endIndex    = -1;

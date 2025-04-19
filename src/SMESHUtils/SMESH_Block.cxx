@@ -1416,7 +1416,7 @@ ostream& SMESH_Block::DumpShapeID (const int id, ostream& stream)
 
 //=======================================================================
 //function : GetShapeIDByParams
-//purpose  : define an id of the block sub-shape by normlized point coord
+//purpose  : define an id of the block sub-shape by normalized point coord
 //=======================================================================
 
 int SMESH_Block::GetShapeIDByParams ( const gp_XYZ& theCoord )

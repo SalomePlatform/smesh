@@ -20,7 +20,7 @@
 ##     webmaster.salome@opencascade.com
 ##
 """
-File to send files on remote ressource
+File to send files on remote resource
 """
 from os import environ, path
 
@@ -36,7 +36,7 @@ def create_launcher():
     return launcher
 
 def create_resources_manager():
-    """ Look for the catalog file and create a ressource manager with it """
+    """ Look for the catalog file and create a resource manager with it """
     # localhost is defined anyway, even if the catalog file does not exist.
     catalog_path = environ.get("USER_CATALOG_RESOURCES_FILE", "")
     if not path.isfile(catalog_path):
@@ -78,7 +78,7 @@ def send_file(args):
 
     # files to copy to remote working dir
     # Directories are copied recursively.
-    # job_file script is automaticaly copied.
+    # job_file script is automatically copied.
     job_params.in_files = [args.input_file]
     print("in_files", job_params.in_files)
     # local path where to copy out_files

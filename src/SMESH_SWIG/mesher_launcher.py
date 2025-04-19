@@ -59,7 +59,7 @@ def create_launcher():
     return launcher
 
 def create_resources_manager():
-    """ Look for the catalog file and create a ressource manager with it """
+    """ Look for the catalog file and create a resource manager with it """
     # localhost is defined anyway, even if the catalog file does not exist.
     catalog_path = environ.get("USER_CATALOG_RESOURCES_FILE", "")
     if not path.isfile(catalog_path):
@@ -87,7 +87,7 @@ def get_runner(mesher):
     Arguments:
     mesher: Name of the mesher (NETGEN2D/NETGEN3D...)
 
-    retuns (string) Path to the exe
+    returns (string) Path to the exe
     """
     if sys.platform.startswith('win'):
         ext = ".exe"
@@ -124,7 +124,7 @@ def run_local(args):
     sp.check_output(cmd, shell=True, cwd=path.dirname(args.shape_file))
 
 def run_pylauncher(args):
-    """ Run exe throuhg pylauncher """
+    """ Run exe through pylauncher """
     import time
     print("Cluster run")
 
@@ -171,7 +171,7 @@ def run_pylauncher(args):
 
     # files to copy to remote working dir
     # Directories are copied recursively.
-    # job_file script is automaticaly copied.
+    # job_file script is automatically copied.
     job_params.in_files = [args.shape_file,
                            args.hypo_file,
                            args.elem_orient_file]
@@ -234,7 +234,7 @@ def run_pylauncher(args):
                     exit_code = exit_code.strip()
             if exit_code != "0":
                 raise Exception(\
-                    "An error occured during the execution of the job.")
+                    "An error occurred during the execution of the job.")
         else:
             raise Exception("Failed to get the exit code of the job.")
 
@@ -263,7 +263,7 @@ def def_arg():
     parser.add_argument("shape_file",
                         help="STEP file containing the shape to mesh")
     parser.add_argument("hypo_file",
-                        help="Ascii file containint the list of parameters")
+                        help="Ascii file containing the list of parameters")
     parser.add_argument("--elem-orient-file",\
         help="binary file containing the list of elements from "\
              "INPUT_MESH_FILE associated to the shape and their orientation")

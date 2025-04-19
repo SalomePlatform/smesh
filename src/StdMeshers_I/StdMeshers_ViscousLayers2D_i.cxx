@@ -273,7 +273,7 @@ CORBA::Boolean StdMeshers_ViscousLayers2D_i::IsDimSupported( SMESH::Dimension ty
 //================================================================================
 /*!
  * \brief Sets sub-mesh event listeners to clear sub-meshes of edges
- *        shrinked by viscous layers
+ *        shrunk by viscous layers
  */
 //================================================================================
 
