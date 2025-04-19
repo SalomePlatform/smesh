@@ -405,7 +405,7 @@ namespace
 /// \var SelectionMode Elem0D
 /// \brief Selection of 0D elements.
 /// \var SelectionMode Ball
-/// \brief Selection of ball ellements.
+/// \brief Selection of ball elements.
 /////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////

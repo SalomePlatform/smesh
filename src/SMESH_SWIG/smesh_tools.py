@@ -33,7 +33,7 @@ def __getIdsGrpDualFromOrig(mc_mesh_file, grp_name, mesh2d, grp_level):
         grp_level (int): level on which to load the group (-1 or -2)
 
     Returns:
-        id_grp_poly (DataArrayInt64): ids of cells mathcing the group. None if
+        id_grp_poly (DataArrayInt64): ids of cells matching the group. None if
                                       the group has not been found.
         nodes_added (DataArrayInt64): new nodes added on the dual mesh
     """
@@ -175,7 +175,7 @@ def smesh_create_dual_mesh(mesh_ior, output_file, adapt_to_shape=True,
     # Create the polyhedra from the tetrahedra (main goal of this function)
     polyh = tetras.computeDualMesh()
 
-    ## Adding skin + transfering groups on faces from tetras mesh
+    ## Adding skin + transferring groups on faces from tetras mesh
     mesh2d = polyh.buildUnstructured().computeSkin()
     mesh2d.setName(mesh_name)
 

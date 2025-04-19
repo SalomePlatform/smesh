@@ -1086,7 +1086,7 @@ class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
         """
         Defines the "Source Shape 3D" hypothesis, specifying a meshed solid, from where
             the mesh pattern is taken, and, optionally, the  association of vertices
-            between the source and the target solid  (to which a hipothesis is assigned)
+            between the source and the target solid  (to which a hypothesis is assigned)
 
         Parameters:
             solid: from where the mesh pattern is taken
@@ -2080,7 +2080,7 @@ class StdMeshersBuilder_ViscousLayer(Mesh_Algorithm):
         self.algo.SetNumberLayers( numberOfLayers )
         self.algo.SetStretchFactor( stretchFactor )
         
-        #Faces are set based on int ids so if a collection of face geom objects is recived cast it to int 
+        #Faces are set based on int ids so if a collection of face geom objects is received cast it to int 
         if elementsId and isinstance( elementsId, geomBuilder.GEOM._objref_GEOM_Object ):
             elementsId = [ elementsId ]
         if elementsId and isinstance( elementsId[0], geomBuilder.GEOM._objref_GEOM_Object ):

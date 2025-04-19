@@ -469,7 +469,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Parameters:
             obj: geometrical object for meshing
             name: the name for the new mesh.
-            split_geom: If True split the geometry and create the assoicated
+            split_geom: If True split the geometry and create the associated
             sub meshes
 
         Returns:
@@ -2647,7 +2647,7 @@ class Mesh(metaclass = MeshMeta):
         Exports a part of mesh to a file with meshio library
         through an intermediate MED file.
 
-        Parametrs described below are the same as for ExportMED() method.
+        Parameters described below are the same as for ExportMED() method.
         However, we know that _pyMesh::Process(const Handle(_pyCommand)& theCommand) method
         change a position of meshPart argument when dump to a Python script for whatever reason
         this way:
@@ -2829,7 +2829,7 @@ class Mesh(metaclass = MeshMeta):
 
     def _groupTypeFromShape( self, shape ):
         """
-        Pivate method to get a type of group on geometry
+        Private method to get a type of group on geometry
         """
         tgeo = str(shape.GetShapeType())
         if tgeo == "VERTEX":
@@ -4953,7 +4953,7 @@ class Mesh(metaclass = MeshMeta):
         Split quadrangles into triangles.
 
         Parameters:
-                IDsOfElements: the faces to be splitted.
+                IDsOfElements: the faces to be split.
                 theCriterion: is a numerical functor, in terms of enum :class:`SMESH.FunctorType`, used to
                         choose a diagonal for splitting. If *theCriterion* is None, which is a default
                         value, then quadrangles will be split by the smallest diagonal.
@@ -5007,7 +5007,7 @@ class Mesh(metaclass = MeshMeta):
         a quadrangle.
 
         Parameters:
-                theElements: the faces to be splitted. This can be either
+                theElements: the faces to be split. This can be either
                         :class:`mesh, sub-mesh, group, filter <SMESH.SMESH_IDSource>`
                         or a list of face IDs. By default all quadrangles are split
 
@@ -5030,7 +5030,7 @@ class Mesh(metaclass = MeshMeta):
         Split quadrangles into triangles.
 
         Parameters:
-                IDsOfElements: the faces to be splitted
+                IDsOfElements: the faces to be split
                 Diag13 (boolean):        is used to choose a diagonal for splitting.
 
         Returns:
@@ -5069,7 +5069,7 @@ class Mesh(metaclass = MeshMeta):
         Find a better splitting of the given quadrangle.
 
         Parameters:
-                IDOfQuad:   the ID of the quadrangle to be splitted.
+                IDOfQuad:   the ID of the quadrangle to be split.
                 theCriterion:  is a numerical functor, in terms of enum :class:`SMESH.FunctorType`, used to
                         choose a diagonal for splitting.
                         Note that not all items of :class:`SMESH.FunctorType` corresponds
@@ -6479,7 +6479,7 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
             theObject: the object to translate (:class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`)
             thePoint: base point for scale (:class:`SMESH.PointStruct` or list of 3 coordinates)
-            theScaleFact: list of 1-3 scale factors for axises
+            theScaleFact: list of 1-3 scale factors for axes
             Copy: allows copying the translated elements
             MakeGroups: forces the generation of new groups from existing
                 ones (if Copy)
@@ -6515,7 +6515,7 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
             theObject: the object to translate (:class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`)
             thePoint: base point for scale (:class:`SMESH.PointStruct` or list of 3 coordinates)
-            theScaleFact: list of 1-3 scale factors for axises
+            theScaleFact: list of 1-3 scale factors for axes
             MakeGroups: forces the generation of new groups from existing ones
             NewMeshName: the name of the newly created mesh
 
@@ -7720,7 +7720,7 @@ def _copy_netgen_param(dim, local_param, global_param):
 
 def _shaperstudy2geom(geompyD, shaper_obj):
     """
-    Convertion of shaper object to geom object
+    Conversion of shaper object to geom object
 
     Parameters:
         geompyD: geomBuilder instance
@@ -7765,7 +7765,7 @@ def _split_geom(geompyD, geom):
         isolid += 1
         geompyD.addToStudyInFather( geom, solid, 'Solid_{}'.format(isolid) )
         solids.append(solid)
-    # If geom is a solid ExtractShapes will return nothin in that case geom is the solids
+    # If geom is a solid ExtractShapes will return nothing in that case geom is the solids
     if isolid == 0:
        solids = [geom]
 
@@ -7811,7 +7811,7 @@ class MTParallelismSettings(ParallelismSettings):
     def SetNbThreads(self, nbThreads):
         """ Set the number of threads for multithread """
         if nbThreads < 1:
-            raise ValueError("Number of threads must be stricly greater than 1")
+            raise ValueError("Number of threads must be strictly greater than 1")
 
         self._mesh.mesh.SetNbThreads(nbThreads)
 
@@ -7845,7 +7845,7 @@ class MNParallelismSettings(ParallelismSettings):
     def SetNbProc(self, nbProc):
         """ Set the number of Processor for multinode """
         if nbProc < 1:
-            raise ValueError("Number of Proc must be stricly greater than 1")
+            raise ValueError("Number of Proc must be strictly greater than 1")
         self._mesh.mesh.SetNbProc(nbProc)
 
     def GetNbProc(self):
@@ -7855,7 +7855,7 @@ class MNParallelismSettings(ParallelismSettings):
     def SetNbProcPerNode(self, nbProcPerNode):
         """ Set the number of Processor Per Node for multinode """
         if nbProcPerNode < 1:
-            raise ValueError("Number of Processor Per Node must be stricly greater than 1")
+            raise ValueError("Number of Processor Per Node must be strictly greater than 1")
 
         self._mesh.mesh.SetNbProcPerNode(nbProcPerNode)
 
@@ -7866,7 +7866,7 @@ class MNParallelismSettings(ParallelismSettings):
     def SetNbNode(self, nbNode):
         """ Set the number of Node for multinode """
         if nbNode < 1:
-            raise ValueError("Number of Node must be stricly greater than 1")
+            raise ValueError("Number of Node must be strictly greater than 1")
         self._mesh.mesh.SetNbNode(nbNode)
 
     def GetNbNode(self):
@@ -7915,7 +7915,7 @@ class ParallelMesh(Mesh):
             geompyD: instance of geomBuilder
             geom: geometrical object for meshing
             split_geom: If true will divide geometry on solids and 1D/2D
-            coumpound and create the associated submeshes
+            compound and create the associated submeshes
             name: the name for the new mesh.
 
         Returns:
@@ -7955,7 +7955,7 @@ class ParallelMesh(Mesh):
 
     def _build_submeshes(self, mesher2D, mesher3D):
         """
-        Contruct the submeshes for a parallel use of smesh
+        Construct the submeshes for a parallel use of smesh
 
         Parameters:
             mesher2D: name of 2D mesher for 2D parallel compute (NETGEN)
