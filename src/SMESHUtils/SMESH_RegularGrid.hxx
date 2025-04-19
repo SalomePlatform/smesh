@@ -65,7 +65,7 @@ namespace SMESHUtils
   /*!
    * \brief Define a regular grid of nx,ny,nz dimension. A vector with gp_Pnt is
    *        defined by default by a canonical order, the canonical order is: 
-   *        i-index goes faster, then j-index and finaly z-index.
+   *        i-index goes faster, then j-index and finally z-index.
    *        This data structure was created to index mesh nodes created by Quadrangle_2D and Prism_3D meshers.
    *        The StructuredCGNS export driver uses this data structure to define zones, grid coordinate points and interfaces.
    */
@@ -92,7 +92,7 @@ namespace SMESHUtils
       *     |                      |
       *     |                      |
       *     |                      |
-      *    LEFT (i=0)           RIGTH(i=nx-1)
+      *    LEFT (i=0)           RIGHT(i=nx-1)
       *     |                      |
       *     |                      |
       *     |                      |
@@ -199,7 +199,7 @@ namespace SMESHUtils
       * 
     */  
 
-    // \brief Given a grid and a potentially neigbor grid return the vector describing the interface used by the cgns mesh format
+    // \brief Given a grid and a potentially neighbor grid return the vector describing the interface used by the cgns mesh format
     // \remark the interface vector has the follow informations:
     //            id      the target range       the donor range  the transformation
     //          {edgeId,    ibegin,jbegin,        iend,jend,    transformation}
@@ -208,7 +208,7 @@ namespace SMESHUtils
     // \return the interface vector filled    
     void GetEdgeInterfaces( SMESH_RegularGrid * grid, std::vector<int>& interface );
     
-    // \brief Given a grid and a potentially neigbor grid return the vector describing the interface used by the cgns mesh format
+    // \brief Given a grid and a potentially neighbor grid return the vector describing the interface used by the cgns mesh format
     // \remark the interface vector has the follow informations:
     //            id      the target range          the donor range  the transformation
     //          {edgeId,  ibegin,jbegin,kbegin,  iend,jend,kend,       transformation}
@@ -236,10 +236,10 @@ namespace SMESHUtils
     template<typename T>
     std::vector<T> getFaceIndexLimits( SMESH_RegularGrid::FaceType face ) const;
 
-    // \brief Return the faceType to which the passed geometrical face belows to
+    // \brief Return the faceType to which the passed geometrical face belongs to
     SMESH_RegularGrid::FaceType getFaceTypeByGeomFace( TopoDS_Shape shapeFace ) const;
     
-    // \brief Return the edgeType to which the passed geometrical edge belows to
+    // \brief Return the edgeType to which the passed geometrical edge belongs to
     SMESH_RegularGrid::EdgeType getEdgeTypeByGeomEdge( TopoDS_Shape shapeEdge ) const;
    
     ~SMESH_RegularGrid();    
@@ -251,7 +251,7 @@ namespace SMESHUtils
     // \brief Given one of the edge types and a grid determine whether or not they are adjacent on that side
     // \remark There are three types of interfaces.
     //          1) end to end intersection, both sides are exactly the same
-    //          2) one of the sides is smaller than the other but the grid are conform so the intersection is given exacly node by node
+    //          2) one of the sides is smaller than the other but the grid are conform so the intersection is given exactly node by node
     //          3) the same for 2) but nodes are not coincident
     // \param edge, the edge where we are checking for interface
     // \param grid, a neighbor grid
@@ -289,10 +289,10 @@ namespace SMESHUtils
     std::vector<int> getEdgeIndexLimits( const int start, const int end ) const;
     std::vector<int> getFaceIndexLimits( const int start, const int end ) const; 
 
-    // \brief Compute the tranformation vector following the rules of the cgns format
+    // \brief Compute the transformation vector following the rules of the cgns format
     std::vector<int> computeTransformation( const SMESH_RegularGrid::EdgeType edge, SMESH_RegularGrid::EdgeType gridDonorEdge, std::vector<int>& interfaceRange, std::vector<int>& interfaceDonor ) const;
 
-    // \brief Compute the tranformation vector following the rules of the cgns format
+    // \brief Compute the transformation vector following the rules of the cgns format
     std::vector<int> computeTransformation( const SMESH_RegularGrid::FaceType face, SMESH_RegularGrid::FaceType gridDonorFace, std::vector<int>& interfaceRange, std::vector<int>& interfaceDonor ) const;
   
     // \brief Number of nodes on the edge

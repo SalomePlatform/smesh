@@ -278,7 +278,7 @@ void SMESHUtils::subdivideTriangle( const gp_Pnt& p1,
   // So D < 1/3 * sqrt(3/4) * a and if a < sqrt(3) * S then D < S/2
   // and the distance between two mass centers of two neighbouring triangles
   // sharing an edge is < 2 * 1/2 * S = S
-  // If the traingles share a Vertex and no Edge the distance of the mass centers
+  // If the triangles share a Vertex and no Edge the distance of the mass centers
   // to the Vertices is 2*D < S so the mass centers are distant of less than 2*S
 
   double threshold = sqrt( 3. ) * theSize;

@@ -804,7 +804,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
 
   if ( !seamLinks.empty() )
   {
-    // There are internal boundaries touching the outher one,
+    // There are internal boundaries touching the outer one,
     // find all faces of internal boundaries in order to find
     // faces of boundaries of holes, if any.
 
@@ -1472,7 +1472,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
       }
     }
     if ( iClosest < 0 )
-      return true; // no intesections - out
+      return true; // no intersections - out
 
     // analyse transition
     gp_Vec edge( xyz[iClosest], xyz[iClosest+1] );
@@ -1706,7 +1706,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   trsf.Transforms( tmpPnt );
   gp_XY point2D( tmpPnt.X(), tmpPnt.Z() );
 
-  // loop on edges of the face to analyze point position ralative to the face
+  // loop on edges of the face to analyze point position relative to the face
   std::vector< PointPos > pntPosByType[ POS_MAX + 1 ];
   for ( size_t i = 1; i < xy.size(); ++i )
   {
