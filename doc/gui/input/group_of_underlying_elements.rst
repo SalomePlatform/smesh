@@ -5,7 +5,7 @@ Group Based on Nodes of Other Groups
 ************************************
 
 
-To create a standalone group of entities basing on nodes of existing reference groups, in the **Mesh** menu select **Group of underlying entities**.
+To create a standalone group of entities basing on nodes of existing reference groups, in the **Mesh** menu select **Group based on nodes of other groups**.
 
 The following dialog box will appear:
 

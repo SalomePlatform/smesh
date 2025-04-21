@@ -1880,6 +1880,8 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfIDSources& theGroups,
     }
   }
 
+  GetGen()->UpdateGroupIcon(aResGrp);
+
   // Update Python script
   pyDump << aResGrp << " = " << SMESH::SMESH_Mesh_var( _this())
          << ".CreateDimGroup( "
