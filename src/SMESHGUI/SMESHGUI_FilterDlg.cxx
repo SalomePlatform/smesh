@@ -1605,6 +1605,7 @@ const char* SMESHGUI_FilterTable::getPrecision( const int aType )
   case SMESH::FT_AspectRatio:
   case SMESH::FT_AspectRatio3D:
   case SMESH::FT_Taper:
+  case SMESH::FT_ScaledJacobian:
     retval = "parametric_precision"; break;
   case SMESH::FT_Warping:
   case SMESH::FT_Warping3D:
