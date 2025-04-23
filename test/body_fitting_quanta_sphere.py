@@ -43,7 +43,7 @@ Hexas2  = Mesh_1.NbHexas()
 #Still no polyhedrons in the mesh
 assert(Polys==0)
 
-#Numher of hexahedrons is bigger for hexas2 becuase quanta value is smaller
+#Number of hexahedrons is bigger for hexas2 because quanta value is smaller
 assert( Hexas1 < Hexas2 )
 
 if salome.sg.hasDesktop():

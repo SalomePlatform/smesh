@@ -1036,12 +1036,12 @@ namespace{
   //================================================================================
   /*!
    * \brief HOMARD method of hexahedron quality
-   * 1. Decompose the hexa into 24 tetra: each face is splitted into 4 triangles by
+   * 1. Decompose the hexa into 24 tetra: each face is split into 4 triangles by
    *    adding the diagonals and every triangle is connected to the center of the hexa.
    * 2. Compute the quality of every tetra with the same formula as for the standard quality,
    *    except that the factor for the normalization is not the same because the final goal
    *    is to have a quality equal to 1 for a perfect cube. So the formula is:
-   *    qual = max(lengthes of 6 edges) * (sum of surfaces of 4 faces) / (7.6569*6*volume)
+   *    qual = max(lengths of 6 edges) * (sum of surfaces of 4 faces) / (7.6569*6*volume)
    * 3. The quality of the hexa is the highest value of the qualities of the 24 tetra
    */
   //================================================================================
@@ -2232,7 +2232,7 @@ double Deflection2D::GetBadRate( double Value, int /*nbNodes*/ ) const
 //================================================================================
 /*
   Class       : MultiConnection
-  Description : Functor for calculating number of faces conneted to the edge
+  Description : Functor for calculating number of faces connected to the edge
 */
 //================================================================================
 
@@ -2259,7 +2259,7 @@ SMDSAbs_ElementType MultiConnection::GetType() const
 //================================================================================
 /*
   Class       : MultiConnection2D
-  Description : Functor for calculating number of faces conneted to the edge
+  Description : Functor for calculating number of faces connected to the edge
 */
 //================================================================================
 
@@ -5128,7 +5128,7 @@ double BelongToGeom::GetTolerance()
 
 /*
   Class       : LyingOnGeom
-  Description : Predicate for verifying whether entiy lying or partially lying on
+  Description : Predicate for verifying whether entity lying or partially lying on
   specified geometrical support
 */
 

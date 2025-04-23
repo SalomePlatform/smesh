@@ -479,7 +479,7 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
             distPtsIds[2] = distPtsId;
             distrPts->SetPoint(distPtsId++,x);
 
-            //Inser Quadrangle
+            //Insert Quadrangle
             distrPolys->InsertNextCell(4,distPtsIds);
           }
         }

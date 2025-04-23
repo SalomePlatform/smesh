@@ -366,7 +366,7 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
 }
 
 /*!
- * Writes a field to a chunck of memory
+ * Writes a field to a chunk of memory
  */
 Driver_Mesh::Status DriverMED_W_Field_Mem::Perform()
 {

@@ -940,7 +940,7 @@ static double getTetraScaledJacobian(const SMDS_MeshNode* n0,
 
 //=======================================================================
 //function : getPyramidScaledJacobian
-//purpose  : Given the pyramid, compute the scaled jacobian of the four tetrahedrons and return the minimun value.
+//purpose  : Given the pyramid, compute the scaled jacobian of the four tetrahedrons and return the minimum value.
 //=======================================================================
 static double getPyramidScaledJacobian(const SMDS_MeshNode* n0,
                                         const SMDS_MeshNode* n1,
@@ -1055,7 +1055,7 @@ static double getTetraNormalizedJacobian(const SMDS_MeshNode* n0,
 //         /  |  \
 //        /   |   \
 //    N0 +---------+ N2
-//       |    |    |               NUMERATION RERENCE FOLLOWING POSSITIVE RIGHT HAND RULE
+//       |    |    |               NUMERATION RERENCE FOLLOWING POSITIVE RIGHT HAND RULE
 //       |    + N4 |
 //       |   / \   |               PENTAHEDRON
 //       |  /   \  |
@@ -1143,7 +1143,7 @@ static double getPentaScaledJacobian(const SMDS_MeshNode* n0,
 
 //=======================================================================
 //function : getHexaPrismScaledJacobian
-//purpose  : Evaluate the scaled jacobian on the hexaprism by decomposing the goemetry into three 1hexa + 2 pentahedrons
+//purpose  : Evaluate the scaled jacobian on the hexaprism by decomposing the geometry into three 1hexa + 2 pentahedrons
 //=======================================================================
 static double getHexaPrismScaledJacobian(const SMDS_MeshNode* n0,
                                           const SMDS_MeshNode* n1,
@@ -2326,7 +2326,7 @@ bool SMDS_VolumeTool::IsFreeFaceAdv( int faceIndex, const SMDS_MeshElement** oth
 //       if ( nbSharedLinks == nbFaceNodes )
 //         return !free; // is not free
 //       if ( nbFaceNodes == 4 ) {
-//         // check traingle parts 1 & 3
+//         // check triangle parts 1 & 3
 //         if ( isShared[1] && isShared[3] )
 //           return !free; // is not free
 //         // check triangle parts 0 & 2;

@@ -153,7 +153,7 @@ def exception_handle(file_name, errors, operation_type, ex_text):
 
 def export_mesh(mesh, file_name, errors):
     """
-    Performs an export operatin.
+    Performs an export operation.
     """
 
     try:
@@ -174,7 +174,7 @@ def export_mesh(mesh, file_name, errors):
 
 def import_file(file_name, errors):
     """
-    Performs an import operatin.
+    Performs an import operation.
     """
 
     try:

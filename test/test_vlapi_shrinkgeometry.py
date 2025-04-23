@@ -150,7 +150,7 @@ lYlZ  = 100
 box   = geompy.MakeBoxDXDYDZ(lX,lYlZ,lYlZ)
 sBox  = geompy.MakeHalfPartition( box, plane )
 
-# Generate a uniquebody whit coincident faces
+# Generate a uniquebody with coincident faces
 # 4 left, 34 middle, 50 right
 ignoreFaces = [4,34,50]
 geompy.addToStudy( sBox, "SisterBox" )
@@ -164,7 +164,7 @@ ShrinkSBox = ViscousBuilder.GetShrinkGeometry()
 SBoxProp = geompy.BasicProperties(sBox)
 ShirnksBoxProp = geompy.BasicProperties(ShrinkSBox)
 assert( assertAlmostEqual(ShirnksBoxProp[2], lX * (lYlZ - 2.0*thickness)**(2.0), 1e-12 ) )
-####END SHRINK COMPOUND OBJECT TO GENERATE COMPUND WITH COMMON FACE
+####END SHRINK COMPOUND OBJECT TO GENERATE COMPOUND WITH COMMON FACE
 
 
 ####SHRINK COMPOUND OBJECT TO GENERATE TWO DISJOINT SOLIDS

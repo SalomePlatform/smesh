@@ -970,7 +970,7 @@ std::string MgAdapt::getCommandToRun()
   //~{
   //~// constant value TODO
   //~}
-  // Check coherence between mesh dimension and option fo adaptation
+  // Check coherence between mesh dimension and option for adaptation
   checkDimensionOptionAdaptation();
 
   //   sizemap file is written only if level is higher than 3

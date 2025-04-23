@@ -63,7 +63,7 @@ print("number of Shells in box2 : ", len(subShellList))
 print("number of Faces  in box2 : ", len(subFaceList))
 print("number of Edges  in box2 : ", len(subEdgeList))
 
-# append the tow boxes to make ine shel, referrencing only once
+# append the two boxes to make one shell, referencing only once
 # the internal interface
 
 shell = geompy.MakePartition([box1, box2])

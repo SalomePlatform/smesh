@@ -200,7 +200,7 @@ namespace SMESHUtils
     */  
 
     // \brief Given a grid and a potentially neighbor grid return the vector describing the interface used by the cgns mesh format
-    // \remark the interface vector has the follow informations:
+    // \remark the interface vector has the follow information:
     //            id      the target range       the donor range  the transformation
     //          {edgeId,    ibegin,jbegin,        iend,jend,    transformation}
     // \remark As interfaces are unique, the dual interface (interaction of the neighbor grid and the current one) is also defined
@@ -209,7 +209,7 @@ namespace SMESHUtils
     void GetEdgeInterfaces( SMESH_RegularGrid * grid, std::vector<int>& interface );
     
     // \brief Given a grid and a potentially neighbor grid return the vector describing the interface used by the cgns mesh format
-    // \remark the interface vector has the follow informations:
+    // \remark the interface vector has the follow information:
     //            id      the target range          the donor range  the transformation
     //          {edgeId,  ibegin,jbegin,kbegin,  iend,jend,kend,       transformation}
     // \remark As interfaces are unique, the dual interface (interaction of the neighbor grid and the current one) is also defined

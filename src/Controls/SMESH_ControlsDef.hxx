@@ -434,7 +434,7 @@ namespace SMESH{
     
     /*
       Class       : ScaledJacobian
-      Description : Functor returning the ScaledJacobian as implemeted in VTK for volumetric elements
+      Description : Functor returning the ScaledJacobian as implemented in VTK for volumetric elements
     */
     class SMESHCONTROLS_EXPORT ScaledJacobian: public virtual NumericalFunctor{
     public:
@@ -1014,7 +1014,7 @@ namespace SMESH{
 
     /*
       Class       : BelongToGeom
-      Description : Predicate for verifying whether entiy belong to
+      Description : Predicate for verifying whether entity belong to
       specified geometrical support
     */
     class SMESHCONTROLS_EXPORT BelongToGeom: public virtual Predicate
@@ -1052,7 +1052,7 @@ namespace SMESH{
 
     /*
       Class       : LyingOnGeom
-      Description : Predicate for verifying whether entiy lying or partially lying on
+      Description : Predicate for verifying whether entity lying or partially lying on
       specified geometrical support
     */
     class SMESHCONTROLS_EXPORT LyingOnGeom: public virtual Predicate

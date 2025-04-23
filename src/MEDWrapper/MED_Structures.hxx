@@ -461,7 +461,7 @@ namespace MED
     //! Find out what MED geometrical type the MED GAUSS entity belong to
     EGeometrieElement GetGeom() const { return myGeom; }
 
-    //! Contains coordinates for the refereced nodes
+    //! Contains coordinates for the referenced nodes
     TNodeCoord myRefCoord;
 
     //! Gives coordinates for the referenced node by its number
@@ -477,7 +477,7 @@ namespace MED
     //! Gives coordinates for the Gauss points by its number
     TCoordSlice GetGaussCoordSlice(TInt theId);
 
-    //! Contains wheights for the Gauss points
+    //! Contains weights for the Gauss points
     TWeight myWeight;
 
     //! Gives number of the referenced nodes

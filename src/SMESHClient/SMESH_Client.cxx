@@ -1004,15 +1004,15 @@ SMESH_Client::Update(bool theIsClear)
     }
     catch ( SALOME::SALOME_Exception& exc )
     {
-      INFOS("Following exception was cought:\n\t"<<exc.details.text);
+      INFOS("Following exception was caught:\n\t"<<exc.details.text);
     }
     catch( const std::exception& exc)
     {
-      INFOS("Following exception was cought:\n\t"<<exc.what());
+      INFOS("Following exception was caught:\n\t"<<exc.what());
     }
     catch(...)
     {
-      INFOS("Unknown exception was cought !!!");
+      INFOS("Unknown exception was caught !!!");
     }
 
     if (mySMDSMesh )

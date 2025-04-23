@@ -100,12 +100,12 @@ module StdMeshers
      */
     void SetPreestimatedLength(in double length);
     /*!
-     * Sets boolean parameter enabling/desabling usage of length computed
+     * Sets boolean parameter enabling/disabling usage of length computed
      * basing on size of bounding box of shape to mesh
      */
     void SetUsePreestimatedLength(in boolean toUse);
     /*!
-     * Returns value of boolean parameter enabling/desabling usage of length computed
+     * Returns value of boolean parameter enabling/disabling usage of length computed
      * basing on size of bounding box of shape to mesh
      */
     boolean GetUsePreestimatedLength();
@@ -587,7 +587,7 @@ module StdMeshers
    * interface of "ProjectionSource1D" hypothesis.
    * This hypothesis specifies a meshed edge to take a mesh pattern from
    * and optionally association of vertices between the source edge and a
-   * target one (where a hipothesis is assigned to)
+   * target one (where a hypothesis is assigned to)
    */
   interface StdMeshers_ProjectionSource1D : SMESH::SMESH_Hypothesis
   {
@@ -637,7 +637,7 @@ module StdMeshers
    * interface of "ProjectionSource2D" hypothesis.
    * This hypothesis specifies a meshed face to take a mesh pattern from
    * and optionally association of vertices between the source face and a
-   * target one (where a hipothesis is assigned to)
+   * target one (where a hypothesis is assigned to)
    */
   interface StdMeshers_ProjectionSource2D : SMESH::SMESH_Hypothesis
   {
@@ -694,7 +694,7 @@ module StdMeshers
    * interface of "ProjectionSource3D" hypothesis.
    * This hypothesis specifies a meshed shell or solid to take a mesh pattern from
    * and optionally association of vertices between the source shape and a
-   * target one (where a hipothesis is assigned to)
+   * target one (where a hypothesis is assigned to)
    */
   interface StdMeshers_ProjectionSource3D : SMESH::SMESH_Hypothesis
   {

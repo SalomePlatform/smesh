@@ -135,44 +135,44 @@ bool testGetCommontInterface2D()
         auto node0  = std::make_shared<gp_Pnt>(x,y,z);
         regularGrid0->SetNode( node0, i, j, k );
 
-        // Grid at botton
+        // Grid at bottom
         x = i * 0.1;
-        y = j * 0.1;   
+        y = j * 0.1;
         z = k * 0.1-0.1;
         auto node1 = std::make_shared<gp_Pnt>(x,y,z);
         regularGrid1->SetNode( node1, i, j, k );
             
         // Grid at right
         x = i * 0.1+0.4;
-        y = j * 0.1;   
+        y = j * 0.1;
         z = k * 0.1;
         auto node2  = std::make_shared<gp_Pnt>(x,y,z);
         regularGrid2->SetNode( node2, i, j, k );
 
         // Grid at back
         x = i * 0.1;
-        y = j * 0.1+0.3;   
+        y = j * 0.1+0.3;
         z = k * 0.1;
         auto node3  = std::make_shared<gp_Pnt>(x,y,z);
         regularGrid3->SetNode( node3, i, j, k );
 
         // Grid at left
         x = i * 0.1-0.4;
-        y = j * 0.1;   
+        y = j * 0.1;
         z = k * 0.1;
         auto node4 = std::make_shared<gp_Pnt>(x,y,z);
         regularGrid4->SetNode( node4, i, j, k );
 
         // Grid at front
         x = i * 0.1;
-        y = j * 0.1-0.3;   
+        y = j * 0.1-0.3;
         z = k * 0.1;
         auto node5 = std::make_shared<gp_Pnt>(x,y,z);
         regularGrid5->SetNode( node5, i, j, k );
 
         // Grid on top
         x = i * 0.1;
-        y = j * 0.1;   
+        y = j * 0.1;
         z = k * 0.1+0.1;
         auto node6 = std::make_shared<gp_Pnt>(x,y,z);
         regularGrid6->SetNode( node6, i, j, k );

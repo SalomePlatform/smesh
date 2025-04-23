@@ -279,7 +279,7 @@ QString  StdMeshersGUI_QuadrangleParamCreator::storeParams() const
   // corners
   h->SetCorners( myCornersSelWdg->GetListOfIDs() );
 
-  // enfored nodes
+  // enforced nodes
 
   GEOM::ListOfGO_var goList = new GEOM::ListOfGO;
   int nbShapes = 0;

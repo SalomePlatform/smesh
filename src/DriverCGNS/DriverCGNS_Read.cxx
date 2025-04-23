@@ -159,7 +159,7 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Iterator over nodes of the structired grid using FORTRAN multidimensional
+   * \brief Iterator over nodes of the structured grid using FORTRAN multidimensional
    * array ordering.
    */
   class TPointRangeIterator

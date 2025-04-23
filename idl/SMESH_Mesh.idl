@@ -1117,7 +1117,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Get the internal persisten Id
+     * Get the internal persistent Id
      */
     long GetId();
   };
@@ -1125,14 +1125,14 @@ module SMESH
   interface SMESH_SequentialMesh:SMESH_Mesh{};
   interface SMESH_ParallelMesh:SMESH_Mesh{
 
-    // Parallism method
+    // Parallelism method
     long GetParallelismMethod();
     void SetParallelismMethod(in long aMethod);
 
     long GetParallelismDimension();
     void SetParallelismDimension(in long aDim);
 
-    // Parameters for MutliThreading
+    // Parameters for Multithreading
     long GetNbThreads();
     void SetNbThreads(in long nbThreads);
 

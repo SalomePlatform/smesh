@@ -85,7 +85,7 @@ namespace MED
   GetGroupInfo(const TFamilyInfoSet& theFamilyInfoSet);
 
   //---------------------------------------------------------------
-  //! Read set of MED TIMESTAMPS groupped by corresponding MED FIELDS
+  //! Read set of MED TIMESTAMPS grouped by corresponding MED FIELDS
   MEDWRAPPER_EXPORT
   TFieldInfo2TimeStampInfoSet
   GetFieldInfo2TimeStampInfoSet(const PWrapper& theWrapper,

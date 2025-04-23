@@ -479,7 +479,7 @@ namespace MED
                      EConnectivite theConnMode = eNOD);
 
     //! Get TEntityInfo which contains brief information about existing cells
-    //  and their destribution among MED ENTITIES
+    //  and their distribution among MED ENTITIES
     virtual
     TEntityInfo
     GetEntityInfo(const TMeshInfo& theMeshInfo,

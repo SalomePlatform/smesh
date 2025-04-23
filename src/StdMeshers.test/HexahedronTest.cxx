@@ -19,7 +19,7 @@
 //  File   : HexahedronTest.cxx
 //  Module : SMESH
 //  Purpose: Implement unit tests for StdMeshers_Cartesian_3D_Hexahedron class to reproduce bugs that manifest in integration tests.
-//            The main difference between this unit test and integration tests is the fine grained control we have over the class methods and the hability to diagnose/solve bugs before the code goes into production enviroment.
+//            The main difference between this unit test and integration tests is the fine grained control we have over the class methods and the ability to diagnose/solve bugs before the code goes into production environment.
 //            This test class can be used as reference for the development of future tests in other stdMesh algorithms
 
 #include "StdMeshers_Cartesian_3D_Hexahedron.hxx"
