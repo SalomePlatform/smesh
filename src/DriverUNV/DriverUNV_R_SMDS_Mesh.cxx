@@ -366,8 +366,19 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                                 aRec.node_labels[9],
                                                 aRec.label);
             break;
+          
+          case 119: // Solid Linear Pyramid - PIRA5
+          case 312: // Solid Linear Pyramid - PIRA5
+            anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
+                                                aRec.node_labels[3],
+                                                aRec.node_labels[2],
+                                                aRec.node_labels[1],
 
-          case 114: // pyramid of 13 nodes (quadratic) - PIRA13
+                                                aRec.node_labels[4],
+                                                aRec.label);
+            break;
+
+          case 114: // Solid Quadratic Pyramid - PIRA13
             anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
                                                 aRec.node_labels[6],
                                                 aRec.node_labels[4],

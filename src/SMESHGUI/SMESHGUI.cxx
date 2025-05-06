@@ -608,7 +608,6 @@ namespace
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
       notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polyhedra );
-      notSupportedElemTypes.push_back( SMESH::Entity_Pyramid );
       notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
       notSupportedElemTypes.push_back( SMESH::Entity_0D );
       notSupportedElemTypes.push_back( SMESH::Entity_Ball );
