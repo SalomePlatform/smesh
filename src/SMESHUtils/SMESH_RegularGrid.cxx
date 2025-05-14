@@ -344,9 +344,10 @@ static int findLeftBottomCorner(const std::shared_ptr<gp_Pnt>& V0,
 {
   // Find the left bottom corner of the box face from the 4 points
   auto isLeftBottom = [](const std::shared_ptr<gp_Pnt>& a, const std::shared_ptr<gp_Pnt>& b) {
-    return (a->X() < b->X()) || 
-           (a->X() == b->X() && a->Y() < b->Y()) || 
-           (a->X() == b->X() && a->Y() == b->Y() && a->Z() < b->Z());
+    const double tol = Precision::Confusion();
+    return (b->X()-a->X() > tol) ||
+      (fabs(b->X()-a->X()) < tol && b->Y()-a->Y() > tol) ||
+      (fabs(b->X()-a->X()) < tol && fabs(b->Y()-a->Y()) < tol && b->Z()-a->Z() > tol);
   };
 
   int index = 0;
@@ -740,7 +741,7 @@ std::vector<int> SMESH_RegularGrid::computeTransformation( const SMESH_RegularGr
                           face == SMESH_RegularGrid::B_BACK ) && 
                             (gridDonorFace == SMESH_RegularGrid::B_TOP || 
                               gridDonorFace == SMESH_RegularGrid::B_RIGHT ||
-                              gridDonorFace == SMESH_RegularGrid::B_FRONT );
+                              gridDonorFace == SMESH_RegularGrid::B_BACK );
 
           if( bothMin || bothMax ) 
             transform[i] *= -1;
