@@ -22,8 +22,18 @@
 # On the other hand these tests can be executed with 'salome test'.
 # ---------------------------------------------------------------------------
 
-SET(SMESH_WITH_MG
+SET(SMESH_WITH_SHAPER
+  body_fitting_viscous_layer_tpipe.py
+  basic_smesh_output_with_mc_field.py
+  doublenodes_polyhedra.py
+  test_vlapi_growthlayer.py
+  shaper_smesh_groups_without_session.py
   SMESH_controls_3D_warping.py
+  test_vlapi_shrinkgeometry.py
+  basic_shaper_smesh_without_session.py
+  body_fitting_viscous_layer_cylinder.py
+)
+SET(SMESH_WITH_MG
   blocFissure_01_without_session.py
   blocFissure_02_without_session.py
   blocFissure_03_without_session.py
@@ -41,14 +51,11 @@ ENDIF(NOT WIN32)
 
 SET(BAD_TESTS
   blocFissure_07_without_session.py
-  body_fitting_viscous_layer_cylinder.py
-  body_fitting_viscous_layer_tpipe.py
   body_fitting_quanta_sphere.py
   ex04_cube5tetraHexa.py
   ex21_lamp.py
   ex29_refine.py
   ex_MakePolyLine.py
-  test_vlapi_growthlayer.py
   PAL_MESH_041_mesh.py
   PAL_MESH_043_3D.py
   SMESH_BelongToGeom.py
@@ -92,8 +99,6 @@ SET(GOOD_TESTS
   create_penta_biquad.py
   extrusion_penta_biquad.py
   test_polyhedron_per_solid.py
-  test_vlapi_shrinkgeometry.py
-
   ex01_cube2build.py
   ex02_cube2primitive.py
   ex03_cube2partition.py
@@ -147,10 +152,6 @@ SET(UNIT_TESTS # Any unit test add in src names space should be added here
 
 SET(SESSION_FREE_TESTS
   basic_geom_smesh_without_session.py
-  basic_shaper_smesh_without_session.py
-  basic_smesh_output_with_mc_field.py
-  doublenodes_polyhedra.py
-  shaper_smesh_groups_without_session.py
   ssl_hdf5_symbols_conflicts.py
   SMESH_MeshioShapes.py
   SMESH_MeshioFiles.py
