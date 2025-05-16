@@ -138,9 +138,6 @@ SET(BAD_TESTS
   creating_parallel_2D_mesh.py
   )
 IF(NOT WIN32)
-  LIST(APPEND BAD_TESTS
-    MGAdaptTests_without_session.py
-  )
   IF(MED_INT_IS_LONG)
     LIST(APPEND BAD_TESTS
       test_homard_adapt.py

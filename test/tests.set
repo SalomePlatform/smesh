@@ -22,13 +22,24 @@
 # On the other hand these tests can be executed with 'salome test'.
 # ---------------------------------------------------------------------------
 
-SET(BAD_TESTS
+SET(SMESH_WITH_MG
+  SMESH_controls_3D_warping.py
   blocFissure_01_without_session.py
   blocFissure_02_without_session.py
   blocFissure_03_without_session.py
   blocFissure_04_without_session.py
   blocFissure_05_without_session.py
   blocFissure_06_without_session.py
+  test_import_1D2D_with_tetras_and_pyras.py
+  test_smeshplugins.py
+)
+IF(NOT WIN32)
+  LIST(APPEND SMESH_WITH_MG
+    MGAdaptTests_without_session.py
+  )
+ENDIF(NOT WIN32)
+
+SET(BAD_TESTS
   blocFissure_07_without_session.py
   body_fitting_viscous_layer_cylinder.py
   body_fitting_viscous_layer_tpipe.py
@@ -37,7 +48,6 @@ SET(BAD_TESTS
   ex21_lamp.py
   ex29_refine.py
   ex_MakePolyLine.py
-  test_smeshplugins.py
   test_vlapi_growthlayer.py
   PAL_MESH_041_mesh.py
   PAL_MESH_043_3D.py
@@ -48,7 +58,6 @@ SET(BAD_TESTS
   SMESH_box_tetra.py
   SMESH_controls.py
   SMESH_controls_scaled_jacobian.py
-  SMESH_controls_3D_warping.py
   SMESH_fixation_netgen.py
   SMESH_fixation_tetra.py
   SMESH_flight_skin.py
@@ -74,7 +83,6 @@ SET(BAD_TESTS
   netgen_runner_2D.py
   netgen_runner_1D2D3D.py
   gmsh_runner.py
-  test_import_1D2D_with_tetras_and_pyras.py
   )
 
 # The following tests can be executed with both 'make test' and 'salome test'.

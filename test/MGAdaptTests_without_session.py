@@ -29,7 +29,9 @@ smesh = smeshBuilder.New()
 
 #========================= Paramétrage - Début ===================================
 # 1. REPDATA = répertoire du cas
-REPDATA = os.path.abspath(os.path.join(os.path.dirname(inspect.getfile(lambda: None)), 'data'))
+#REPDATA = os.path.abspath(os.path.join(os.path.dirname(inspect.getfile(lambda: None)), 'data'))
+REPDATA = os.path.abspath(os.path.join(os.getenv("SMESH_ROOT_DIR"),'share','doc','salome','examples','SMESH', 'data'))
+print(REPDATA)
 #
 # 2. Repérage des données
 D_DATA = dict()
