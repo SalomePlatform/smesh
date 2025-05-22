@@ -723,33 +723,38 @@ int SMDS_Down2D::getNodeSet(int cellId, int* nodeSet)
 
 int SMDS_Down2D::FindEdgeByNodes(int cellId, ElemByNodesType& edgeByNodes)
 {
+  return FindEdgeByNodesSet(cellId, edgeByNodes.nodeIds, edgeByNodes.vtkType);
+}
+
+int SMDS_Down2D::FindEdgeByNodesSet(int cellId, int* nodeSetToFind, int vtkEdgeType)
+{
   int *edges = &_cellIds[_nbDownCells * cellId];
   for (int i = 0; i < _nbDownCells; i++)
+  {
+    if ((edges[i] >= 0) && (vtkEdgeType == _cellTypes[i]))
     {
-      if ((edges[i] >= 0) && (edgeByNodes.vtkType == _cellTypes[i]))
+      int nodeSet[3];
+      int npts = this->_grid->getDownArray(vtkEdgeType)->getNodeSet(edges[i], nodeSet);
+      bool found = false;
+      for (int j = 0; j < npts; j++)
+      {
+        int point = nodeSetToFind[j];
+        found = false;
+        for (int k = 0; k < npts; k++)
         {
-          int nodeSet[3];
-          int npts = this->_grid->getDownArray(edgeByNodes.vtkType)->getNodeSet(edges[i], nodeSet);
-          bool found = false;
-          for (int j = 0; j < npts; j++)
-            {
-              int point = edgeByNodes.nodeIds[j];
-              found = false;
-              for (int k = 0; k < npts; k++)
-                {
-                  if (nodeSet[k] == point)
-                    {
-                      found = true;
-                      break;
-                    }
-                }
-              if (!found)
-                break;
-            }
-          if (found)
-            return edges[i];
+          if (nodeSet[k] == point)
+          {
+            found = true;
+            break;
+          }
         }
+        if (!found)
+          break;
+      }
+      if (found)
+        return edges[i];
     }
+  }
   return -1;
 }
 

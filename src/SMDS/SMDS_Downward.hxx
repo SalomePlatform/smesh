@@ -164,6 +164,7 @@ protected:
   void setTempNodes(int cellId, ElemByNodesType& faceByNodes);
   bool isInFace(int cellId, int *pts, int npts);
   int FindEdgeByNodes(int cellId, ElemByNodesType& edgeByNodes);
+  int FindEdgeByNodesSet(int cellId, int* nodeSetToFind, int vtkEdgeType);
 
   std::vector<int> _upCellIds; //!< 2 volumes max. per face
   std::vector<unsigned char> _upCellTypes; //!< 2 volume types per face

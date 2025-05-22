@@ -70,6 +70,40 @@ protected:
   ~SMDS_CellLinks();
 };
 
+/*! This class extends vtkUnstructuredGrid to deal with downward connectivity.
+ *  Use method BuildDownwardConnectivity to build downward connectivity
+ *  and CleanDownwardConnectivity() to clean it.
+ *  The downward connectivity takes up a lot of memory,
+ *  so, build it only when necessary and clean after usage.
+ *
+ *  Downward connectivity is no more valid if vtkUnstructuredGrid is modified.
+ *
+ *  Built downward connectivity is kept in
+ *  std::vector<SMDS_Downward*> _downArray;
+ *  Vector item #i stores connectivity of all elements of VTK type i.
+ *
+ *  As vtkUnstructuredGrid has elements and nodes numbering different
+ *  from the SMDS one, here are the methods to convert IDs between VTK and SMDS:
+ *  1. vtkId -> smId (nodes and elements)
+ *     smIdType SMDS_Mesh::FromVtkToSmds(vtkIdType)
+ *  2. smId -> vtkId (elements)
+ *     SMDS_MeshElement* SMDS_Mesh::FindElement(smIdType)
+ *     vtkIdType SMDS_MeshElement::GetVtkID()
+ *  3. smId -> vtkId (nodes)
+ *     SMDS_MeshNode* SMDS_Mesh::FindNode(smIdType)
+ *     vtkId = SMDS_MeshElement::GetVtkID()
+ *
+ *  And here are the way to convert between VTK IDs and downward connectivity indices:
+ *  1. vtkId -> downId + vtkType
+ *     int SMDS_UnstructuredGrid::CellIdToDownId(vtkIdType)
+ *     int vtkUnstructuredGrid::GetCellType(vtkIdType)
+ *
+ *  2. (downId + vtkType) -> vtkId
+ *     SMDS_Downward* SMDS_UnstructuredGrid::getDownArray(unsigned char vtkType)
+ *     int SMDS_Downward::getVtkCellId(int downId)
+ *     Not all elements of downward connectivity can have corresponding VTK cells.
+ *     -1 will be returned if there is no VTK cell.
+ */
 class SMDS_EXPORT SMDS_UnstructuredGrid: public vtkUnstructuredGrid
 {
 public:

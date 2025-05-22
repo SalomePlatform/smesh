@@ -664,19 +664,31 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool /*withEdges*/)
         {
           int vtkEdgeId = i;
           //ASSERT(_downArray[vtkEdgeType]);
-          int connEdgeId = _downArray[vtkEdgeType]->addCell(vtkEdgeId);
           SMDS_Down1D* downEdge = static_cast<SMDS_Down1D*> (_downArray[vtkEdgeType]);
+          int connEdgeId = downEdge->addCell(vtkEdgeId);
           downEdge->setNodes(connEdgeId, vtkEdgeId);
           std::vector<int> vtkIds;
           int nbVtkCells = downEdge->computeVtkCells(connEdgeId, vtkIds);
           int downFaces[1000];
           unsigned char downTypes[1000];
           int nbDownFaces = downEdge->computeFaces(connEdgeId, &vtkIds[0], nbVtkCells, downFaces, downTypes);
+          int nodeSet[3];
+          int npts = downEdge->getNodeSet(connEdgeId, nodeSet);
           for (int n = 0; n < nbDownFaces; n++)
+          {
+            // Check for duplicated edges, because multiple edges
+            // can already exist in the mesh on the same set of nodes.
+            // And if we add duplicated edge, we could not then add all
+            // required edges, as we have fixed number of slots in the face.
+            int connFaceId = downFaces[n];
+            int vtkFaceType = downTypes[n];
+            SMDS_Down2D* downFace = static_cast<SMDS_Down2D*>(_downArray[vtkFaceType]);
+            if (downFace->FindEdgeByNodesSet(connFaceId, nodeSet, vtkEdgeType) < 0)
             {
-              _downArray[downTypes[n]]->addDownCell(downFaces[n], connEdgeId, vtkEdgeType);
-              _downArray[vtkEdgeType]->addUpCell(connEdgeId, downFaces[n], downTypes[n]);
+              downFace->addDownCell(connFaceId, connEdgeId, vtkEdgeType);
+              downEdge->addUpCell  (connEdgeId, connFaceId, vtkFaceType);
             }
+          }
         }
     }
 
