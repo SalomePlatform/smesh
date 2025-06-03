@@ -877,6 +877,14 @@
         <translation>Fichier MED</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_MAIL</source>
+        <translation>Fichier MAIL</translation>
+    </message>
+    <message>
+        <source>MEN_MAIL</source>
+        <translation>Fichier MAIL</translation>
+    </message>
+    <message>
         <source>MEN_IMPORT_CGNS</source>
         <translation>Fichier CGNS</translation>
     </message>

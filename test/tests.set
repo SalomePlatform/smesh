@@ -136,6 +136,7 @@ SET(GOOD_TESTS
   SMESH_test0.py
   SMESH_test3.py
   SMESH_test5.py
+  SMESH_MailReader.py
   )
 
 

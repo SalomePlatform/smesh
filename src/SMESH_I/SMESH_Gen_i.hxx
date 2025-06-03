@@ -253,6 +253,10 @@ public:
                                          SMESH::SMESH_Mesh_ptr        sourceMesh,
                                          SMESH::DriverMED_ReadStatus& theStatus);
 
+  //  Create mesh(es) and import data from MAIL file
+  SMESH::mesh_array* CreateMeshesFromMAIL( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus );
+
   //  Create a mesh and import data from a STL file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName );
 

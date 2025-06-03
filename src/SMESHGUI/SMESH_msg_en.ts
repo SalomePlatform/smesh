@@ -881,6 +881,14 @@
         <translation>MED file</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_MAIL</source>
+        <translation>MAIL file</translation>
+    </message>
+    <message>
+        <source>MEN_MAIL</source>
+        <translation>MAIL file</translation>
+    </message>
+    <message>
         <source>MEN_IMPORT_CGNS</source>
         <translation>CGNS file</translation>
     </message>

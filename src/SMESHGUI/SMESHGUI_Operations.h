@@ -42,12 +42,14 @@ namespace SMESHOp {
     OpImportCGNS             = 1104,   // MENU FILE - IMPORT - CGNS FILE
     OpImportGMF              = 1106,   // MENU FILE - IMPORT - GMF FILE
     OpImportMESHIO           = 1107,   // MENU FILE - IMPORT - other formats... (meshio)
+    OpImportMAIL             = 1108,   // MENU FILE - IMPORT - MAIL FILE
     OpPopupImportDAT         = 1120,   // POPUP MENU - IMPORT - DAT FILE
     OpPopupImportUNV         = 1121,   // POPUP MENU - IMPORT - UNV FILE
     OpPopupImportMED         = 1122,   // POPUP MENU - IMPORT - MED FILE
     OpPopupImportSTL         = 1123,   // POPUP MENU - IMPORT - STL FILE
     OpPopupImportCGNS        = 1124,   // POPUP MENU - IMPORT - CGNS FILE
     OpPopupImportGMF         = 1126,   // POPUP MENU - IMPORT - GMF FILE
+    OpPopupImportMAIL        = 1128,   // MENU FILE - IMPORT - MAIL FILE
     // Export -------------------------//--------------------------------
     OpExportDAT              = 1200,   // MENU FILE  - EXPORT - DAT FILE
     OpExportMED              = 1201,   // MENU FILE  - EXPORT - MED FILE

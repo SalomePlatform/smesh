@@ -276,6 +276,13 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Create Mesh object(s) importing data from given MAIL file
+     */
+    mesh_array CreateMeshesFromMAIL( in string theFileName,
+                                    out SMESH::DriverMED_ReadStatus theStatus )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Create Mesh object importing data from given STL file
      */
     SMESH_Mesh CreateMeshesFromSTL( in string theFileName )

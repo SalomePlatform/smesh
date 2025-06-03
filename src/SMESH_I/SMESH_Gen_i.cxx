@@ -52,6 +52,7 @@
 // Have to be included before std headers
 #include <Python.h>
 #include <structmember.h>
+#include "PythonCppUtils.hxx"
 
 #ifdef WIN32
  #include <windows.h>
@@ -1440,6 +1441,143 @@ namespace
 
     aPythonDump << "], status) = " << smesh << functionName;
   }
+
+  //================================================================================
+  /*!
+   * \brief Python function to get the error raised in the called script.py
+   */
+  //================================================================================
+
+  std::string getPythonErrorStringNoGIL()
+  {
+
+    AutoPyRef ptype, pvalue, ptraceback;
+
+    PyObject *a = nullptr, *b = nullptr, *c = nullptr;
+    PyErr_Fetch(&a, &b, &c);
+    PyErr_NormalizeException(&a, &b, &c);
+
+    ptype.set(a);
+    pvalue.set(b);
+    ptraceback.set(c);
+
+    AutoPyRef pStrObj;
+
+    if (pvalue)
+    {
+        pStrObj = PyObject_Str(pvalue.get());
+    }
+    else if (ptype)
+    {
+        pStrObj = PyObject_Str(ptype.get());
+    }
+
+    std::string errorMsg = "<unknown Python error>";
+    if (pStrObj && PyUnicode_Check(pStrObj.get()))
+    {
+        errorMsg = PyUnicode_AsUTF8(pStrObj.get());
+    }
+
+    return errorMsg;
+  }
+
+  //================================================================================
+  /*!
+    * \brief execute python script to parse the .mail file
+    */
+  //================================================================================
+
+std::string readMailFileFromPy(const std::string& inputPath, const std::string& outputPath)
+{
+  AutoGIL gstate;
+
+  PyObject* sys_path = PySys_GetObject("path");
+  if (!sys_path)
+  {
+    std::string anError = "Failed to get sys.path";
+    throw(SALOME_Exception( anError.c_str()));
+  }
+
+  AutoPyRef pName(PyUnicode_FromString("MCMailFileReader"));
+  AutoPyRef pModule(PyImport_Import(pName));
+  if (pModule.isNull())
+  {
+    std::string anError = "Failed to import Python module MCMailFileReader";
+    throw(SALOME_Exception( anError.c_str()));
+  }
+
+  AutoPyRef pFunc(PyObject_GetAttrString(pModule, "ConvertFromMailToMEDFile"));
+  if (pFunc.isNull() || !PyCallable_Check(pFunc))
+  {
+    std::string anError = "Python function main_for_smesh not found or not callable";
+    throw(SALOME_Exception( anError.c_str()));
+  }
+
+  AutoPyRef pArgs(PyTuple_New(2));
+  PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(inputPath.c_str()));
+  PyTuple_SetItem(pArgs, 1, PyUnicode_FromString(outputPath.c_str()));
+
+  AutoPyRef pResult(PyObject_CallObject(pFunc, pArgs));
+  if (pResult.isNull() || !PyUnicode_Check(pResult))
+  {
+    std::string anError;
+    anError = getPythonErrorStringNoGIL();
+    std::ostringstream oss;
+    oss << "Python function main_for_smesh returned invalid result : " << anError << std::endl;
+    throw(SALOME_Exception( oss.str().c_str()));
+  }
+  INFOS( "MED file is created: " << outputPath );
+  return std::string(PyUnicode_AsUTF8(pResult));
+}
+
+  //================================================================================
+  /*!
+    * \brief execute python script with .mail file path and return .med file path
+    */
+  //================================================================================
+
+std::string changeExtensionToMed(const std::string& inputPath)
+{
+  AutoGIL gstate;
+
+  PyObject* sys_path = PySys_GetObject("path");
+  if (!sys_path)
+  {
+    std::string anError = "Failed to get sys.path";
+    throw(SALOME_Exception( anError.c_str()));
+  }
+
+  AutoPyRef pName(PyUnicode_FromString("salome.smesh.smeshBuilder"));
+  AutoPyRef pModule(PyImport_Import(pName));
+  if (pModule.isNull())
+  {
+    std::string anError = "Failed to import Python module salome.smesh.smeshBuilder";
+    throw(SALOME_Exception( anError.c_str()));
+  }
+
+  AutoPyRef pFunc(PyObject_GetAttrString(pModule, "changeExtensionToMed"));
+  if (pFunc.isNull() || !PyCallable_Check(pFunc))
+  {
+    std::string anError = "Python function changeExtensionToMed not found or not callable";
+    throw(SALOME_Exception( anError.c_str()));
+  }
+
+  AutoPyRef pArgs(PyTuple_New(1));
+  AutoPyRef pValue(PyUnicode_FromString(inputPath.c_str()));
+  PyTuple_SetItem(pArgs, 0, pValue.retn());
+
+  AutoPyRef pResult(PyObject_CallObject(pFunc, pArgs));
+  if (pResult.isNull() || !PyUnicode_Check(pResult))
+  {
+    std::string anError;
+    anError = getPythonErrorStringNoGIL();
+    std::ostringstream oss;
+    oss << "Python function changeExtensionToMed returned invalid result : " << anError << std::endl;
+    throw(SALOME_Exception( oss.str().c_str()));
+  }
+
+  return std::string(PyUnicode_AsUTF8(pResult));
+}
 }
 
 //=============================================================================
@@ -1682,6 +1820,37 @@ SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMED(const char* theFileName, SME
 
   return aResult._retn();
 }
+
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::CreateMeshFromMED
+ *
+ *  Create mesh and import data from MED file
+ */
+//=============================================================================
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMAIL( const char*                  theFileName,
+                                                     SMESH::DriverMED_ReadStatus& theStatus )
+{
+  checkFileReadable(theFileName);
+
+  std::string outputPath;
+  std::string medFileName;
+
+  try
+  {
+    outputPath = changeExtensionToMed(std::string(theFileName));
+    medFileName = readMailFileFromPy(std::string(theFileName), outputPath);
+    checkFileReadable(medFileName.c_str());
+    return CreateMeshesFromMED(medFileName.c_str(), theStatus);
+  }
+  catch (const SALOME_Exception& S_ex)
+  {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(),SALOME::INTERNAL_ERROR);
+  }
+}
+
 
 //=============================================================================
 /*!

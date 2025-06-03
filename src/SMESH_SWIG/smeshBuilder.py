@@ -47,6 +47,8 @@ import SALOMEDS
 import os
 import inspect
 
+from pathlib import Path
+
 # In case the omniORBpy EnumItem class does not fully support Python 3
 # (for instance in version 4.2.1-2), the comparison ordering methods must be
 # defined
@@ -132,6 +134,15 @@ class MeshMeta(type):
     def __subclasscheck__(cls, sub):
         """Implement issubclass(sub, cls)."""
         return type.__subclasscheck__(cls, sub) or (cls.__name__ == sub.__name__ and cls.__module__ == sub.__module__)
+
+def changeExtensionToMed(inputPath):
+    """
+    Takes a file path as input and returns the absolute path
+    of the same file with its extension changed to '.med'
+    """
+    inp2 = Path(inputPath)
+    outp = inp2.parent.absolute() / inp2.with_suffix(".med").name
+    return str(outp)
 
 def DegreesToRadians(AngleInDegrees):
     """Convert an angle from degrees to radians
