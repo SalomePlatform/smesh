@@ -23,6 +23,8 @@
 
 #include "StdMeshers_Cartesian_3D_Grid.hxx"
 
+#include <BRepIntCurveSurface_Inter.hxx>
+
 #ifdef WITH_TBB
 
 #ifdef WIN32
@@ -1432,6 +1434,8 @@ void FaceLineIntersector::IntersectWithTorus (const GridLine& gridLine)
  */
 void FaceLineIntersector::IntersectWithSurface (const GridLine& gridLine)
 {
+//#define OLD_INTERSECTOR
+#ifdef OLD_INTERSECTOR
   _surfaceInt->Perform( gridLine._line, 0.0, gridLine._length );
   if ( !_surfaceInt->IsDone() ) return;
   for ( int i = 1; i <= _surfaceInt->NbPnt(); ++i )
@@ -1440,4 +1444,25 @@ void FaceLineIntersector::IntersectWithSurface (const GridLine& gridLine)
     _w = _surfaceInt->WParameter( i );
     addIntPoint(/*toClassify=*/false);
   }
+#else
+  double tol = 1e-6;
+  //double tol = Precision::Confusion();
+  BRepIntCurveSurface_Inter theAlg;
+  theAlg.Init(_surfaceInt->Face(), gridLine._line, tol);
+
+  for (; theAlg.More(); theAlg.Next())
+  {
+    if (theAlg.Transition() == IntCurveSurface_In)
+      _transition = _transIn;
+    else if (theAlg.Transition() == IntCurveSurface_Out)
+      _transition = _transOut;
+    else
+      _transition = Transition( theAlg.Transition() );
+
+    _u = theAlg.U();
+    _v = theAlg.V();
+    _w = theAlg.W();
+    addIntPoint(/*toClassify=*/false);
+  }
+#endif
 }
