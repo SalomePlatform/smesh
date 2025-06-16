@@ -885,8 +885,6 @@ double SMDS_VolumeTool::GetSize() const
                            myVolumeNodes[ vtab[i][2] ],
                            myVolumeNodes[ vtab[i][3] ]);
     }
-    if (!myVolForward && V < 0)
-      V *= -1;
   }
   return V;
 }
