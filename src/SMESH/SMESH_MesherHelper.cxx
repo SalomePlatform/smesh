@@ -3686,12 +3686,12 @@ namespace { // Structures used by FixQuadraticElements()
 
     void Move(const gp_Vec& move, bool sum=false, bool is2dFixed=false) const
     { _nodeMove += move; _nbMoves += sum ? (_nbMoves==0) : 1; _is2dFixed |= is2dFixed; }
-    gp_XYZ Move() const { return _nodeMove.XYZ() / _nbMoves; }
+    gp_XYZ Move() const { return  _nodeMove.XYZ() / (_nbMoves ? _nbMoves : 1); }
     bool IsMoved() const { return (_nbMoves > 0 /*&& !IsStraight()*/); }
     bool IsFixedOnSurface() const { return _is2dFixed; }
     bool IsStraight() const
     { return isStraightLink( (XYZ(node1())-XYZ(node2())).SquareModulus(),
-                             _nodeMove.SquareMagnitude());
+                             Move().SquareModulus());
     }
     bool operator<(const QLink& other) const {
       return (node1()->GetID() == other.node1()->GetID() ?
@@ -3935,18 +3935,48 @@ namespace { // Structures used by FixQuadraticElements()
 
     // propagate from a quadrangle to neighbour faces
     if ( link->MediumPos() >= pos ) {
-      int nbLinkFaces = link->_faces.size();
-      if ( nbLinkFaces == 4 || (/*nbLinkFaces < 4 && */link->OnBoundary())) {
+      int nbLinkFaces = 0;
+      for ( int i = 0; i < (int)link->_faces.size(); ++i ) {
+        if ( link->_faces[i] ) nbLinkFaces++;
+      }
+
+      if ( (error != ERR_PRISM && nbLinkFaces == 4) ||
+           (link->OnBoundary() && this->IsBoundary()) )
+      {
         // hexahedral mesh or boundary quadrangles - goto a continuous face
         if ( const QFace* f = link->GetContinuesFace( this ))
+        {
           if ( f->_sides.size() == 4 )
-            return f->GetLinkChain( *chLink, chain, pos, error );
+          {
+            bool aStatus = f->GetLinkChain( *chLink, chain, pos, error );
+            if (error != ERR_PRISM || (link->OnBoundary() && this->IsBoundary()))
+            {
+              return aStatus;
+            }
+            else // error == ERR_PRISM
+            {
+              TChainLink chLink(link); // side face of prismatic mesh - visit all faces of iSide
+              for ( int i = 0; i < (int)link->_faces.size(); ++i )
+              {
+                if ( link->_faces[i] )
+                {
+                  link->_faces[i]->GetLinkChain( chLink, chain, pos, error );
+                }
+              }
+              return false;
+            }
+          }
+        }
       }
       else {
         TChainLink chLink(link); // side face of prismatic mesh - visit all faces of iSide
-        for ( int i = 0; i < nbLinkFaces; ++i )
+        for ( int i = 0; i < (int)link->_faces.size(); ++i )
+        {
           if ( link->_faces[i] )
+          {
             link->_faces[i]->GetLinkChain( chLink, chain, pos, error );
+          }
+        }
         if ( error < ERR_PRISM )
           error = ERR_PRISM;
         return false;
@@ -4222,6 +4252,11 @@ namespace { // Structures used by FixQuadraticElements()
     //   v2  |   v3     _faces[2] and _faces[3] (or vice versa).
     //       x4
 
+    // x0----x2-----x3  
+    //       /\         Case of boundary
+    //  v0  /  \   v2     
+    //    x1 v1 x4
+
     if ( _faces.empty() )
       return;
     int iFaceCont = -1, nbBoundary = 0, iBoundary[2]={-1,-1};
@@ -4237,6 +4272,9 @@ namespace { // Structures used by FixQuadraticElements()
                     _faces[iF]->_volumes[iV] == _faces[0]->_volumes[1]);
       if ( !sameVol )
         iFaceCont = iF;
+    }
+    for ( size_t iF = 1; iF < _faces.size(); ++iF )
+    {
       if ( _faces[iF]->IsBoundary() )
         iBoundary[ nbBoundary++ ] = iF;
     }
@@ -4318,7 +4356,7 @@ namespace { // Structures used by FixQuadraticElements()
       gp_XYZ mid1 = _qlink->MiddlePnt();
       gp_XYZ mid2 = _qfaces[0]->_sides[ iOpp ]->MiddlePnt();
       double faceSize2 = (mid1-mid2).SquareModulus();
-      isStraight = _qlink->_nodeMove.SquareMagnitude() < 1/10./10. * faceSize2;
+      isStraight = _qlink->Move().SquareModulus() < 1/10./10. * faceSize2;
     }
     return isStraight;
   }
@@ -4364,7 +4402,8 @@ namespace { // Structures used by FixQuadraticElements()
           const QLink* interLink = face->_sides[ interInd ];
           QLinkSet::iterator pInterLink = interLinks.find( interLink );
           if ( pInterLink == interLinks.end() ) continue; // not internal link
-          interLink->Move( bndLink->_nodeMove );
+          interLink->Move( bndLink->Move() );
+
           // treated internal links become new boundary ones
           interLinks.erase( pInterLink );
           newBndLinks->insert( interLink );
@@ -4398,10 +4437,10 @@ namespace { // Structures used by FixQuadraticElements()
                        face->_sides[1]->MiddlePnt() +
                        face->_sides[2]->MiddlePnt() ) / 3.;
         gp_XYZ insideDir( pIn - (*linkIt)->MiddlePnt());
-        bool linkBentInside = ((*linkIt)->_nodeMove.Dot( insideDir ) > 0 );
+        bool linkBentInside = ((*linkIt)->Move().Dot( insideDir ) > 0 );
         //if ( face->IsSpoiled( linkIt->_qlink ))
         if ( linkBentInside )
-          face->MoveByBoundary( *linkIt, (*linkIt)->_nodeMove, linkSet );
+          face->MoveByBoundary( *linkIt, (*linkIt)->Move(), linkSet );
       }
     }
   }
@@ -5093,7 +5132,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
           else if ( !isCurved )
           {
             if ( volMinSize2 < 0 ) volMinSize2 = volTool.MinLinearSize2();
-            isCurved = !isStraightLink( volMinSize2, link._nodeMove.SquareMagnitude() );
+            isCurved = !isStraightLink( volMinSize2, link.Move().SquareModulus() );
           }
         }
         // store QFace
@@ -5248,8 +5287,8 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
           if ( chain.begin() == --chain.end() ) // chain.size() == 1
             continue;
 
-          gp_Vec move0 = chain.front()->_nodeMove;
-          gp_Vec move1 = chain.back ()->_nodeMove;
+          gp_Vec move0 (chain.front()->Move());
+          gp_Vec move1 (chain.back ()->Move());
 
           TopoDS_Face face;
           if ( !isInside )
