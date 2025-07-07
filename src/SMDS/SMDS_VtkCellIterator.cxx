@@ -141,9 +141,10 @@ _GetVtkNodesPolyh::_GetVtkNodesPolyh( TVtkIdList&        vtkIds,
   {
   case SMDSEntity_Polyhedra:
   {
-    vtkIdType nFaces = 0;
-    vtkIdType const *ptIds(nullptr);
-    grid->GetFaceStream( vtkCellId, nFaces, ptIds );
+    vtkNew<vtkIdList> faceStream;
+    grid->GetFaceStream( vtkCellId, faceStream);
+    vtkIdType nFaces = faceStream->GetId(0);
+    vtkIdType *ptIds = faceStream->GetPointer(1);
     int id = 0, nbNodesInFaces = 0;
     for ( int i = 0; i < nFaces; i++ )
     {

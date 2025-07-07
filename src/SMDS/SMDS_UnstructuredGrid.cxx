@@ -229,11 +229,11 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<smIdType>& idNodesOldToNew, 
     this->Connectivity->Squeeze();
     this->CellLocations->Squeeze();
     this->Types->Squeeze();
-    if ( this->LegacyFaceLocations )
+    /*if ( this->LegacyFaceLocations )
     {
       this->LegacyFaceLocations->Squeeze();
       this->LegacyFaces->Squeeze();
-    }
+    }*/
     this->Connectivity->Modified();
     return;
   }

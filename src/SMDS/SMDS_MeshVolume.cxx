@@ -81,13 +81,12 @@ bool SMDS_MeshVolume::ChangeNodes(const std::vector<const SMDS_MeshNode*>& nodes
   if ( !IsPoly() )
     return false;
 
-  vtkIdType nFaces = 0;
-  vtkIdType const *tmp(nullptr);
-  vtkIdType cellId( GetVtkID() );
   SMDS_UnstructuredGrid *ugrid( getGrid() );
-  ugrid->GetFaceStream( cellId, nFaces, tmp );
-  vtkIdType *ptIds = const_cast<vtkIdType*>( tmp );
-
+  vtkIdType cellId( GetVtkID() );
+  vtkNew<vtkIdList> faceStream;
+  ugrid->GetFaceStream( cellId, faceStream);
+  vtkIdType nFaces = faceStream->GetId(0);
+  vtkIdType *ptIds = faceStream->GetPointer(1);
   // stream size and nb faces should not change
 
   if ((vtkIdType) quantities.size() != nFaces )
@@ -133,9 +132,11 @@ const SMDS_MeshNode* SMDS_MeshVolume::GetNode(const int ind) const
   if ( !IsPoly() )
     return SMDS_MeshCell::GetNode( ind );
 
-  vtkIdType nFaces = 0;
-  vtkIdType const *ptIds(nullptr);
-  getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds );
+  vtkNew<vtkIdList> faceStream;
+  getGrid()->GetFaceStream( GetVtkID(), faceStream);
+  vtkIdType nFaces = faceStream->GetId(0);
+  vtkIdType *ptIds = faceStream->GetPointer(1);
+
   int id = 0, nbPoints = 0;
   for (int i = 0; i < nFaces; i++)
   {
@@ -152,9 +153,10 @@ int SMDS_MeshVolume::NbNodes() const
   if ( !IsPoly() )
     return SMDS_MeshCell::NbNodes();
 
-  vtkIdType nFaces = 0;
-  vtkIdType const *ptIds(nullptr);
-  getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds );
+  vtkNew<vtkIdList> faceStream;
+  getGrid()->GetFaceStream( GetVtkID(), faceStream);
+  vtkIdType nFaces = faceStream->GetId(0);
+  vtkIdType *ptIds = faceStream->GetPointer(1);
   int id = 0, nbPoints = 0;
   for (int i = 0; i < nFaces; i++)
   {
@@ -170,9 +172,9 @@ int SMDS_MeshVolume::NbFaces() const
   if ( !IsPoly() )
     return SMDS_MeshCell::NbFaces();
 
-  vtkIdType nFaces = 0;
-  vtkIdType const *ptIds(nullptr);
-  getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds );
+  vtkNew<vtkIdList> faceStream;
+  getGrid()->GetFaceStream( GetVtkID(), faceStream);
+  vtkIdType nFaces = faceStream->GetId(0);
   return nFaces;
   
 }
@@ -181,9 +183,10 @@ int SMDS_MeshVolume::NbEdges() const
   if ( !IsPoly() )
     return SMDS_MeshCell::NbEdges();
 
-  vtkIdType nFaces = 0;
-  vtkIdType const *ptIds(nullptr);
-  getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds );
+  vtkNew<vtkIdList> faceStream;
+  getGrid()->GetFaceStream( GetVtkID(), faceStream);
+  vtkIdType nFaces = faceStream->GetId(0);
+  vtkIdType *ptIds = faceStream->GetPointer(1);
   int id = 0, nbEdges = 0;
   for (int i = 0; i < nFaces; i++)
   {
@@ -200,9 +203,10 @@ int SMDS_MeshVolume::GetNodeIndex( const SMDS_MeshNode* node ) const
   if ( !IsPoly() )
     return SMDS_MeshCell::GetNodeIndex( node );
 
-  vtkIdType nFaces = 0;
-  vtkIdType const *ptIds(nullptr);
-  getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds );
+  vtkNew<vtkIdList> faceStream;
+  getGrid()->GetFaceStream( GetVtkID(), faceStream);
+  vtkIdType nFaces = faceStream->GetId(0);
+  vtkIdType *ptIds = faceStream->GetPointer(1);
   int id = 0;
   for (int iF = 0; iF < nFaces; iF++)
   {
@@ -240,9 +244,10 @@ int SMDS_MeshVolume::NbFaceNodes (const int face_ind) const
   if ( !IsPoly() )
     return SMDS_VolumeTool( this ).NbFaceNodes( face_ind-1 );
 
-  vtkIdType nFaces = 0;
-  vtkIdType const *ptIds(nullptr);
-  getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds );
+  vtkNew<vtkIdList> faceStream;
+  getGrid()->GetFaceStream( GetVtkID(), faceStream);
+  vtkIdType nFaces = faceStream->GetId(0);
+  vtkIdType *ptIds = faceStream->GetPointer(1);
   int id = 0, nbNodes = 0;
   for (int i = 0; i < nFaces; i++)
   {
@@ -262,9 +267,10 @@ const SMDS_MeshNode* SMDS_MeshVolume::GetFaceNode (const int face_ind, const int
   if ( !IsPoly() )
     return SMDS_VolumeTool( this ).GetFaceNodes( face_ind-1 )[ node_ind - 1 ];
 
-  vtkIdType nFaces = 0;
-  vtkIdType const *ptIds(nullptr);
-  getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds);
+  vtkNew<vtkIdList> faceStream;
+  getGrid()->GetFaceStream( GetVtkID(), faceStream);
+  vtkIdType nFaces = faceStream->GetId(0);
+  vtkIdType *ptIds = faceStream->GetPointer(1);
   int id = 0;
   for (int i = 0; i < nFaces; i++)
   {
@@ -284,9 +290,10 @@ std::vector<int> SMDS_MeshVolume::GetQuantities() const
   std::vector<int> quantities;
   if ( IsPoly() )
   {
-    vtkIdType nFaces = 0;
-    vtkIdType const *ptIds(nullptr);
-    getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds );
+    vtkNew<vtkIdList> faceStream;
+    getGrid()->GetFaceStream( GetVtkID(), faceStream);
+    vtkIdType nFaces = faceStream->GetId(0);
+    vtkIdType *ptIds = faceStream->GetPointer(1);
     int id = 0;
     for (int i = 0; i < nFaces; i++)
     {
