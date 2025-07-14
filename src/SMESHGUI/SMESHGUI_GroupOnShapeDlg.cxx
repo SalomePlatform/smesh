@@ -238,8 +238,10 @@ SMESH::ElementType SMESHGUI_GroupOnShapeOp::ElementType(GEOM::GEOM_Object_var ge
     }
     else if ( !aShapeOp->_is_nil() ) // just a compoud shape
     {
-      GEOM::ListOfLong_var ids = aShapeOp->SubShapeAllIDs( geom, GEOM::SHAPE, false );
-      if ( ids->length() ) {
+      GEOM::ListOfLong_var ids = aShapeOp->GetAllSubShapesIDs( geom,
+                                                          GEOM::SHAPE,/*sorted=*/false);
+      if ( ids->length() )
+      {
         GEOM::GEOM_Object_wrap member = aShapeOp->GetSubShape( geom, ids[0] );
         return ElementType( member );
       }
