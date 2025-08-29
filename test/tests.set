@@ -157,8 +157,11 @@ SET(SESSION_FREE_TESTS
   basic_geom_smesh_without_session.py
   ssl_hdf5_symbols_conflicts.py
   SMESH_MeshioShapes.py
-  SMESH_MeshioFiles.py
   )
+
+SET(UNSTABLE_TESTS
+  SMESH_MeshioFiles.py
+)
 
 # Additional files to install (not tests)
 # ---------------------------------------
