@@ -40,4 +40,4 @@ SET(plugin_SCRIPTS
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/materielCasTests)
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/blocFissure/materielCasTests)

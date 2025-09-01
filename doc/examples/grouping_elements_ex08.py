@@ -1,7 +1,7 @@
 # Creating groups of entities basing on nodes of other groups
 
 from mechanic import *
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 # Criterion : AREA > 100
 aFilter = smesh_builder.GetFilter(SMESH.FACE, SMESH.FT_Area, SMESH.FT_MoreThan, 100.)

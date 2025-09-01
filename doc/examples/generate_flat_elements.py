@@ -3,11 +3,11 @@
 # This example represents an iron cable (a thin cylinder) in a concrete block (a big cylinder).
 # The big cylinder is defined by two geometric volumes.
 
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
-import GEOM
-import SMESH
+from salome.kernel import GEOM
+from salome.kernel import SMESH
 from salome.geom import geomBuilder
 from salome.smesh import smeshBuilder
 

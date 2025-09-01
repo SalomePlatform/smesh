@@ -25,8 +25,8 @@ Created on Tue Jun 24 09:14:13 2014
 
 import logging
 
-import GEOM
-import SMESH
+from salome.kernel import GEOM
+from salome.kernel import SMESH
 
 from .geomsmesh import geompy
 from .geomsmesh import smesh

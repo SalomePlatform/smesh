@@ -19,12 +19,12 @@
 #
 
 import sys,os
-import salome
+from salome.kernel import salome
 from .getStats import getGroupesRef
 from .Type_Maille import dicoDimENtite
 
 def getCritere(dim,NomMesh,acritere):
-  import SMESH
+  from salome.kernel import SMESH
   from salome.smesh import smeshBuilder
   smesh = smeshBuilder.New()
   import numpy
@@ -54,7 +54,7 @@ def getCritere(dim,NomMesh,acritere):
   return [max,min,Q1,M,Q3,moyenne]
 
 def getCritereGroupe(NomMesh,NomGr,acritere):
-  import SMESH
+  from salome.kernel import SMESH
   from salome.smesh import smeshBuilder
   smesh = smeshBuilder.New()
   import numpy
@@ -90,7 +90,7 @@ def getCritereGroupe(NomMesh,NomGr,acritere):
   return [max,min,Q1,M,Q3,moyenne]
 
 def getObjectsGroupe(Mesh,liste):
-  import SMESH
+  from salome.kernel import SMESH
   from salome.smesh import smeshBuilder
   dico={}
   lGroups=Mesh.GetGroups()

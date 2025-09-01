@@ -1,6 +1,6 @@
 # Basic Properties
 
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
 from salome.geom import geomBuilder

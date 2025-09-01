@@ -21,9 +21,9 @@
 
 import logging
 
-import SMESH
+from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
-from salome.StdMeshers import StdMeshersBuilder
+from salome.kernel.StdMeshers import StdMeshersBuilder
 
 from .geomsmesh import geompy
 from .geomsmesh import smesh

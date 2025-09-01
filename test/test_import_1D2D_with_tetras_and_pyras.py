@@ -3,7 +3,7 @@
 # test fix bos #33557 Bad pyramids generated
 
 import sys
-import salome
+from salome.kernel import salome
 
 
 #nb_segs_right = 30
@@ -26,10 +26,10 @@ salome.salome_init()
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 
 geompy = geomBuilder.New()
@@ -91,7 +91,8 @@ geom_volume = geompy.BasicProperties(Extrusion_2)[2]
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

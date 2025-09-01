@@ -22,8 +22,8 @@
 
 import os
 
-import salome
-from salome.kernel import studyedit
+from salome.kernel import salome
+from salome.kernel.salome.kernel import studyedit
 from salome.gui.genericdialog import GenericDialog
 from salome.gui import helper as guihelper
 from salome.smesh.smeshstudytools import SMeshStudyTools
@@ -93,7 +93,7 @@ class InputDialog(GenericDialog):
         # indexation.
         self.MESHTYPE_ICONS = {}
         meshTypeIndex = InputData.MESHTYPES.CONCRETE
-        self.__ui.cmbMeshType.setItemText(meshTypeIndex, "BÃ©ton")
+        self.__ui.cmbMeshType.setItemText(meshTypeIndex, "Béton")
         icon = QIcon()
         icon.addFile(os.path.join(iconfolder,"concrete.png"))
         self.__ui.cmbMeshType.setItemIcon(meshTypeIndex, icon)

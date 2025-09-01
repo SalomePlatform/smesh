@@ -2,7 +2,7 @@
 
 import math
 import sys
-import salome
+from salome.kernel import salome
 
 # Parameters
 
@@ -53,7 +53,8 @@ Cylinder_1_1, Inlet, Outlet, Wall, = SHAPERSTUDY.shape(model.featureStringId(Cyl
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

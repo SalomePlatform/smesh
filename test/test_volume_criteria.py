@@ -2,7 +2,7 @@
 
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
@@ -10,10 +10,10 @@ salome.salome_init()
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 
 geompy = geomBuilder.New()
@@ -37,7 +37,7 @@ geompy.addToStudyInFather( Box_1, face_1, 'face_1' )
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

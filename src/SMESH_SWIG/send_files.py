@@ -25,8 +25,8 @@ File to send files on remote resource
 from os import environ, path
 
 from argparse import ArgumentParser
-
-import pylauncher
+import pydefx
+from salome.kernel import pylauncher
 
 def create_launcher():
     """ Initialise pylauncher

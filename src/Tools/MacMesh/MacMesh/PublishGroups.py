@@ -18,7 +18,7 @@
 #
 
 #
-import SMESH
+from salome.kernel import SMESH
 import math
 import Config
 

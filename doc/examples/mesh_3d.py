@@ -1,9 +1,9 @@
 # 3d mesh generation and mesh exploration
 
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
-import SMESH
+from salome.kernel import SMESH
 from salome.geom import geomBuilder
 from salome.smesh import smeshBuilder
 

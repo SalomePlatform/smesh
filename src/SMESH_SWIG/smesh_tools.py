@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 
-import salome
+from salome.kernel import salome
 import medcoupling as mc
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 
 geompy = geomBuilder.New()
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()
 
-from salome.kernel.logger import Logger
+from salome.kernel.salome.kernel.logger import Logger
 logger = Logger("salome.smesh.smesh_tools")
 logger.setLevel("WARNING")
 

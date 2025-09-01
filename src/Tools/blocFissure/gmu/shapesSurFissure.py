@@ -21,7 +21,7 @@
 
 import logging
 
-import GEOM
+from salome.kernel import GEOM
 
 from .geomsmesh import geompy
 

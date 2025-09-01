@@ -23,7 +23,7 @@ import logging
 
 from . import initLog
 
-import salome
+from salome.kernel import salome
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublishInFather

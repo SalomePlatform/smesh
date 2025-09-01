@@ -1198,7 +1198,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
 
   // Make an initial part of aSript
 
-  TCollection_AsciiString initPart = "import ";
+  TCollection_AsciiString initPart = "from salome.kernel import ";
   if ( isMultiFile )
     initPart += "salome, ";
   initPart += " SMESH, SALOMEDS\n";

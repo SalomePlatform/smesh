@@ -23,11 +23,11 @@ import unittest
 class TestMesh(unittest.TestCase):
 
     def setUp(self):
-        import salome
+        from salome.kernel import salome
         salome.salome_init()
 
     def processGuiEvents(self):
-        import salome
+        from salome.kernel import salome
         if salome.sg.hasDesktop():
             salome.sg.updateObjBrowser();
             import SalomePyQt
@@ -52,7 +52,7 @@ class TestMesh(unittest.TestCase):
 
         # ==== Mesh part ====
 
-        import SMESH
+        from salome.kernel import SMESH
         from salome.smesh import smeshBuilder
         smesh = smeshBuilder.New()
         self.processGuiEvents()

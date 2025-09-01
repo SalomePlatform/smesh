@@ -44,7 +44,7 @@ def getStatsMaillage(maillage,fichierMed):
   if maillage is not None:
     mesures = maillage.GetMeshInfo()
     txt=""
-    import SMESH
+    from salome.kernel import SMESH
     for i in range(len(mesures)):
       txt += str(SMESH.EntityType._item(i))+ " " +str(mesures[SMESH.EntityType._item(i)]) + "\n"
 
@@ -77,7 +77,7 @@ def getStatsGroupes(maillage,fichierMedResult):
 def getStatsStatSurGroupes(maillage,groupe,fichierStatGroupe):
   mesures = maillage.GetMeshInfo(groupe)
   txt=""
-  import SMESH
+  from salome.kernel import SMESH
   for i in range(len(mesures)):
       txt += str(SMESH.EntityType._item(i))+ " " +str(mesures[SMESH.EntityType._item(i)]) + "\n"
   from .utiles import writeFile

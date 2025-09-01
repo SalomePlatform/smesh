@@ -51,7 +51,7 @@ print("nb nodes", aGroup.GetNumberOfNodes())
 print("nodes", aGroup.GetNodeIDs())
 
 # set/get color
-import SALOMEDS
+from salome.kernel import SALOMEDS
 aGroup.SetColor( SALOMEDS.Color(1.,1.,0.));
 print("color", aGroup.GetColor())
 

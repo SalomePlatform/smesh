@@ -25,10 +25,10 @@
 #  Author : Sergey LITONIN
 #  Module : SMESH
 #
-import salome
+from salome.kernel import salome
 import SMESH_mechanic
 
-import SMESH, SALOMEDS
+from salome.kernel import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 mesh = SMESH_mechanic.mesh

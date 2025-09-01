@@ -23,7 +23,7 @@ import os
 
 import logging
 
-import salome
+from salome.kernel import salome
 
 from .geomsmesh import geomPublish
 

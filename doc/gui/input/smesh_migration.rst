@@ -17,7 +17,7 @@ User Guide.
 
   (*salome_init()* can be invoked safely several times)::
 
-	import salome
+	from salome.kernel import salome
 	salome.salome_init()
 
 * **smesh initialisation** is modified.
@@ -29,7 +29,7 @@ User Guide.
 
   The new mode::
 
-	import SMESH, SALOMEDS
+	from salome.kernel import SMESH, SALOMEDS
 	from salome.smesh import smeshBuilder
 	smesh =  smeshBuilder.New()
 

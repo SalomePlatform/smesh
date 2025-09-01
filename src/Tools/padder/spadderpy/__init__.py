@@ -92,7 +92,7 @@ def getSpadderCatalogFilename():
     return filename
 
 def loadSpadderCatalog():
-    import salome
+    from salome.kernel import salome
     salome.salome_init()
     obj = salome.naming_service.Resolve('/Kernel/ModulCatalog')
     import SALOME_ModuleCatalog

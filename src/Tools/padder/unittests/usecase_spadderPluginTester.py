@@ -25,7 +25,7 @@
 # SPADDERPluginTester from within a SALOME script. This component is
 # dedicated to test purpose only
 
-import salome
+from salome.kernel import salome
 import SPADDERPluginTest
 
 # We first have to update the SALOME components list by loading the
@@ -45,7 +45,7 @@ c.testkernel()
 # Test of usage of SMESH engine from the test component
 # WARN: the SMESH engine must be loaded first
 print("Test of usage of SMESH engine from the test component")
-import SMESH
+from salome.kernel import SMESH
 salome.lcc.FindOrLoadComponent("FactoryServer","SMESH")
 c.testsmesh()
 

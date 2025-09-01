@@ -5,10 +5,10 @@
 
 import math
 
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
-import SMESH
+from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 
 smesh_builder = smeshBuilder.New()

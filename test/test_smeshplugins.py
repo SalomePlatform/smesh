@@ -16,13 +16,13 @@ __revision__ = "V1.0"
 # Computation of the meshes: T/F
 ComputeMeshes = True
 
-import salome
+from salome.kernel import salome
 import platform
 
-salome.salome_init_without_session()
+salome.salome_init()
 theStudy = salome.myStudy
 #
-import iparameters
+from salome.kernel import iparameters
 IPAR = iparameters.IParameters(salome.myStudy.GetCommonParameters("Interface Applicative", 1))
 
 # fill list AP_MODULES_LIST
@@ -37,7 +37,7 @@ while not ERROR :
 ###
 ### A. GEOM component
 ###
-  import GEOM
+  from salome.kernel import GEOM
   from salome.geom import geomBuilder
   geompy = geomBuilder.New()
   O = geompy.MakeVertex(0, 0, 0, "0")
@@ -50,7 +50,7 @@ while not ERROR :
 ### B. SMESH component
 ###
 
-  import  SMESH
+  from salome.kernel import SMESH
   from salome.smesh import smeshBuilder
 
   smesh = smeshBuilder.New()

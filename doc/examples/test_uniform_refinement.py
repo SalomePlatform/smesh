@@ -4,11 +4,11 @@ import os.path as osp
 import shutil
 import tempfile
 
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
 from salome.smesh import smeshBuilder
-import SMESHHOMARD
+from salome.kernel import SMESHHOMARD
 
 smesh = smeshBuilder.New()
 

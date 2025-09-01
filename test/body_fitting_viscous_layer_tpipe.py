@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
@@ -73,7 +73,8 @@ Fuse_1_1, Inlet_x, Inlet_z, Outlet, Wall, corner, = SHAPERSTUDY.shape(model.feat
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

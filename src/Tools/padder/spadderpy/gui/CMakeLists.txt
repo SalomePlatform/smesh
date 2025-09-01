@@ -55,11 +55,11 @@ SET(_pyuic_FILES
 PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
 
 # --- rules ---
-SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui TARGET_NAME _target_name_pyuic_py)
+SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/salome/smesh/spadder/gui TARGET_NAME _target_name_pyuic_py)
 # add dependency of compiled py files on uic files in order
 # to avoid races problems when compiling in parallel
 ADD_DEPENDENCIES(${_target_name_pyuic_py} ${_target_name_pyuic})
 
-SALOME_INSTALL_SCRIPTS("${_py_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui)
+SALOME_INSTALL_SCRIPTS("${_py_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/salome/smesh/spadder/gui)
 
-INSTALL(FILES ${_spadderpy_DATA} DESTINATION ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui)
+INSTALL(FILES ${_spadderpy_DATA} DESTINATION ${SALOME_SMESH_INSTALL_PYTHON}/salome/smesh/spadder/gui)

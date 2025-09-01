@@ -27,13 +27,13 @@
 # ! as some sequences of symbols from this example are used during
 # ! documentation generation to identify certain places of this file
 #
-import salome
+from salome.kernel import salome
 salome.salome_init()
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()
 
-import SMESH, SALOMEDS
+from salome.kernel import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 

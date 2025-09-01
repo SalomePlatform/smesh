@@ -19,7 +19,7 @@
 #
 """Publications dans salome"""
 
-import salome
+from salome.kernel import salome
 salome.salome_init()
 
 from salome.geom import geomBuilder

@@ -40,9 +40,9 @@ PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic OPTI
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${_plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/ihm)
+SALOME_INSTALL_SCRIPTS("${_plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/blocFissure/ihm)
 
-SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/ihm TARGET_NAME _target_name_pyuic_py)
+SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/blocFissure/ihm TARGET_NAME _target_name_pyuic_py)
 # add dependency of compiled py files on uic files in order
 # to avoid races problems when compiling in parallel
 ADD_DEPENDENCIES(${_target_name_pyuic_py} ${_target_name_pyuic})

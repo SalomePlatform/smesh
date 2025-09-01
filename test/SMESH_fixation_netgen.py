@@ -25,10 +25,10 @@
 # SMESH_fixation.py
 # The new Netgen algorithm is used that discretizes baoundaries itself
 #
-import salome
+from salome.kernel import salome
 import SMESH_fixation
 
-import SMESH, SALOMEDS
+from salome.kernel import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 

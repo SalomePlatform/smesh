@@ -19,11 +19,11 @@
 #
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
-import salome_notebook
+from salome.kernel import salome_notebook
 notebook = salome_notebook.notebook
 
 import os
@@ -34,10 +34,10 @@ from blocFissure import gmu
 ###
 
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 geompy = geomBuilder.New()
 

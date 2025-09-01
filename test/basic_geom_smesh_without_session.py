@@ -4,22 +4,22 @@ Most basic test of GEOM/SMESH usecase, but it can be tested without any session 
 """
 
 import sys
-import salome
+from salome.kernel import salome
 
 import os
 salome.standalone() # <- key point of test is here
 salome.salome_init()
-import salome_notebook
+from salome.kernel import salome_notebook
 notebook = salome_notebook.NoteBook()
 
 ###
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 geompy = geomBuilder.New()
 O = geompy.MakeVertex(0, 0, 0)
@@ -35,7 +35,8 @@ geompy.addToStudy( Box_1, 'Box_1' )
 ###
 ### SMESH component
 ###
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

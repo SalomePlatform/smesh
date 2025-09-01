@@ -147,8 +147,9 @@ class TopIIVolMeshPluginDialog(Ui_TopIIVolMeshMainFrame,QWidget):
   def saveOutputMesh(self):
     if not self.qcbDisplayMesh.isChecked():
       return True
-    import salome
-    import  SMESH, SALOMEDS
+    from salome.kernel import salome
+    from salome.kernel import SMESH
+    from salome.kernel import SALOMEDS
     from salome.smesh import smeshBuilder
     smesh = smeshBuilder.New()
     self.outputMesh.split('/')

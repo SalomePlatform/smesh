@@ -61,11 +61,11 @@ ENDIF(SALOME_BUILD_GUI)
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${_plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
+SALOME_INSTALL_SCRIPTS("${_plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/Zcracks)
 SALOME_INSTALL_SCRIPTS("${_command_SCRIPTS}" ${SALOME_INSTALL_BINS})
 IF(SALOME_BUILD_GUI)
-  SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks TARGET_NAME _target_name_pyuic_py)
-  SALOME_INSTALL_SCRIPTS("${_pyqrc_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
+  SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/Zcracks TARGET_NAME _target_name_pyuic_py)
+  SALOME_INSTALL_SCRIPTS("${_pyqrc_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/Zcracks)
   # add dependency of compiled py files on uic files in order
   # to avoid races problems when compiling in parallel
   ADD_DEPENDENCIES(${_target_name_pyuic_py} ${_target_name_pyuic})

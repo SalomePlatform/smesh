@@ -24,7 +24,7 @@ Python API for the standard meshing plug-in module.
 LIBRARY = "libStdMeshersEngine.so"
 
 from salome.smesh.smesh_algorithm import Mesh_Algorithm
-import StdMeshers
+from salome.kernel import StdMeshers
 from salome.geom import geomBuilder
 
 #----------------------------
@@ -175,7 +175,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             hyp.SetLength(length)
         if not UseExisting:
             # set preestimated length
-            import SMESH
+            from salome.kernel import SMESH
             gen = self.mesh.smeshpyD
             initHyp = gen.GetHypothesisParameterValues("MaxLength", "libStdMeshersEngine.so",
                                                        self.mesh.GetMesh(), self.mesh.GetShape(),
@@ -718,7 +718,8 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
         """
         
 
-        import GEOM, SMESH
+        from salome.kernel import GEOM
+        from salome.kernel import SMESH
         vertexID = triangleVertex
         if isinstance( triangleVertex, GEOM._objref_GEOM_Object ):
             vertexID = self.mesh.geompyD.GetSubShapeID( self.mesh.geom, triangleVertex )
@@ -1774,7 +1775,7 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
             UseExisting: if ==true - searches for the existing hypothesis created with
                 the same parameters, else (default) - Create a new one
         """
-        import SMESH
+        from salome.kernel import SMESH
         compFun = lambda hyp, args: ( hyp.GetSourceFaces() == args[0] and \
                                       hyp.GetCopySourceMesh() == args[1], args[2] )
         hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
@@ -1890,7 +1891,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
             yAxis: either SMESH.DirStruct or a vector, or 3 vector components
             zAxis: either SMESH.DirStruct or a vector, or 3 vector components
         """
-        import GEOM
+        from salome.kernel import GEOM
         if hasattr( xAxis, "__getitem__" ):
             xAxis = self.mesh.smeshpyD.MakeDirStruct( xAxis[0],xAxis[1],xAxis[2] )
         elif isinstance( xAxis, GEOM._objref_GEOM_Object ):
@@ -1937,7 +1938,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
                 a vertex or 3 components of coordinates.
             toUnset: defines whether the fixed point is defined or removed.
         """
-        import SMESH, GEOM
+        from salome.kernel import SMESH, GEOM
         if toUnset:
             if not self.hyp: return
             p = SMESH.PointStruct(0,0,0)

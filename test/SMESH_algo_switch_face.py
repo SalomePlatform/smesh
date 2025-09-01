@@ -1,11 +1,11 @@
 # Tests that switching of algorithms back and forth does not lead to errors
 
-import salome
+from salome.kernel import salome
 salome.salome_init()
 
 from salome.geom import geomBuilder
 
-import  SMESH
+from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 
 # Create a simple face

@@ -1,4 +1,4 @@
-import salome
+from salome.kernel import salome
 salome.salome_init()
 
 ### create geometry
@@ -11,7 +11,7 @@ geompy.addToStudy( Box_1, 'Box_1' )
 
 ### create a mesh
 
-import SMESH
+from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
 

@@ -25,7 +25,7 @@ Created on Mon Jun 23 14:49:36 2014
 
 import logging
 
-import SMESH
+from salome.kernel import SMESH
 from .geomsmesh import smesh
 
 from .putName import putName

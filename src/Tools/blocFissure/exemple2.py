@@ -19,20 +19,20 @@
 #
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
-import salome_notebook
+from salome.kernel import salome_notebook
 
 ###
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 geompy = geomBuilder.New()
 
@@ -61,11 +61,12 @@ geompy.addToStudy( Cut_1, 'Cut_1' )
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()
-from salome.StdMeshers import StdMeshersBuilder
+from salome.kernel.StdMeshers import StdMeshersBuilder
 boite = smesh.Mesh(Box_1)
 Regular_1D = boite.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(15)

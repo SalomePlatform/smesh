@@ -22,11 +22,11 @@
 ### This file is generated automatically by SALOME v7.7.0 with dump python functionality
 ###
 
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
-import salome_notebook
+from salome.kernel import salome_notebook
 notebook = salome_notebook.NoteBook()
 
 ###
@@ -84,7 +84,7 @@ def cube3D(L, N, outFile):
 
 
   from salome.smesh import smeshBuilder
-  import SMESH
+  from salome.kernel import SMESH
 
   smesh = smeshBuilder.New()
   Nb_Segments_1 = smesh.CreateHypothesis('NumberOfSegments')
@@ -171,7 +171,7 @@ def cube2D(L, N, outFile):
 
 
   from salome.smesh import smeshBuilder
-  import SMESH
+  from salome.kernel import SMESH
 
   smesh = smeshBuilder.New()
   Nb_Segments_1 = smesh.CreateHypothesis('NumberOfSegments')

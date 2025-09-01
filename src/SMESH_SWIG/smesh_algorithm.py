@@ -21,9 +21,9 @@
 #  Python API for base Mesh_Algorithm class.
 #  This package is a part of SALOME %Mesh module Python API
 
-import salome
+from salome.kernel import salome
 from salome.geom import geomBuilder
-import SMESH, StdMeshers
+from salome.kernel import SMESH, StdMeshers
 
 class Mesh_Algorithm:
     """

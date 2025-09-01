@@ -1,6 +1,6 @@
 # Radial Quadrangle 1D-2D example
 
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
 from salome.geom import geomBuilder

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init_without_session()
 
@@ -9,10 +9,10 @@ salome.salome_init_without_session()
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 
 geompy = geomBuilder.New()
@@ -93,7 +93,8 @@ solids = geompy.MakeCompound(polyhedrons, theName="solids")
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

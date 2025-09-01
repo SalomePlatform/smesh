@@ -1,6 +1,6 @@
 # Quadrangle Parameters example 1 (meshing a face with 3 edges)
 
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
 from salome.geom import geomBuilder

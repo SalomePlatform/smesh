@@ -21,7 +21,7 @@
 
 import logging
 
-import SMESH
+from salome.kernel import SMESH
 
 from .geomsmesh import smesh
 from .putName import putName

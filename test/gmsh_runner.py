@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
@@ -9,7 +9,9 @@ from os import path
 import tempfile
 import subprocess
 
-import GEOM, SMESH, SALOMEDS
+from salome.kernel import GEOM
+from salome.kernel import SMESH
+from salome.kernel import SALOMEDS
 
 from salome.geom import geomBuilder
 from salome.smesh import smeshBuilder

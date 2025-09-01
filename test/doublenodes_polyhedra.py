@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.standalone()
 salome.salome_init()
@@ -129,7 +129,8 @@ for gr in groups:
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

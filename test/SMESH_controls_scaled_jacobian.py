@@ -22,12 +22,12 @@
 #  Author : Cesar Conopoima
 #  Module : SMESH
 #
-import salome
+from salome.kernel import salome
 import math
 salome.salome_init_without_session()
 
-import GEOM
-import  SMESH
+from salome.kernel import GEOM
+from salome.kernel import SMESH
 from salome.geom import geomBuilder
 from salome.smesh import smeshBuilder
 

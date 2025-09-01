@@ -229,11 +229,12 @@ def generateCustom(crack, outFile):
     message('E','crack med file missing',goOn=True)
     res=False
 
-  import salome
+  from salome.kernel import salome
   salome.salome_init()
-  import salome_notebook
+  from salome.kernel import salome_notebook
   notebook = salome_notebook.NoteBook()
-  import  SMESH, SALOMEDS
+  from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
   from salome.smesh import smeshBuilder
 
   smesh = smeshBuilder.New()

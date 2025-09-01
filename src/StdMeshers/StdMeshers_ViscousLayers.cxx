@@ -1856,7 +1856,7 @@ namespace VISCOUS_3D
       const char* fname = "/tmp/viscous.py";
       cout << "exec(open('"<<fname<<"','rb').read() )"<<endl;
       py = _pyStream = new ofstream(fname);
-      *py << "import SMESH" << endl
+      *py << "from salome.kernel import SMESH" << endl
           << "from salome.smesh import smeshBuilder" << endl
           << "smesh  = smeshBuilder.New()" << endl
           << "meshSO = salome.myStudy.FindObjectID('0:1:2:" << tag <<"')" << endl
@@ -6768,7 +6768,7 @@ void _Smoother1D::offPointsToPython() const
   const char* fname = "/tmp/offPoints.py";
   cout << "exec(open('"<<fname<<"','rb').read() )"<<endl;
   ofstream py(fname);
-  py << "import SMESH" << endl
+  py << "from salome.kernel import SMESH" << endl
      << "from salome.smesh import smeshBuilder" << endl
      << "smesh  = smeshBuilder.New(salome.myStudy)" << endl
      << "mesh   = smesh.Mesh( 'offPoints' )"<<endl;

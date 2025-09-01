@@ -23,7 +23,7 @@ import os
 
 import logging
 
-import salome
+from salome.kernel import salome
 
 from .partitionBlocDefaut import partitionBlocDefaut
 from .facesVolumesToriques import facesVolumesToriques

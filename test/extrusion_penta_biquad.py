@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init_without_session()
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 geompy = geomBuilder.New()
 
@@ -23,7 +23,8 @@ geompy.addToStudy( OY, 'OY' )
 geompy.addToStudy( OZ, 'OZ' )
 geompy.addToStudy( Divided_Disk_1, 'Divided Disk_1' )
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

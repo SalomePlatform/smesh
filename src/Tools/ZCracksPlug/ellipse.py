@@ -24,21 +24,21 @@
 
 
 import sys, numpy
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
-import salome_notebook
+from salome.kernel import salome_notebook
 notebook = salome_notebook.NoteBook()
 
 ###
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 from . import utilityFunctions as uF
 from .output import message
 
@@ -187,7 +187,8 @@ def generate(data_demi_grand_axe, data_centre, data_normale,
 
   #geompy.addToStudy( FACE_FISSURE, 'FACE_FISSURE' )
 
-  import  SMESH, SALOMEDS
+  from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
   from salome.smesh import smeshBuilder
   smesh = smeshBuilder.New()
 

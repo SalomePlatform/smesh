@@ -18,13 +18,13 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import salome
+from salome.kernel import salome
 salome.salome_init()
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()
 
-import SMESH, SALOMEDS
+from salome.kernel import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 import math
@@ -34,7 +34,7 @@ Face_1 = geompy.MakeFaceHW(100, 100, 1)
 geompy.addToStudy( Face_1, "Face_1" )
 
 smesh.UpdateStudy()
-from salome.StdMeshers import StdMeshersBuilder
+from salome.kernel.StdMeshers import StdMeshersBuilder
 pattern = smesh.GetPattern()
 Mesh_1 = smesh.Mesh(Face_1)
 Regular_1D = Mesh_1.Segment()
