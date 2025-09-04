@@ -29,4 +29,4 @@ SET(plugin_SCRIPTS
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks/casTests)
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/Zcracks/casTests)

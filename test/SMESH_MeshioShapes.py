@@ -26,16 +26,16 @@
 import tempfile
 from pathlib import Path
 
-import salome
+from salome.kernel import salome
 salome.salome_init()
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 
-import SMESH
+from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 
-import SALOME
+from salome.kernel import SALOME
 
 import platform
 

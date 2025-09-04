@@ -31,12 +31,12 @@ from salome.smesh.spadder.gui.inputdata import InputData
 #from demoinputdialog import InputDialog
 
 import os
-import salome
-from salome.kernel import studyedit
+from salome.kernel import salome
+from salome.kernel.salome.kernel import studyedit
 from salome.kernel.uiexception import AdminException
 
 from omniORB import CORBA
-import SMESH
+from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
 import MESHJOB

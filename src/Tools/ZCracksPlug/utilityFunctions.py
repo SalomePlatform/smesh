@@ -147,11 +147,12 @@ def calcElemSize(A, R):
   return(x, h)
 
 def meshCrack(geomObject, minSize, maxSize, chordal, dim):
-  import salome
+  from salome.kernel import salome
 
   salome.salome_init()
 
-  import  SMESH, SALOMEDS
+  from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
   from salome.smesh import smeshBuilder
   smesh = smeshBuilder.New()
   Maillage = smesh.Mesh(geomObject)
@@ -189,7 +190,7 @@ def extendElsets(meshFile, outFile=None):
     message('E','Mesh med file is not valid')
     return('error')
 
-  import SMESH, salome
+  from salome.kernel import SMESH, salome
   #salome.salome_init()
   from salome.smesh import smeshBuilder
   smesh = smeshBuilder.New()
@@ -326,7 +327,7 @@ def extendElsets(meshFile, outFile=None):
 
 
 def cleanGroups(mesh):
-  import SMESH
+  from salome.kernel import SMESH
   for group in mesh.GetGroups():
     if '_bset' in group.GetName():
       group.SetName(group.GetName().replace('_bset',''))
@@ -380,14 +381,14 @@ def removeFromSessionPath(envVar, patern):
 
 
 #def isPlane(geomObject, eps=1.e-9):
-  #import salome
+  #from salome.kernel import salome
   #salome.salome_init()
   #theStudy = salome.myStudy
 
-  #import salome_notebook
+  #from salome.kernel import salome_notebook
   #notebook = salome_notebook.NoteBook(theStudy)
 
-  #import GEOM
+  #from salome.kernel import GEOM
   #from salome.geom import geomBuilder
   #geompy = geomBuilder.New(theStudy)
 

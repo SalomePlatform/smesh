@@ -23,7 +23,7 @@ import logging
 import math
 
 from salome.smesh import smeshBuilder
-import SMESH
+from salome.kernel import SMESH
 
 from .geomsmesh import geompy
 from .geomsmesh import smesh

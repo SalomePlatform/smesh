@@ -23,7 +23,7 @@ import logging
 import math
 import numpy as np
 
-import GEOM
+from salome.kernel import GEOM
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish

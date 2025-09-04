@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init_without_session()
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

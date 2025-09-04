@@ -1,4 +1,4 @@
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
 from salome.geom import geomBuilder
@@ -29,7 +29,7 @@ Sph_Face = geompy.GetInPlace(Cut_1, Sph_Face, isNewImplementation=True, theName=
 
 # 1) Define a mesh with 1D and 2D meshers
 
-import  SMESH
+from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
 

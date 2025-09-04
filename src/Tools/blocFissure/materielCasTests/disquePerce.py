@@ -25,12 +25,12 @@ import os
 
 import logging
 
-import salome
+from salome.kernel import salome
 from salome.smesh import smeshBuilder
-from salome.StdMeshers import StdMeshersBuilder
-import GEOM
-import SMESH
-import SALOMEDS
+from salome.kernel.StdMeshers import StdMeshersBuilder
+from salome.kernel import GEOM
+from salome.kernel import SMESH
+from salome.kernel import SALOMEDS
 
 from blocFissure import gmu
 from blocFissure.gmu.geomsmesh import geompy

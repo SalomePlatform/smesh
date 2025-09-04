@@ -6,7 +6,7 @@ from mechanic import *
 # create group of edges
 all_edges = mesh.GetElementsByType(SMESH.EDGE)
 grp = mesh.MakeGroupByIds("edges group", SMESH.EDGE, all_edges[:len(all_edges) // 4])
-import SALOMEDS
+from salome.kernel import SALOMEDS
 c = SALOMEDS.Color(0.1, 0.5, 1.0)
 grp.SetColor(c)
 # get number of the edges not belonging to the group with the given color

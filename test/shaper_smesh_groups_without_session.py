@@ -6,7 +6,7 @@ We explicitly call GetExistingSubObjects here to be able to test it in python.
 """
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.standalone()
 salome.salome_init()
@@ -51,7 +51,8 @@ Box_1_1, edge_ox, edge_oz = SHAPERSTUDY.shape(model.featureStringId(Box_1))
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

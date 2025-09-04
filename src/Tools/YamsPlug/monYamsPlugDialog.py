@@ -128,9 +128,9 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     maFenetre=MonViewText(self,self.commande)
 
   def enregistreResultat(self):
-    import salome
-    import SMESH
-    from salome.kernel import studyedit
+    from salome.kernel import salome
+    from salome.kernel import SMESH
+    from salome.kernel.salome.kernel import studyedit
     from salome.smesh import smeshBuilder
     smesh = smeshBuilder.New()
     
@@ -211,7 +211,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     save hypothesis in Object Browser outside GEOM ou MESH
     WARNING: at root of Object Browser is not politically correct
     """
-    import salome
+    from salome.kernel import salome
     
     if verbose: print("save hypothesis in Object Browser")
     
@@ -248,9 +248,9 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     save hypothesis in Object Browser
     bug: affichage ne marche pas si inclusion dans dans GEOM ou MESH depuis salome 730
     """
-    import salome
-    import SMESH
-    from salome.kernel import studyedit
+    from salome.kernel import salome
+    from salome.kernel import SMESH
+    from salome.kernel.salome.kernel import studyedit
     from salome.smesh import smeshBuilder
     #[PAL issue tracker:issue1871] Les nouveaux objets ne s'affichent pas dans SMESH
     QMessageBox.warning(self, "Save", "waiting for fix: Object Browser will not display hypothesis")
@@ -387,8 +387,8 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
   def PBLoadHypPressed(self):
     """load hypothesis saved in Object Browser"""
     #QMessageBox.warning(self, "load Object Browser MGSurfOpt hypothesis", "TODO")
-    import salome
-    from salome.kernel import studyedit
+    from salome.kernel import salome
+    from salome.kernel.salome.kernel import studyedit
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
     from omniORB import CORBA
@@ -450,8 +450,8 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
   def PBMeshSmeshPressed(self):
     from omniORB import CORBA
-    import salome
-    from salome.kernel import studyedit
+    from salome.kernel import salome
+    from salome.kernel.salome.kernel import studyedit
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
     from salome.smesh import smeshBuilder

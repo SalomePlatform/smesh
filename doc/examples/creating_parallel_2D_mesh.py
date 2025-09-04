@@ -1,18 +1,18 @@
 # contains function to compute a mesh in parallel
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
-import salome_notebook
+from salome.kernel import salome_notebook
 notebook = salome_notebook.NoteBook()
 
 ###
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 from salome.smesh import smeshBuilder
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 import numpy as np
 

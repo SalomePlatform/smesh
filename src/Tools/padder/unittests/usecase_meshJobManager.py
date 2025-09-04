@@ -43,7 +43,7 @@ printConfig(defaultConfig)
 
 from salome.smesh import spadder
 
-import salome
+from salome.kernel import salome
 import MESHJOB
 
 #

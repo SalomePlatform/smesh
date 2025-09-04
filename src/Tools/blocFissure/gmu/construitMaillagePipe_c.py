@@ -19,7 +19,7 @@
 #
 """Les groupes des faces débouchantes"""
 
-import SMESH
+from salome.kernel import SMESH
 
 def construitMaillagePipe_c(idisk, \
                             idisklim, nbsegCercle, \

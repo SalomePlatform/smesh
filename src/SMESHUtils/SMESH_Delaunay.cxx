@@ -370,7 +370,7 @@ void SMESH_Delaunay::addCloseNodes( const SMDS_MeshNode*     node,
 void SMESH_Delaunay::ToPython() const
 {
   SMESH_Comment text;
-  text << "import salome, SMESH\n";
+  text << "from salome.kernel import salome, SMESH\n";
   text << "salome.salome_init()\n";
   text << "from salome.smesh import smeshBuilder\n";
   text << "smesh = smeshBuilder.New()\n";

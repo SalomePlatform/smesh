@@ -23,25 +23,25 @@
 ###
 
 import sys, numpy
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
-import salome_notebook
+from salome.kernel import salome_notebook
 notebook = salome_notebook.NoteBook()
 
 ###
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 from . import utilityFunctions as uF
 from .output import message
 
-#import GEOM_Gen.ild
+#from salome.kernel import GEOM_Gen.ild
 #rectangle.generate(data_longueur,data_largeur,data_centre,data_normale,data_direction,data_angle,data_rayon,rayon_entaille,extension,outFile)
 
 def generate(data_longueur,data_largeur,data_centre,
@@ -226,7 +226,8 @@ def generate(data_longueur,data_largeur,data_centre,
   # SMESH component
   #
 
-  import  SMESH, SALOMEDS
+  from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
   from salome.smesh import smeshBuilder
   smesh = smeshBuilder.New()
 

@@ -2,7 +2,7 @@
 
 import os
 import sys
-import salome
+from salome.kernel import salome
 import tempfile
 
 salome.salome_init()
@@ -53,7 +53,8 @@ Fuse_1_1, = SHAPERSTUDY.shape(model.featureStringId(Fuse_1))
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

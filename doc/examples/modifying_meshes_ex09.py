@@ -1,6 +1,6 @@
 # Add Polygon
 
-import salome
+from salome.kernel import salome
 salome.salome_init_without_session()
 
 from salome.smesh import smeshBuilder

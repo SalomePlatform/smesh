@@ -18,13 +18,13 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import salome
+from salome.kernel import salome
 salome.salome_init()
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()
 
-import SMESH, SALOMEDS
+from salome.kernel import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 import math
@@ -34,7 +34,7 @@ Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 geompy.addToStudy( Box_1, "Box_1" )
 
 smesh.UpdateStudy()
-from salome.StdMeshers import StdMeshersBuilder
+from salome.kernel.StdMeshers import StdMeshersBuilder
 Mesh_1 = smesh.Mesh(Box_1)
 Regular_1D = Mesh_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(10)

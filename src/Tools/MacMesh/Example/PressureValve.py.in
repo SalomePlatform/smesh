@@ -20,7 +20,8 @@
 ##################################################################
 # Header for salome initialization ###############################
 
-import sys, salome, math, os
+import sys, math, os
+from salome.kernel import salome
 sys.path.append( os.path.join( os.getenv('SMESH_ROOT_DIR'), '@MACMESH_INSTALL_PY@'))
 
 import Config, GenFunctions

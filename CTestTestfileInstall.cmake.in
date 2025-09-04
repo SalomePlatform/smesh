@@ -21,7 +21,7 @@
 #
 
 SET(MED_INT_IS_LONG @MED_INT_IS_LONG@)
-SET(PYTHON_TEST_DRIVER "$ENV{KERNEL_ROOT_DIR}/bin/salome/appliskel/python_test_driver.py")
+SET(PYTHON_TEST_DRIVER "$ENV{KERNEL_ROOT_DIR}/bin/salome/appli/python_test_driver.py")
 SET(COMPONENT_NAME SMESH)
 SET(TIMEOUT        300)
 

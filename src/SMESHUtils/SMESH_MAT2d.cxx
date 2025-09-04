@@ -427,7 +427,7 @@ namespace
     file.remove();
     file.openForWriting();
     SMESH_Comment text;
-    text << "import salome, SMESH\n";
+    text << "from salome.kernel import salome, SMESH\n";
     text << "salome.salome_init()\n";
     text << "from salome.smesh import smeshBuilder\n";
     text << "smesh = smeshBuilder.New()\n";

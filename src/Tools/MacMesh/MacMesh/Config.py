@@ -51,7 +51,7 @@ except NameError : DirIndex = 0
 
 try : theStudy
 except NameError :
-    import salome
+    from salome.kernel import salome
     salome.salome_init()
     theStudy = salome.myStudy
 

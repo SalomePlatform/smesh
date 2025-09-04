@@ -22,7 +22,7 @@
 import logging
 import traceback
 
-import SMESH
+from salome.kernel import SMESH
 
 from .geomsmesh import smesh
 

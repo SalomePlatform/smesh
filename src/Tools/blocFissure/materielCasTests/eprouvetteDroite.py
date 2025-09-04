@@ -21,11 +21,11 @@
 import logging
 
 import sys
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
-import salome_notebook
+from salome.kernel import salome_notebook
 
 import os
 from blocFissure import gmu
@@ -34,10 +34,10 @@ from blocFissure import gmu
 ### GEOM component
 ###
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 import math
-import SALOMEDS
+from salome.kernel import SALOMEDS
 
 
 geompy = geomBuilder.New()
@@ -122,11 +122,12 @@ geompy.addToStudy( Face_2, 'Face_2' )
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()
-from salome.StdMeshers import StdMeshersBuilder
+from salome.kernel.StdMeshers import StdMeshersBuilder
 eprouvetteDroite_1 = smesh.Mesh(eprouvetteDroite)
 smesh.SetName(eprouvetteDroite_1, 'eprouvetteDroite')
 Regular_1D = eprouvetteDroite_1.Segment()

@@ -17,7 +17,7 @@ import os
 import sys
 
 # Lancement des cas-tests
-import salome
+from salome.kernel import salome
 salome.standalone()
 salome.salome_init_without_session()
 

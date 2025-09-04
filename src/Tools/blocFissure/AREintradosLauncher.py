@@ -23,7 +23,7 @@
     en fonction des paramètres contenus dans 'dicoParams'. """
 
 #import sys
-import salome
+from salome.kernel import salome
 
 #import os
 #from blocFissure import gmu

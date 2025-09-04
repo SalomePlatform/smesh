@@ -30,17 +30,17 @@
 #==============================================================================
 # Salome geometry and meshing for a box
 #
-import salome
+from salome.kernel import salome
 salome.salome_init()
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()
 
-import SMESH, SALOMEDS
+from salome.kernel import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 
-from salome import sg
+from salome.kernel.salome import sg
 
 # Plate
 

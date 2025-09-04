@@ -2453,7 +2453,7 @@ void HOMARD_Gen_i::PythonDump()
   SMESH::TPythonDump pd;
 
   // SMESH_Homard
-  pd << "import SMESHHOMARD\n";
+  pd << "from salome.kernel import SMESHHOMARD\n";
   //pd << "smeshhomard = " << SMESH_Gen_i::GetSMESHGen() << ".CreateHOMARD_ADAPT()\n";
   pd << "smeshhomard = " << SMESH_Gen_i::GetSMESHGen() << ".Adaptation(\"Uniform\")\n";
 

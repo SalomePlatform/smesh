@@ -23,8 +23,8 @@ import logging
 import os
 import math
 
-import GEOM
-import SMESH
+from salome.kernel import GEOM
+from salome.kernel import SMESH
 
 from blocFissure.gmu.geomsmesh import geompy
 from blocFissure.gmu.geomsmesh import smesh

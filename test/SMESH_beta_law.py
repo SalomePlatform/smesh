@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import salome
+from salome.kernel import salome
 
 salome.salome_init()
 
@@ -36,7 +36,7 @@ for i in range(len(points)-1):
 ### SMESH component
 ###
 
-import SMESH
+from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

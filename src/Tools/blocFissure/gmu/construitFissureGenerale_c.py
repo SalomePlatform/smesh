@@ -24,7 +24,7 @@ import os
 import logging
 
 from salome.smesh import smeshBuilder
-import SMESH
+from salome.kernel import SMESH
 
 from .geomsmesh import geompy
 

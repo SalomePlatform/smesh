@@ -7070,7 +7070,7 @@ msgstr ""
 # 22922498b0d3417daa17b17538594655
 #: smeshBuilder.New:5
 msgid ""
-"import salome salome.salome_init() from salome.smesh import smeshBuilder "
+"from salome.kernel import salome salome.salome_init() from salome.smesh import smeshBuilder "
 "smesh = smeshBuilder.New(salome.myStudy)"
 msgstr ""
 

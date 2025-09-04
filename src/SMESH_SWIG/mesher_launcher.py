@@ -27,8 +27,8 @@ import sys
 import subprocess as sp
 
 from argparse import ArgumentParser
-
-import pylauncher
+import pydefx
+from salome.kernel import pylauncher
 
 MESHER_HANDLED = ["NETGEN3D","NETGEN2D","NETGEN1D","NETGEN1D2D","NETGEN1D2D","GMSH3D"]
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import sys
-import salome
+from salome.kernel import salome
 import math
 
 salome.salome_init()
 
-import GEOM
+from salome.kernel import GEOM
 from salome.geom import geomBuilder
 
 geompy = geomBuilder.New()
@@ -67,10 +67,11 @@ volumeGEOM = geompy.BasicProperties(tpipe)[2]
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
-from salome.StdMeshers import StdMeshersBuilder
+from salome.kernel.StdMeshers import StdMeshersBuilder
 
 smesh = smeshBuilder.New()
 

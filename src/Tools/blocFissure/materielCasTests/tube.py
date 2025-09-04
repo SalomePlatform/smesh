@@ -27,12 +27,12 @@ import os
 
 import logging
 
-import salome
+from salome.kernel import salome
 from salome.shaper import model
 from salome.smesh import smeshBuilder
 from SketchAPI import *
 import SHAPERSTUDY
-import SMESH
+from salome.kernel import SMESH
 
 from blocFissure import gmu
 from blocFissure.gmu.putName import putName

@@ -20,10 +20,10 @@
 #  Author : Francis KLOSS, OCC
 #  Module : SMESH
 
-import salome
+from salome.kernel import salome
 from salome.geom import geomBuilder
 
-import SMESH # This is necessary for back compatibility
+from salome.kernel import SMESH # This is necessary for back compatibility
 import omniORB                                       # back compatibility
 SMESH.MED_V2_1    = 11 #omniORB.EnumItem("MED_V2_1", 11) # back compatibility: use number > MED minor version
 SMESH.MED_V2_2    = 12 #omniORB.EnumItem("MED_V2_2", 12) # back compatibility: latest minor will be used
@@ -38,12 +38,13 @@ SMESH.MED_MINOR_7 = 27 # back compatibility
 SMESH.MED_MINOR_8 = 28 # back compatibility
 SMESH.MED_MINOR_9 = 29 # back compatibility
 
-from SMESH import *
-from salome.smesh.smesh_algorithm import Mesh_Algorithm
-from StdMeshers import BlockCS
+from salome.kernel.SMESH import DRS_OK,Entity_Edge,ORDER_QUADRATIC,ALL,AxisStruct,DirStruct,EDGE,FACE,FT_Area,FT_AspectRatio,FT_AspectRatio3D,FT_BadOrientedVolume,FT_BallDiameter,FT_BareBorderFace,FT_BareBorderVolume,FT_BelongToCylinder,FT_BelongToGenSurface,FT_BelongToGeom,FT_BelongToMeshGroup,FT_BelongToPlane,FT_ConnectedElements,FT_CoplanarFaces,FT_Deflection2D,FT_ElemGeomType,FT_EntityType,FT_EqualEdges,FT_EqualFaces,FT_EqualNodes,FT_EqualTo,FT_EqualVolumes,FT_FreeBorders,FT_FreeEdges,FT_FreeFaces,FT_FreeNodes,FT_GroupColor,FT_Length,FT_Length2D,FT_Length3D,FT_LessThan,FT_LinearOrQuadratic,FT_LogicalAND,FT_LogicalNOT,FT_LogicalOR,FT_LyingOnGeom,FT_MaxElementLength2D,FT_MaxElementLength3D,FT_MinimumAngle,FT_MoreThan,FT_MultiConnection,FT_MultiConnection2D,FT_NodeConnectivityNumber,FT_OverConstrainedFace,FT_OverConstrainedVolume,FT_RangeOfIds,FT_ScaledJacobian,FT_Skew,FT_Taper,FT_Undefined,FT_Volume3D,FT_Warping,FT_Warping3D,Filter,HYP_ALREADY_EXIST,HYP_BAD_DIM,HYP_BAD_GEOMETRY,HYP_BAD_PARAMETER,HYP_BAD_SUBSHAPE,HYP_CONCURRENT,HYP_HIDDEN_ALGO,HYP_HIDING_ALGO,HYP_INCOMPATIBLE,HYP_INCOMPAT_HYPS,HYP_MISSING,HYP_NEED_SHAPE,HYP_NOTCONFORM,HYP_UNKNOWN_FATAL,NODE,PointStruct,SMESH_Algo,SMESH_MeshEditor,VOLUME
 
-import SALOME
-import SALOMEDS
+from salome.smesh.smesh_algorithm import Mesh_Algorithm
+from salome.kernel.StdMeshers import BlockCS
+
+from salome.kernel import SALOME
+from salome.kernel import SALOMEDS
 import os
 import inspect
 
@@ -150,7 +151,7 @@ def DegreesToRadians(AngleInDegrees):
     from math import pi
     return AngleInDegrees * pi / 180.0
 
-import salome_notebook
+from salome.kernel import salome_notebook
 notebook = salome_notebook.notebook
 # Salome notebook variable separator
 var_separator = ":"
@@ -594,7 +595,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Returns:
             :class:`SMESH.AxisStruct`
         """
-        import GEOM
+        from salome.kernel import GEOM
         geompyD = theObj.GetGen()
         edges = geompyD.SubShapeAll( theObj, geomBuilder.geomBuilder.ShapeType["EDGE"] )
         axis = None
@@ -1585,7 +1586,7 @@ def New( instance=None, instanceGeom=None):
 
     Typical use is::
 
-        import salome
+        from salome.kernel import salome
         salome.salome_init()
         from salome.smesh import smeshBuilder
         smesh = smeshBuilder.New()
@@ -8422,12 +8423,12 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( os.pathsep ):
     # print("pluginName: ", pluginName)
     pluginBuilderName = pluginName + "Builder"
     try:
-        exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
+        exec( "from salome.kernel.%s.%s import *" % (pluginName, pluginBuilderName))
     except Exception as e:
-        from salome_utils import verbose
+        from salome.kernel.salome_utils import verbose
         if verbose(): print("Exception while loading %s: %s" % ( pluginBuilderName, e ))
         continue
-    exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
+    exec( "from salome.kernel.%s import %s" % (pluginName, pluginBuilderName))
     plugin = eval( pluginBuilderName )
     # print("  plugin:" , str(plugin))
 

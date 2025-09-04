@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import salome
+from salome.kernel import salome
 
 import unittest
 
@@ -63,7 +63,8 @@ class SMESHExportOfFieldsInMemory(unittest.TestCase):
     ### SMESH component
     ###
 
-    import  SMESH, SALOMEDS
+    from salome.kernel import SMESH
+    from salome.kernel import  SALOMEDS
     from salome.smesh import smeshBuilder
 
     smesh = smeshBuilder.New()
@@ -154,7 +155,8 @@ class SMESHExportOfFieldsInMemory(unittest.TestCase):
     ### SMESH component
     ###
 
-    import  SMESH, SALOMEDS
+    from salome.kernel import SMESH
+    from salome.kernel import  SALOMEDS
     from salome.smesh import smeshBuilder
 
     smesh = smeshBuilder.New()

@@ -19,7 +19,7 @@
 #
 """Les groupes des edges des cercles débouchants"""
 
-import SMESH
+from salome.kernel import SMESH
 
 def construitMaillagePipe_b(idisk, \
                             idisklim, nbsegCercle, \

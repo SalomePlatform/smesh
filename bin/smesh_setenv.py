@@ -26,7 +26,7 @@ import os
 import os.path as osp
 import sys
 from xml.dom.minidom import parse
-from setenv import add_path, get_lib_dir, salome_subdir
+from salome.kernel.setenv_impl import add_path, get_lib_dir, salome_subdir
 
 # -----------------------------------------------------------------------------
 

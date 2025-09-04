@@ -20,7 +20,7 @@
 """listes de nappes radiales en filling à chaque extrémité débouchante"""
 
 import logging
-import GEOM
+from salome.kernel import GEOM
 
 from .geomsmesh import geompy
 from .geomsmesh import geomPublish

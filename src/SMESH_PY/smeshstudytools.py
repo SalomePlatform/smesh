@@ -33,11 +33,11 @@ This module provides a class :class:`SMeshStudyTools` to facilitate the
 use of mesh objects in Salome study.
 """
 
-import salome
+from salome.kernel import salome
 SMESH = None    # SMESH module is loaded only when needed
 
-from salome.kernel.studyedit import getStudyEditor
-from salome.kernel.deprecation import is_called_by_sphinx
+from salome.kernel.salome.kernel.studyedit import getStudyEditor
+from salome.kernel.salome.kernel.deprecation import is_called_by_sphinx
 if not is_called_by_sphinx():
   from salome.gui import helper
 
@@ -123,7 +123,7 @@ class SMeshStudyTools:
         """
         if entry is None:
             return None
-        import SMESH
+        from salome.kernel import SMESH
         from salome.smesh import smeshBuilder
         smesh = smeshBuilder.New()
 
@@ -184,17 +184,17 @@ class SMeshStudyTools:
 
 def TEST_createBoxMesh():
     
-    import GEOM
+    from salome.kernel import GEOM
     from salome.geom import geomBuilder
     geompy = geomBuilder.New()
     
     box = geompy.MakeBoxDXDYDZ(200, 200, 200)
 
-    import SMESH, SALOMEDS
+    from salome.kernel import SMESH, SALOMEDS
     from salome.smesh import smeshBuilder
     smesh = smeshBuilder.New() 
 
-    from salome.StdMeshers import StdMeshersBuilder
+    from salome.kernel.StdMeshers import StdMeshersBuilder
     boxmesh = smesh.Mesh(box)
     Regular_1D = boxmesh.Segment()
     Nb_Segments_1 = Regular_1D.NumberOfSegments(15)

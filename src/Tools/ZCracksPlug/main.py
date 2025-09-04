@@ -448,7 +448,7 @@ class ShipHolderApplication(QGroupBox):
     if not path.isfile(saneFile):
       message('E','Sane mesh med file is not valid')
     else:
-      import SMESH, salome
+      from salome.kernel import SMESH, salome
       #salome.salome_init()
       from salome.smesh import smeshBuilder
       smesh = smeshBuilder.New()

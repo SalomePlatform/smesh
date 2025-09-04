@@ -4,7 +4,7 @@ Most basic test of SHAPE/SMESH usecase, but it can be tested without any session
 """
 
 import sys
-import salome
+from salome.kernel import salome
 salome.standalone() # <- key point of test is here
 salome.salome_init()
 
@@ -42,7 +42,8 @@ Box_1_1, = SHAPERSTUDY.shape(model.featureStringId(Box_1))
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+from salome.kernel import SMESH
+from salome.kernel import  SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

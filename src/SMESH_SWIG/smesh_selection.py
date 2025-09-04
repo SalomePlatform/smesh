@@ -20,17 +20,17 @@
 #  Author : Roman NIKOLAEV, OPEN CASCADE ( roman.nikolaev@opencascade.com )
 #  Module : SMESH
 
-import salome
+from salome.kernel import salome
 salome.salome_init()
 
 import libSMESH_Swig
 sm_gui = libSMESH_Swig.SMESH_Swig()
 
-import SMESH, SALOMEDS
+from salome.kernel import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 
-import GEOM
+from salome.kernel import GEOM
 
 # swig -> idl
 _converter = { 

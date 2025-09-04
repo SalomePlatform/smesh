@@ -153,9 +153,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     maFenetre=MGCleanerMonViewText(self, self.commande)
 
   def enregistreResultat(self):
-    import salome
-    import SMESH
-    from salome.kernel import studyedit
+    from salome.kernel import salome
+    from salome.kernel import SMESH
+    from salome.kernel.salome.kernel import studyedit
     from salome.smesh import smeshBuilder
     smesh = smeshBuilder.New()
     
@@ -235,7 +235,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     save hypothesis in Object Browser outside GEOM ou MESH
     WARNING: at root of Object Browser is not politically correct
     """
-    import salome
+    from salome.kernel import salome
     
     if verbose: print("save hypothesis in Object Browser")
     
@@ -272,9 +272,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     save hypothesis in Object Browser
     bug: affichage ne marche pas si inclusion dans dans GEOM ou MESH depuis salome 730
     """
-    import salome
-    import SMESH
-    from salome.kernel import studyedit
+    from salome.kernel import salome
+    from salome.kernel import SMESH
+    from salome.kernel.salome.kernel import studyedit
     from salome.smesh import smeshBuilder
     #[PAL issue tracker:issue1871] Les nouveaux objets ne s'affichent pas dans SMESH
     QMessageBox.warning(self, "Save", "waiting for fix: Object Browser will not display hypothesis")
@@ -300,7 +300,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
     """ 
     # example storing in notebook
-    import salome_notebook
+    from salome.kernel import salome_notebook
     notebook = salome_notebook.notebook
     notebook.set("MGCleaner_%i" % self.num, data)
     """
@@ -411,8 +411,8 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
   def PBLoadHypPressed(self):
     """load hypothesis saved in Object Browser"""
     #QMessageBox.warning(self, "load Object Browser MGCleaner hypothesis", "TODO")
-    import salome
-    from salome.kernel import studyedit
+    from salome.kernel import salome
+    from salome.kernel.salome.kernel import studyedit
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
     from omniORB import CORBA
@@ -486,8 +486,8 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
   def PBMeshSmeshPressed(self):
     from omniORB import CORBA
-    import salome
-    from salome.kernel import studyedit
+    from salome.kernel import salome
+    from salome.kernel.salome.kernel import studyedit
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
     from salome.smesh import smeshBuilder
@@ -621,9 +621,9 @@ def TEST_standalone():
   or (do not works)
   python ./INSTALL/SMESH/share/salome/plugins/smesh/MGCleanerMonPlugDialog.py
   """
-  import salome
-  import SMESH
-  from salome.kernel import studyedit
+  from salome.kernel import salome
+  from salome.kernel import SMESH
+  from salome.kernel.salome.kernel import studyedit
   salome.salome_init()
   maStudy=salome.myStudy
   #etc...a mano...
