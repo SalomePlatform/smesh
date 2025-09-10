@@ -95,7 +95,7 @@ def loadSpadderCatalog():
     from salome.kernel import salome
     salome.salome_init()
     obj = salome.naming_service.Resolve('/Kernel/ModulCatalog')
-    import SALOME_ModuleCatalog
+    from salome.kernel import SALOME_ModuleCatalog
     catalog = obj._narrow(SALOME_ModuleCatalog.ModuleCatalog)
     if not catalog:
         raise RuntimeError("Can't access module catalog")
