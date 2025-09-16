@@ -89,7 +89,7 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const
   }
   catch( SALOME_Exception& S_ex )
   {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -115,7 +115,7 @@ StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& 
   }
   catch( SALOME_Exception& S_ex )
   {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -135,7 +135,7 @@ void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( SMESH::smIdType theSegm
   }
   catch (SALOME_Exception& S_ex) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -175,7 +175,7 @@ void StdMeshers_NumberOfSegments_i::SetDistrType(CORBA::Long typ)
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -208,7 +208,7 @@ void StdMeshers_NumberOfSegments_i::SetScaleFactor( CORBA::Double theScaleFactor
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -229,7 +229,7 @@ CORBA::Double StdMeshers_NumberOfSegments_i::GetScaleFactor()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
   return scale;
 }
@@ -251,7 +251,7 @@ void StdMeshers_NumberOfSegments_i::SetBeta(CORBA::Double beta)
     SMESH::TPythonDump() << _this() << ".SetBeta( " << SMESH::TVar(beta) << " )";
   }
   catch (SALOME_Exception& S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
 }
 
@@ -272,7 +272,7 @@ CORBA::Double StdMeshers_NumberOfSegments_i::GetBeta()
     beta = this->GetImpl()->GetBeta();
   }
   catch (SALOME_Exception& S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
 
   return beta;
@@ -296,7 +296,7 @@ void StdMeshers_NumberOfSegments_i::SetTableFunction(const SMESH::double_array& 
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -313,7 +313,7 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::GetTableFunction()
     tbl = &this->GetImpl()->GetTableFunction();
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   SMESH::double_array_var aRes = new SMESH::double_array();
   aRes->length(tbl->size());
@@ -337,7 +337,7 @@ void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -355,7 +355,7 @@ char* StdMeshers_NumberOfSegments_i::GetExpressionFunction()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
   return CORBA::string_dup(expr);
 }
@@ -375,7 +375,7 @@ void StdMeshers_NumberOfSegments_i::SetConversionMode(CORBA::Long conv )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -393,7 +393,7 @@ CORBA::Long StdMeshers_NumberOfSegments_i::ConversionMode()
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
   return conv;
 }

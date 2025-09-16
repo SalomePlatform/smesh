@@ -987,7 +987,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       qthreaddialog.exec();
       computeFailed = !qthreaddialog.result();
     }
-    catch(const SALOME::SALOME_Exception & S_ex) {
+    catch(const SALOME_CMOD::SALOME_Exception & S_ex) {
       memoryLack = true;
     }
     try {
@@ -997,7 +997,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       for ( CORBA::ULong i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
         memoryLack = ( aCompErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
     }
-    catch(const SALOME::SALOME_Exception & S_ex) {
+    catch(const SALOME_CMOD::SALOME_Exception & S_ex) {
       memoryLack = true;
     }
 
@@ -2061,7 +2061,7 @@ void SMESHGUI_PrecomputeOp::onPreview()
     else
       myPreviewDisplayer->SetVisibility(false);
   }
-  catch(const SALOME::SALOME_Exception & S_ex){
+  catch(const SALOME_CMOD::SALOME_Exception & S_ex){
     memoryLack = true;
     myPreviewDisplayer->SetVisibility(false);
   }
@@ -2073,7 +2073,7 @@ void SMESHGUI_PrecomputeOp::onPreview()
     for ( CORBA::ULong i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
       memoryLack = ( aCompErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
   }
-  catch(const SALOME::SALOME_Exception & S_ex){
+  catch(const SALOME_CMOD::SALOME_Exception & S_ex){
     memoryLack = true;
   }
 
@@ -2285,7 +2285,7 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
       OCC_CATCH_SIGNALS;
       aRes = gen->Evaluate(myMesh, myMainShape);
     }
-    catch(const SALOME::SALOME_Exception & S_ex){
+    catch(const SALOME_CMOD::SALOME_Exception & S_ex){
       memoryLack = true;
     }
 
@@ -2293,7 +2293,7 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
       OCC_CATCH_SIGNALS;
       aCompErrors = gen->GetComputeErrors( myMesh, myMainShape );
     }
-    catch(const SALOME::SALOME_Exception & S_ex){
+    catch(const SALOME_CMOD::SALOME_Exception & S_ex){
       memoryLack = true;
     }
   }

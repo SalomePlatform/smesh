@@ -41,7 +41,7 @@ module SMESH
   
   typedef sequence<string> ListOfParameters;
 
-  interface SMESH_Hypothesis : SALOME::GenericObj
+  interface SMESH_Hypothesis : SALOME_CMOD::GenericObj
   {
     
     /*!

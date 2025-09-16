@@ -243,7 +243,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       aResult = aMeshEditor->RemoveNodes(anArrayOfIdeces.in());
-    } catch (const SALOME::SALOME_Exception& S_ex) {
+    } catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
       myEditCurrentArgument->clear();
     } catch (...){

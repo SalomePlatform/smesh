@@ -43,7 +43,7 @@ module SMESH
     double value;
   };
 
-  interface Measurements: SALOME::GenericObj
+  interface Measurements: SALOME_CMOD::GenericObj
   {
     /*!
      * minimal distance between two entities

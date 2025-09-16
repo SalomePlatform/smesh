@@ -1002,7 +1002,7 @@ SMESH_Client::Update(bool theIsClear)
         }
       }
     }
-    catch ( SALOME::SALOME_Exception& exc )
+    catch ( SALOME_CMOD::SALOME_Exception& exc )
     {
       INFOS("Following exception was caught:\n\t"<<exc.details.text);
     }

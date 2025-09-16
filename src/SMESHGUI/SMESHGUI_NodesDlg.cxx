@@ -106,7 +106,7 @@ namespace SMESH
         aVisualObj->Update( true );
       }
     } 
-    catch ( SALOME::SALOME_Exception& exc ) {
+    catch ( SALOME_CMOD::SALOME_Exception& exc ) {
       INFOS( "Follow exception was caught:\n\t" << exc.details.text );
     }
     catch ( const std::exception& exc ) {

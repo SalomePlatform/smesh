@@ -68,7 +68,7 @@ void StdMeshers_Adaptive1D_i::SetMinSize( CORBA::Double minSegLen )
     this->GetImpl()->SetMinSize( minSegLen );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -98,7 +98,7 @@ void StdMeshers_Adaptive1D_i::SetMaxSize( CORBA::Double maxSegLen )
     this->GetImpl()->SetMaxSize( maxSegLen );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -128,7 +128,7 @@ void StdMeshers_Adaptive1D_i::SetDeflection( CORBA::Double theValue )
     this->GetImpl()->SetDeflection( theValue );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script

@@ -83,7 +83,7 @@ void StdMeshers_ViscousLayerBuilder_i::SetFaces(const ::SMESH::long_array& faceI
   vector<int> ids( faceIDs.length() );
   for ( unsigned i = 0; i < ids.size(); ++i )
     if (( ids[i] = faceIDs[i] ) < 1 )
-      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME::BAD_PARAM );
+      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME_CMOD::BAD_PARAM );
 
   GetImpl()->SetBndShapes( ids, toIgnore );
 
@@ -96,7 +96,7 @@ void StdMeshers_ViscousLayerBuilder_i::SetIgnoreFaces(const ::SMESH::long_array&
   vector<int> ids( faceIDs.length() );
   for ( unsigned i = 0; i < ids.size(); ++i )
     if (( ids[i] = faceIDs[i] ) < 1 )
-      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME::BAD_PARAM );
+      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME_CMOD::BAD_PARAM );
   GetImpl()->SetBndShapes( ids, /*toIgnore=*/true );
   SMESH::TPythonDump() << _this() << ".SetIgnoreFaces( " << faceIDs << " )";
 }
@@ -104,7 +104,7 @@ void StdMeshers_ViscousLayerBuilder_i::SetIgnoreFaces(const ::SMESH::long_array&
 void StdMeshers_ViscousLayerBuilder_i::SetTotalThickness(::CORBA::Double thickness)
 {
   if ( thickness < 1e-100 )
-    THROW_SALOME_CORBA_EXCEPTION( "Invalid thickness", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "Invalid thickness", SALOME_CMOD::BAD_PARAM );
   GetImpl()->SetTotalThickness(thickness);
   SMESH::TPythonDump() << _this() << ".SetTotalThickness( " << SMESH::TVar(thickness) << " )";
 }
@@ -112,7 +112,7 @@ void StdMeshers_ViscousLayerBuilder_i::SetTotalThickness(::CORBA::Double thickne
 void StdMeshers_ViscousLayerBuilder_i::SetNumberLayers(::CORBA::Short nb)
 {
   if ( nb < 1 )
-    THROW_SALOME_CORBA_EXCEPTION( "Invalid number of layers", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "Invalid number of layers", SALOME_CMOD::BAD_PARAM );
   GetImpl()->SetNumberLayers( nb );
   SMESH::TPythonDump() << _this() << ".SetNumberLayers( " << SMESH::TVar(nb) << " )";
 }
@@ -120,7 +120,7 @@ void StdMeshers_ViscousLayerBuilder_i::SetNumberLayers(::CORBA::Short nb)
 void StdMeshers_ViscousLayerBuilder_i::SetStretchFactor(::CORBA::Double factor)
 {
   if ( factor < 1 )
-    THROW_SALOME_CORBA_EXCEPTION( "Invalid stretch factor, it must be >= 1.0", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "Invalid stretch factor, it must be >= 1.0", SALOME_CMOD::BAD_PARAM );
   GetImpl()->SetStretchFactor(factor);
   SMESH::TPythonDump() << _this() << ".SetStretchFactor( " << SMESH::TVar(factor) << " )";
 }
@@ -156,7 +156,7 @@ GEOM::GEOM_Object_ptr StdMeshers_ViscousLayerBuilder_i::GetShrinkGeometry( SMESH
   catch ( std::exception& exc )
   {
     std::cout << exc.what() << "\n";
-    THROW_SALOME_CORBA_EXCEPTION( exc.what(), SALOME::INTERNAL_ERROR  );
+    THROW_SALOME_CORBA_EXCEPTION( exc.what(), SALOME_CMOD::INTERNAL_ERROR  );
     return aShapeObj; // Maybe better to return a init and empty object(?)
   }
 
@@ -196,7 +196,7 @@ CORBA::Boolean StdMeshers_ViscousLayerBuilder_i::AddLayers( SMESH::SMESH_Mesh_pt
   }
   catch ( std::exception& exc )
   {
-    THROW_SALOME_CORBA_EXCEPTION( exc.what(), SALOME::INTERNAL_ERROR  );
+    THROW_SALOME_CORBA_EXCEPTION( exc.what(), SALOME_CMOD::INTERNAL_ERROR  );
   }
   
   return success;

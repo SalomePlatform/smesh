@@ -400,7 +400,7 @@ GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
     }
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   return aShapeObj._retn();
 }

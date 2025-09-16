@@ -42,8 +42,8 @@
 #endif
 
 // Define macros to catch and convert some of possible exceptions into text or SALOME_Exception.
-// WARNING: SALOME::SALOME_Exception (CORBA exception) is not treated here; to care about it add
-//          #define SMY_OWN_CATCH catch ( SALOME::SALOME_Exception & e ) { do_something(e); }
+// WARNING: SALOME_CMOD::SALOME_Exception (CORBA exception) is not treated here; to care about it add
+//          #define SMY_OWN_CATCH catch ( SALOME_CMOD::SALOME_Exception & e ) { do_something(e); }
 //          before #include<SMESH_TryCatch.hxx>
 
 

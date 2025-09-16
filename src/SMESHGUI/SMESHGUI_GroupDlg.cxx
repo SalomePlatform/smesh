@@ -1931,7 +1931,7 @@ void SMESHGUI_GroupDlg::onAdd()
             onListSelectionChanged();
             listItemsToSel.clear();
           }
-          catch (const SALOME::SALOME_Exception& ex) {
+          catch (const SALOME_CMOD::SALOME_Exception& ex) {
             SalomeApp_Tools::QtCatchCorbaException(ex);
           }
         }
@@ -2103,7 +2103,7 @@ void SMESHGUI_GroupDlg::onRemove()
                   foreach(anItem, found) delete anItem;
                 }
               }
-              catch (const SALOME::SALOME_Exception& ex) {
+              catch (const SALOME_CMOD::SALOME_Exception& ex) {
                 SalomeApp_Tools::QtCatchCorbaException(ex);
               }
             }
@@ -2118,7 +2118,7 @@ void SMESHGUI_GroupDlg::onRemove()
                   foreach(anItem, found) delete anItem;
                 }
               }
-              catch (const SALOME::SALOME_Exception& ex) {
+              catch (const SALOME_CMOD::SALOME_Exception& ex) {
                 SalomeApp_Tools::QtCatchCorbaException(ex);
               }
             }

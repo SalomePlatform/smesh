@@ -576,7 +576,7 @@ namespace SMESH
           }
         }
       }
-      catch (const SALOME::SALOME_Exception& S_ex) {
+      catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
         SalomeApp_Tools::QtCatchCorbaException(S_ex);
       }
     }
@@ -607,7 +607,7 @@ namespace SMESH
           return aHypothesis._retn();
         }
       }
-    } catch (const SALOME::SALOME_Exception & S_ex) {
+    } catch (const SALOME_CMOD::SALOME_Exception & S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
     }
 
@@ -652,7 +652,7 @@ namespace SMESH
           wc.resume();
         }
       }
-      catch(const SALOME::SALOME_Exception& S_ex) {
+      catch(const SALOME_CMOD::SALOME_Exception& S_ex) {
         wc.suspend();
         SalomeApp_Tools::QtCatchCorbaException(S_ex);
         res = SMESH::HYP_UNKNOWN_FATAL;
@@ -691,7 +691,7 @@ namespace SMESH
           SCRUTE(aShapeObject->_is_nil());
         }
       }
-      catch(const SALOME::SALOME_Exception& S_ex) {
+      catch(const SALOME_CMOD::SALOME_Exception& S_ex) {
         wc.suspend();
         SalomeApp_Tools::QtCatchCorbaException(S_ex);
         res = SMESH::HYP_UNKNOWN_FATAL;
@@ -730,7 +730,7 @@ namespace SMESH
         }
       }
     }
-    catch(const SALOME::SALOME_Exception& S_ex)
+    catch(const SALOME_CMOD::SALOME_Exception& S_ex)
     {
       wc.suspend();
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
@@ -768,7 +768,7 @@ namespace SMESH
           }
           UpdateViewer(aMesh);
         }
-      } catch(const SALOME::SALOME_Exception& S_ex) {
+      } catch(const SALOME_CMOD::SALOME_Exception& S_ex) {
         wc.suspend();
         SalomeApp_Tools::QtCatchCorbaException(S_ex);
         res = SMESH::HYP_UNKNOWN_FATAL;

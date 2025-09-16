@@ -525,7 +525,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
                                    tr("SMESH_OPERATION_FAILED"));
       return false;
     }
-  } catch (const SALOME::SALOME_Exception& S_ex) {
+  } catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
   } catch (...) {
   }
@@ -693,7 +693,7 @@ void SMESHGUI_MeshPatternDlg::onSelectionDone()
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aName);
       mySelEdit[ mySelInput ]->setText(aName);
     }
-  } catch (const SALOME::SALOME_Exception& S_ex) {
+  } catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
     resetSelInput();
   } catch (...) {
@@ -1004,7 +1004,7 @@ void SMESHGUI_MeshPatternDlg::displayPreview()
 
     aProp->Delete();
     aGrid->Delete();
-  } catch (const SALOME::SALOME_Exception& S_ex) {
+  } catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
     erasePreview();
   } catch (...) {
@@ -1171,7 +1171,7 @@ bool SMESHGUI_MeshPatternDlg::loadFromFile (const QString& theName)
       myPattern = aPattern;
       return true;
     }
-  } catch (const SALOME::SALOME_Exception& S_ex) {
+  } catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
     SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
                                  tr("ERROR_OF_LOADING") );

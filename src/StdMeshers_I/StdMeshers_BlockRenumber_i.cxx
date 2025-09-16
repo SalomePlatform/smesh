@@ -89,7 +89,7 @@ void StdMeshers_BlockRenumber_i::SetBlocksOrientation( const StdMeshers::blockcs
     SMESH::TPythonDump() << _this() << ".SetBlocksOrientation([ " << dump << " ])";
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 }
 

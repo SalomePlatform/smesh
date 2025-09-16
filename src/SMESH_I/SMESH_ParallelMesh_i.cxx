@@ -57,7 +57,7 @@ namespace
 {
   ::SMESH_ParallelMesh* myImpl = dynamic_cast<::SMESH_ParallelMesh*>(_impl);
   if (myImpl == NULL)
-    THROW_SALOME_CORBA_EXCEPTION("Could not cast as ParallelMesh", SALOME::INTERNAL_ERROR);
+    THROW_SALOME_CORBA_EXCEPTION("Could not cast as ParallelMesh", SALOME_CMOD::INTERNAL_ERROR);
 
   return myImpl;
 }

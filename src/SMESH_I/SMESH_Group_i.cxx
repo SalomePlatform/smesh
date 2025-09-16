@@ -848,7 +848,7 @@ void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
       {
         SetFilter( SMESH::Filter::_nil() );
         THROW_SALOME_CORBA_EXCEPTION( "Cyclic dependency between Groups on Filter",
-                                      SALOME::BAD_PARAM );
+                                      SALOME_CMOD::BAD_PARAM );
       }
       f->AddModifWaiter( this );
     }

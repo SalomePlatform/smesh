@@ -132,7 +132,7 @@ void SMESHGUI_MakeFull2DFrom3DOp::selectionDone()
       }
       myDlg->setNewMeshEnabled( isMesh );
     }
-    catch ( const SALOME::SALOME_Exception& S_ex ) {
+    catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );
     }
     catch ( ... ) {
@@ -317,7 +317,7 @@ bool SMESHGUI_MakeFull2DFrom3DOp::onApply()
   try {
     res = compute2DMesh( anEntryList );
   }
-  catch ( const SALOME::SALOME_Exception& S_ex ) {
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   }
   catch ( ... ) {

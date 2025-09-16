@@ -169,7 +169,7 @@ void StdMeshersGUI_LayerDistributionParamWdg::onHypTypePopup( QAction* a )
   try {
     set( gen->CreateHypothesis(aHypType.toLatin1().data(), aServLib.toUtf8().data()));
   }
-  catch (const SALOME::SALOME_Exception & S_ex) {
+  catch (const SALOME_CMOD::SALOME_Exception & S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
   }
 

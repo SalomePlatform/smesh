@@ -81,7 +81,7 @@ void StdMeshers_NumberOfLayers_i::SetNumberOfLayers(CORBA::Long numberOfLayers)
     this->GetImpl()->SetNumberOfLayers( numberOfLayers );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   // Update Python script
   SMESH::TPythonDump() << _this() << ".SetNumberOfLayers( " << SMESH::TVar(numberOfLayers) << " )";

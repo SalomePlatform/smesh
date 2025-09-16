@@ -451,7 +451,7 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
                                   tr( "NB_NEW_0D" ).arg( newNb0D ),
                                   SUIT_MessageBox::Ok, SUIT_MessageBox::Ok);
   }
-  catch ( const SALOME::SALOME_Exception& S_ex ) {
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
     return false;
   }

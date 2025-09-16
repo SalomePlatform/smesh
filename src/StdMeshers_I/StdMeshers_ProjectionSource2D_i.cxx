@@ -82,7 +82,7 @@ void StdMeshers_ProjectionSource2D_i::SetSourceFace(GEOM::GEOM_Object_ptr face)
     myShapeEntries[ SRC_FACE ] = entry.in();
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   // Update Python script
   SMESH::TPythonDump() << _this() << ".SetSourceFace( " << face << " )";
@@ -104,7 +104,7 @@ void StdMeshers_ProjectionSource2D_i::SetSourceMesh(SMESH::SMESH_Mesh_ptr theMes
   {
     SMESH_Mesh_i* mesh_i = SMESH::DownCast< SMESH_Mesh_i* >( theMesh );
     if ( !mesh_i )
-      THROW_SALOME_CORBA_EXCEPTION( "bad mesh", SALOME::BAD_PARAM );
+      THROW_SALOME_CORBA_EXCEPTION( "bad mesh", SALOME_CMOD::BAD_PARAM );
     mesh = &mesh_i->GetImpl();
   }
 
@@ -112,7 +112,7 @@ void StdMeshers_ProjectionSource2D_i::SetSourceMesh(SMESH::SMESH_Mesh_ptr theMes
     this->GetImpl()->SetSourceMesh ( mesh );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   myCorbaMesh = SMESH::SMESH_Mesh::_duplicate( theMesh );
@@ -160,7 +160,7 @@ void StdMeshers_ProjectionSource2D_i::SetVertexAssociation(GEOM::GEOM_Object_ptr
     myShapeEntries[ TGT_VERTEX2 ] = StdMeshers_ObjRefUlils::GeomObjectToEntry( targetVertex2 );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   // Update Python script
   SMESH::TPythonDump() << _this() << ".SetVertexAssociation( "

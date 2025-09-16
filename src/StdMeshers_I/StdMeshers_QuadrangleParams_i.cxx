@@ -80,7 +80,7 @@ void StdMeshers_QuadrangleParams_i::SetTriaVertex(CORBA::Long vertID)
     this->GetImpl()->SetTriaVertex( vertID );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -120,7 +120,7 @@ void StdMeshers_QuadrangleParams_i::SetObjectEntry( const char* entry )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -140,7 +140,7 @@ char* StdMeshers_QuadrangleParams_i::GetObjectEntry()
     entry = this->GetImpl()->GetObjectEntry();
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   return CORBA::string_dup( entry );
 }
@@ -157,14 +157,14 @@ void StdMeshers_QuadrangleParams_i::SetQuadType(StdMeshers::QuadType type)
   ASSERT(myBaseImpl);
 
   if (int(type) >= int(StdMeshers::QUAD_NB_TYPES)) {
-    THROW_SALOME_CORBA_EXCEPTION("Bad type of quadrangulation", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Bad type of quadrangulation", SALOME_CMOD::BAD_PARAM);
   }
 
   try {
     this->GetImpl()->SetQuadType(StdMeshers_QuadType(int(type)));
   }
   catch (SALOME_Exception& S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
 
   // Update Python script
@@ -222,7 +222,7 @@ void StdMeshers_QuadrangleParams_i::SetEnforcedNodes(const GEOM::ListOfGO&     t
         continue;
       CORBA::String_var entry = theVertices[i]->GetStudyEntry();
       if ( !entry.in() || !entry.in()[0] )
-        THROW_SALOME_CORBA_EXCEPTION( "Not published enforced vertex shape", SALOME::BAD_PARAM );
+        THROW_SALOME_CORBA_EXCEPTION( "Not published enforced vertex shape", SALOME_CMOD::BAD_PARAM );
 
       shapes.push_back( StdMeshers_ObjRefUlils::GeomObjectToShape( theVertices[i].in() ));
       myShapeEntries.push_back( entry.in() );
@@ -234,7 +234,7 @@ void StdMeshers_QuadrangleParams_i::SetEnforcedNodes(const GEOM::ListOfGO&     t
     this->GetImpl()->SetEnforcedNodes( shapes, points );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   // Update Python script
   SMESH::TPythonDump() << _this() << ".SetEnforcedNodes( "

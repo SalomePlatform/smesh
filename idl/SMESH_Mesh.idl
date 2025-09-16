@@ -282,7 +282,7 @@ module SMESH
 
   interface SMESH_Mesh;
 
-  interface SMESH_IDSource : SALOME::GenericObj
+  interface SMESH_IDSource : SALOME_CMOD::GenericObj
   {
     /*!
      * Returns a sequence of all element IDs
@@ -340,50 +340,50 @@ module SMESH
      * Return true if there is a geometry to be meshed
      */
     boolean HasShapeToMesh()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get geom shape to mesh. A result should not be nil. Use HasShapeToMesh()
      * to know if a returned shape
      */
     GEOM::GEOM_Object GetShapeToMesh()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Replaces a shape in the mesh
      */
     void ReplaceShape(in GEOM::GEOM_Object theNewGeom)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Return false if the mesh is not yet fully loaded from the study file
      */
     boolean IsLoaded()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Load full mesh data from the study file
      */
     void Load()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Remove all nodes and elements
      */
     void Clear()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Get the list of sub-meshes existing in the mesh
      */
     submesh_array GetSubMeshes()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Remove all nodes and elements of submesh
      */
     void ClearSubMesh(in long ShapeID)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get the subMesh object associated to a Sub-shape. The subMesh object
@@ -392,13 +392,13 @@ module SMESH
      * address a specific subMesh...
      */
     SMESH_subMesh GetSubMesh(in GEOM::GEOM_Object aSubObject, in string name)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Remove a submesh
      */
     void RemoveSubMesh(in SMESH_subMesh aSubMesh)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
 
     /*!
@@ -406,7 +406,7 @@ module SMESH
      */
     SMESH_Group CreateGroup( in ElementType elem_type,
                              in string      name )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Create a group from geometry
@@ -414,7 +414,7 @@ module SMESH
     SMESH_GroupOnGeom CreateGroupFromGEOM( in ElementType       elemType,
                                            in string            name,
                                            in GEOM::GEOM_Object geomObject )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Create a group from filter
@@ -422,37 +422,37 @@ module SMESH
     SMESH_GroupOnFilter CreateGroupFromFilter( in ElementType   elemType,
                                                in string        name,
                                                in SMESH::Filter filter )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Remove a group
      */
     void RemoveGroup(in SMESH_GroupBase aGroup)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Remove group with its contents
      */
     void RemoveGroupWithContents( in SMESH_GroupBase aGroup )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
     *   Return True if all the submeshes are computed
     */
     boolean IsComputedOK()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Get the list of groups existing in the mesh
      */
     ListOfGroups GetGroups()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Get number of groups existing in the mesh
      */
     long NbGroups()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Union of two groups
@@ -462,7 +462,7 @@ module SMESH
     SMESH_Group UnionGroups (in SMESH_GroupBase aGroup1,
                              in SMESH_GroupBase aGroup2,
                              in string          name )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Union of list of groups
@@ -471,7 +471,7 @@ module SMESH
      */
     SMESH_Group UnionListOfGroups (in ListOfGroups aListOfGroups,
                                    in string       name )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Intersection of two groups
@@ -481,7 +481,7 @@ module SMESH
     SMESH_Group IntersectGroups (in SMESH_GroupBase aGroup1,
                                  in SMESH_GroupBase aGroup2,
                                  in string          name )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Intersection of list of groups
@@ -490,7 +490,7 @@ module SMESH
      */
     SMESH_Group IntersectListOfGroups (in ListOfGroups aListOfGroups,
                                        in string       name)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Cut of two groups
@@ -500,7 +500,7 @@ module SMESH
     SMESH_Group CutGroups (in SMESH_GroupBase aMainGroup,
                            in SMESH_GroupBase aToolGroup,
                            in string          name )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Cut of lists of groups
@@ -510,7 +510,7 @@ module SMESH
     SMESH_Group CutListOfGroups (in ListOfGroups aMainGroups,
                                  in ListOfGroups aToolGroups,
                                  in string       name)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Create a group of entities basing on nodes of other groups.
@@ -528,7 +528,7 @@ module SMESH
                                 in string               name,
                                 in NB_COMMON_NODES_ENUM nbCommonNodes,
                                 in boolean              underlyingOnly )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Distribute all faces of the mesh among groups using sharp edges and optionally
@@ -542,13 +542,13 @@ module SMESH
     ListOfGroups FaceGroupsSeparatedByEdges( in double  sharpAngle,
                                              in boolean createEdges,
                                              in boolean useExistingEdges )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Convert group on geometry or on filter into standalone group
      */
     SMESH_Group ConvertToStandalone( in SMESH_GroupBase theGroupOn )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Add hypothesis to the mesh, under a particular sub-shape
@@ -567,20 +567,20 @@ module SMESH
     Hypothesis_Status AddHypothesis(in GEOM::GEOM_Object aSubObject,
                                     in SMESH_Hypothesis  anHyp,
                                     out string           anErrorText)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Remove an hypothesis previously added with AddHypothesis.
      */
     Hypothesis_Status RemoveHypothesis(in GEOM::GEOM_Object aSubObject,
                                        in SMESH_Hypothesis anHyp)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get the list of hypothesis added on a sub-shape
      */
     ListOfHypothesis GetHypothesisList(in GEOM::GEOM_Object aSubObject)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get the log of nodes and elements added or removed since previous
@@ -589,14 +589,14 @@ module SMESH
      * - clearAfterGet : log is emptied after Get (safe if concurrents access)
      */
     log_array GetLog(in boolean clearAfterGet)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Clear the log of nodes and elements added or removed since previous
      * clear. Must be used immediately after GetLog if clearAfterGet is false.
      */
     void ClearLog()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Toggle auto color mode on the object.
@@ -604,13 +604,13 @@ module SMESH
      * - theAutoColor : flag which toggles auto color mode.
      */
     void SetAutoColor(in boolean theAutoColor)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get flag of object's auto color mode.
      */
     boolean GetAutoColor()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get the internal Id
@@ -621,21 +621,21 @@ module SMESH
      * Obtain instance of SMESH_MeshEditor
      */
     SMESH_MeshEditor GetMeshEditor()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Return SMESH_MeshEditor that would not modify the mesh but
      * fill MeshPreviewStruct
      */
     SMESH_MeshEditor GetMeshEditPreviewer()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Return true if the mesh has been edited since a total re-compute
      * and those modifications may prevent successful partial re-compute
      */
     boolean HasModificationsToDiscard()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Check group names for duplications.
      *  Consider maximum group name length stored in MED file.
@@ -667,10 +667,10 @@ module SMESH
 		    in boolean auto_groups,
 		    in long    version,
 		    in boolean overwrite,
-		    in boolean autoDimension) raises (SALOME::SALOME_Exception);
+		    in boolean autoDimension) raises (SALOME_CMOD::SALOME_Exception);
 
     long long ExportMEDCoupling(in boolean auto_groups,
-                                in boolean autoDimension) raises (SALOME::SALOME_Exception);
+                                in boolean autoDimension) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Export a [part of] Mesh into a MED file
@@ -710,7 +710,7 @@ module SMESH
                           in GEOM::ListOfFields fields,
                           in string             geomAssocFields,
                           in double             ZTolerance,
-                          in boolean            saveNumbers) raises (SALOME::SALOME_Exception);
+                          in boolean            saveNumbers) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Export a [part of] Mesh to a file with meshio library using an intermediate MED file
@@ -721,7 +721,7 @@ module SMESH
      */
     void ExportPartToMESHIO(in SMESH_IDSource     meshPart,
                             in string             fileName,
-                            in string             selectedFilter) raises (SALOME::SALOME_Exception);
+                            in string             selectedFilter) raises (SALOME_CMOD::SALOME_Exception);
 
     long long ExportPartToMEDCoupling( in SMESH_IDSource     meshPart,
                                        in boolean            auto_groups,
@@ -729,7 +729,7 @@ module SMESH
                                        in GEOM::ListOfFields fields,
                                        in string             geomAssocFields,
                                        in double             ZTolerance,
-                                       in boolean            saveNumbers) raises (SALOME::SALOME_Exception);
+                                       in boolean            saveNumbers) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Return string representation of a MED file version comprising nbDigits
@@ -747,30 +747,30 @@ module SMESH
      * (UNV supported version is I-DEAS 10)
      */
     void ExportDAT( in string  file,
-                    in boolean renumer) raises (SALOME::SALOME_Exception);
+                    in boolean renumer) raises (SALOME_CMOD::SALOME_Exception);
     void ExportUNV( in string  file,
-                    in boolean renumer ) raises (SALOME::SALOME_Exception);
+                    in boolean renumer ) raises (SALOME_CMOD::SALOME_Exception);
     void ExportSTL( in string  file,
-                    in boolean isascii ) raises (SALOME::SALOME_Exception);
+                    in boolean isascii ) raises (SALOME_CMOD::SALOME_Exception);
     void ExportCGNS( in SMESH_IDSource meshPart,
                      in string         file,
                      in boolean        overwrite,
-                     in boolean        groupElemsByType) raises (SALOME::SALOME_Exception);
+                     in boolean        groupElemsByType) raises (SALOME_CMOD::SALOME_Exception);
     void ExportStructuredCGNS( in SMESH_IDSource meshPart,
                                 in string         file,
-                                in boolean        overwrite) raises (SALOME::SALOME_Exception);
+                                in boolean        overwrite) raises (SALOME_CMOD::SALOME_Exception);
     void ExportGMF( in SMESH_IDSource  meshPart,
                     in string          file,
-                    in boolean         withRequiredGroups) raises (SALOME::SALOME_Exception);
+                    in boolean         withRequiredGroups) raises (SALOME_CMOD::SALOME_Exception);
     void ExportPartToDAT( in SMESH_IDSource meshPart,
                           in string         file,
-                          in boolean        renumer ) raises (SALOME::SALOME_Exception);
+                          in boolean        renumer ) raises (SALOME_CMOD::SALOME_Exception);
     void ExportPartToUNV( in SMESH_IDSource meshPart,
                           in string         file,
-                          in boolean        renumer ) raises (SALOME::SALOME_Exception);
+                          in boolean        renumer ) raises (SALOME_CMOD::SALOME_Exception);
     void ExportPartToSTL( in SMESH_IDSource meshPart,
                           in string         file,
-                          in boolean        isascii ) raises (SALOME::SALOME_Exception);
+                          in boolean        isascii ) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * Return computation progress [0.,1]
      */
@@ -780,124 +780,124 @@ module SMESH
      * Get information about mesh contents
      */
     smIdType NbNodes()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbElements()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType Nb0DElements()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbBalls()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbEdges()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbEdgesOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbFaces()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbFacesOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbTriangles()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbTrianglesOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbBiQuadTriangles()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbQuadrangles()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbQuadranglesOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbBiQuadQuadrangles()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbPolygons()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbPolygonsOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbVolumes()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbVolumesOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbTetras()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbTetrasOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbHexas()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbHexasOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbTriQuadraticHexas()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbPyramids()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbPyramidsOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbPrisms()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbPrismsOfOrder(in ElementOrder order)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbHexagonalPrisms()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbPolyhedrons()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType NbSubMesh()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType_array GetElementsId()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType_array GetElementsByType( in ElementType theType )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType_array GetNodesId()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns type of mesh element
      */
     ElementType GetElementType( in smIdType id, in boolean iselem )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     EntityType GetElementGeomType( in smIdType id )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     GeometryType GetElementShape( in smIdType id )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType_array GetSubMeshElementsId(in long ShapeID)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     smIdType_array GetSubMeshNodesId(in long ShapeID, in boolean all )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     ElementType GetSubMeshElementType(in long ShapeID)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
 
     /*!
@@ -1072,49 +1072,49 @@ module SMESH
      *
      */
     smIdType GetNumberOfElements()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *
      */
     smIdType GetNumberOfNodes( in boolean all )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *
      */
     smIdType_array GetElementsId()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *
      */
     smIdType_array GetElementsByType( in ElementType theType )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns type of mesh element (same as SMESH_Mesh::GetElementType() )
      */
     ElementType GetElementType( in smIdType id, in boolean iselem )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *
      */
     smIdType_array GetNodesId()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get geom shape the submesh is dedicated to
      */
     GEOM::GEOM_Object GetSubShape()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get SMESH_Mesh which stores nodes coordinates & elements definition
      */
     SMESH_Mesh GetFather()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Get the internal persistent Id

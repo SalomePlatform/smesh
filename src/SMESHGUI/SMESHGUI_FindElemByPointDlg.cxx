@@ -455,7 +455,7 @@ void SMESHGUI_FindElemByPointOp::onFind()
     if ( foundIds->length() > 0 )
       myDlg->myFoundList->setCurrentRow(0);
   }
-  catch (const SALOME::SALOME_Exception& S_ex) {
+  catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
   }
   catch (...) {

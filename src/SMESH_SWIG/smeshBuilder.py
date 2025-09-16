@@ -43,7 +43,7 @@ from salome.kernel.SMESH import DRS_OK,Entity_Edge,ORDER_QUADRATIC,ALL,AxisStruc
 from salome.smesh.smesh_algorithm import Mesh_Algorithm
 from salome.kernel.StdMeshers import BlockCS
 
-from salome.kernel import SALOME
+from salome.kernel import SALOME_CMOD
 from salome.kernel import SALOMEDS
 import os
 import inspect
@@ -1942,7 +1942,7 @@ class Mesh(metaclass = MeshMeta):
             if discardModifs and self.mesh.HasModificationsToDiscard(): # issue 0020693
                 self.mesh.Clear()
             ok = self.smeshpyD.Compute(self.mesh, geom)
-        except SALOME.SALOME_Exception as ex:
+        except SALOME_CMOD.SALOME_Exception as ex:
             print("Mesh computation failed, exception caught:")
             print("    ", ex.details.text)
         except:
@@ -4460,7 +4460,7 @@ class Mesh(metaclass = MeshMeta):
             VertexID = Vertex
         try:
             self.editor.SetNodeOnVertex(NodeID, VertexID)
-        except SALOME.SALOME_Exception as inst:
+        except SALOME_CMOD.SALOME_Exception as inst:
             raise ValueError(inst.details.text)
         return True
 
@@ -4484,7 +4484,7 @@ class Mesh(metaclass = MeshMeta):
             EdgeID = Edge
         try:
             self.editor.SetNodeOnEdge(NodeID, EdgeID, paramOnEdge)
-        except SALOME.SALOME_Exception as inst:
+        except SALOME_CMOD.SALOME_Exception as inst:
             raise ValueError(inst.details.text)
         return True
 
@@ -4508,7 +4508,7 @@ class Mesh(metaclass = MeshMeta):
             FaceID = Face
         try:
             self.editor.SetNodeOnFace(NodeID, FaceID, u, v)
-        except SALOME.SALOME_Exception as inst:
+        except SALOME_CMOD.SALOME_Exception as inst:
             raise ValueError(inst.details.text)
         return True
 
@@ -4530,7 +4530,7 @@ class Mesh(metaclass = MeshMeta):
             SolidID = Solid
         try:
             self.editor.SetNodeInVolume(NodeID, SolidID)
-        except SALOME.SALOME_Exception as inst:
+        except SALOME_CMOD.SALOME_Exception as inst:
             raise ValueError(inst.details.text)
         return True
 
@@ -4552,7 +4552,7 @@ class Mesh(metaclass = MeshMeta):
             ShapeID = Shape
         try:
             self.editor.SetMeshElementOnShape(ElementID, ShapeID)
-        except SALOME.SALOME_Exception as inst:
+        except SALOME_CMOD.SALOME_Exception as inst:
             raise ValueError(inst.details.text)
         return True
 

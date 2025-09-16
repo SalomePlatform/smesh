@@ -88,7 +88,7 @@ void StdMeshers_ImportSource2D_i::SetSourceFaces(const SMESH::ListOfGroups& grou
       if ( SMESH_GroupBase_i* gp_i = SMESH::DownCast<SMESH_GroupBase_i*>( groups[i] ))
       {
         if ( gp_i->GetType() != SMESH::FACE )
-          THROW_SALOME_CORBA_EXCEPTION("Wrong group type", SALOME::BAD_PARAM);
+          THROW_SALOME_CORBA_EXCEPTION("Wrong group type", SALOME_CMOD::BAD_PARAM);
         smesh_groups.push_back( gp_i->GetSmeshGroup() );
 
         SALOMEDS::SObject_var so = SMESH_Gen_i::GetSMESHGen()->ObjectToSObject(groups[i]);
@@ -108,7 +108,7 @@ void StdMeshers_ImportSource2D_i::SetSourceFaces(const SMESH::ListOfGroups& grou
   }
   catch ( SALOME_Exception& S_ex )
   {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script

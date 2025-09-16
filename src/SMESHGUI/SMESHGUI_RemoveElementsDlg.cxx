@@ -245,7 +245,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
       if ( myActor && myMesh->NbElements() == 0 )
         myActor->SetRepresentation(SMESH_Actor::ePoint);
 
-    } catch (const SALOME::SALOME_Exception& S_ex) {
+    } catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
     } catch (...) {
     }

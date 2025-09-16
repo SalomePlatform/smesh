@@ -45,7 +45,7 @@ module StdMeshers
      * Sets <length> parameter value
      */
     void SetLength(in double length)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <precision> parameter value
@@ -60,7 +60,7 @@ module StdMeshers
      * this value will be set to zero, what corresponds to the old behaviour.
      */
     void SetPrecision(in double precision)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <length> parameter value
@@ -82,7 +82,7 @@ module StdMeshers
      * Sets <length> parameter value
      */
     void SetLength(in double length)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * Returns <length> parameter value
      */
@@ -120,7 +120,7 @@ module StdMeshers
      * Sets Fineness parameter value
      */
     void SetFineness(in double theFineness)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <Fineness> parameter value
@@ -163,15 +163,15 @@ module StdMeshers
      * Builds and returns point distribution according to passed density function
      */
     SMESH::double_array BuildDistributionExpr( in string func, in long nbSeg, in long  conv )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     SMESH::double_array BuildDistributionTab( in SMESH::double_array func, in long  nbSeg, in long  conv )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
   
     /*!
      * Sets <number of segments> parameter value
      */
     void SetNumberOfSegments(in SMESH::smIdType  segmentsNumber)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <number of segments> parameter value
@@ -182,7 +182,7 @@ module StdMeshers
      * Sets <distribution type> parameter value
      */
     void SetDistrType(in long  typ)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <distribution type> parameter value
@@ -193,61 +193,61 @@ module StdMeshers
      * Sets <scale factor> parameter value
      */
     void SetScaleFactor(in double scaleFactor)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <scale factor> parameter value
      */
     double GetScaleFactor()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <beta> coefficient for Beta Law distribution
      */
     void SetBeta(in double beta)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <beta> coefficient for Beta Law distribution
      */
     double GetBeta()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <table function> parameter value for distribution DT_TabFunc
      */
     void SetTableFunction(in SMESH::double_array table)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <table function> parameter value for distribution DT_TabFunc
      */
     SMESH::double_array GetTableFunction()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <expression function> parameter value for distribution DT_ExprFunc
      */
     void SetExpressionFunction(in string expr)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <expression function> parameter value for distribution DT_ExprFunc
      */
     string GetExpressionFunction()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <conversion mode> parameter value for functional distributions
      */
     void SetConversionMode(in long  conv )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <conversion mode> parameter value for functional distributions
      */
     long  ConversionMode()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
   };
 
   /*!
@@ -261,19 +261,19 @@ module StdMeshers
      * * It is recommended to dedicate a method to each parameter.
      */
     void SetLength(in double length, in boolean isStartLength) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <start segment length> parameter value
      */
     void SetStartLength(in double length) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <end segment length> parameter value
      */
     void SetEndLength(in double length)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <start segment length> or <end segment length> parameter value
@@ -291,13 +291,13 @@ module StdMeshers
      * Sets length of the first segment
      */
     void SetStartLength(in double length) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets value of Common Ratio
      */
     void SetCommonRatio(in double factor)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns length of the first segment
@@ -320,7 +320,7 @@ module StdMeshers
      * Sets <maximum element area> parameter value
      */
     void SetMaxElementArea(in double area) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <maximum element area> parameter value
@@ -337,7 +337,7 @@ module StdMeshers
      * Sets <mode> parameter value
      */
     void SetMode(in long  mode) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <mode> parameter value
@@ -356,19 +356,19 @@ module StdMeshers
      * * It is recommended to dedicate a method to each parameter.
      */
     void SetLength(in double length, in boolean isStartLength) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <start segment length> parameter value
      */
     void SetStartLength(in double length) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Sets <end segment length> parameter value
      */
     void SetEndLength(in double length)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <start segment length> or <end segment length> parameter value
@@ -387,7 +387,7 @@ module StdMeshers
      * Sets <deflection> parameter value
      */
     void SetDeflection(in double deflection)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <deflection> parameter value
@@ -407,9 +407,9 @@ module StdMeshers
      * of segments between given points (default values are equals 1)
      */
     void SetPoints(in SMESH::double_array listParams) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     void SetNbSegments(in SMESH::smIdType_array listNbSeg)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns list of point's parameters
@@ -431,20 +431,20 @@ module StdMeshers
     /*!
      * Sets minimal allowed segment length
      */
-    void SetMinSize(in double minSegLen) raises (SALOME::SALOME_Exception);
+    void SetMinSize(in double minSegLen) raises (SALOME_CMOD::SALOME_Exception);
     double GetMinSize();
 
     /*!
      * Sets maximal allowed segment length
      */
-    void SetMaxSize(in double maxSegLen) raises (SALOME::SALOME_Exception);
+    void SetMaxSize(in double maxSegLen) raises (SALOME_CMOD::SALOME_Exception);
     double GetMaxSize();
 
     /*!
      * Sets <deflection> parameter value, 
      * i.e. a maximal allowed distance between a segment and an edge.
      */
-    void SetDeflection(in double deflection) raises (SALOME::SALOME_Exception);
+    void SetDeflection(in double deflection) raises (SALOME_CMOD::SALOME_Exception);
     double GetDeflection();
   };
 
@@ -457,7 +457,7 @@ module StdMeshers
      * Sets <maximum element volume> parameter value
      */
     void SetMaxElementVolume(in double volume) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <maximum element volume> parameter value
@@ -533,7 +533,7 @@ module StdMeshers
      * Sets <number of segments> parameter value
      */
     void SetNumberOfLayers(in long  numberOfLayers) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <number of layers> parameter value
@@ -554,7 +554,7 @@ module StdMeshers
      * Sets  1D hypothesis specifying distribution of layers
      */
     void SetLayerDistribution(in SMESH::SMESH_Hypothesis distributionHyp) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns 1D hypothesis specifying distribution of layers
@@ -595,7 +595,7 @@ module StdMeshers
      * Sets source <edge> to take a mesh pattern from
      */
     void SetSourceEdge(in GEOM::GEOM_Object edge)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns the source edge
@@ -618,7 +618,7 @@ module StdMeshers
      */
     void SetVertexAssociation(in GEOM::GEOM_Object sourceVertex,
                               in GEOM::GEOM_Object targetVertex)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns the vertex associated with the target vertex.
@@ -645,7 +645,7 @@ module StdMeshers
      * Sets a source <face> to take a mesh pattern from
      */
     void SetSourceFace(in GEOM::GEOM_Object face)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns the source face
@@ -671,7 +671,7 @@ module StdMeshers
                               in GEOM::GEOM_Object sourceVertex2,
                               in GEOM::GEOM_Object targetVertex1,
                               in GEOM::GEOM_Object targetVertex2)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns the <i>-th source vertex associated with the <i>-th target vertex.
@@ -679,7 +679,7 @@ module StdMeshers
      * Valid indices are 1 and 2
      */
     GEOM::GEOM_Object  GetSourceVertex(in long  i)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns the <i>-th target vertex associated with the <i>-th source vertex.
@@ -687,7 +687,7 @@ module StdMeshers
      * Valid indices are 1 and 2
      */
     GEOM::GEOM_Object  GetTargetVertex(in long  i)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
   };
 
   /*!
@@ -702,7 +702,7 @@ module StdMeshers
      * Sets a source <shape> to take a mesh pattern from
      */
     void SetSource3DShape(in GEOM::GEOM_Object shape)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns the source shape
@@ -728,7 +728,7 @@ module StdMeshers
                               in GEOM::GEOM_Object sourceVertex2,
                               in GEOM::GEOM_Object targetVertex1,
                               in GEOM::GEOM_Object targetVertex2)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns the <i>-th source vertex associated with the <i>-th target vertex.
@@ -736,7 +736,7 @@ module StdMeshers
      * Valid indices are 1 and 2
      */
     GEOM::GEOM_Object  GetSourceVertex(in long  i)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns the <i>-th target vertex associated with the <i>-th source vertex.
@@ -744,7 +744,7 @@ module StdMeshers
      * Valid indices are 1 and 2
      */
     GEOM::GEOM_Object  GetTargetVertex(in long  i)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
   };
 
   /*!
@@ -758,7 +758,7 @@ module StdMeshers
      * Sets <length> parameter value
      */
     void SetLength(in double length)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns <length> parameter value
@@ -815,7 +815,7 @@ module StdMeshers
      * Set positions of enforced nodes
      */
     void SetEnforcedNodes(in GEOM::ListOfGO vertices, in SMESH::nodes_array points)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns positions of enforced nodes
@@ -906,33 +906,33 @@ module StdMeshers
     /*!
      * Set faces to exclude from treatment
      */
-    void SetIgnoreFaces(in SMESH::long_array faceIDs) raises (SALOME::SALOME_Exception);
+    void SetIgnoreFaces(in SMESH::long_array faceIDs) raises (SALOME_CMOD::SALOME_Exception);
     SMESH::long_array GetIgnoreFaces();
 
     /*!
      * Set faces either to exclude from treatment or to make the Viscous Layers on.
      */
     void SetFaces(in SMESH::long_array faceIDs,
-                  in boolean           toIgnore) raises (SALOME::SALOME_Exception);
+                  in boolean           toIgnore) raises (SALOME_CMOD::SALOME_Exception);
     SMESH::long_array GetFaces();
     boolean           GetIsToIgnoreFaces();
 
     /*!
      * Set total thickness of layers of prisms
      */
-    void SetTotalThickness(in double thickness) raises (SALOME::SALOME_Exception);
+    void SetTotalThickness(in double thickness) raises (SALOME_CMOD::SALOME_Exception);
     double GetTotalThickness();
 
     /*!
      * Set number of layers of prisms
      */
-    void SetNumberLayers(in short nb) raises (SALOME::SALOME_Exception);
+    void SetNumberLayers(in short nb) raises (SALOME_CMOD::SALOME_Exception);
     short GetNumberLayers();
 
     /*!
      * Set factor (>=1.0) of growth of layer thickness towards inside of mesh
      */
-    void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
+    void SetStretchFactor(in double factor) raises (SALOME_CMOD::SALOME_Exception);
     double GetStretchFactor();
 
     void SetMethod( in VLExtrusionMethod how );
@@ -953,33 +953,33 @@ module StdMeshers
     /*!
      * Set edges to exclude from treatment
      */
-    void SetIgnoreEdges(in SMESH::long_array edgeIDs) raises (SALOME::SALOME_Exception);
+    void SetIgnoreEdges(in SMESH::long_array edgeIDs) raises (SALOME_CMOD::SALOME_Exception);
     SMESH::long_array GetIgnoreEdges();
 
     /*!
      * Set edges either to exclude from treatment or to make the Viscous Layers on.
      */
     void SetEdges(in SMESH::long_array edgeIDs, 
-                  in boolean           toIgnore) raises (SALOME::SALOME_Exception);
+                  in boolean           toIgnore) raises (SALOME_CMOD::SALOME_Exception);
     SMESH::long_array GetEdges();
     boolean           GetIsToIgnoreEdges();
 
     /*!
      * Set total thickness of layers of prisms
      */
-    void SetTotalThickness(in double thickness) raises (SALOME::SALOME_Exception);
+    void SetTotalThickness(in double thickness) raises (SALOME_CMOD::SALOME_Exception);
     double GetTotalThickness();
 
     /*!
      * Set number of layers of prisms
      */
-    void SetNumberLayers(in short nb) raises (SALOME::SALOME_Exception);
+    void SetNumberLayers(in short nb) raises (SALOME_CMOD::SALOME_Exception);
     short GetNumberLayers();
 
     /*!
      * Set factor (>=1.0) of growth of layer thickness towards inside of mesh
      */
-    void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
+    void SetStretchFactor(in double factor) raises (SALOME_CMOD::SALOME_Exception);
     double GetStretchFactor();
 
     void SetGroupName(in string name);
@@ -1001,7 +1001,7 @@ module StdMeshers
      * it's size is \a threshold times less than the size of the initial hexahedron. 
      * threshold must be > 1.0
      */
-    void SetSizeThreshold(in double threshold) raises (SALOME::SALOME_Exception);
+    void SetSizeThreshold(in double threshold) raises (SALOME_CMOD::SALOME_Exception);
     double GetSizeThreshold();
 
     /*!
@@ -1014,8 +1014,8 @@ module StdMeshers
      * Set coordinates of nodes along an axis (countered from zero)
      */
     void SetGrid(in SMESH::double_array  coords,
-                 in short                axis) raises (SALOME::SALOME_Exception);
-    SMESH::double_array GetGrid(in short axis) raises (SALOME::SALOME_Exception);
+                 in short                axis) raises (SALOME_CMOD::SALOME_Exception);
+    SMESH::double_array GetGrid(in short axis) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Set grid spacing along an axis
@@ -1028,17 +1028,17 @@ module StdMeshers
      */
     void SetGridSpacing(in SMESH::string_array spaceFunctions,
                         in SMESH::double_array internalPoints,
-                        in short               axis) raises (SALOME::SALOME_Exception);
+                        in short               axis) raises (SALOME_CMOD::SALOME_Exception);
 
     void GetGridSpacing(out SMESH::string_array spaceFunctions,
                         out SMESH::double_array internalPoints,
-                        in short                axis) raises (SALOME::SALOME_Exception);
+                        in short                axis) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * Set custom direction of axes
      */
     void SetAxesDirs(in SMESH::DirStruct x,
                      in SMESH::DirStruct y,
-                     in SMESH::DirStruct z ) raises (SALOME::SALOME_Exception);
+                     in SMESH::DirStruct z ) raises (SALOME_CMOD::SALOME_Exception);
     void GetAxesDirs(out SMESH::DirStruct x,
                      out SMESH::DirStruct y,
                      out SMESH::DirStruct z );
@@ -1081,7 +1081,7 @@ module StdMeshers
     void SetToUseQuanta(in boolean toUseQuanta);
     boolean GetToUseQuanta();
 
-    void SetQuanta(in double quanta) raises (SALOME::SALOME_Exception);
+    void SetQuanta(in double quanta) raises (SALOME_CMOD::SALOME_Exception);
     double GetQuanta();
 
     /*!
@@ -1092,7 +1092,7 @@ module StdMeshers
                                 out SMESH::DirStruct x,
                                 out SMESH::DirStruct y,
                                 out SMESH::DirStruct z )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Compute node coordinates by spacing functions
@@ -1108,7 +1108,7 @@ module StdMeshers
                                            in SMESH::string_array spaceFuns,
                                            in SMESH::double_array points,
                                            in string              axisName ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
   };
 
 
@@ -1277,29 +1277,29 @@ module StdMeshers
     /*!
      * Set faces to exclude from the definition of face to shrink
      */
-    void SetIgnoreFaces(in SMESH::long_array faceIDs) raises (SALOME::SALOME_Exception);
+    void SetIgnoreFaces(in SMESH::long_array faceIDs) raises (SALOME_CMOD::SALOME_Exception);
     // SMESH::long_array GetIgnoreFaces();
 
     /*!
      * Set faces either to exclude from treatment or to make the offset geometry on.
      */
     void SetFaces(in SMESH::long_array faceIDs,
-                  in boolean           toIgnore) raises (SALOME::SALOME_Exception);
+                  in boolean           toIgnore) raises (SALOME_CMOD::SALOME_Exception);
     // SMESH::long_array GetFaces();
     // boolean           GetIsToIgnoreFaces();
 
-    void SetTotalThickness(in double thickness) raises (SALOME::SALOME_Exception);
-    void SetNumberLayers(in short numberOfLayers ) raises (SALOME::SALOME_Exception);
-    void SetStretchFactor(in double strechFactor ) raises (SALOME::SALOME_Exception);
-    void SetMethod( in VLExtrusionMethod how ) raises (SALOME::SALOME_Exception);
-    void SetGroupName(in string name) raises (SALOME::SALOME_Exception);
+    void SetTotalThickness(in double thickness) raises (SALOME_CMOD::SALOME_Exception);
+    void SetNumberLayers(in short numberOfLayers ) raises (SALOME_CMOD::SALOME_Exception);
+    void SetStretchFactor(in double strechFactor ) raises (SALOME_CMOD::SALOME_Exception);
+    void SetMethod( in VLExtrusionMethod how ) raises (SALOME_CMOD::SALOME_Exception);
+    void SetGroupName(in string name) raises (SALOME_CMOD::SALOME_Exception);
 
-    GEOM::GEOM_Object GetShrinkGeometry( in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject ) raises (SALOME::SALOME_Exception);
+    GEOM::GEOM_Object GetShrinkGeometry( in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject ) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Build the prismatic layer from the shrink mesh
      */
-    boolean AddLayers( in SMESH::SMESH_Mesh sourceMesh, in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject ) raises (SALOME::SALOME_Exception);
+    boolean AddLayers( in SMESH::SMESH_Mesh sourceMesh, in SMESH::SMESH_Mesh finalMesh, in GEOM::GEOM_Object theObject ) raises (SALOME_CMOD::SALOME_Exception);
 
   };
 

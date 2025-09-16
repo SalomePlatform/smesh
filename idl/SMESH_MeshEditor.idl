@@ -106,31 +106,31 @@ module SMESH
     * Return data of mesh edition preview which is computed provided
     * that the editor was obtained through SMESH_Mesh::GetMeshEditPreviewer()
     */
-    MeshPreviewStruct GetPreviewData() raises (SALOME::SALOME_Exception);
+    MeshPreviewStruct GetPreviewData() raises (SALOME_CMOD::SALOME_Exception);
 
    /*!
     * If during last operation of MeshEditor some nodes were
     * created, this method returns list of their IDs, if new nodes
     * not created - returns empty list
     */
-    smIdType_array GetLastCreatedNodes() raises (SALOME::SALOME_Exception);
+    smIdType_array GetLastCreatedNodes() raises (SALOME_CMOD::SALOME_Exception);
 
    /*!
     * If during last operation of MeshEditor some elements were
     * created, this method returns list of their IDs, if new elements
     * not created - returns empty list
     */
-    smIdType_array GetLastCreatedElems() raises (SALOME::SALOME_Exception);
+    smIdType_array GetLastCreatedElems() raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Clears sequences of last created elements and nodes 
      */
-    void ClearLastCreated() raises (SALOME::SALOME_Exception);
+    void ClearLastCreated() raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Returns description of an error/warning occurred during the last operation
      */
-    ComputeError GetLastError() raises (SALOME::SALOME_Exception);
+    ComputeError GetLastError() raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Wrap a sequence of ids in a SMESH_IDSource
@@ -144,27 +144,27 @@ module SMESH
      * \param IDsOfElements list of mesh elements identifiers
      * \return \c true if elements are correctly removed or \c false otherwise
      */
-    boolean RemoveElements(in smIdType_array IDsOfElements) raises (SALOME::SALOME_Exception);
+    boolean RemoveElements(in smIdType_array IDsOfElements) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Remove mesh nodes specified by their identifiers.
      * \param IDsOfNodes list of mesh nodes identifiers
      * \return \c true if nodes are correctly removed or \c false otherwise
      */
-    boolean RemoveNodes(in smIdType_array IDsOfNodes) raises (SALOME::SALOME_Exception);
+    boolean RemoveNodes(in smIdType_array IDsOfNodes) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Remove all orphan nodes.
      * \return number of removed nodes
      */
-    smIdType RemoveOrphanNodes() raises (SALOME::SALOME_Exception);
+    smIdType RemoveOrphanNodes() raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Remove a mesh node and change surrounding faces to close a hole
      * \param nodeID node identifier
      * \throw if mesh is not a triangle one
      */
-    void RemoveNodeWithReconnection(in smIdType nodeID) raises (SALOME::SALOME_Exception);
+    void RemoveNodeWithReconnection(in smIdType nodeID) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Add a new node.
@@ -173,7 +173,7 @@ module SMESH
      * \param z Z coordinate of new node
      * \return integer identifier of new node
      */
-    smIdType AddNode(in double x, in double y, in double z) raises (SALOME::SALOME_Exception);
+    smIdType AddNode(in double x, in double y, in double z) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Create a 0D element on the given node.
@@ -181,13 +181,13 @@ module SMESH
      *  \param DuplicateElements to add one more 0D element to a node or not
      */
     smIdType Add0DElement(in smIdType    IDOfNode,
-                          in boolean DuplicateElements) raises (SALOME::SALOME_Exception);
+                          in boolean DuplicateElements) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Create a ball element on the given node.
      *  \param IdOfNode Node IDs for creation of element.
      */
-    smIdType AddBall(in smIdType IDOfNode, in double diameter) raises (SALOME::SALOME_Exception);
+    smIdType AddBall(in smIdType IDOfNode, in double diameter) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Create an edge, either linear and quadratic (this is determed
@@ -197,7 +197,7 @@ module SMESH
      *  of MED. This description is located by the following link:
      *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
      */
-    smIdType AddEdge(in smIdType_array IDsOfNodes) raises (SALOME::SALOME_Exception);
+    smIdType AddEdge(in smIdType_array IDsOfNodes) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Create face, either linear and quadratic (this is determed
@@ -207,16 +207,16 @@ module SMESH
      *  of MED. This description is located by the following link:
      *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
      */
-    smIdType AddFace(in smIdType_array IDsOfNodes) raises (SALOME::SALOME_Exception);
+    smIdType AddFace(in smIdType_array IDsOfNodes) raises (SALOME_CMOD::SALOME_Exception);
 
-    smIdType AddPolygonalFace(in smIdType_array IdsOfNodes) raises (SALOME::SALOME_Exception);
+    smIdType AddPolygonalFace(in smIdType_array IdsOfNodes) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Create a quadratic polygonal face
      *  \param IdsOfNodes - nodes of the polygon; corner nodes follow first
      *  \return smIdType- ID of a new polygon
      */
-    smIdType AddQuadPolygonalFace(in smIdType_array IdsOfNodes) raises (SALOME::SALOME_Exception);
+    smIdType AddQuadPolygonalFace(in smIdType_array IdsOfNodes) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Create volume, either linear and quadratic (this is determed
@@ -226,7 +226,7 @@ module SMESH
      *  of MED. This description is located by the following link:
      *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
      */
-    smIdType AddVolume(in smIdType_array IDsOfNodes) raises (SALOME::SALOME_Exception);
+    smIdType AddVolume(in smIdType_array IDsOfNodes) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Create volume of many faces, giving nodes for each face.
@@ -235,14 +235,14 @@ module SMESH
      *         gives quantity of nodes in face number i.
      */
     smIdType AddPolyhedralVolume (in smIdType_array IdsOfNodes,
-                                  in long_array Quantities) raises (SALOME::SALOME_Exception);
+                                  in long_array Quantities) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      *  Create volume of many faces, giving IDs of existing faces.
      *  \param IdsOfFaces List of face IDs for volume creation.
      *  \note The created volume will refer only to nodes
      *        of the given faces, not to the faces itself.
      */
-    smIdType AddPolyhedralVolumeByFaces (in smIdType_array IdsOfFaces) raises (SALOME::SALOME_Exception);
+    smIdType AddPolyhedralVolumeByFaces (in smIdType_array IdsOfFaces) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Create 0D elements on all nodes of the given object.
@@ -256,7 +256,7 @@ module SMESH
     SMESH_IDSource Create0DElementsOnAllNodes(in SMESH_IDSource theObject,
                                               in string         theGroupName,
                                               in boolean        theDuplicateElements)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Bind a node to a vertex
@@ -264,7 +264,7 @@ module SMESH
       * \param VertexID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
      */
     void SetNodeOnVertex(in smIdType NodeID, in long VertexID)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Store node position on an edge
       * \param NodeID - node ID
@@ -272,7 +272,7 @@ module SMESH
       * \param paramOnEdge - parameter on edge where the node is located
      */
     void SetNodeOnEdge(in smIdType NodeID, in long EdgeID, in double paramOnEdge)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Store node position on a face
       * \param NodeID - node ID
@@ -281,47 +281,47 @@ module SMESH
       * \param v - V parameter on face where the node is located
      */
     void SetNodeOnFace(in smIdType NodeID, in long FaceID, in double u, in double v)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Bind a node to a solid
       * \param NodeID - node ID
       * \param SolidID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
      */
     void SetNodeInVolume(in smIdType NodeID, in long SolidID)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Bind an element to a shape
       * \param ElementID - element ID
       * \param ShapeID - shape ID available through GEOM_Object.GetSubShapeIndices()[0]
      */
     void SetMeshElementOnShape(in smIdType ElementID, in long ShapeID)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
 
     /*!
      * \brief Change node location
      */
     boolean MoveNode(in smIdType NodeID, in double x, in double y, in double z)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Swap a diagonal of a quadrangle formed by two adjacent triangles
      */
     boolean InverseDiag(in smIdType NodeID1, in smIdType NodeID2) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Delete a diagonal of a quadrangle formed by two adjacent triangles
      *        so that a new quadrangle appears in place of the triangles
      */
     boolean DeleteDiag(in smIdType NodeID1, in smIdType NodeID2) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Replace each triangle bound by Node1-Node2 segment with
      *        two triangles by connecting a node made on the segment with a node opposite
      *        to the segment.
      */
     void AddNodeOnSegment(in smIdType Node1, in smIdType Node2, in double position)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Split a face into triangles by adding a new node onto the face
      *        and connecting the new node with face nodes
@@ -332,12 +332,12 @@ module SMESH
      * \brief Change orientation of cells
      */
     boolean Reorient(in smIdType_array IDsOfElements) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Change orientation of cells
      */
     boolean ReorientObject(in SMESH_IDSource theObject) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Reorient faces contained in \a the2Dgroup.
      * \param the2Dgroup - the mesh or its part to reorient
@@ -350,7 +350,7 @@ module SMESH
     long Reorient2D(in SMESH_IDSource the2Dgroup,
                     in DirStruct      theDirection,
                     in long           theFace,
-                    in PointStruct    thePoint) raises (SALOME::SALOME_Exception);
+                    in PointStruct    thePoint) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Reorient faces contained in a list of \a objectFaces
      *        equally to faces contained in a list of \a referenceFaces.
@@ -362,7 +362,7 @@ module SMESH
      */
     long Reorient2DByNeighbours(in SMESH::ListOfIDSources objectFaces,
                                 in SMESH::ListOfIDSources referenceFaces)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Reorient faces basing on orientation of adjacent volumes.
@@ -374,7 +374,7 @@ module SMESH
      */
     long Reorient2DBy3D(in ListOfIDSources faces,
                         in SMESH_IDSource  volumes,
-                        in boolean         outsideNormal) raises (SALOME::SALOME_Exception);
+                        in boolean         outsideNormal) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Fuse neighbour triangles into quadrangles.
@@ -387,7 +387,7 @@ module SMESH
 
     boolean TriToQuad (in smIdType_array   IDsOfElements,
                        in NumericalFunctor Criterion,
-                       in double           MaxAngle) raises (SALOME::SALOME_Exception);
+                       in double           MaxAngle) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Fuse neighbour triangles into quadrangles.
      *
@@ -395,7 +395,7 @@ module SMESH
      */
     boolean TriToQuadObject (in SMESH_IDSource   theObject,
                              in NumericalFunctor Criterion,
-                             in double           MaxAngle) raises (SALOME::SALOME_Exception);
+                             in double           MaxAngle) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Split quadrangles into triangles.
@@ -404,19 +404,19 @@ module SMESH
      * \return TRUE in case of success, FALSE otherwise.
      */
     boolean QuadToTri (in smIdType_array   IDsOfElements,
-                       in NumericalFunctor Criterion) raises (SALOME::SALOME_Exception);
+                       in NumericalFunctor Criterion) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Split quadrangles into triangles.
      *
      * Behaves like the above method, taking a list of elements from \a theObject
      */
     boolean QuadToTriObject (in SMESH_IDSource   theObject,
-                             in NumericalFunctor Criterion) raises (SALOME::SALOME_Exception);
+                             in NumericalFunctor Criterion) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Split each of quadrangles into 4 triangles.
      * \param theQuads Container of quadrangles to split.
      */
-    void QuadTo4Tri (in SMESH_IDSource theQuads) raises (SALOME::SALOME_Exception);
+    void QuadTo4Tri (in SMESH_IDSource theQuads) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Split quadrangles into triangles.
@@ -425,14 +425,14 @@ module SMESH
      * \return TRUE in case of success, FALSE otherwise.
      */
     boolean SplitQuad (in smIdType_array IDsOfElements,
-                       in boolean        Diag13) raises (SALOME::SALOME_Exception);
+                       in boolean        Diag13) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Split quadrangles into triangles.
      *
      * Behaves like the above method, taking list of elements from \a theObject
      */
     boolean SplitQuadObject (in SMESH_IDSource theObject,
-                             in boolean        Diag13) raises (SALOME::SALOME_Exception);
+                             in boolean        Diag13) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      *  Find better splitting of the given quadrangle.
@@ -442,7 +442,7 @@ module SMESH
      *          diagonal is better, 0 if error occurs.
      */
     short BestSplit (in smIdType         IDOfQuad,
-                     in NumericalFunctor Criterion) raises (SALOME::SALOME_Exception);
+                     in NumericalFunctor Criterion) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Split volumic elements into tetrahedrons
@@ -453,7 +453,7 @@ module SMESH
      *         3 - split the hexahedron into 24 tetrahedrons
      */
     void SplitVolumesIntoTetra(in SMESH_IDSource elems, in short methodFlags)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Split volumic elements into tetrahedrons
@@ -465,7 +465,7 @@ module SMESH
      *         3 - split the hexahedron into 24 tetrahedrons
      */
     void SplitVolumesIntoTetraAvoidOverConstrainedVolumes(in SMESH_IDSource elems, in short methodFlags)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Split hexahedra into triangular prisms
@@ -486,7 +486,7 @@ module SMESH
                                   in SMESH::DirStruct   facetToSplitNormal,
                                   in short              methodFlags,
                                   in boolean            allDomains)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Split bi-quadratic elements into linear ones without creation of additional nodes.
@@ -498,7 +498,7 @@ module SMESH
      *  \param elems - elements to split
      */
     void SplitBiQuadraticIntoLinear(in ListOfIDSources elems)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
 
     enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
@@ -507,44 +507,44 @@ module SMESH
                    in smIdType_array IDsOfFixedNodes,
                    in short          MaxNbOfIterations,
                    in double         MaxAspectRatio,
-                   in Smooth_Method  Method) raises (SALOME::SALOME_Exception);
+                   in Smooth_Method  Method) raises (SALOME_CMOD::SALOME_Exception);
 
     boolean SmoothObject(in SMESH_IDSource theObject,
                          in smIdType_array IDsOfFixedNodes,
                          in short          MaxNbOfIterations,
                          in double         MaxAspectRatio,
-                         in Smooth_Method  Method) raises (SALOME::SALOME_Exception);
+                         in Smooth_Method  Method) raises (SALOME_CMOD::SALOME_Exception);
 
     boolean SmoothParametric(in smIdType_array IDsOfElements,
                              in smIdType_array IDsOfFixedNodes,
                              in short          MaxNbOfIterations,
                              in double         MaxAspectRatio,
-                             in Smooth_Method  Method) raises (SALOME::SALOME_Exception);
+                             in Smooth_Method  Method) raises (SALOME_CMOD::SALOME_Exception);
 
     boolean SmoothParametricObject(in SMESH_IDSource theObject,
                                    in smIdType_array IDsOfFixedNodes,
                                    in short          MaxNbOfIterations,
                                    in double         MaxAspectRatio,
-                                   in Smooth_Method  Method) raises (SALOME::SALOME_Exception);
+                                   in Smooth_Method  Method) raises (SALOME_CMOD::SALOME_Exception);
 
     void ConvertToQuadratic(in boolean theForce3d) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     void ConvertToQuadraticObject(in boolean        theForce3d, 
                                   in SMESH_IDSource theObject) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     
     boolean ConvertFromQuadratic() 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     void    ConvertFromQuadraticObject(in SMESH_IDSource theObject)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void ConvertToBiQuadratic(in boolean        theForce3d,
                               in SMESH_IDSource theObject)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
-    void RenumberNodes() raises (SALOME::SALOME_Exception);
+    void RenumberNodes() raises (SALOME_CMOD::SALOME_Exception);
 
-    void RenumberElements() raises (SALOME::SALOME_Exception);
+    void RenumberElements() raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Generate dim+1 elements by rotation of the object around axis
@@ -566,7 +566,7 @@ module SMESH
                                       in long            NbOfSteps,
                                       in double          Tolerance,
                                       in boolean         ToMakeGroups)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Generate dim+1 elements by extrusion of elements along vector
@@ -598,7 +598,7 @@ module SMESH
                                        in double_array    basePoint,
                                        in double_array    angles,
                                        in boolean         angleVariation)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Generates new elements by extrusion along the normal to a discretized surface or wire
      */
@@ -609,7 +609,7 @@ module SMESH
                                    in boolean         useInputElemsOnly,
                                    in boolean         makeGroups,
                                    in short           dim)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Generate new elements by extrusion of theElements
@@ -627,7 +627,7 @@ module SMESH
                                    in long           ExtrFlags,
                                    in double         SewTolerance,
                                    in boolean        ToMakeGroups)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     enum Extrusion_Error {
       EXTR_OK,
@@ -654,7 +654,7 @@ module SMESH
                                            in double_array      ScaleFactors,
                                            in boolean           ScaleVariation,
                                            out Extrusion_Error  Error)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
    /*!
     * Compute rotation angles for ExtrusionAlongPath as linear variation
@@ -674,107 +674,107 @@ module SMESH
                  in AxisStruct     Mirror,
                  in MirrorType     Type,
                  in boolean        Copy) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     ListOfGroups MirrorMakeGroups (in smIdType_array IDsOfElements,
                                    in AxisStruct     Mirror,
                                    in MirrorType     Type) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     SMESH_Mesh MirrorMakeMesh (in smIdType_array IDsOfElements,
                                in AxisStruct     Mirror,
                                in MirrorType     Type,
                                in boolean        CopyGroups,
                                in string         MeshName) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void MirrorObject (in SMESH_IDSource theObject,
                        in AxisStruct     Mirror,
                        in MirrorType     Type,
                        in boolean        Copy) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     ListOfGroups MirrorObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Mirror,
                                          in MirrorType     Type) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     SMESH_Mesh MirrorObjectMakeMesh (in SMESH_IDSource theObject,
                                      in AxisStruct     Mirror,
                                      in MirrorType     Type,
                                      in boolean        CopyGroups,
                                      in string         MeshName) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void Translate (in smIdType_array IDsOfElements,
                     in DirStruct      Vector,
                     in boolean        Copy) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     ListOfGroups TranslateMakeGroups (in smIdType_array IDsOfElements,
                                       in DirStruct       Vector) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     SMESH_Mesh TranslateMakeMesh (in smIdType_array IDsOfElements,
                                   in DirStruct      Vector,
                                   in boolean        CopyGroups,
                                   in string         MeshName) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void TranslateObject (in SMESH_IDSource theObject,
                           in DirStruct      Vector,
                           in boolean        Copy) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     ListOfGroups TranslateObjectMakeGroups (in SMESH_IDSource theObject,
                                             in DirStruct      Vector) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     SMESH_Mesh TranslateObjectMakeMesh (in SMESH_IDSource theObject,
                                         in DirStruct      Vector,
                                         in boolean        CopyGroups,
                                         in string         MeshName) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void Scale (in SMESH_IDSource theObject,
                 in PointStruct    thePoint,
                 in double_array   theScaleFact,
                 in boolean        Copy) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     ListOfGroups ScaleMakeGroups (in SMESH_IDSource theObject,
                                   in PointStruct    thePoint,
                                   in double_array   theScaleFact) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     SMESH_Mesh ScaleMakeMesh (in SMESH_IDSource theObject,
                               in PointStruct    thePoint,
                               in double_array   theScaleFact,
                               in boolean        CopyGroups,
                               in string         MeshName) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void Rotate (in smIdType_array IDsOfElements,
                  in AxisStruct     Axis,
                  in double         AngleInRadians,
                  in boolean        Copy) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     ListOfGroups RotateMakeGroups (in smIdType_array IDsOfElements,
                                    in AxisStruct     Axis,
                                    in double         AngleInRadians) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     SMESH_Mesh RotateMakeMesh (in smIdType_array IDsOfElements,
                                in AxisStruct     Axis,
                                in double         AngleInRadians,
                                in boolean        CopyGroups,
                                in string         MeshName)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void RotateObject (in SMESH_IDSource theObject,
                        in AxisStruct     Axis,
                        in double         AngleInRadians,
                        in boolean        Copy)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     ListOfGroups RotateObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Axis,
                                          in double         AngleInRadians)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     SMESH_Mesh RotateObjectMakeMesh (in SMESH_IDSource theObject,
                                      in AxisStruct     Axis,
                                      in double         AngleInRadians,
                                      in boolean        CopyGroups,
                                      in string         MeshName)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     SMESH_Mesh Offset(in SMESH_IDSource theObject,
                       in double         Value,
@@ -782,30 +782,30 @@ module SMESH
                       in boolean        CopyElements,
                       in string         MeshName,
                       out ListOfGroups  Groups)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void FindCoincidentNodes (in  double              Tolerance,
                               out array_of_long_array GroupsOfNodes,
                               in  boolean             SeparateCornersAndMedium)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void FindCoincidentNodesOnPart (in  SMESH_IDSource      SubMeshOrGroup,
                                     in  double              Tolerance,
                                     out array_of_long_array GroupsOfNodes,
                                     in  boolean             SeparateCornersAndMedium)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void FindCoincidentNodesOnPartBut (in  ListOfIDSources     SubMeshOrGroup,
                                        in  double              Tolerance,
                                        out array_of_long_array GroupsOfNodes,
                                        in  ListOfIDSources     ExceptSubMeshOrGroups,
                                        in  boolean             SeparateCornersAndMedium)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     void MergeNodes (in array_of_long_array    GroupsOfNodes,
                      in SMESH::ListOfIDSources NodesToKeep,
                      in boolean                AvoidMakingHoles)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Find elements built on the same nodes.
@@ -815,7 +815,7 @@ module SMESH
     void FindEqualElements (in  ListOfIDSources     MeshOrSubMeshOrGroup,
                             in  ListOfIDSources     ExceptSubMeshOrGroups,
                             out array_of_long_array GroupsOfElementsID) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Merge elements in each given group.
@@ -823,26 +823,26 @@ module SMESH
      */
     void MergeElements(in array_of_long_array    GroupsOfElementsID,
                        in SMESH::ListOfIDSources ElementsToKeep) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Merge equal elements in the whole mesh.
      */
     void MergeEqualElements() 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * If the given ID is a valid node ID (nodeID > 0), just move this node, else
      * move the node closest to the point to point's location and return ID of the node
      */
     smIdType MoveClosestNodeToPoint(in double x, in double y, in double z, in smIdType nodeID) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Return ID of node closest to a given point
      */
     smIdType FindNodeClosestTo(in double x, in double y, in double z) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Return elements of given type where the given point is IN or ON.
@@ -850,7 +850,7 @@ module SMESH
      * 'ALL' type means elements of any type excluding nodes and 0D elements
      */
     smIdType_array FindElementsByPoint(in double x, in double y, in double z, in ElementType type) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Searching among the given elements, return elements of given type 
@@ -861,7 +861,7 @@ module SMESH
     smIdType_array FindAmongElementsByPoint(in SMESH_IDSource elements,
                                             in double x, in double y, in double z,
                                             in ElementType type)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Project a point to a mesh object.
@@ -875,26 +875,26 @@ module SMESH
                           in ElementType    type,
                           in SMESH_IDSource meshObject,
                           out double_array  projecton)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
      * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
      */
     short GetPointState(in double x, in double y, in double z)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Check if a 2D mesh is manifold
      */
     boolean IsManifold()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Check if orientation of 2D elements is coherent
      */
     boolean IsCoherentOrientation2D()
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Partition given 1D elements into groups of contiguous edges.
@@ -906,27 +906,27 @@ module SMESH
     array_of_long_array Get1DBranches( in SMESH_IDSource       edges,
                                        in smIdType             startNode,
                                        out array_of_long_array nodeGroups)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Return sharp edges of faces and non-manifold ones. 
      * Optionally add existing edges. Angle is in degrees.
      */
     ListOfEdges FindSharpEdges(in double angle, in boolean addExistingEdges)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns all or only closed FreeBorder's.
      */
     ListOfFreeBorders FindFreeBorders(in boolean closedOnly)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Fill with 2D elements a hole defined by a FreeBorder.
      * Optionally add new faces to a given group, which is returned.
      */
     SMESH_Group FillHole(in FreeBorder hole, in string groupName)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Returns groups of FreeBorder's coincident within the given tolerance.
@@ -941,7 +941,7 @@ module SMESH
     short SewCoincidentFreeBorders (in CoincidentFreeBorders freeBorders,
                                     in boolean               createPolygons,
                                     in boolean               createPolyedrs)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     enum Sew_Error {
       SEW_OK,
@@ -966,14 +966,14 @@ module SMESH
                               in smIdType LastNodeID2,
                               in boolean  CreatePolygons,
                               in boolean  CreatePolyedrs) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     Sew_Error SewConformFreeBorders (in smIdType FirstNodeID1,
                                      in smIdType SecondNodeID1,
                                      in smIdType LastNodeID1,
                                      in smIdType FirstNodeID2,
                                      in smIdType SecondNodeID2) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     Sew_Error SewBorderToSide (in smIdType FirstNodeIDOnFreeBorder,
                                in smIdType SecondNodeIDOnFreeBorder,
@@ -982,7 +982,7 @@ module SMESH
                                in smIdType LastNodeIDOnSide,
                                in boolean  CreatePolygons,
                                in boolean  CreatePolyedrs) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     Sew_Error SewSideElements (in smIdType_array IDsOfSide1Elements,
                                in smIdType_array IDsOfSide2Elements,
@@ -990,7 +990,7 @@ module SMESH
                                in smIdType       NodeID1OfSide2ToMerge,
                                in smIdType       NodeID2OfSide1ToMerge,
                                in smIdType       NodeID2OfSide2ToMerge) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
    /*!
     * Set new nodes for given element.
@@ -998,7 +998,7 @@ module SMESH
     * element - returns false
     */
     boolean ChangeElemNodes(in smIdType id, in smIdType_array newIDs) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Duplicates given elements, i.e. creates new elements based on the 
@@ -1014,7 +1014,7 @@ module SMESH
      */
     SMESH_Group DoubleElements( in SMESH_IDSource theElements, 
                                 in string         theGroupName )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1026,7 +1026,7 @@ module SMESH
      * \sa DoubleNode(), DoubleNodeGroup(), DoubleNodeGroups()
      */
     boolean DoubleNodes( in smIdType_array theNodes, in smIdType_array theModifiedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1037,7 +1037,7 @@ module SMESH
      * \sa DoubleNodes(), DoubleNodeGroup(), DoubleNodeGroups()
      */
     boolean DoubleNode( in smIdType theNodeId, in smIdType_array theModifiedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1049,7 +1049,7 @@ module SMESH
      */
     boolean DoubleNodeGroup( in SMESH_GroupBase theNodes,
                              in SMESH_GroupBase theModifiedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
      * Works as DoubleNodeGroup() described above, but returns a new group with
@@ -1061,7 +1061,7 @@ module SMESH
      */
     SMESH_Group DoubleNodeGroupNew( in SMESH_GroupBase theNodes,
                                     in SMESH_GroupBase theModifiedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1073,7 +1073,7 @@ module SMESH
      */
     boolean DoubleNodeGroups( in ListOfGroups theNodes,
                               in ListOfGroups theModifiedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
      * Works as DoubleNodeGroups() described above, but returns a new group with
@@ -1085,7 +1085,7 @@ module SMESH
      */
     SMESH_Group DoubleNodeGroupsNew( in ListOfGroups theNodes,
 				     in ListOfGroups theModifiedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1100,7 +1100,7 @@ module SMESH
     boolean DoubleNodeElem( in smIdType_array theElems,
                             in smIdType_array theNodesNot,
                             in smIdType_array theAffectedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1116,7 +1116,7 @@ module SMESH
     boolean DoubleNodeElemInRegion( in smIdType_array    theElems,
                                     in smIdType_array    theNodesNot,
                                     in GEOM::GEOM_Object theShape ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1131,7 +1131,7 @@ module SMESH
     boolean DoubleNodeElemGroup( in SMESH_GroupBase theElems,
                                  in SMESH_GroupBase theNodesNot,
                                  in SMESH_GroupBase theAffectedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
      * Works as DoubleNodeElemGroup() described above, but returns a new group with
@@ -1146,7 +1146,7 @@ module SMESH
     SMESH_Group DoubleNodeElemGroupNew( in SMESH_GroupBase theElems,
                                         in SMESH_GroupBase theNodesNot,
                                         in SMESH_GroupBase theAffectedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
      * Works as DoubleNodeElemGroup() described above, but returns two new groups:
@@ -1165,7 +1165,7 @@ module SMESH
                                           in SMESH_GroupBase theAffectedElems,
                                           in boolean         theElemGroupNeeded,
                                           in boolean         theNodeGroupNeeded) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1181,7 +1181,7 @@ module SMESH
     boolean DoubleNodeElemGroupInRegion( in SMESH_GroupBase theElems,
                                          in SMESH_GroupBase theNodesNot,
                                          in GEOM::GEOM_Object theShape ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1196,7 +1196,7 @@ module SMESH
     boolean DoubleNodeElemGroups( in ListOfGroups theElems,
                                   in ListOfGroups theNodesNot,
                                   in ListOfGroups theAffectedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
      * Works as DoubleNodeElemGroups() described above, but returns a new group with
@@ -1211,7 +1211,7 @@ module SMESH
     SMESH_Group DoubleNodeElemGroupsNew( in ListOfGroups theElems,
                                          in ListOfGroups theNodesNot,
                                          in ListOfGroups theAffectedElems ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
      * Works as DoubleNodeElemGroups() described above, but returns two new groups:
@@ -1230,7 +1230,7 @@ module SMESH
                                            in ListOfGroups theAffectedElems,
                                            in boolean         theElemGroupNeeded,
                                            in boolean         theNodeGroupNeeded ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -1246,7 +1246,7 @@ module SMESH
     boolean DoubleNodeElemGroupsInRegion( in ListOfGroups theElems,
                                           in ListOfGroups theNodesNot,
                                           in GEOM::GEOM_Object theShape )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Identify the elements that will be affected by node duplication (actual duplication is not performed).
@@ -1262,14 +1262,14 @@ module SMESH
     ListOfGroups AffectedElemGroupsInRegion( in ListOfGroups theElems,
                                              in ListOfGroups theNodesNot,
                                              in GEOM::GEOM_Object theShape ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Generates skin mesh (containing 2D cells) from 3D mesh
      * The created 2D mesh elements based on nodes of free faces of boundary volumes
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      */
-    boolean Make2DMeshFrom3D() raises (SALOME::SALOME_Exception);
+    boolean Make2DMeshFrom3D() raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Creates missing boundary elements
@@ -1293,7 +1293,7 @@ module SMESH
                                 in string         meshName,
                                 in boolean        toCopyElements,
                                 in boolean        toCopyExistingBondary,
-                                out SMESH_Group   group) raises (SALOME::SALOME_Exception);
+                                out SMESH_Group   group) raises (SALOME_CMOD::SALOME_Exception);
     /*!
      * \brief Creates missing boundary elements around either the whole mesh or 
      *    groups of 2D elements
@@ -1318,7 +1318,7 @@ module SMESH
                               in boolean         toCreateAllElements,
                               in ListOfIDSources groups,
                               out SMESH_Mesh     mesh,
-                              out SMESH_Group    group) raises (SALOME::SALOME_Exception);
+                              out SMESH_Group    group) raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
@@ -1337,7 +1337,7 @@ module SMESH
     boolean DoubleNodesOnGroupBoundaries( in ListOfGroups theDomains,
                                           in boolean      createJointElems,
                                           in boolean      onAllBoundaries) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Double nodes on some external faces and create flat elements.
@@ -1349,7 +1349,7 @@ module SMESH
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      */
     boolean CreateFlatElementsOnFacesGroups( in ListOfGroups theGroupsOfFaces ) 
-      raises (SALOME::SALOME_Exception); 
+      raises (SALOME_CMOD::SALOME_Exception); 
 
     /*!
      *  \brief identify all the elements around a geom shape, get the faces delimiting the hole
@@ -1362,7 +1362,7 @@ module SMESH
                         in string groupName,
                         in double_array theNodesCoords,
                         out array_of_long_array GroupsOfNodes)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
 
     /*!
@@ -1383,7 +1383,7 @@ module SMESH
      */
     void MakePolyLine(inout ListOfPolySegments segments,
                       in    string             groupName)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*!
      * \brief Create a slot of given width around given 1D elements lying on a triangle mesh.
@@ -1393,7 +1393,7 @@ module SMESH
      */
     ListOfEdges MakeSlot( in SMESH_GroupBase segments,
                           in double          width )
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
   };
 };

@@ -62,7 +62,7 @@ void StdMeshers_Geometric1D_i::SetStartLength( CORBA::Double theLength )
     this->GetImpl()->SetStartLength( theLength );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   // Update Python script
   SMESH::TPythonDump()
@@ -81,7 +81,7 @@ void StdMeshers_Geometric1D_i::SetCommonRatio( CORBA::Double factor )
     this->GetImpl()->SetCommonRatio( factor );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   // Update Python script
   SMESH::TPythonDump()

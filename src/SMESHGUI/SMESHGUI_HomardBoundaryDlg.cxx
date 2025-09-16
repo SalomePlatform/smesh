@@ -482,7 +482,7 @@ bool SMESH_CreateBoundaryAn::CreateOrUpdateBoundaryAn()
         }
       }
     }
-    catch( SALOME::SALOME_Exception& S_ex )
+    catch( SALOME_CMOD::SALOME_Exception& S_ex )
     {
       QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
                                 QObject::tr(CORBA::string_dup(S_ex.details.text)) );
@@ -873,7 +873,7 @@ bool SMESH_CreateBoundaryCAO::PushOnApply()
      aBoundary=myHomardGen->CreateBoundaryCAO(CORBA::string_dup(_aName.toStdString().c_str()), aCAOFile.toStdString().c_str());
      _parent->AddBoundaryCAO(_aName);
    }
-   catch( SALOME::SALOME_Exception& S_ex )
+   catch( SALOME_CMOD::SALOME_Exception& S_ex )
    {
       QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
                                 QObject::tr(CORBA::string_dup(S_ex.details.text)) );
@@ -1044,7 +1044,7 @@ bool SMESH_CreateBoundaryDi::PushOnApply()
      aBoundary=myHomardGen->CreateBoundaryDi(CORBA::string_dup(_aName.toStdString().c_str()), aMeshName.toStdString().c_str(), aMeshFile.toStdString().c_str());
      _parent->AddBoundaryDi(_aName);
    }
-   catch( SALOME::SALOME_Exception& S_ex )
+   catch( SALOME_CMOD::SALOME_Exception& S_ex )
    {
       QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
                                 QObject::tr(CORBA::string_dup(S_ex.details.text)) );
@@ -1524,7 +1524,7 @@ SMESH_EditBoundaryCAO::SMESH_EditBoundaryCAO( SMESHGUI_HomardAdaptDlg* parent, b
       aBoundary = myHomardGen->GetBoundary(CORBA::string_dup(_aName.toStdString().c_str()));
       InitValEdit();
     }
-    catch( SALOME::SALOME_Exception& S_ex ) {
+    catch( SALOME_CMOD::SALOME_Exception& S_ex ) {
       QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
                                 QObject::tr(CORBA::string_dup(S_ex.details.text)) );
       return;
@@ -1590,7 +1590,7 @@ SMESH_EditBoundaryDi::SMESH_EditBoundaryDi( SMESHGUI_HomardAdaptDlg* parent, boo
       aBoundary = myHomardGen->GetBoundary(CORBA::string_dup(_aName.toStdString().c_str()));
       InitValEdit();
     }
-    catch( SALOME::SALOME_Exception& S_ex ) {
+    catch( SALOME_CMOD::SALOME_Exception& S_ex ) {
       QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
                                 QObject::tr(CORBA::string_dup(S_ex.details.text)) );
       return;

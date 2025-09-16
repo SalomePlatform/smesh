@@ -507,7 +507,7 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
     }
     } // switch( operationMode )
   }
-  catch (const SALOME::SALOME_Exception& S_ex) {
+  catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
   }
   catch ( const std::exception& exc ) {
@@ -739,7 +739,7 @@ void SMESHGUI_DuplicateNodesDlg::onGenerate()
     for ( CORBA::ULong i = 0; i < newGroups->length(); ++i )
       myGroups3 << SMESH::SMESH_GroupBase::_duplicate( newGroups[i] );
   }
-  catch (const SALOME::SALOME_Exception& S_ex) {
+  catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
   }
   catch ( const std::exception& exc ) {

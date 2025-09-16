@@ -179,7 +179,7 @@ module SMESH
      */
     SMESH_Hypothesis CreateHypothesis( in string theHypName,
                                        in string theLibName )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create a hypothesis and initialize it by average length
@@ -188,7 +188,7 @@ module SMESH
                                                       in string  theLibName,
                                                       in double  theAverageLength,
                                                       in boolean theQuadDominated)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Return a hypothesis holding parameter values corresponding either to the mesh
@@ -202,7 +202,7 @@ module SMESH
                                                    in SMESH_Mesh        theMesh,
                                                    in GEOM::GEOM_Object theGeom,
                                                    in HypInitParams     theWay)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Returns \c True if a hypothesis is assigned to a sole sub-mesh in a current Study
@@ -219,18 +219,18 @@ module SMESH
      * Sets number of segments per diagonal of boundary box of geometry by which
      * default segment length of appropriate 1D hypotheses is defined
      */
-    void SetBoundaryBoxSegmentation( in long theNbSegments ) raises ( SALOME::SALOME_Exception );
+    void SetBoundaryBoxSegmentation( in long theNbSegments ) raises ( SALOME_CMOD::SALOME_Exception );
     /*!
      * \brief Sets default number of segments per edge
      */
-    void SetDefaultNbSegments( in long theNbSegments) raises ( SALOME::SALOME_Exception );
+    void SetDefaultNbSegments( in long theNbSegments) raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Set the object name
      */
     void SetName( in string theObjectIOR,
                   in string theObjectName )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create a Mesh object, given a geometry shape.
@@ -240,7 +240,7 @@ module SMESH
      * with TopoDS_Shapes
      */
     SMESH_Mesh CreateMesh( in GEOM::GEOM_Object theObject )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create a Mesh object, given a geometry shape.
@@ -251,49 +251,49 @@ module SMESH
      * The mesh is a parallel one
      */
     SMESH_ParallelMesh CreateParallelMesh( in GEOM::GEOM_Object theObject )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
     /*!
      * Create an empty mesh object
      */
     SMESH_Mesh CreateEmptyMesh()
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     SMESH_Mesh ReloadMeshFromFile(in SMESH_Mesh sourceMesh)
-      raises(SALOME::SALOME_Exception);
+      raises(SALOME_CMOD::SALOME_Exception);
 
     /*!
      * Create Mesh object importing data from given UNV file
      * (UNV supported version is I-DEAS 10)
      */
     SMESH_Mesh CreateMeshesFromUNV( in string theFileName )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create Mesh object(s) importing data from given MED file
      */
     mesh_array CreateMeshesFromMED( in string theFileName,
                                     out SMESH::DriverMED_ReadStatus theStatus )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create Mesh object(s) importing data from given MAIL file
      */
     mesh_array CreateMeshesFromMAIL( in string theFileName,
                                     out SMESH::DriverMED_ReadStatus theStatus )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create Mesh object importing data from given STL file
      */
     SMESH_Mesh CreateMeshesFromSTL( in string theFileName )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create Mesh object(s) importing data from given CGNS file
      */
     mesh_array CreateMeshesFromCGNS( in string theFileName,
                                      out SMESH::DriverMED_ReadStatus theStatus )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create Mesh object importing data from given GMF file
@@ -303,14 +303,14 @@ module SMESH
     SMESH_Mesh CreateMeshesFromGMF( in string               theFileName,
                                     in boolean              theMakeRequiredGroups,
                                     out SMESH::ComputeError theError)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create a mesh and import data from any file supported by meshio library
      */
     mesh_array CreateMeshesFromMESHIO(in string theFileName,
                                       out SMESH::DriverMED_ReadStatus theStatus)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
 
     /*!
@@ -322,7 +322,7 @@ module SMESH
     SMESH_Mesh CreateDualMesh(in SMESH_IDSource mesh,
                               in string         meshName,
                               in boolean        adaptToShape)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create a mesh by copying a part of another mesh
@@ -336,7 +336,7 @@ module SMESH
                         in string         meshName,
                         in boolean        toCopyGroups,
                         in boolean        toKeepIDs)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create a mesh by copying definitions of another mesh to a given geometry
@@ -367,7 +367,7 @@ module SMESH
                               out submesh_array    newSubmeshes,
                               out ListOfHypothesis newHypotheses,
                               out string_array     invalidEntries)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Concatenate the given meshes or groups into one mesh,
@@ -382,7 +382,7 @@ module SMESH
                            in boolean         theMergeNodesAndElements,
                            in double          theMergeTolerance,
                            in SMESH_Mesh      theMeshToAppendTo)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Concatenate the given meshes into one mesh,
@@ -398,7 +398,7 @@ module SMESH
                                      in boolean         theMergeNodesAndElements,
                                      in double          theMergeTolerance,
                                      in SMESH_Mesh      theMeshToAppendTo)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Mesh a subShape.
@@ -407,7 +407,7 @@ module SMESH
      */
     boolean Compute( in SMESH_Mesh        theMesh,
                      in GEOM::GEOM_Object theSubObject )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Cancel a computation.
@@ -420,14 +420,14 @@ module SMESH
      */
     boolean IsReadyToCompute( in SMESH_Mesh        theMesh,
                               in GEOM::GEOM_Object theSubObject )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Evaluates size of prospective mesh on a shape
      */
     smIdType_array  Evaluate(in SMESH_Mesh        theMesh,
                              in GEOM::GEOM_Object theSubObject)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Calculate Mesh as preview till indicated dimension
@@ -438,7 +438,7 @@ module SMESH
                                   in GEOM::GEOM_Object theSubObject,
                                   in Dimension         theDimension,
                                   inout long_array    theShapesId )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Return errors of hypotheses definition
@@ -446,7 +446,7 @@ module SMESH
      */
     algo_error_array GetAlgoState( in SMESH_Mesh        theMesh,
                                    in GEOM::GEOM_Object theSubObject )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Return errors of mesh computation
@@ -454,14 +454,14 @@ module SMESH
      */
     compute_error_array GetComputeErrors( in SMESH_Mesh        theMesh,
                                           in GEOM::GEOM_Object theSubObject )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Return mesh elements preventing computation of a sub-shape
      */
     MeshPreviewStruct GetBadInputElements( in SMESH_Mesh theMesh,
                                            in short      theSubShapeID )
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create groups of elements preventing computation of a sub-shape
@@ -469,7 +469,7 @@ module SMESH
     SMESH::ListOfGroups MakeGroupsOfBadInputElements( in SMESH_Mesh theMesh,
                                                       in short      theSubShapeID,
                                                       in string     theGroupName)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Return indices of faces, edges and vertices of given sub-shapes
@@ -477,7 +477,7 @@ module SMESH
      */
     long_array GetSubShapesId( in GEOM::GEOM_Object theMainObject,
                                in object_array      theListOfSubObjects )
-       raises ( SALOME::SALOME_Exception );
+       raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Return geometrical object the given element is built on.
@@ -487,7 +487,7 @@ module SMESH
     GEOM::GEOM_Object GetGeometryByMeshElement( in SMESH_Mesh theMesh,
                                                 in smIdType   theElementID,
                                                 in string     theGeomName)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Return geometrical object the given element is built on.
@@ -495,7 +495,7 @@ module SMESH
      */
     GEOM::GEOM_Object FindGeometryByMeshElement( in SMESH_Mesh theMesh,
                                                  in smIdType   theElementID)
-      raises ( SALOME::SALOME_Exception );
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * \brief Return id of object, registered in current study context
@@ -625,9 +625,9 @@ module SMESH
 			  in double theTolerance );
 
     MG_ADAPT CreateMG_ADAPT();
-    SMESHHOMARD::HOMARD_Gen CreateHOMARD_ADAPT() raises ( SALOME::SALOME_Exception );
+    SMESHHOMARD::HOMARD_Gen CreateHOMARD_ADAPT() raises ( SALOME_CMOD::SALOME_Exception );
     //MG_ADAPT_OBJECT Adaptation(in string adaptType);
-    SALOME::GenericObj Adaptation(in string adaptType) raises ( SALOME::SALOME_Exception );
+    SALOME_CMOD::GenericObj Adaptation(in string adaptType) raises ( SALOME_CMOD::SALOME_Exception );
     MG_ADAPT CreateAdaptationHypothesis();
   };
 

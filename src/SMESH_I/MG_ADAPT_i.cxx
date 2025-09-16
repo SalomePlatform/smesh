@@ -117,7 +117,7 @@ SMESH::MG_ADAPT_ptr SMESH_Gen_i::CreateAdaptationHypothesis()
 #endif
 }
 //SMESH::MG_ADAPT_OBJECT_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
-SALOME::GenericObj_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
+SALOME_CMOD::GenericObj_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
 {
 #ifndef DISABLE_MG_ADAPT
   if (!strcmp(adaptationType, "MG_Adapt"))
@@ -132,7 +132,7 @@ SALOME::GenericObj_ptr SMESH_Gen_i::Adaptation( const char* adaptationType)
     return CreateHOMARD_ADAPT();
   }
 #endif
-  return SALOME::GenericObj_ptr();
+  return SALOME_CMOD::GenericObj_ptr();
 }
 //=============================================================================
 /*!
@@ -393,7 +393,7 @@ void MG_ADAPT_i::compute()
   }
   if ( !errMsg.empty() )
   {
-    THROW_SALOME_CORBA_EXCEPTION( errMsg.c_str(), SALOME::INTERNAL_ERROR);
+    THROW_SALOME_CORBA_EXCEPTION( errMsg.c_str(), SALOME_CMOD::INTERNAL_ERROR);
   }
 
   if(myMgAdapt->getPublish())

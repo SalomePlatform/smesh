@@ -30,7 +30,7 @@
 // A macro used in SMESH_TryCatch.hxx,
 // it re-raises a CORBA SALOME exception thrown by SMESH_MeshEditor_i and caught by SMESH_CATCH
 #define SMY_OWN_CATCH \
-  catch ( SALOME::SALOME_Exception & e ) { throw e; }
+  catch ( SALOME_CMOD::SALOME_Exception & e ) { throw e; }
 
 #include "SMESH_MeshEditor_i.hxx"
 
@@ -879,10 +879,10 @@ void SMESH_MeshEditor_i::RemoveNodeWithReconnection( SMESH::smIdType nodeID )
   const SMDS_MeshNode * node = getMeshDS()->FindNode( nodeID );
   if ( ! node )
     THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID ") << nodeID,
-                                  SALOME::BAD_PARAM);
+                                  SALOME_CMOD::BAD_PARAM);
   if ( node->NbInverseElements( SMDSAbs_Volume ) > 0 )
     THROW_SALOME_CORBA_EXCEPTION( "RemoveNodeWithReconnection() applies to 2D mesh only",
-                                  SALOME::BAD_PARAM);
+                                  SALOME_CMOD::BAD_PARAM);
 
   if ( myIsPreviewMode ) // make preview data
   {
@@ -983,7 +983,7 @@ SMESH::smIdType SMESH_MeshEditor_i::AddBall(SMESH::smIdType IDOfNode, CORBA::Dou
   initData();
 
   if ( diameter < std::numeric_limits<double>::min() )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid diameter", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid diameter", SALOME_CMOD::BAD_PARAM);
 
   const SMDS_MeshNode* aNode = getMeshDS()->FindNode(IDOfNode);
   SMDS_MeshElement* elem = getMeshDS()->AddBall(aNode, diameter);
@@ -1388,14 +1388,14 @@ void SMESH_MeshEditor_i::SetNodeOnVertex(SMESH::smIdType NodeID, CORBA::Long Ver
   SMESHDS_Mesh * mesh = getMeshDS();
   SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( mesh->FindNode(NodeID) );
   if ( !node )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME_CMOD::BAD_PARAM);
 
   if ( mesh->MaxShapeIndex() < VertexID )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid VertexID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid VertexID", SALOME_CMOD::BAD_PARAM);
 
   TopoDS_Shape shape = mesh->IndexToShape( VertexID );
   if ( shape.ShapeType() != TopAbs_VERTEX )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid VertexID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid VertexID", SALOME_CMOD::BAD_PARAM);
 
   mesh->SetNodeOnVertex( node, VertexID );
 
@@ -1422,14 +1422,14 @@ void SMESH_MeshEditor_i::SetNodeOnEdge(SMESH::smIdType NodeID, CORBA::Long EdgeI
   SMESHDS_Mesh * mesh = getMeshDS();
   SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( mesh->FindNode(NodeID) );
   if ( !node )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME_CMOD::BAD_PARAM);
 
   if ( mesh->MaxShapeIndex() < EdgeID )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid EdgeID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid EdgeID", SALOME_CMOD::BAD_PARAM);
 
   TopoDS_Shape shape = mesh->IndexToShape( EdgeID );
   if ( shape.ShapeType() != TopAbs_EDGE )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid EdgeID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid EdgeID", SALOME_CMOD::BAD_PARAM);
 
   Standard_Real f,l;
   BRep_Tool::Range( TopoDS::Edge( shape ), f,l);
@@ -1437,7 +1437,7 @@ void SMESH_MeshEditor_i::SetNodeOnEdge(SMESH::smIdType NodeID, CORBA::Long EdgeI
   {
     SMESH_Comment txt("Invalid paramOnEdge. It must vary in range [ ");
     txt << f << ", " << l << " ]";
-    THROW_SALOME_CORBA_EXCEPTION(txt.c_str(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(txt.c_str(), SALOME_CMOD::BAD_PARAM);
   }
   mesh->SetNodeOnEdge( node, EdgeID, paramOnEdge );
 
@@ -1464,14 +1464,14 @@ void SMESH_MeshEditor_i::SetNodeOnFace(SMESH::smIdType NodeID, CORBA::Long FaceI
   SMESHDS_Mesh * mesh = getMeshDS();
   SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( mesh->FindNode(NodeID) );
   if ( !node )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME_CMOD::BAD_PARAM);
 
   if ( mesh->MaxShapeIndex() < FaceID )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid FaceID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid FaceID", SALOME_CMOD::BAD_PARAM);
 
   TopoDS_Shape shape = mesh->IndexToShape( FaceID );
   if ( shape.ShapeType() != TopAbs_FACE )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid FaceID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid FaceID", SALOME_CMOD::BAD_PARAM);
 
   BRepAdaptor_Surface surf( TopoDS::Face( shape ));
   bool isOut = ( u < surf.FirstUParameter() ||
@@ -1484,7 +1484,7 @@ void SMESH_MeshEditor_i::SetNodeOnFace(SMESH::smIdType NodeID, CORBA::Long FaceI
     txt << surf.FirstUParameter() << ", " << surf.LastUParameter() << " ], ";
     txt << "V must vary in range [ ";
     txt << surf.FirstVParameter() << ", " << surf.LastVParameter() << " ]";
-    THROW_SALOME_CORBA_EXCEPTION(txt.c_str(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(txt.c_str(), SALOME_CMOD::BAD_PARAM);
   }
 
   mesh->SetNodeOnFace( node, FaceID, u, v );
@@ -1508,15 +1508,15 @@ void SMESH_MeshEditor_i::SetNodeInVolume(SMESH::smIdType NodeID, CORBA::Long Sol
   SMESHDS_Mesh * mesh = getMeshDS();
   SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( mesh->FindNode(NodeID) );
   if ( !node )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME_CMOD::BAD_PARAM);
 
   if ( mesh->MaxShapeIndex() < SolidID )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid SolidID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid SolidID", SALOME_CMOD::BAD_PARAM);
 
   TopoDS_Shape shape = mesh->IndexToShape( SolidID );
   if ( shape.ShapeType() != TopAbs_SOLID &&
        shape.ShapeType() != TopAbs_SHELL)
-    THROW_SALOME_CORBA_EXCEPTION("Invalid SolidID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid SolidID", SALOME_CMOD::BAD_PARAM);
 
   mesh->SetNodeInVolume( node, SolidID );
 
@@ -1538,17 +1538,17 @@ void SMESH_MeshEditor_i::SetMeshElementOnShape(SMESH::smIdType ElementID,
   SMESHDS_Mesh * mesh = getMeshDS();
   SMDS_MeshElement* elem = const_cast<SMDS_MeshElement*>(mesh->FindElement(ElementID));
   if ( !elem )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid ElementID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid ElementID", SALOME_CMOD::BAD_PARAM);
 
   if ( mesh->MaxShapeIndex() < ShapeID || ShapeID < 1 )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid ShapeID", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid ShapeID", SALOME_CMOD::BAD_PARAM);
 
   TopoDS_Shape shape = mesh->IndexToShape( ShapeID );
   if ( shape.ShapeType() != TopAbs_EDGE &&
        shape.ShapeType() != TopAbs_FACE &&
        shape.ShapeType() != TopAbs_SOLID &&
        shape.ShapeType() != TopAbs_SHELL )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid shape type", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid shape type", SALOME_CMOD::BAD_PARAM);
 
   mesh->SetMeshElementOnShape( elem, ShapeID );
 
@@ -1637,10 +1637,10 @@ void SMESH_MeshEditor_i::AddNodeOnSegment(SMESH::smIdType nodeID1,
   const SMDS_MeshNode * n2 = getMeshDS()->FindNode( nodeID2 );
   if ( !n1 )
     THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID: ") << nodeID1,
-                                  SALOME::BAD_PARAM);
+                                  SALOME_CMOD::BAD_PARAM);
   if ( !n2 )
     THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID: ") << nodeID2,
-                                  SALOME::BAD_PARAM);
+                                  SALOME_CMOD::BAD_PARAM);
 
   if ( myIsPreviewMode ) // make preview data
   {
@@ -1707,9 +1707,9 @@ void  SMESH_MeshEditor_i::AddNodeOnFace(SMESH::smIdType theFaceID,
   const SMDS_MeshElement * face = getMeshDS()->FindElement( theFaceID );
   if ( !face )
     THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid face ID: ") << theFaceID,
-                                  SALOME::BAD_PARAM);
+                                  SALOME_CMOD::BAD_PARAM);
   if ( face->GetType() != SMDSAbs_Face )
-    THROW_SALOME_CORBA_EXCEPTION( "The element is not a face ", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "The element is not a face ", SALOME_CMOD::BAD_PARAM );
 
   if ( myIsPreviewMode ) // make preview data
   {
@@ -1815,7 +1815,7 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
   if ( error == IDSource_EMPTY )
     return 0;
   if ( error == IDSource_INVALID )
-    THROW_SALOME_CORBA_EXCEPTION("No faces in given group", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("No faces in given group", SALOME_CMOD::BAD_PARAM);
 
 
   const SMDS_MeshElement* face = 0;
@@ -1823,9 +1823,9 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
   {
     face = getMeshDS()->FindElement( theFace );
     if ( !face )
-      THROW_SALOME_CORBA_EXCEPTION("Inexistent face given", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("Inexistent face given", SALOME_CMOD::BAD_PARAM);
     if ( face->GetType() != SMDSAbs_Face )
-      THROW_SALOME_CORBA_EXCEPTION("Wrong element type", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("Wrong element type", SALOME_CMOD::BAD_PARAM);
   }
   else
   {
@@ -1836,7 +1836,7 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
       if ( elements.empty() ) // search in the whole mesh
       {
         if ( myMesh->NbFaces() == 0 )
-          THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME::BAD_PARAM);
+          THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME_CMOD::BAD_PARAM);
 
         theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS() );
       }
@@ -1853,15 +1853,15 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
     face = theElementSearcher->FindClosestTo( p, SMDSAbs_Face );
 
     if ( !face )
-      THROW_SALOME_CORBA_EXCEPTION("No face found by point", SALOME::INTERNAL_ERROR );
+      THROW_SALOME_CORBA_EXCEPTION("No face found by point", SALOME_CMOD::INTERNAL_ERROR );
     if ( !elements.empty() && !elements.count( face ))
-      THROW_SALOME_CORBA_EXCEPTION("Found face is not in the group", SALOME::BAD_PARAM );
+      THROW_SALOME_CORBA_EXCEPTION("Found face is not in the group", SALOME_CMOD::BAD_PARAM );
   }
 
   const SMESH::PointStruct * P = &theDirection.PS;
   gp_Vec dirVec( P->x, P->y, P->z );
   if ( dirVec.Magnitude() < std::numeric_limits< double >::min() )
-    THROW_SALOME_CORBA_EXCEPTION("Zero size vector", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Zero size vector", SALOME_CMOD::BAD_PARAM);
 
   TIDSortedElemSet refFaces = { face };
   int nbReori = getEditor().Reorient2D( elements, dirVec, refFaces, /*allowNonManifold=*/true );
@@ -1909,7 +1909,7 @@ SMESH_MeshEditor_i::Reorient2DByNeighbours(const SMESH::ListOfIDSources& theObje
       invalidObjFaces = true;
   }
   if ( objFaces.empty() && invalidObjFaces )
-    THROW_SALOME_CORBA_EXCEPTION("No valid faces in given groups", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("No valid faces in given groups", SALOME_CMOD::BAD_PARAM);
 
   // get reference faces
   TIDSortedElemSet refFaces;
@@ -1918,7 +1918,7 @@ SMESH_MeshEditor_i::Reorient2DByNeighbours(const SMESH::ListOfIDSources& theObje
     idSourceToSet( theReferenceFaces[i], getMeshDS(), refFaces, SMDSAbs_Face, /*emptyIfIsMesh=*/1 );
   }
   if ( refFaces.empty() && theReferenceFaces.length() > 0 )
-    THROW_SALOME_CORBA_EXCEPTION("Reference faces are invalid", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Reference faces are invalid", SALOME_CMOD::BAD_PARAM);
 
 
   gp_Vec zeroVec( 0,0,0 );
@@ -1964,9 +1964,9 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2DBy3D(const SMESH::ListOfIDSources& fac
     IDSource_Error error;
     idSourceToSet( faceGrp, getMeshDS(), faces, SMDSAbs_Face, /*emptyIfIsMesh=*/1, &error );
     if ( error == IDSource_INVALID && faceGroups.length() == 1 )
-      THROW_SALOME_CORBA_EXCEPTION("No faces in a given object", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("No faces in a given object", SALOME_CMOD::BAD_PARAM);
     if ( error == IDSource_OK && volsError != IDSource_OK )
-      THROW_SALOME_CORBA_EXCEPTION("No volumes in a given object", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("No volumes in a given object", SALOME_CMOD::BAD_PARAM);
 
     nbReori += getEditor().Reorient2DBy3D( faces, volumes, outsideNormal );
 
@@ -2153,7 +2153,7 @@ void SMESH_MeshEditor_i::QuadTo4Tri (SMESH::SMESH_IDSource_ptr theObject)
   TIDSortedElemSet faces;
   if ( !idSourceToSet( theObject, getMeshDS(), faces, SMDSAbs_Face, /*emptyIfIsMesh=*/true ) &&
        faces.empty() )
-    THROW_SALOME_CORBA_EXCEPTION("No faces given", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("No faces given", SALOME_CMOD::BAD_PARAM);
 
   getEditor().QuadTo4Tri( faces );
   TPythonDump() << this << ".QuadTo4Tri( " << theObject << " )";
@@ -2404,7 +2404,7 @@ void SMESH_MeshEditor_i::SplitBiQuadraticIntoLinear(const SMESH::ListOfIDSources
     SMESH::SMESH_IDSource_ptr elems = theElems[i].in();
     SMESH::SMESH_Mesh_var      mesh = elems->GetMesh();
     if ( mesh->GetId() != myMesh_i->GetId() )
-      THROW_SALOME_CORBA_EXCEPTION("Wrong mesh of IDSource", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("Wrong mesh of IDSource", SALOME_CMOD::BAD_PARAM);
 
     idSourceToSet( elems, getMeshDS(), elemSet, SMDSAbs_All );
   }
@@ -4094,9 +4094,9 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   SMESH_TRY;
   initData();
   if ( theScaleFact.length() < 1 )
-    THROW_SALOME_CORBA_EXCEPTION("Scale factor not given", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Scale factor not given", SALOME_CMOD::BAD_PARAM);
   if ( theScaleFact.length() == 2 )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid nb of scale factors : 2", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid nb of scale factors : 2", SALOME_CMOD::BAD_PARAM);
 
   if ( theTargetMesh )
     theCopy = false;
@@ -4313,10 +4313,10 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theO
       SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
       SALOMEDS::SObject_wrap      meshSO = SMESH_Gen_i::GetSMESHGen()->ObjectToSObject( mesh_var );
       builder->RemoveObjectWithChildren( meshSO );
-      THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME::INTERNAL_ERROR);
+      THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME_CMOD::INTERNAL_ERROR);
     }
     if ( !groupIds ) // nothing changed in the current mesh
-      THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME::INTERNAL_ERROR);
+      THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME_CMOD::INTERNAL_ERROR);
 
     theGroups = theCopyGroups ? getGroups( groupIds.get() ) : new SMESH::ListOfGroups;
 
@@ -4927,7 +4927,7 @@ SMESH::smIdType SMESH_MeshEditor_i::ProjectPoint(CORBA::Double             x,
                                              SMESH::double_array_out   projecton)
 {
   if ( CORBA::is_nil( meshObject ))
-    THROW_SALOME_CORBA_EXCEPTION("NULL meshObject", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("NULL meshObject", SALOME_CMOD::BAD_PARAM);
 
   SMESH_TRY;
 
@@ -5053,7 +5053,7 @@ SMESH_MeshEditor_i::Get1DBranches( SMESH::SMESH_IDSource_ptr      theEdges,
                                    SMESH::array_of_long_array_out theNodeGroups )
 {
   if ( CORBA::is_nil( theEdges ))
-    THROW_SALOME_CORBA_EXCEPTION("Get1DBranches(): NULL group given", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Get1DBranches(): NULL group given", SALOME_CMOD::BAD_PARAM);
 
   SMESH::array_of_long_array_var edgeGroupArray = new SMESH::array_of_long_array;
   theNodeGroups = new SMESH::array_of_long_array;
@@ -5181,10 +5181,10 @@ SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole,
   initData();
 
   if ( theHole.nodeIDs.length() < 4 )
-    THROW_SALOME_CORBA_EXCEPTION("A hole should be bound by at least 3 nodes", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("A hole should be bound by at least 3 nodes", SALOME_CMOD::BAD_PARAM);
   if ( theHole.nodeIDs[0] != theHole.nodeIDs[ theHole.nodeIDs.length()-1 ] )
     THROW_SALOME_CORBA_EXCEPTION("Not closed hole boundary. "
-                                 "First and last nodes must be same", SALOME::BAD_PARAM);
+                                 "First and last nodes must be same", SALOME_CMOD::BAD_PARAM);
 
   SMESH_MeshAlgos::TFreeBorder bordNodes;
   bordNodes.resize( theHole.nodeIDs.length() );
@@ -5193,7 +5193,7 @@ SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole,
     bordNodes[ iN ] = getMeshDS()->FindNode( theHole.nodeIDs[ iN ]);
     if ( !bordNodes[ iN ] )
       THROW_SALOME_CORBA_EXCEPTION(SMESH_Comment("Node #") << theHole.nodeIDs[ iN ]
-                                   << " does not exist", SALOME::BAD_PARAM);
+                                   << " does not exist", SALOME_CMOD::BAD_PARAM);
   }
 
   SMESH_TRY;
@@ -5387,27 +5387,27 @@ SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
     {
       const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
       if ( aPART.border < 0 || aPART.border >= (int) freeBorders.borders.length() )
-        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::border index", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::border index", SALOME_CMOD::BAD_PARAM);
 
       const SMESH::FreeBorder& aBRD = freeBorders.borders[ aPART.border ];
 
       if ( aPART.node1 < 0 || aPART.node1 > (int) aBRD.nodeIDs.length() )
-        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node1", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node1", SALOME_CMOD::BAD_PARAM);
       if ( aPART.node2 < 0 || aPART.node2 > (int) aBRD.nodeIDs.length() )
-        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node2", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node2", SALOME_CMOD::BAD_PARAM);
       if ( aPART.nodeLast < 0 || aPART.nodeLast > (int) aBRD.nodeIDs.length() )
-        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::nodeLast", SALOME_CMOD::BAD_PARAM);
 
       // do not keep these nodes for further sewing as nodes can be removed by the sewing
       const SMDS_MeshNode* n1 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node1    ]);
       const SMDS_MeshNode* n2 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node2    ]);
       const SMDS_MeshNode* n3 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.nodeLast ]);
       if ( !n1)
-        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node1", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node1", SALOME_CMOD::BAD_PARAM);
       if ( !n2 )
-        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node2", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node2", SALOME_CMOD::BAD_PARAM);
       if ( !n3 )
-        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::nodeLast", SALOME_CMOD::BAD_PARAM);
 
       borderNodes.push_back( n1 );
       borderNodes.push_back( n2 );
@@ -5829,7 +5829,7 @@ void SMESH_MeshEditor_i::convertToQuadratic(CORBA::Boolean            theForce3d
   if ( elemsOK )
   {
     if ( !elems.empty() && (*elems.begin())->GetType() == SMDSAbs_Node )
-      THROW_SALOME_CORBA_EXCEPTION("Group of nodes is not allowed", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("Group of nodes is not allowed", SALOME_CMOD::BAD_PARAM);
 
     if ( elems.empty() ) getEditor().ConvertToQuadratic(theForce3d, theToBiQuad);
     else                 getEditor().ConvertToQuadratic(theForce3d, elems, theToBiQuad);
@@ -5918,7 +5918,7 @@ void SMESH_MeshEditor_i::ConvertFromQuadraticObject(SMESH::SMESH_IDSource_ptr th
     }
     else if ( (*elems.begin())->GetType() == SMDSAbs_Node )
     {
-      THROW_SALOME_CORBA_EXCEPTION("Group of nodes is not allowed", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("Group of nodes is not allowed", SALOME_CMOD::BAD_PARAM);
     }
     else
     {
@@ -7089,7 +7089,7 @@ SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& the
 
   // MESSAGE("theDomains.length = "<<theDomains.length());
   if ( theDomains.length() <= 1 && !onAllBoundaries )
-    THROW_SALOME_CORBA_EXCEPTION("At least 2 groups are required.", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("At least 2 groups are required.", SALOME_CMOD::BAD_PARAM);
 
   vector<TIDSortedElemSet> domains;
   domains.resize( theDomains.length() );
@@ -7100,7 +7100,7 @@ SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& the
     if ( !CORBA::is_nil( aGrp ) /*&& ( aGrp->GetType() != SMESH::NODE )*/ )
     {
 //      if ( aGrp->GetType() != SMESH::VOLUME )
-//        THROW_SALOME_CORBA_EXCEPTION("Not a volume group", SALOME::BAD_PARAM);
+//        THROW_SALOME_CORBA_EXCEPTION("Not a volume group", SALOME_CMOD::BAD_PARAM);
       SMESH::smIdType_array_var anIDs = aGrp->GetIDs();
       arrayToSet( anIDs, aMeshDS, domains[ i ], SMDSAbs_All );
     }
@@ -7260,7 +7260,7 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
   initData();
 
   if ( dim > SMESH::BND_1DFROM2D )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME_CMOD::BAD_PARAM);
 
   SMESHDS_Mesh* aMeshDS = getMeshDS();
 
@@ -7358,7 +7358,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   initData();
 
   if ( dim > SMESH::BND_1DFROM2D )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME_CMOD::BAD_PARAM);
 
   // separate groups belonging to this and other mesh
   SMESH::ListOfIDSources_var groupsOfThisMesh  = new SMESH::ListOfIDSources;
@@ -7374,7 +7374,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
     else
       groupsOfThisMesh[ nbGroups++ ] = groups[i];
     if ( SMESH::DownCast<SMESH_Mesh_i*>( groups[i] ))
-      THROW_SALOME_CORBA_EXCEPTION("expected a group but received a mesh", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("expected a group but received a mesh", SALOME_CMOD::BAD_PARAM);
   }
   groupsOfThisMesh->length( nbGroups );
   groupsOfOtherMesh->length( nbGroupsOfOtherMesh );
@@ -7519,9 +7519,9 @@ void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
                                       const char*                theGroupName)
 {
   if ( theSegments.length() == 0 )
-    THROW_SALOME_CORBA_EXCEPTION("No segments given", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION("No segments given", SALOME_CMOD::BAD_PARAM );
   if ( myMesh->NbFaces() == 0 )
-    THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME_CMOD::BAD_PARAM );
 
   SMESH_TRY;
   initData(/*deleteSearchers=*/false);
@@ -7645,9 +7645,9 @@ SMESH::ListOfEdges* SMESH_MeshEditor_i::MakeSlot(SMESH::SMESH_GroupBase_ptr theS
 {
   if ( CORBA::is_nil( theSegments ) ||
        theSegments->GetType() != SMESH::EDGE )
-    THROW_SALOME_CORBA_EXCEPTION("No segments given", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION("No segments given", SALOME_CMOD::BAD_PARAM );
   if ( myMesh->NbFaces() == 0 )
-    THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME_CMOD::BAD_PARAM );
 
   SMESH::ListOfEdges_var resultEdges = new SMESH::ListOfEdges;
 

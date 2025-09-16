@@ -200,7 +200,7 @@ bool SMESHGUI_FaceGroupsSeparatedByEdgesDlg::ClickOnApply()
     SUIT_MessageBox::information(this, tr("SMESH_INFORMATION"),
                                  tr("NB_GROUPS_CREATED").arg( groups->length() ));
   }
-  catch ( const SALOME::SALOME_Exception& S_ex ) {
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   }
   catch (...) {

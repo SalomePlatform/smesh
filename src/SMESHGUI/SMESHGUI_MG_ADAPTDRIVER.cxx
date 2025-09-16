@@ -229,7 +229,7 @@ bool SMESHGUI_MG_ADAPTDRIVER::PushOnApply()
 #define SMESH_CAUGHT errStr =
 
 #undef SMY_OWN_CATCH
-#define SMY_OWN_CATCH catch ( SALOME::SALOME_Exception & e ) { errStr = e.details.text; }
+#define SMY_OWN_CATCH catch ( SALOME_CMOD::SALOME_Exception & e ) { errStr = e.details.text; }
 
 bool SMESHGUI_MG_ADAPTDRIVER::execute()
 {

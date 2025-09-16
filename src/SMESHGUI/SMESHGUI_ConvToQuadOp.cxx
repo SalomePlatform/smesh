@@ -164,7 +164,7 @@ void SMESHGUI_ConvToQuadOp::selectionDone()
       myDlg->ShowWarning( toShow );
     }
   }
-  catch ( const SALOME::SALOME_Exception& S_ex )
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex )
   {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   }
@@ -288,7 +288,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
         aEditor->ConvertFromQuadratic();
     }
   }
-  catch ( const SALOME::SALOME_Exception& S_ex )
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex )
   {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
     aResult = false;

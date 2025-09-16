@@ -83,7 +83,7 @@ void StdMeshers_Deflection1D_i::SetDeflection( CORBA::Double theValue )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script

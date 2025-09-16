@@ -333,7 +333,7 @@ QString StdMeshersGUI_BlockRenumberCreator::storeParams() const
     h->SetBlocksOrientation( array );
 
   }
-  catch(const SALOME::SALOME_Exception& ex)
+  catch(const SALOME_CMOD::SALOME_Exception& ex)
   {
     SalomeApp_Tools::QtCatchCorbaException(ex);
   }

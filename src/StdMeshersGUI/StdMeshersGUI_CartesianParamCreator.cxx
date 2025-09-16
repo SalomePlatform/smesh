@@ -502,7 +502,7 @@ namespace StdMeshersGUI
         SMESH::double_array_var coords =
           h->ComputeCoordinates(0.,1., funs, points, axisName[ myAxisIndex ]);
       }
-      catch ( const SALOME::SALOME_Exception& ex ) {
+      catch ( const SALOME_CMOD::SALOME_Exception& ex ) {
         msg = (const char*) ex.details.text;
         return false;
       }
@@ -1175,7 +1175,7 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
     h->SetAxesDirs( axDir[0], axDir[1], axDir[2] );
 
   }
-  catch(const SALOME::SALOME_Exception& ex)
+  catch(const SALOME_CMOD::SALOME_Exception& ex)
   {
     SalomeApp_Tools::QtCatchCorbaException(ex);
   }

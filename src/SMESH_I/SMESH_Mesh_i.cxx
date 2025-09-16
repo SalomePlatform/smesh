@@ -87,13 +87,13 @@
 
 // to pass CORBA exception and TooLargeForExport exception through SMESH_TRY
 #define SMY_OWN_CATCH                                                                           \
-  catch( SALOME::SALOME_Exception& se ) { throw se; }                                           \
+  catch( SALOME_CMOD::SALOME_Exception& se ) { throw se; }                                           \
   catch( ::SMESH_Mesh::TooLargeForExport& ex )                                                  \
-  { SALOME::ExceptionStruct se = {                                                              \
-      SALOME::COMM,                                                                             \
+  { SALOME_CMOD::ExceptionStruct se = {                                                              \
+      SALOME_CMOD::COMM,                                                                             \
       CORBA::string_dup(SMESH_Comment("Mesh is too large for export in format ") << ex.what()), \
       CORBA::string_dup(SMESH_Comment("format=") <<  ex.what() ), 0 };                          \
-    throw SALOME::SALOME_Exception( se );  }
+    throw SALOME_CMOD::SALOME_Exception( se );  }
 
 #include "SMESH_TryCatch.hxx" // include after OCCT headers!
 
@@ -191,7 +191,7 @@ void SMESH_Mesh_i::SetShape( GEOM::GEOM_Object_ptr theShapeObject )
     _impl->ShapeToMesh( _gen_i->GeomObjectToShape( theShapeObject ));
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   // to track changes of GEOM groups
   SMESH::SMESH_Mesh_var mesh = _this();
@@ -214,7 +214,7 @@ CORBA::Boolean SMESH_Mesh_i::HasShapeToMesh()
     res = _impl->HasShapeToMesh();
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   return res;
 }
@@ -251,7 +251,7 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
     }
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   return aShapeObj._retn();
 }
@@ -298,7 +298,7 @@ void SMESH_Mesh_i::Clear()
     //CheckGeomGroupModif(); // issue 20145
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
 
   TPythonDump() <<  SMESH::SMESH_Mesh_var(_this()) << ".Clear()";
@@ -323,7 +323,7 @@ void SMESH_Mesh_i::ClearSubMesh(CORBA::Long ShapeID)
     _impl->ClearSubMesh( ShapeID );
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   _impl->GetMeshDS()->Modified();
 
@@ -399,10 +399,10 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
     status = _impl->MEDToMesh( theFileName, theMeshName );
   }
   catch( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   catch ( ... ) {
-    THROW_SALOME_CORBA_EXCEPTION("ImportMEDFile(): unknown exception", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("ImportMEDFile(): unknown exception", SALOME_CMOD::BAD_PARAM);
   }
 
   CreateGroupServants();
@@ -437,10 +437,10 @@ SMESH::DriverMED_ReadStatus SMESH_Mesh_i::ImportCGNSFile( const char*  theFileNa
     status = _impl->CGNSToMesh( theFileName, theMeshIndex, theMeshName );
   }
   catch( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   catch ( ... ) {
-    THROW_SALOME_CORBA_EXCEPTION("ImportCGNSFile(): unknown exception", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("ImportCGNSFile(): unknown exception", SALOME_CMOD::BAD_PARAM);
   }
 
   CreateGroupServants();
@@ -682,10 +682,10 @@ SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   MESSAGE("addHypothesis");
 
   if (CORBA::is_nil( aSubShape ) && HasShapeToMesh())
-    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference",SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference",SALOME_CMOD::BAD_PARAM);
 
   if (CORBA::is_nil( anHyp ))
-    THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference",SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference",SALOME_CMOD::BAD_PARAM);
 
   SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
   try
@@ -718,7 +718,7 @@ SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   }
   catch(SALOME_Exception & S_ex)
   {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   return status;
 }
@@ -768,10 +768,10 @@ SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   MESSAGE("removeHypothesis()");
 
   if (CORBA::is_nil( aSubShape ) && HasShapeToMesh())
-    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME_CMOD::BAD_PARAM);
 
   if (CORBA::is_nil( anHyp ))
-    THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference", SALOME_CMOD::BAD_PARAM);
 
   if ( _preMeshInfo )
     _preMeshInfo->ForgetOrLoad();
@@ -796,7 +796,7 @@ SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   }
   catch(SALOME_Exception & S_ex)
   {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   return status;
 }
@@ -813,7 +813,7 @@ SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape)
   Unexpect aCatch(SALOME_SalomeException);
   MESSAGE("GetHypothesisList");
   if (_impl->HasShapeToMesh() && CORBA::is_nil(aSubShape))
-    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME_CMOD::BAD_PARAM);
 
   SMESH::ListOfHypothesis_var aList = new SMESH::ListOfHypothesis();
 
@@ -836,7 +836,7 @@ SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape)
     aList->length( i );
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
 
   return aList._retn();
@@ -874,7 +874,7 @@ SMESH::submesh_array* SMESH_Mesh_i::GetSubMeshes()
     aList->length( i );
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
 
   // Update Python script
@@ -895,7 +895,7 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
 {
   Unexpect aCatch(SALOME_SalomeException);
   if (CORBA::is_nil(aSubShape))
-    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME_CMOD::BAD_PARAM);
 
   SMESH::SMESH_subMesh_var subMesh;
   SMESH::SMESH_Mesh_var    aMesh = _this();
@@ -912,7 +912,7 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     if ( !isValidSub )
     {
       if ( it.More() )
-        THROW_SALOME_CORBA_EXCEPTION("Not a sub-shape of the main shape", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Not a sub-shape of the main shape", SALOME_CMOD::BAD_PARAM);
     }
     subMesh = getSubMesh( subMeshId );
 
@@ -931,7 +931,7 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     }
   }
   catch(SALOME_Exception & S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   return subMesh._retn();
 }
@@ -1064,11 +1064,11 @@ SMESH_Mesh_i::CreateGroupFromFilter(SMESH::ElementType theElemType,
     _preMeshInfo->FullLoadFromFile();
 
   if ( CORBA::is_nil( theFilter ))
-    THROW_SALOME_CORBA_EXCEPTION("NULL filter", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("NULL filter", SALOME_CMOD::BAD_PARAM);
 
   SMESH_PredicatePtr predicate = SMESH_GroupOnFilter_i::GetPredicate( theFilter );
   if ( !predicate )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid filter", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("Invalid filter", SALOME_CMOD::BAD_PARAM);
 
   SMESH::SMESH_GroupOnFilter_var aNewGroup = SMESH::SMESH_GroupOnFilter::_narrow
     ( createGroup( theElemType, theName, /*id=*/-1, TopoDS_Shape(), predicate ));
@@ -1109,7 +1109,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
 
   if ( aGroup->GetMeshServant() != this )
     THROW_SALOME_CORBA_EXCEPTION( "RemoveGroup(): group does not belong to this mesh",
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
 
   SALOMEDS::SObject_wrap aGroupSO = _gen_i->ObjectToSObject( theGroup );
   if ( !aGroupSO->_is_nil() )
@@ -1147,7 +1147,7 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   SMESH_GroupBase_i* groupImpl = SMESH::DownCast< SMESH_GroupBase_i* >( theGroup );
   if ( !groupImpl || groupImpl->GetMeshServant() != this )
     THROW_SALOME_CORBA_EXCEPTION( "RemoveGroupWithContents(): group does not belong to this mesh",
-                                  SALOME::BAD_PARAM);
+                                  SALOME_CMOD::BAD_PARAM);
 
   vector<smIdType> nodeIds; // to remove nodes becoming free
   bool isNodal = ( theGroup->GetType() == SMESH::NODE );
@@ -1238,7 +1238,7 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups()
       aList->length( i );
     }
     catch(SALOME_Exception & S_ex) {
-      THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
     }
     aPythonDump << " ] = " << SMESH::SMESH_Mesh_var(_this()) << ".GetGroups()";
   }
@@ -1275,10 +1275,10 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionGroups( SMESH::SMESH_GroupBase_ptr the
 
   if ( theGroup1->_is_nil() || theGroup2->_is_nil() )
     THROW_SALOME_CORBA_EXCEPTION("UnionGroups(): NULL Group",
-                                 SALOME::BAD_PARAM);
+                                 SALOME_CMOD::BAD_PARAM);
   if ( theGroup1->GetType() != theGroup2->GetType() )
     THROW_SALOME_CORBA_EXCEPTION("UnionGroups(): different group types",
-                                 SALOME::BAD_PARAM);
+                                 SALOME_CMOD::BAD_PARAM);
   TPythonDump pyDump;
 
   // Create Union
@@ -1331,7 +1331,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionListOfGroups(const SMESH::ListOfGroups
       aType = aGrp->GetType();
     else if ( aType != aGrp->GetType() )
       THROW_SALOME_CORBA_EXCEPTION("UnionListOfGroups(): different group types",
-                                   SALOME::BAD_PARAM);
+                                   SALOME_CMOD::BAD_PARAM);
   }
   if ( aType == SMESH::ALL )
     return SMESH::SMESH_Group::_nil();
@@ -1381,10 +1381,10 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
 
   if ( theGroup1->_is_nil() || theGroup2->_is_nil() )
     THROW_SALOME_CORBA_EXCEPTION("IntersectGroups(): NULL Group",
-                                 SALOME::BAD_PARAM);
+                                 SALOME_CMOD::BAD_PARAM);
   if ( theGroup1->GetType() != theGroup2->GetType() )
     THROW_SALOME_CORBA_EXCEPTION("IntersectGroups(): different group types",
-                                 SALOME::BAD_PARAM);
+                                 SALOME_CMOD::BAD_PARAM);
   TPythonDump pyDump;
 
   // Create Intersection
@@ -1462,7 +1462,7 @@ SMESH_Mesh_i::IntersectListOfGroups(const SMESH::ListOfGroups& theGroups,
       aType = aGrp->GetType();
     else if ( aType != aGrp->GetType() )
       THROW_SALOME_CORBA_EXCEPTION("IntersectListOfGroups(): different group types",
-                                   SALOME::BAD_PARAM);
+                                   SALOME_CMOD::BAD_PARAM);
 
     if ( SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( aGrp ))
       if ( SMESHDS_GroupBase* grpDS = grp_i->GetGroupDS() )
@@ -1534,10 +1534,10 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
 
   if ( theGroup1->_is_nil() || theGroup2->_is_nil() )
     THROW_SALOME_CORBA_EXCEPTION("CutGroups(): NULL Group",
-                                 SALOME::BAD_PARAM);
+                                 SALOME_CMOD::BAD_PARAM);
   if ( theGroup1->GetType() != theGroup2->GetType() )
     THROW_SALOME_CORBA_EXCEPTION("CutGroups(): different group types",
-                                 SALOME::BAD_PARAM);
+                                 SALOME_CMOD::BAD_PARAM);
   TPythonDump pyDump;
 
   aResGrp = CreateGroup( theGroup1->GetType(), theName );
@@ -1618,7 +1618,7 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
       aType = aGrp->GetType();
     else if ( aType != aGrp->GetType() )
       THROW_SALOME_CORBA_EXCEPTION("CutListOfGroups(): different group types",
-                                   SALOME::BAD_PARAM);
+                                   SALOME_CMOD::BAD_PARAM);
     if ( SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( aGrp ))
       if ( SMESHDS_GroupBase* grpDS = grp_i->GetGroupDS() )
         if ( !grpDS->IsEmpty() )
@@ -1636,7 +1636,7 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
       continue;
     if ( aType != aGrp->GetType() )
       THROW_SALOME_CORBA_EXCEPTION("CutListOfGroups(): different group types",
-                                   SALOME::BAD_PARAM);
+                                   SALOME_CMOD::BAD_PARAM);
     if ( SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( aGrp ))
       if ( SMESHDS_GroupBase* grpDS = grp_i->GetGroupDS() )
         toolGroupVec.push_back( grpDS );
@@ -1912,7 +1912,7 @@ SMESH_Mesh_i::FaceGroupsSeparatedByEdges( CORBA::Double  theSharpAngle,
 {
   if ( theSharpAngle < 0 || theSharpAngle > 180 )
     THROW_SALOME_CORBA_EXCEPTION("Invalid sharp angle, it must be between 0 and 180 degrees",
-                                 SALOME::BAD_PARAM);
+                                 SALOME_CMOD::BAD_PARAM);
 
   SMESH::ListOfGroups_var resultGroups = new SMESH::ListOfGroups;
 
@@ -3265,7 +3265,7 @@ bool SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
         removeHypothesis( theSubShapeObject, aHypList[i] );
       }
     }
-    catch( const SALOME::SALOME_Exception& ) {
+    catch( const SALOME_CMOD::SALOME_Exception& ) {
       INFOS("SMESH_Mesh_i::removeSubMesh(): exception caught!");
     }
     removeGeomGroupData( theSubShapeObject );
@@ -3722,7 +3722,7 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
   if ( !msg.empty() )
   {
     msg << ".";
-    THROW_SALOME_CORBA_EXCEPTION(msg.c_str(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(msg.c_str(), SALOME_CMOD::BAD_PARAM);
   }
 }
 
@@ -3987,18 +3987,18 @@ void SMESH_Mesh_i::ExportPartToMEDCommon(SPECLS&                   speCls,
   {
     GEOM::GEOM_Object_var shapeToMesh = GetShapeToMesh();
     if ( shapeToMesh->_is_nil() )
-      THROW_SALOME_CORBA_EXCEPTION( "No shape to mesh", SALOME::INTERNAL_ERROR );
+      THROW_SALOME_CORBA_EXCEPTION( "No shape to mesh", SALOME_CMOD::INTERNAL_ERROR );
 
     for ( size_t i = 0; i < fields.length(); ++i )
     {
       if ( fields[i]->GetDataType() == GEOM::FDT_String )
         THROW_SALOME_CORBA_EXCEPTION
-          ( "Export of string fields is not supported", SALOME::BAD_PARAM);
+          ( "Export of string fields is not supported", SALOME_CMOD::BAD_PARAM);
       GEOM::GEOM_Object_var fieldShape = fields[i]->GetShape();
       if ( fieldShape->_is_nil() )
-        THROW_SALOME_CORBA_EXCEPTION( "Null shape under a field", SALOME::INTERNAL_ERROR );
+        THROW_SALOME_CORBA_EXCEPTION( "Null shape under a field", SALOME_CMOD::INTERNAL_ERROR );
       if ( !fieldShape->IsSame( shapeToMesh ) )
-        THROW_SALOME_CORBA_EXCEPTION( "Field defined not on shape", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION( "Field defined not on shape", SALOME_CMOD::BAD_PARAM);
       if ( fields[i]->GetDimension() == 0 )
         have0dField = true;
     }
@@ -4008,7 +4008,7 @@ void SMESH_Mesh_i::ExportPartToMEDCommon(SPECLS&                   speCls,
         case 'v':case 'e':case 'f':case 's': break;
         case 'V':case 'E':case 'F':case 'S': break;
         default: THROW_SALOME_CORBA_EXCEPTION
-            ( "geomAssocFields can include only [vefs] characters", SALOME::BAD_PARAM);
+            ( "geomAssocFields can include only [vefs] characters", SALOME_CMOD::BAD_PARAM);
         }
   }
 
@@ -4319,7 +4319,7 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         if ( dblStep->_is_nil() ) continue;
         GEOM::ListOfDouble_var vv = dblStep->GetValues();
         if ( vv->length() != subIds.size() * comps->length() )
-          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
+          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME_CMOD::INTERNAL_ERROR );
         for ( size_t iS = 0, iV = 0; iS < subIds.size(); ++iS )
           for ( size_t iC = 0; iC < comps->length(); ++iC )
             dblVals[ iC ][ subIds[ iS ]] = vv[ iV++ ];
@@ -4331,7 +4331,7 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         if ( intStep->_is_nil() ) continue;
         GEOM::ListOfLong_var vv = intStep->GetValues();
         if ( vv->length() != subIds.size() * comps->length() )
-          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
+          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME_CMOD::INTERNAL_ERROR );
         for ( size_t iS = 0, iV = 0; iS < subIds.size(); ++iS )
           for ( size_t iC = 0; iC < comps->length(); ++iC )
             intVals[ iC ][ subIds[ iS ]] = (int) vv[ iV++ ];
@@ -4343,7 +4343,7 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         if ( boolStep->_is_nil() ) continue;
         GEOM::short_array_var vv = boolStep->GetValues();
         if ( vv->length() != subIds.size() * comps->length() )
-          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
+          THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME_CMOD::INTERNAL_ERROR );
         for ( size_t iS = 0, iV = 0; iS < subIds.size(); ++iS )
           for ( size_t iC = 0; iC < comps->length(); ++iC )
             intVals[ iC ][ subIds[ iS ]] = (int) vv[ iV++ ];
@@ -4385,9 +4385,9 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
       if ( res && res->IsKO() )
       {
         if ( res->myComment.empty() )
-        { THROW_SALOME_CORBA_EXCEPTION( METH "Fatal error", SALOME::INTERNAL_ERROR ); }
+        { THROW_SALOME_CORBA_EXCEPTION( METH "Fatal error", SALOME_CMOD::INTERNAL_ERROR ); }
         else
-        { THROW_SALOME_CORBA_EXCEPTION( res->myComment.c_str(), SALOME::INTERNAL_ERROR ); }
+        { THROW_SALOME_CORBA_EXCEPTION( res->myComment.c_str(), SALOME_CMOD::INTERNAL_ERROR ); }
       }
 
     } // loop on steps
@@ -4472,9 +4472,9 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
     if ( res && res->IsKO() )
     {
       if ( res->myComment.empty() )
-      { THROW_SALOME_CORBA_EXCEPTION( METH "Fatal error", SALOME::INTERNAL_ERROR ); }
+      { THROW_SALOME_CORBA_EXCEPTION( METH "Fatal error", SALOME_CMOD::INTERNAL_ERROR ); }
       else
-      { THROW_SALOME_CORBA_EXCEPTION( res->myComment.c_str(), SALOME::INTERNAL_ERROR ); }
+      { THROW_SALOME_CORBA_EXCEPTION( res->myComment.c_str(), SALOME_CMOD::INTERNAL_ERROR ); }
     }
 
   } // loop on geomAssocFields
@@ -4594,7 +4594,7 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
   SMESH_CATCH( SMESH::throwCorbaException );
 
 #else
-  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
+  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME_CMOD::INTERNAL_ERROR);
 #endif
 }
 
@@ -4638,7 +4638,7 @@ void SMESH_Mesh_i::ExportStructuredCGNS( SMESH::SMESH_IDSource_ptr meshPart,
   SMESH_CATCH( SMESH::throwCorbaException );
 
 #else
-  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
+  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME_CMOD::INTERNAL_ERROR);
 #endif
 }
 
@@ -5166,7 +5166,7 @@ SMESH::EntityType SMESH_Mesh_i::GetElementGeomType( const SMESH::smIdType id )
 
   const SMDS_MeshElement* e = _impl->GetMeshDS()->FindElement(id);
   if ( !e )
-    THROW_SALOME_CORBA_EXCEPTION( "invalid element id", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "invalid element id", SALOME_CMOD::BAD_PARAM );
 
   return ( SMESH::EntityType ) e->GetEntityType();
 }
@@ -5184,7 +5184,7 @@ SMESH::GeometryType SMESH_Mesh_i::GetElementShape( const SMESH::smIdType id )
 
   const SMDS_MeshElement* e = _impl->GetMeshDS()->FindElement(id);
   if ( !e )
-    THROW_SALOME_CORBA_EXCEPTION( "invalid element id", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "invalid element id", SALOME_CMOD::BAD_PARAM );
 
   return ( SMESH::GeometryType ) e->GetGeomType();
 }
@@ -5946,7 +5946,7 @@ SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
   Unexpect aCatch(SALOME_SalomeException);
 
   if ( !theGroupName || strlen( theGroupName) == 0 )
-    THROW_SALOME_CORBA_EXCEPTION( "empty group name",SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "empty group name",SALOME_CMOD::BAD_PARAM );
 
   SMESH::ListOfGroups_var groups = new SMESH::ListOfGroups;
   ::SMESH_MeshEditor::ElemFeatures elemType;

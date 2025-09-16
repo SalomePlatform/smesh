@@ -497,7 +497,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobFileList & meshJo
     _jobDateTimeMap[jobId]=jobDatetimeTag;
     _jobPathsMap[jobId] = jobPaths;
   }
-  catch (const SALOME::SALOME_Exception & ex) {
+  catch (const SALOME_CMOD::SALOME_Exception & ex) {
     LOG("SALOME Exception at initialization step !" <<ex.details.text.in());
     _lastErrorMessage = ex.details.text.in();
     return JOBID_UNDEFINED;
@@ -520,7 +520,7 @@ bool MeshJobManager_i::start(CORBA::Long jobId) {
   try {
     _salomeLauncher->launchJob(jobId);
   }
-  catch (const SALOME::SALOME_Exception & ex) {
+  catch (const SALOME_CMOD::SALOME_Exception & ex) {
     LOG("SALOME Exception in launchjob !" <<ex.details.text.in());
     _lastErrorMessage = ex.details.text.in();
     return false;
@@ -545,7 +545,7 @@ char* MeshJobManager_i::getState(CORBA::Long jobId) {
   {
     state = _salomeLauncher->getJobState(jobId);
   }
-  catch (const SALOME::SALOME_Exception & ex)
+  catch (const SALOME_CMOD::SALOME_Exception & ex)
   {
     LOG("SALOME Exception in getJobState !");
     _lastErrorMessage = ex.details.text.in();
@@ -602,7 +602,7 @@ MESHJOB::MeshJobResults * MeshJobManager_i::finalize(CORBA::Long jobId) {
       result->status = true;
     }
  }
-  catch (const SALOME::SALOME_Exception & ex)
+  catch (const SALOME_CMOD::SALOME_Exception & ex)
   {
     _lastErrorMessage = ex.details.text.in();
     LOG(_lastErrorMessage);

@@ -418,7 +418,7 @@ namespace
             }
           }
         }
-        catch ( const SALOME::SALOME_Exception& S_ex ) {
+        catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
           const QString exText(S_ex.details.text);
           if (exText.startsWith("MESHIO"))
             errors.append('\n' + exText);
@@ -1065,12 +1065,12 @@ namespace
           SMESHGUI_Meshio::ExportMesh(aMeshList, aFilename, aSelectedFilter);
         }
       }
-      catch (const SALOME::SALOME_Exception& S_ex)
+      catch (const SALOME_CMOD::SALOME_Exception& S_ex)
       {
         wc.suspend();
         const QString exText(S_ex.details.text);
 
-        if ( S_ex.details.type == SALOME::COMM && // communicate about too large mesh
+        if ( S_ex.details.type == SALOME_CMOD::COMM && // communicate about too large mesh
              strncmp( "format=", S_ex.details.sourceFile.in(), 7 ) == 0 )
 
           SUIT_MessageBox::critical(SMESHGUI::desktop(),
@@ -3258,7 +3258,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       try {
         homardGen = GetSMESHGen()->CreateHOMARD_ADAPT();
       }
-      catch ( const SALOME::SALOME_Exception& S_ex ) {
+      catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
         SUIT_MessageBox::critical(SMESHGUI::desktop(),
                                   QObject::tr("SMESH_ERROR"),
                                   QObject::tr(S_ex.details.text.in()));
@@ -3377,7 +3377,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                 updateObjBrowser();
                 anApp->browseObjects( anEntryList );
               }
-              catch(const SALOME::SALOME_Exception & S_ex){
+              catch(const SALOME_CMOD::SALOME_Exception & S_ex){
                 SalomeApp_Tools::QtCatchCorbaException(S_ex);
               }
             }
@@ -3829,7 +3829,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           SMESH::RemoveVisualObjectWithActors(so->GetID().c_str(), true);
         }
       }
-      catch (const SALOME::SALOME_Exception& S_ex){
+      catch (const SALOME_CMOD::SALOME_Exception& S_ex){
         wc.suspend();
         SalomeApp_Tools::QtCatchCorbaException(S_ex);
         wc.resume();
@@ -3870,7 +3870,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                 SMESHGUI::Modified();
               }
             }
-            catch (const SALOME::SALOME_Exception& S_ex) {
+            catch (const SALOME_CMOD::SALOME_Exception& S_ex) {
               SalomeApp_Tools::QtCatchCorbaException(S_ex);
             }
             catch (...) {

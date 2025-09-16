@@ -38,9 +38,9 @@ module SPADDERPluginTest {
 
   interface SPADDERPluginTester: Engines::EngineComponent
   {
-    void demo(in double a,in double b,out double c) raises (SALOME::SALOME_Exception);
-    boolean testkernel() raises (SALOME::SALOME_Exception);
-    boolean testsmesh() raises (SALOME::SALOME_Exception);
+    void demo(in double a,in double b,out double c) raises (SALOME_CMOD::SALOME_Exception);
+    boolean testkernel() raises (SALOME_CMOD::SALOME_Exception);
+    boolean testsmesh() raises (SALOME_CMOD::SALOME_Exception);
   };
 };
 

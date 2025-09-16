@@ -80,7 +80,7 @@ void StdMeshers_ViscousLayers_i::SetFaces(const ::SMESH::long_array& faceIDs,
   vector<int> ids( faceIDs.length() );
   for ( unsigned i = 0; i < ids.size(); ++i )
     if (( ids[i] = faceIDs[i] ) < 1 )
-      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME::BAD_PARAM );
+      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME_CMOD::BAD_PARAM );
 
   GetImpl()->SetBndShapes( ids, toIgnore );
 
@@ -138,7 +138,7 @@ void StdMeshers_ViscousLayers_i::SetIgnoreFaces(const ::SMESH::long_array& faceI
   vector<int> ids( faceIDs.length() );
   for ( unsigned i = 0; i < ids.size(); ++i )
     if (( ids[i] = faceIDs[i] ) < 1 )
-      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME::BAD_PARAM );
+      THROW_SALOME_CORBA_EXCEPTION( "Invalid face id", SALOME_CMOD::BAD_PARAM );
   GetImpl()->SetBndShapes( ids, /*toIgnore=*/true );
   SMESH::TPythonDump() << _this() << ".SetIgnoreFaces( " << faceIDs << " )";
 }
@@ -152,7 +152,7 @@ void StdMeshers_ViscousLayers_i::SetIgnoreFaces(const ::SMESH::long_array& faceI
 void StdMeshers_ViscousLayers_i::SetTotalThickness(::CORBA::Double thickness)
 {
   if ( thickness < 1e-100 )
-    THROW_SALOME_CORBA_EXCEPTION( "Invalid thickness", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "Invalid thickness", SALOME_CMOD::BAD_PARAM );
   GetImpl()->SetTotalThickness(thickness);
   SMESH::TPythonDump() << _this() << ".SetTotalThickness( " << SMESH::TVar(thickness) << " )";
 }
@@ -178,7 +178,7 @@ void StdMeshers_ViscousLayers_i::SetTotalThickness(::CORBA::Double thickness)
 void StdMeshers_ViscousLayers_i::SetNumberLayers(::CORBA::Short nb)
 {
   if ( nb < 1 )
-    THROW_SALOME_CORBA_EXCEPTION( "Invalid number of layers", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "Invalid number of layers", SALOME_CMOD::BAD_PARAM );
   GetImpl()->SetNumberLayers( nb );
   SMESH::TPythonDump() << _this() << ".SetNumberLayers( " << SMESH::TVar(nb) << " )";
 }
@@ -204,7 +204,7 @@ void StdMeshers_ViscousLayers_i::SetNumberLayers(::CORBA::Short nb)
 void StdMeshers_ViscousLayers_i::SetStretchFactor(::CORBA::Double factor)
 {
   if ( factor < 1 )
-    THROW_SALOME_CORBA_EXCEPTION( "Invalid stretch factor, it must be >= 1.0", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "Invalid stretch factor, it must be >= 1.0", SALOME_CMOD::BAD_PARAM );
   GetImpl()->SetStretchFactor(factor);
   SMESH::TPythonDump() << _this() << ".SetStretchFactor( " << SMESH::TVar(factor) << " )";
 }

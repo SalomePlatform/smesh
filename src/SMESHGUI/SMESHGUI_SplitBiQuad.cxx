@@ -236,7 +236,7 @@ bool SMESHGUI_SplitBiQuadOp::onApply()
     aResult = true;
     aEditor->SplitBiQuadraticIntoLinear( idSource );
   }
-  catch ( const SALOME::SALOME_Exception& S_ex )
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex )
   {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
     aResult = false;

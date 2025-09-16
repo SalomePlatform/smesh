@@ -35,7 +35,7 @@ from salome.geom import geomBuilder
 from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 
-from salome.kernel import SALOME
+from salome.kernel import SALOME_CMOD
 
 import platform
 
@@ -163,7 +163,7 @@ def export_mesh(mesh, file_name, errors):
         mesh.ExportMESHIO(file_name, '', mesh)
         return True
 
-    except SALOME.SALOME_Exception as ex:
+    except SALOME_CMOD.SALOME_Exception as ex:
         exception_handle(file_name, errors, EXPORT_TITLE, ex.details.text)
 
     except:
@@ -183,7 +183,7 @@ def import_file(file_name, errors):
         ([mesh], status) = smesh.CreateMeshesFromMESHIO(file_name)
         return mesh
 
-    except SALOME.SALOME_Exception as ex:
+    except SALOME_CMOD.SALOME_Exception as ex:
         exception_handle(file_name, errors, IMPORT_TITLE, ex.details.text)
 
     except:

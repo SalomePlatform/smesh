@@ -91,7 +91,7 @@ namespace
         break ;
       }
     }
-    catch ( const SALOME::SALOME_Exception & S_ex )
+    catch ( const SALOME_CMOD::SALOME_Exception & S_ex )
     {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
     }
@@ -133,7 +133,7 @@ namespace
         break ;
       }
     }
-    catch ( const SALOME::SALOME_Exception & S_ex )
+    catch ( const SALOME_CMOD::SALOME_Exception & S_ex )
     {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
     }
@@ -511,7 +511,7 @@ bool SMESHGUI_MgAdaptDlg::checkParams(QString& msg)
     {
       model->setOptionValue( name.toLatin1().constData(), value.toLatin1().constData() );
     }
-    catch ( const SALOME::SALOME_Exception& ex )
+    catch ( const SALOME_CMOD::SALOME_Exception& ex )
     {
       msg = ex.details.text.in();
       ok = false;

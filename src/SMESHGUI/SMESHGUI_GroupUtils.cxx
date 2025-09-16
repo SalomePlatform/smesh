@@ -44,7 +44,7 @@ namespace SMESH
       if ( !theMesh->_is_nil() )
         aGroup = theMesh->CreateGroup( theType, theGroupName.toUtf8() );
     }
-    catch( const SALOME::SALOME_Exception& S_ex ) {
+    catch( const SALOME_CMOD::SALOME_Exception& S_ex ) {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );
     }
     SMESHGUI::GetSMESHGUI()->updateObjBrowser();

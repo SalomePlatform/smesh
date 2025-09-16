@@ -110,7 +110,7 @@ module SMESH
   /*!
   * Base interface for all functors ( i.e. numerical functors and predicates )
   */
-  interface Functor: SALOME::GenericObj
+  interface Functor: SALOME_CMOD::GenericObj
   {
     void            SetMesh( in SMESH_Mesh theMesh );
     FunctorType     GetFunctorType();
@@ -482,7 +482,7 @@ module SMESH
     void            SetNode       ( in smIdType nodeID );
     string          GetThreshold  ( out ThresholdType type );
     void            SetThreshold  ( in string threshold, in ThresholdType type ) 
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
   };
 
   /*!
@@ -543,7 +543,7 @@ module SMESH
   /*!
   *  Interface for working with library of filters
   */
-  interface FilterLibrary : SALOME::GenericObj
+  interface FilterLibrary : SALOME_CMOD::GenericObj
   {
     /*!
     *  Copy filter from library by name (new filter is created)
@@ -579,7 +579,7 @@ module SMESH
   /*!
   * Interface of Filter manager
   */
-  interface FilterManager: SALOME::GenericObj
+  interface FilterManager: SALOME_CMOD::GenericObj
   {
     /*!
     *  Create numerical functors

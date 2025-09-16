@@ -1396,7 +1396,7 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
         SUIT_MessageBox::warning(this, tr("SMESH_WRN_WARNING"), msg);
       }
     }
-    catch ( const SALOME::SALOME_Exception& S_ex )
+    catch ( const SALOME_CMOD::SALOME_Exception& S_ex )
     {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );
       return false;

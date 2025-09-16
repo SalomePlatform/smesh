@@ -62,7 +62,7 @@ void StdMeshers_Reversible1D_i::SetReversedEdges( const SMESH::long_array& theId
     this->GetImpl()->SetReversedEdges( ids );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -86,7 +86,7 @@ void StdMeshers_Reversible1D_i::SetObjectEntry( const char* theEntry )
     SMESH::TPythonDump() << myHyp->_this() << ".SetObjectEntry( \"" << entry.c_str() << "\" )";
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -105,7 +105,7 @@ char* StdMeshers_Reversible1D_i::GetObjectEntry()
     entry = this->GetImpl()->GetObjectEntry();
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   return CORBA::string_dup( entry );
 }

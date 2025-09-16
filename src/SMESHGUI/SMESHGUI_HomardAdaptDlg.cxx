@@ -343,7 +343,7 @@ bool SMESHGUI_HomardAdaptDlg::CheckCase(bool fixCase)
            aWorkingDir.toStdString().c_str());
       }
     }
-    catch( SALOME::SALOME_Exception& S_ex ) {
+    catch( SALOME_CMOD::SALOME_Exception& S_ex ) {
       QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
                              QObject::tr(CORBA::string_dup(S_ex.details.text)) );
       return false;
@@ -476,7 +476,7 @@ bool SMESHGUI_HomardAdaptDlg::PushOnApply()
     SUIT_OverrideCursor aWaitCursor;
     isSuccess = myHomardGen->Compute() == 0;
   }
-  catch( SALOME::SALOME_Exception& S_ex ) {
+  catch( SALOME_CMOD::SALOME_Exception& S_ex ) {
     QMessageBox::critical( 0, QObject::tr("HOM_ERROR"),
                            QObject::tr(CORBA::string_dup(S_ex.details.text)) );
     isSuccess = false;

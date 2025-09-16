@@ -1686,12 +1686,12 @@ namespace SMESH {
     TopoDS_Shape shape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( vertex );
     if ( shape.IsNull() )
       THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetVertex(): NULL Vertex",
-                                    SALOME::BAD_PARAM );
+                                    SALOME_CMOD::BAD_PARAM );
 
     TopExp_Explorer v( shape, TopAbs_VERTEX );
     if ( !v.More() )
       THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetVertex(): empty vertex",
-                                    SALOME::BAD_PARAM );
+                                    SALOME_CMOD::BAD_PARAM );
 
     gp_Pnt p = BRep_Tool::Pnt( TopoDS::Vertex( v.Current() ));
     myConnectedElementsPtr->SetPoint( p.X(), p.Y(), p.Z() );
@@ -1706,7 +1706,7 @@ namespace SMESH {
   {
     if ( nodeID < 1 )
       THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetNode(): nodeID must be > 0",
-                                    SALOME::BAD_PARAM );
+                                    SALOME_CMOD::BAD_PARAM );
 
     myConnectedElementsPtr->SetNode( nodeID );
     myVertexID.clear();
@@ -1721,7 +1721,7 @@ namespace SMESH {
   {
     if ( !threshold )
       THROW_SALOME_CORBA_EXCEPTION( "ConnectedElements_i::SetThreshold(): NULL threshold",
-                                    SALOME::BAD_PARAM );
+                                    SALOME_CMOD::BAD_PARAM );
     switch ( type )
     {
     case SMESH::ConnectedElements::POINT: // read 3 node coordinates ///////////////////
@@ -1751,7 +1751,7 @@ namespace SMESH {
 
         if ( xyz.size() < 3 )
           THROW_SALOME_CORBA_EXCEPTION
-            ( "ConnectedElements_i::SetThreshold(): invalid point coordinates", SALOME::BAD_PARAM );
+            ( "ConnectedElements_i::SetThreshold(): invalid point coordinates", SALOME_CMOD::BAD_PARAM );
 
         SetPoint( xyz[0], xyz[1], xyz[2] );
         break;
@@ -1761,12 +1761,12 @@ namespace SMESH {
         SALOMEDS::SObject_wrap sobj = SMESH_Gen_i::GetSMESHGen()->getStudyServant()->FindObjectID( threshold );
         if ( sobj->_is_nil() )
           THROW_SALOME_CORBA_EXCEPTION
-            ( "ConnectedElements_i::SetThreshold(): invalid vertex study entry", SALOME::BAD_PARAM );
+            ( "ConnectedElements_i::SetThreshold(): invalid vertex study entry", SALOME_CMOD::BAD_PARAM );
         CORBA::Object_var        obj = sobj->GetObject();
         GEOM::GEOM_Object_var vertex = GEOM::GEOM_Object::_narrow( obj );
         if ( vertex->_is_nil() )
           THROW_SALOME_CORBA_EXCEPTION
-            ( "ConnectedElements_i::SetThreshold(): no GEOM_Object in SObject", SALOME::BAD_PARAM );
+            ( "ConnectedElements_i::SetThreshold(): no GEOM_Object in SObject", SALOME_CMOD::BAD_PARAM );
         SetVertex( vertex );
         break;
       }
@@ -1776,13 +1776,13 @@ namespace SMESH {
         int id = strtol( threshold, &endptr, 10 );
         if ( threshold == endptr )
           THROW_SALOME_CORBA_EXCEPTION
-            ( "ConnectedElements_i::SetThreshold(): invalid node ID", SALOME::BAD_PARAM );
+            ( "ConnectedElements_i::SetThreshold(): invalid node ID", SALOME_CMOD::BAD_PARAM );
         SetNode( id );
         break;
       }
     default:
       THROW_SALOME_CORBA_EXCEPTION
-        ( "ConnectedElements_i::SetThreshold(): invalid ThresholdType", SALOME::BAD_PARAM );
+        ( "ConnectedElements_i::SetThreshold(): invalid ThresholdType", SALOME_CMOD::BAD_PARAM );
     }
   }
 

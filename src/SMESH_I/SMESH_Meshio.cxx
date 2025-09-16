@@ -88,13 +88,13 @@ void SMESH_Meshio::Convert(const QString& sourceFileName, const QString& targetF
     const std::string meshioErrors = ReadErrorsFromFile();
     MESSAGE("meshioErrors: \n" << meshioErrors);
 
-    SALOME::ExceptionStruct es;
-    es.type = SALOME::ExceptionType::BAD_PARAM;
+    SALOME_CMOD::ExceptionStruct es;
+    es.type = SALOME_CMOD::ExceptionType::BAD_PARAM;
     es.lineNumber = -1;
     es.text = CORBA::string_dup(
       ("MESHIO\nFailed system(\"" + cmd + "\").\n\n" + meshioErrors + "\nOperation canceled.").c_str());
 
-    throw SALOME::SALOME_Exception(es);
+    throw SALOME_CMOD::SALOME_Exception(es);
   }
 }
 

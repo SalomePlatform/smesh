@@ -80,7 +80,7 @@ void StdMeshers_SegmentLengthAroundVertex_i::SetLength( CORBA::Double theLength 
     this->GetImpl()->SetLength( theLength );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script

@@ -104,33 +104,33 @@ module MESHJOB
          configId and characterized by the parameters in
          configParameter */
     boolean configure(in string configId, in MESHJOB::ConfigParameter configParameter)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Initialize a smesh computation job and return the job identifier */
     long    initialize(in MESHJOB::MeshJobFileList meshJobFileList,
                        in MESHJOB::MeshJobParameterList MeshJobParameterList,
                        in string configId)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Submit the job execution and return true if submission is OK */
     boolean start(in long jobId)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Request the launch manager for the state of the specified job */
     string getState(in long jobId)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Request the launch manager for downloading the results */
     MeshJobResults finalize(in long jobid)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Clean all data associated to this job and remove the job from the launch manager */
     boolean clean(in long jobId)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Returns the set of temporary folders used by the job instance */
     MeshJobPaths getPaths(in long jobId)
-      raises (SALOME::SALOME_Exception);
+      raises (SALOME_CMOD::SALOME_Exception);
 
     /*! Returns the last error message (for user display) */
     string getLastErrorMessage();

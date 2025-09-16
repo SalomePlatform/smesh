@@ -77,7 +77,7 @@ void StdMeshers_MaxLength_i::SetLength( CORBA::Double theLength )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -97,7 +97,7 @@ void StdMeshers_MaxLength_i::SetUsePreestimatedLength( CORBA::Boolean toUse )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
 
   // this is an internal kitchen call - no Python dump
@@ -118,7 +118,7 @@ void StdMeshers_MaxLength_i::SetPreestimatedLength( CORBA::Double theLength )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   }
   // this is an internal kitchen call - no Python dump
   // Update Python script

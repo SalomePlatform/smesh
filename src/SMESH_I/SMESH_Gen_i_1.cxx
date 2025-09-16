@@ -321,7 +321,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::publish(CORBA::Object_ptr     theIOR,
       // UnRegister() !!! --> random problems when meshing in parallel (yacs foreach) in
       // distributed python scripts, because simultaneously created meshes are
       // published into the same SO; as a result the mesh published first dies
-      SALOME::GenericObj_var genObj = SALOME::GenericObj::_narrow( theIOR );
+      SALOME_CMOD::GenericObj_var genObj = SALOME_CMOD::GenericObj::_narrow( theIOR );
       if ( !genObj->_is_nil() )
         genObj->UnRegister();
     }

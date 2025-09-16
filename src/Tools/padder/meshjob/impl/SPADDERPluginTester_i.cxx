@@ -71,20 +71,20 @@ void SPADDERPluginTester_i::demo(CORBA::Double a,CORBA::Double b,CORBA::Double& 
     
   }
   catch ( const SALOME_Exception & ex) {
-    SALOME::ExceptionStruct es;
+    SALOME_CMOD::ExceptionStruct es;
     es.text=CORBA::string_dup(ex.what());
-    es.type=SALOME::INTERNAL_ERROR;
-    throw SALOME::SALOME_Exception(es);
+    es.type=SALOME_CMOD::INTERNAL_ERROR;
+    throw SALOME_CMOD::SALOME_Exception(es);
   }
-  catch ( const SALOME::SALOME_Exception & ex) {
+  catch ( const SALOME_CMOD::SALOME_Exception & ex) {
     throw;
   }
   catch (...) {
     std::cerr << "unknown exception" << std::endl;
-    SALOME::ExceptionStruct es;
+    SALOME_CMOD::ExceptionStruct es;
     es.text=CORBA::string_dup(" unknown exception");
-    es.type=SALOME::INTERNAL_ERROR;
-    throw SALOME::SALOME_Exception(es);
+    es.type=SALOME_CMOD::INTERNAL_ERROR;
+    throw SALOME_CMOD::SALOME_Exception(es);
   }
   endService("SPADDERPluginTester_i::demo");
 }

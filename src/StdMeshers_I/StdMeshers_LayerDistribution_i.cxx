@@ -103,7 +103,7 @@ void StdMeshers_LayerDistribution_i::SetLayerDistribution(SMESH::SMESH_Hypothesi
                            << hyp_i->GetName() << "', '" << hyp_i->GetLibName() << "')";
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   // Update Python script
   SMESH::TPythonDump() << _this() << ".SetLayerDistribution( " << hyp1D << " )";

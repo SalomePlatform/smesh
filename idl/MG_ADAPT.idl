@@ -43,7 +43,7 @@ module SMESH
     long    myVerboseLevel;
   };
 
-  interface MG_ADAPT : SALOME::GenericObj
+  interface MG_ADAPT : SALOME_CMOD::GenericObj
   {
     void setData(inout MgAdaptHypothesisData data);
 
@@ -118,7 +118,7 @@ module SMESH
     void setSizeMapType(in string f);
     boolean setAll();
     string getCommandToRun();
-    void compute() raises(SALOME::SALOME_Exception);
+    void compute() raises(SALOME_CMOD::SALOME_Exception);
     string getErrMsg();
     string getFileName();
     string getExeName();
@@ -127,21 +127,21 @@ module SMESH
     //void checkDirPath(inout string f);
 
     boolean hasOptionDefined(in string optionName);
-    void setOptionValue(in string optionName, in string optionValue) raises (SALOME::SALOME_Exception);
-    string getOptionValue(in string optionName, inout boolean isDefault) raises (SALOME::SALOME_Exception);
+    void setOptionValue(in string optionName, in string optionValue) raises (SALOME_CMOD::SALOME_Exception);
+    string getOptionValue(in string optionName, inout boolean isDefault) raises (SALOME_CMOD::SALOME_Exception);
     SMESH::string_array getCustomOptionValuesStrVec();
     SMESH::string_array getOptionValuesStrVec();
   };
 
   typedef MG_ADAPT MG_ADAPT_HYPOTHESIS;
-  interface MG_ADAPT_OBJECT : SALOME::GenericObj
+  interface MG_ADAPT_OBJECT : SALOME_CMOD::GenericObj
   {
-    void setMeshIn(in SMESH_Mesh theMesh)    raises (SALOME::SALOME_Exception);
-    void setMEDFileIn(in string f)           raises (SALOME::SALOME_Exception);
-    void setMEDFileOut(in string f)          raises (SALOME::SALOME_Exception);
-    void setMEDFileBackground(in string f)   raises (SALOME::SALOME_Exception);
-    void AddHypothesis(in MG_ADAPT mg)       raises (SALOME::SALOME_Exception);
-    long Compute(in boolean Publish)         raises (SALOME::SALOME_Exception);
+    void setMeshIn(in SMESH_Mesh theMesh)    raises (SALOME_CMOD::SALOME_Exception);
+    void setMEDFileIn(in string f)           raises (SALOME_CMOD::SALOME_Exception);
+    void setMEDFileOut(in string f)          raises (SALOME_CMOD::SALOME_Exception);
+    void setMEDFileBackground(in string f)   raises (SALOME_CMOD::SALOME_Exception);
+    void AddHypothesis(in MG_ADAPT mg)       raises (SALOME_CMOD::SALOME_Exception);
+    long Compute(in boolean Publish)         raises (SALOME_CMOD::SALOME_Exception);
   };
 };
 

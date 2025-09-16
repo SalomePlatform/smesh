@@ -508,7 +508,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
             SUIT_OverrideCursor aWaitCursor;
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
             anElemId = aMeshEditor->AddPolyhedralVolume(anIdsOfNodes, aQuantities);
-          }catch(SALOME::SALOME_Exception& exc){
+          }catch(SALOME_CMOD::SALOME_Exception& exc){
             INFOS("Follow exception was caught:\n\t"<<exc.details.text);
           }catch(std::exception& exc){
             INFOS("Follow exception was caught:\n\t"<<exc.what());
@@ -529,7 +529,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
             SUIT_OverrideCursor aWaitCursor;
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
             anElemId = aMeshEditor->AddPolyhedralVolumeByFaces(anIdsOfFaces);
-          }catch(SALOME::SALOME_Exception& exc){
+          }catch(SALOME_CMOD::SALOME_Exception& exc){
             INFOS("Follow exception was caught:\n\t"<<exc.details.text);
           }catch(std::exception& exc){
             INFOS("Follow exception was caught:\n\t"<<exc.what());

@@ -219,7 +219,7 @@ bool SMESHGUI_MeshOp::onApply()
         myObjectToSelect = anApp->browseObjects( anEntryList, isApplyAndClose() );
     }
   }
-  catch ( const SALOME::SALOME_Exception& S_ex )
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex )
   {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
     aResult = false;
@@ -649,7 +649,7 @@ void SMESHGUI_MeshOp::selectionDone()
     setFilteredAlgoData();
 
   }
-  catch ( const SALOME::SALOME_Exception& S_ex )
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex )
   {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   }

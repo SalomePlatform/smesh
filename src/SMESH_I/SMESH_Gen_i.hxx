@@ -521,7 +521,7 @@ public:
   SMESHHOMARD::HOMARD_Gen_ptr CreateHOMARD_ADAPT();
   SMESH::MG_ADAPT_ptr CreateAdaptationHypothesis();
   //SMESH::MG_ADAPT_OBJECT_ptr Adaptation( const char* adaptationType);
-  SALOME::GenericObj_ptr Adaptation( const char* adaptationType);
+  SALOME_CMOD::GenericObj_ptr Adaptation( const char* adaptationType);
 
   // *****************************************
   // Internal methods
@@ -733,11 +733,11 @@ namespace SMESH
 
   /*!
    * \brief Function used in SMESH_CATCH to convert a caught exception to
-   * SALOME::SALOME_Exception
+   * SALOME_CMOD::SALOME_Exception
    */
   inline void throwCorbaException(const char* excText)
   {
-    THROW_SALOME_CORBA_EXCEPTION( excText, SALOME::INTERNAL_ERROR );
+    THROW_SALOME_CORBA_EXCEPTION( excText, SALOME_CMOD::INTERNAL_ERROR );
   }
 }
 

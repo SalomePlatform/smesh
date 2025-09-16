@@ -116,7 +116,7 @@
 #include "SMESH_Meshio.h"
 
 // to pass CORBA exception through SMESH_TRY
-#define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
+#define SMY_OWN_CATCH catch( SALOME_CMOD::SALOME_Exception& se ) { throw se; }
 #include "SMESH_TryCatch.hxx" // to include after OCC headers!
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -143,7 +143,7 @@
 #include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
 #include CORBA_CLIENT_HEADER(SALOME_Session)
 
-// helpers about SALOME::GenericObj
+// helpers about SALOME_CMOD::GenericObj
 #include <SALOMEDS_wrap.hxx>
 #include <SALOMEDS_Attributes_wrap.hxx>
 #include <GEOM_wrap.hxx>
@@ -360,7 +360,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
     if ( SALOME_NamingService_Abstract* ns = GetNS() )
     {
       CORBA::Object_var obj = ns->Resolve( "/Kernel/Session" );
-      SALOME::Session_var session = SALOME::Session::_narrow( obj ) ;
+      SALOME_CMOD::Session_var session = SALOME_CMOD::Session::_narrow( obj ) ;
       if ( !session->_is_nil() )
       {
         CORBA::String_var str_host = session->getHostname();
@@ -522,7 +522,7 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
   }
   catch (SALOME_Exception& S_ex)
   {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
   return aCreator;
 }
@@ -581,7 +581,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
     SMESH_Mesh* myImpl = dynamic_cast<SMESH_Mesh*>(myGen.CreateMesh( myIsEmbeddedMode ));
     if(myImpl == NULL )
-      THROW_SALOME_CORBA_EXCEPTION( "Could not cast SequentialMesh as Mesh", SALOME::INTERNAL_ERROR );
+      THROW_SALOME_CORBA_EXCEPTION( "Could not cast SequentialMesh as Mesh", SALOME_CMOD::INTERNAL_ERROR );
     meshServant->SetImpl(myImpl);
 
     // activate the CORBA servant of Mesh
@@ -592,7 +592,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     return mesh._retn();
   }
   catch (SALOME_Exception& S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   return SMESH::SMESH_Mesh::_nil();
 }
@@ -617,7 +617,7 @@ SMESH::SMESH_ParallelMesh_ptr SMESH_Gen_i::createParallelMesh()
     MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
     SMESH_Mesh* myImpl = dynamic_cast<SMESH_Mesh*>(myGen.CreateParallelMesh( myIsEmbeddedMode ));
     if(myImpl == NULL )
-      THROW_SALOME_CORBA_EXCEPTION( "Could not cast ParallelMesh as Mesh", SALOME::INTERNAL_ERROR );
+      THROW_SALOME_CORBA_EXCEPTION( "Could not cast ParallelMesh as Mesh", SALOME_CMOD::INTERNAL_ERROR );
     meshServant->SetImpl(myImpl);
 
     // activate the CORBA servant of Mesh
@@ -628,7 +628,7 @@ SMESH::SMESH_ParallelMesh_ptr SMESH_Gen_i::createParallelMesh()
     return mesh._retn();
   }
   catch (SALOME_Exception& S_ex) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   return SMESH::SMESH_ParallelMesh::_nil();
 }
@@ -1128,7 +1128,7 @@ void SMESH_Gen_i::SetBoundaryBoxSegmentation( CORBA::Long theNbSegments )
   if ( theNbSegments > 0 )
     myGen.SetBoundaryBoxSegmentation( int( theNbSegments ));
   else
-    THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME_CMOD::BAD_PARAM );
 }
 
 //=============================================================================
@@ -1142,7 +1142,7 @@ void SMESH_Gen_i::SetDefaultNbSegments(CORBA::Long theNbSegments)
   if ( theNbSegments > 0 )
     myGen.SetDefaultNbSegments( int(theNbSegments) );
   else
-    THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME_CMOD::BAD_PARAM );
 }
 
 //=============================================================================
@@ -1201,7 +1201,7 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
     if ( !msgToGUI.empty() )
     {
       CORBA::Object_var obj = SMESH_Gen_i::GetNS()->Resolve( "/Kernel/Session" );
-      SALOME::Session_var session = SALOME::Session::_narrow( obj );
+      SALOME_CMOD::Session_var session = SALOME_CMOD::Session::_narrow( obj );
       if ( !CORBA::is_nil( session ) )
         session->emitMessageOneWay(msgToGUI.c_str());
     }
@@ -1401,11 +1401,11 @@ namespace
     if ( !f )
     {
       if ( !f.error().empty() )
-        THROW_SALOME_CORBA_EXCEPTION( f.error().c_str(), SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION( f.error().c_str(), SALOME_CMOD::BAD_PARAM);
 
       THROW_SALOME_CORBA_EXCEPTION
         (( SMESH_Comment("Can't open for reading the file ") << theFileName ).c_str(),
-         SALOME::BAD_PARAM );
+         SALOME_CMOD::BAD_PARAM );
     }
   }
 
@@ -1847,7 +1847,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMAIL( const char*               
   }
   catch (const SALOME_Exception& S_ex)
   {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(),SALOME::INTERNAL_ERROR);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(),SALOME_CMOD::INTERNAL_ERROR);
   }
 }
 
@@ -2005,7 +2005,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char*               
   for ( CORBA::ULong i = 0; i < aResult->length(); ++i )
     SMESH::ListOfGroups_var groups = aResult[ i ]->GetGroups();
 #else
-  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
+  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME_CMOD::INTERNAL_ERROR);
 #endif
 
   return aResult._retn();
@@ -2084,7 +2084,7 @@ SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromCGNS(const char*                
   for (CORBA::ULong i = 0; i < aResult->length(); ++i)
     SMESH::ListOfGroups_var groups = aResult[i]->GetGroups();
 #else
-  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
+  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME_CMOD::INTERNAL_ERROR);
 #endif
 
   return aResult._retn();
@@ -2343,10 +2343,10 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
 
   if ( CORBA::is_nil( theShapeObject ) )
     THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference",
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   if ( CORBA::is_nil( theMesh ) )
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
   try {
     // get mesh servant
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
@@ -2416,10 +2416,10 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
   MESSAGE( "SMESH_Gen_i::GetComputeErrors()" );
 
   if ( CORBA::is_nil( theSubObject ) && theMesh->HasShapeToMesh())
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME_CMOD::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME_CMOD::BAD_PARAM );
 
   SMESH::compute_error_array_var error_array = new SMESH::compute_error_array;
   try {
@@ -2490,7 +2490,7 @@ SMESH_Gen_i::GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
   MESSAGE( "SMESH_Gen_i::GetBadInputElements()" );
 
   if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME_CMOD::BAD_PARAM );
 
   SMESH::MeshPreviewStruct_var result = new SMESH::MeshPreviewStruct;
   try {
@@ -2578,7 +2578,7 @@ SMESH_Gen_i::MakeGroupsOfBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
   SMESH::ListOfGroups_var groups;
 
   if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME_CMOD::BAD_PARAM );
 
   try {
     if ( SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh ))
@@ -2611,10 +2611,10 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
   MESSAGE( "SMESH_Gen_i::GetAlgoState()" );
 
   if ( CORBA::is_nil( theSubObject ) && theMesh->HasShapeToMesh())
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME_CMOD::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME_CMOD::BAD_PARAM );
 
   SMESH::algo_error_array_var error_array = new SMESH::algo_error_array;
   try {
@@ -2675,7 +2675,7 @@ SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
   set<int> setId;
 
   if ( CORBA::is_nil( theMainShapeObject ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME_CMOD::BAD_PARAM );
 
   try
   {
@@ -2689,7 +2689,7 @@ SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
         = GEOM::GEOM_Object::_narrow(theListOfSubShapeObject[i]);
       if ( CORBA::is_nil( aShapeObject ) )
         THROW_SALOME_CORBA_EXCEPTION ("bad shape object reference",     \
-                                      SALOME::BAD_PARAM );
+                                      SALOME_CMOD::BAD_PARAM );
 
       TopoDS_Shape locShape  = GeomObjectToShape(aShapeObject);
       for (TopExp_Explorer exp(locShape,TopAbs_FACE); exp.More(); exp.Next())
@@ -2724,7 +2724,7 @@ SMESH_Gen_i::GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
   }
   catch (SALOME_Exception& S_ex)
   {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME_CMOD::BAD_PARAM);
   }
 
   return shapesId._retn();
@@ -2747,11 +2747,11 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
 
   if ( CORBA::is_nil( theShapeObject ) && theMesh->HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference",
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
 
   // Update Python script
   TPythonDump(this) << "isDone = " << this << ".Compute( "
@@ -2844,11 +2844,11 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
 
   if ( CORBA::is_nil( theShapeObject ) && theMesh->HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference",
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",
-                                  SALOME::BAD_PARAM );
+                                  SALOME_CMOD::BAD_PARAM );
 
   SMESH::MeshPreviewStruct_var result = new SMESH::MeshPreviewStruct;
   try {
@@ -3029,10 +3029,10 @@ SMESH::smIdType_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
   MESSAGE( "SMESH_Gen_i::Evaluate" );
 
   if ( CORBA::is_nil( theShapeObject ) && theMesh->HasShapeToMesh())
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME_CMOD::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME_CMOD::BAD_PARAM );
 
   SMESH::smIdType_array_var nbels = new SMESH::smIdType_array;
   nbels->length(SMESH::Entity_Last);
@@ -3177,7 +3177,7 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
 {
   Unexpect aCatch(SALOME_SalomeException);
   if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME_CMOD::BAD_PARAM );
 
   GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
   GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine( mainShape );
@@ -3586,12 +3586,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
   // 1. Get source mesh
 
   if ( CORBA::is_nil( mesh ))
-    THROW_SALOME_CORBA_EXCEPTION( "bad IDSource", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad IDSource", SALOME_CMOD::BAD_PARAM );
 
   SMESH::SMESH_Mesh_var srcMesh = mesh->GetMesh();
   SMESH_Mesh_i*       srcMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( srcMesh );
   if ( !srcMesh_i )
-    THROW_SALOME_CORBA_EXCEPTION( "bad mesh of IDSource", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad mesh of IDSource", SALOME_CMOD::BAD_PARAM );
 
   CORBA::String_var mesh_var=GetORB()->object_to_string(mesh);
   std::string mesh_ior = mesh_var.in();
@@ -3640,7 +3640,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
       MESSAGE("throwing exception");
       // We need to deactivate the GIL before throwing the exception
       PyGILState_Release(gstate);
-      THROW_SALOME_CORBA_EXCEPTION(msg.c_str(), SALOME::INTERNAL_ERROR );
+      THROW_SALOME_CORBA_EXCEPTION(msg.c_str(), SALOME_CMOD::INTERNAL_ERROR );
       Py_DECREF(s);
     }
     Py_XDECREF(errvalue);
@@ -3656,7 +3656,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
   SMESH::SMESH_Mesh_var newMesh = CreateMesh(GEOM::GEOM_Object::_nil());
   SMESH_Mesh_i*       newMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( newMesh );
   if ( !newMesh_i )
-    THROW_SALOME_CORBA_EXCEPTION( "can't create a mesh", SALOME::INTERNAL_ERROR );
+    THROW_SALOME_CORBA_EXCEPTION( "can't create a mesh", SALOME_CMOD::INTERNAL_ERROR );
   SALOMEDS::SObject_wrap meshSO = ObjectToSObject( newMesh );
   if ( !meshSO->_is_nil() )
   {
@@ -3665,7 +3665,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateDualMesh(SMESH::SMESH_IDSource_ptr mesh
   }
   int ret = newMesh_i->ImportMEDFile(dual_mesh_file.string().c_str(), meshName);
   if(ret)
-    THROW_SALOME_CORBA_EXCEPTION( "Issue when importing mesh", SALOME::INTERNAL_ERROR );
+    THROW_SALOME_CORBA_EXCEPTION( "Issue when importing mesh", SALOME_CMOD::INTERNAL_ERROR );
 
   /*
   SMESH_Mesh& newMesh2 = newMesh_i->GetImpl();
@@ -3720,12 +3720,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
   // 1. Get source mesh
 
   if ( CORBA::is_nil( meshPart ))
-    THROW_SALOME_CORBA_EXCEPTION( "bad IDSource", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad IDSource", SALOME_CMOD::BAD_PARAM );
 
   SMESH::SMESH_Mesh_var srcMesh = meshPart->GetMesh();
   SMESH_Mesh_i*       srcMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( srcMesh );
   if ( !srcMesh_i )
-    THROW_SALOME_CORBA_EXCEPTION( "bad mesh of IDSource", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad mesh of IDSource", SALOME_CMOD::BAD_PARAM );
 
   SMESHDS_Mesh* srcMeshDS = srcMesh_i->GetImpl().GetMeshDS();
 
@@ -3734,7 +3734,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
   SMESH::SMESH_Mesh_var newMesh = CreateMesh(GEOM::GEOM_Object::_nil());
   SMESH_Mesh_i*       newMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( newMesh );
   if ( !newMesh_i )
-    THROW_SALOME_CORBA_EXCEPTION( "can't create a mesh", SALOME::INTERNAL_ERROR );
+    THROW_SALOME_CORBA_EXCEPTION( "can't create a mesh", SALOME_CMOD::INTERNAL_ERROR );
   SALOMEDS::SObject_wrap meshSO = ObjectToSObject( newMesh );
   if ( !meshSO->_is_nil() )
   {
@@ -4488,10 +4488,10 @@ CORBA::Boolean SMESH_Gen_i::CopyMeshWithGeom( SMESH::SMESH_Mesh_ptr       theSou
 {
   if ( CORBA::is_nil( theSourceMesh ) ||
        CORBA::is_nil( theNewGeometry ))
-    THROW_SALOME_CORBA_EXCEPTION( "NULL arguments", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "NULL arguments", SALOME_CMOD::BAD_PARAM );
 
   if ( !theSourceMesh->HasShapeToMesh() )
-    THROW_SALOME_CORBA_EXCEPTION( "Source mesh not on geometry", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "Source mesh not on geometry", SALOME_CMOD::BAD_PARAM );
 
   bool ok = true;
   SMESH_TRY;
@@ -6250,7 +6250,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             try { // protect persistence mechanism against exceptions
               myHyp = this->createHypothesis( hypname.c_str(), libname.c_str() );
             }
-            catch( SALOME::SALOME_Exception& ex )
+            catch( SALOME_CMOD::SALOME_Exception& ex )
             {
               INFOS( "Exception during hypothesis creation: " << ex.details.text );
             }
@@ -7380,7 +7380,7 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
 //================================================================================
 
 #undef SMY_OWN_CATCH
-#define SMY_OWN_CATCH // prevent re-throwing SALOME::SALOME_Exception in IsApplicable()
+#define SMY_OWN_CATCH // prevent re-throwing SALOME_CMOD::SALOME_Exception in IsApplicable()
 
 CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
                                            const char*           theLibName,

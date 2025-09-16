@@ -160,7 +160,7 @@ void SMESHGUI_CreateDualMeshOp::selectionDone()
     myDlg->myMeshName->setText(QString(mesh_name.c_str()));
 
   }
-  catch ( const SALOME::SALOME_Exception& S_ex )
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex )
   {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   }
@@ -242,7 +242,7 @@ bool SMESHGUI_CreateDualMeshOp::onApply()
       }
     aResult = true;
   }
-  catch ( const SALOME::SALOME_Exception& S_ex )
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex )
   {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
     aResult = false;

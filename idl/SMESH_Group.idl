@@ -177,7 +177,7 @@ module SMESH
    */
   interface SMESH_GroupOnFilter : SMESH_GroupBase
   {
-    void   SetFilter( in Filter theFilter) raises (SALOME::SALOME_Exception); 
+    void   SetFilter( in Filter theFilter) raises (SALOME_CMOD::SALOME_Exception); 
     Filter GetFilter();
 
     //! @return True if group contents is computed

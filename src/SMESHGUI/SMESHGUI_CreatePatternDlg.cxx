@@ -418,7 +418,7 @@ void SMESHGUI_CreatePatternDlg::onSave()
       emit NewPattern();
     }
   } 
-  catch ( const SALOME::SALOME_Exception& S_ex ) {
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   } 
   catch (...) {
@@ -471,7 +471,7 @@ void SMESHGUI_CreatePatternDlg::onOk()
       emit NewPattern();
     }
   } 
-  catch ( const SALOME::SALOME_Exception& S_ex ) {
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   } 
   catch (...) {
@@ -554,7 +554,7 @@ bool SMESHGUI_CreatePatternDlg::loadFromObject( const bool theMess )
       SUIT_MessageBox::information( this, tr( "SMESH_ERROR" ), aMess );
     }
   } 
-  catch ( const SALOME::SALOME_Exception& S_ex ) {
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   }
 
@@ -712,7 +712,7 @@ void SMESHGUI_CreatePatternDlg::displayPreview()
     return;
 
   } 
-  catch ( const SALOME::SALOME_Exception& S_ex ) {
+  catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
   }
   catch (...) {

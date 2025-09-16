@@ -112,7 +112,7 @@ namespace
   class SignalToGUI
   {
     std::string         _messagePrefix;
-    SALOME::Session_var _session;
+    SALOME_CMOD::Session_var _session;
   public:
     SignalToGUI( SMESH_Mesh_i* mesh )
     {
@@ -120,7 +120,7 @@ namespace
 
       SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject( mesh->_this() );
       CORBA::Object_var        obj = gen->GetNS()->Resolve( "/Kernel/Session" );
-      _session = SALOME::Session::_narrow( obj );
+      _session = SALOME_CMOD::Session::_narrow( obj );
       if ( !meshSO->_is_nil() && !_session->_is_nil() )
       {
         CORBA::String_var meshEntry = meshSO->GetID();

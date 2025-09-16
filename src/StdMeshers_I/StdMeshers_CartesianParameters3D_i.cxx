@@ -97,7 +97,7 @@ void StdMeshers_CartesianParameters3D_i::SetGrid(const SMESH::double_array& coor
     this->GetImpl()->SetGrid( coordVec, axis );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -119,7 +119,7 @@ SMESH::double_array* StdMeshers_CartesianParameters3D_i::GetGrid(CORBA::Short ax
     this->GetImpl()->GetGrid(coordVec, axis);
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   SMESH::double_array_var coords = new SMESH::double_array();
@@ -142,7 +142,7 @@ void StdMeshers_CartesianParameters3D_i::SetSizeThreshold(CORBA::Double threshol
     this->GetImpl()->SetSizeThreshold(threshold);
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -184,7 +184,7 @@ void StdMeshers_CartesianParameters3D_i::SetGridSpacing(const SMESH::string_arra
     this->GetImpl()->SetGridSpacing( funVec, pointVec, axis );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   // Update Python script
@@ -216,7 +216,7 @@ void StdMeshers_CartesianParameters3D_i::GetGridSpacing(SMESH::string_array_out 
     _vec2array( pointVec, xInternalPoints, );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -257,7 +257,7 @@ void StdMeshers_CartesianParameters3D_i::SetAxesDirs(const SMESH::DirStruct& xDi
                          << zDir << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 }
 
@@ -456,7 +456,7 @@ void StdMeshers_CartesianParameters3D_i::SetQuanta(CORBA::Double quanta)
     this->GetImpl()->SetQuanta(quanta);
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
 
   if ( GetToUseQuanta() )
@@ -501,7 +501,7 @@ ComputeOptimalAxesDirs(GEOM::GEOM_Object_ptr go,
 {
   TopoDS_Shape shape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( go );
   if ( shape.IsNull() )
-    THROW_SALOME_CORBA_EXCEPTION( "Null shape", SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "Null shape", SALOME_CMOD::BAD_PARAM );
 
   double c[9];
   ::StdMeshers_CartesianParameters3D::ComputeOptimalAxesDirs( shape, isOrthogonal, c );
@@ -539,7 +539,7 @@ StdMeshers_CartesianParameters3D_i::ComputeCoordinates(CORBA::Double            
     this->GetImpl()->ComputeCoordinates( x0, x1, xFuns, xPoints, coords, axisName );
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME_CMOD::BAD_PARAM );
   }
   SMESH::double_array_var res = new SMESH::double_array;
   _vec2array( coords, res,  );
