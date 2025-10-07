@@ -69,7 +69,7 @@ class SMeshStudyTools:
     def __init__(self, studyEditor = None):
         global SMESH
         if SMESH is None:
-            SMESH = __import__("SMESH")
+            from salome.kernel import SMESH
         if studyEditor is None:
             studyEditor = getStudyEditor()
         self.editor = studyEditor
