@@ -41,14 +41,33 @@
 #include <QItemDelegate>
 #include <QKeyEvent>
 
+#include <SUIT_Session.h>
+#include <SUIT_ResourceMgr.h>
+
+
 #define SPACING 6
 #define MARGIN 0
 #define SAME_TEXT "-/-"
 
-#define TOLERANCE 1e-7
-#define EQUAL_DBL(a,b) (fabs(a-b)<TOLERANCE)
-#define LT_DBL(a,b) ((a<b)&&!EQUAL_DBL(a,b))
-#define GT_DBL(a,b) ((a>b)&&!EQUAL_DBL(a,b))
+int StdMeshersGUI_FixedPointsParamWdg::getParametricPrecision() {
+  SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
+  int precision = resMgr->integerValue( "SMESH", "parametric_precision", -6 );
+  return precision;
+}
+
+bool StdMeshersGUI_FixedPointsParamWdg::equalDbl(double a, double b) {
+  int precision = getParametricPrecision();
+  double tolerance = std::pow(10.0, precision);
+  return fabs(a-b)<tolerance;
+}
+
+bool StdMeshersGUI_FixedPointsParamWdg::ltDbl(double a, double b) {
+  return (a<b)&&!equalDbl(a,b);
+}
+
+bool StdMeshersGUI_FixedPointsParamWdg::gtDbl(double a, double b) {
+  return (a>b)&&!equalDbl(a,b);
+}
 
 /*
  * class : Tree Widget Item Delegate
@@ -234,7 +253,8 @@ QTreeWidgetItem* StdMeshersGUI_FixedPointsParamWdg::newTreeItem( double v1, doub
 
 QListWidgetItem* StdMeshersGUI_FixedPointsParamWdg::newListItem( double v )
 {
-  QListWidgetItem* anItem = new QListWidgetItem( QString::number( v ) );
+  int precision = getParametricPrecision();
+  QListWidgetItem* anItem = new QListWidgetItem( QString::number( v , 'g', abs(precision) ) );
   anItem->setData( Qt::UserRole, v );
   return anItem;
 }
@@ -246,7 +266,8 @@ QListWidgetItem* StdMeshersGUI_FixedPointsParamWdg::newListItem( double v )
 
 QString StdMeshersGUI_FixedPointsParamWdg::treeItemText( double v1, double v2 )
 {
-  return QString( "%1 - %2" ).arg( v1 ).arg( v2 );
+  int precision = getParametricPrecision();
+  return QString( "%1 - %2" ).arg( v1, 0, 'g', abs(precision) ).arg( v2, 0, 'g', abs(precision) );
 }
 
 //=================================================================================
@@ -255,13 +276,13 @@ QString StdMeshersGUI_FixedPointsParamWdg::treeItemText( double v1, double v2 )
 //=================================================================================
 void StdMeshersGUI_FixedPointsParamWdg::addPoint( double v)
 {
-  if ( GT_DBL(v, 0.0) && LT_DBL(v, 1.0)) {
+  if ( gtDbl(v, 0.0) && ltDbl(v, 1.0)) {
     bool toInsert = true;
     int idx = myTreeWidget->topLevelItemCount()-1;
     for ( int i = 0 ; i < myListWidget->count(); i++ ) {
       double lv = point( i );
-      if ( EQUAL_DBL(lv, v) ) { toInsert = false; break; }
-      else if ( GT_DBL(lv, v) ) {
+      if ( equalDbl(lv, v) ) { toInsert = false; break; }
+      else if ( gtDbl(lv, v) ) {
         idx = i; break;
       }
     }
@@ -335,7 +356,7 @@ void StdMeshersGUI_FixedPointsParamWdg::onCheckBoxChanged()
 void StdMeshersGUI_FixedPointsParamWdg::updateState()
 {
   double v = mySpinBox->value();
-  myAddButton->setEnabled( GT_DBL(v, 0.0) && LT_DBL(v, 1.0) );
+  myAddButton->setEnabled( gtDbl(v, 0.0) && ltDbl(v, 1.0) );
   myRemoveButton->setEnabled( myListWidget->selectedItems().count() > 0 );
 }
 

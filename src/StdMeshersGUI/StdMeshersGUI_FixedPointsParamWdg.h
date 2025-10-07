@@ -80,6 +80,10 @@ private:
   static QTreeWidgetItem*        newTreeItem( double v1, double v2 );
   static QListWidgetItem*        newListItem( double v1 );
   static QString                 treeItemText( double v1, double v2 );
+  static int                     getParametricPrecision();
+  static bool                    equalDbl(double a, double b);
+  static bool                    ltDbl(double a, double b);
+  static bool                    gtDbl(double a, double b);
 
 private:
   QListWidget*                   myListWidget;
