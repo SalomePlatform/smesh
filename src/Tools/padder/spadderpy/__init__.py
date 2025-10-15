@@ -53,8 +53,7 @@ def getTestPadderDataDir():
     return datadir
 
 from salome.kernel import MESHJOB # to get the enum constant values
-from MESHJOB import MeshJobFile, MeshJobFileList
-
+from salome.kernel.MESHJOB import MeshJobFile, MeshJobFileList
 DEFAULT_CONCRETE_FILENAME=os.path.join(getTestDataDir(),'concrete.med')
 DEFAULT_STEELBAR_LISTFILENAME=[
     os.path.join(getTestDataDir(),'ferraill.med')
