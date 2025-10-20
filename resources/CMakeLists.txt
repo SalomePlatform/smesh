@@ -137,6 +137,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_pattern.png
   mesh_pentahedron.png
   mesh_plugins_meshcut.png
+  mesh_plugins_boolean.png
   mesh_plus.png
   mesh_points.png
   mesh_polygon.png
