@@ -72,7 +72,9 @@ except Exception as e:
 
 try:
   from meshbooleanplugin.mesh_boolean_plugin import MeshBoolean
-  salome_pluginsmanager.AddFunction('Boolean Mesh Operations', 'Perform boolean operations on meshes', MeshBoolean)
+  icon_file = os.path.join(os.getenv('SMESH_ROOT_DIR'),'share', 'salome', 'resources', 'smesh', 'mesh_plugins_boolean.png')
+  salome_pluginsmanager.AddFunction('Boolean Mesh Operations', 'Perform boolean operations on meshes', MeshBoolean,
+                                    icon=QIcon(icon_file))
 except Exception as e:
   salome_pluginsmanager.logger.info('ERROR: MeshBoolean plug-in is unavailable: {}'.format(e))
   pass
