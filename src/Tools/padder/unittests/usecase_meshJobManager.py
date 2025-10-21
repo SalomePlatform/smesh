@@ -44,7 +44,7 @@ printConfig(defaultConfig)
 from salome.smesh import spadder
 
 from salome.kernel import salome
-import MESHJOB
+from salome.kernel import MESHJOB
 
 #
 # Setup the configuration in the component. We first have to load the

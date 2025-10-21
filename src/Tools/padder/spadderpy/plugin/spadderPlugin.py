@@ -22,7 +22,7 @@
 
 def runSpadderPlugin(context):
     from salome.smesh.spadder.gui import plugindialog
-    from salome.kernel.uiexception import UiException
+    from salome.kernel.salome.kernel.uiexception import UiException
     try:
         dialog=plugindialog.getDialog()
     except UiException as err:

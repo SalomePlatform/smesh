@@ -33,13 +33,13 @@ from salome.smesh.spadder.gui.inputdata import InputData
 import os
 from salome.kernel import salome
 from salome.kernel.salome.kernel import studyedit
-from salome.kernel.uiexception import AdminException
+from salome.kernel.salome.kernel.uiexception import AdminException
 
 from omniORB import CORBA
 from salome.kernel import SMESH
 from salome.smesh import smeshBuilder
 smesh = smeshBuilder.New()
-import MESHJOB
+from salome.kernel import MESHJOB
 
 gui_states = ["CAN_SELECT", "CAN_COMPUTE", "CAN_REFRESH", "CAN_PUBLISH"]
 

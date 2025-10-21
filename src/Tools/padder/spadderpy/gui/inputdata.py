@@ -20,8 +20,8 @@
 # Author : Guillaume Boulant (EDF)
 #
 
-from salome.kernel.enumerate import Enumerate
-from salome.kernel.datamodeler import DataModeler, TypeString, TypeInteger
+from salome.kernel.salome.kernel.enumerate import Enumerate
+from salome.kernel.salome.kernel.datamodeler import DataModeler, TypeString, TypeInteger
 
 # __MEM__: Note that this module does not depend on the SPADDER
 # component on purpose (we could have use a derived structure of

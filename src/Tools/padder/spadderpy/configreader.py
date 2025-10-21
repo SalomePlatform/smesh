@@ -23,8 +23,8 @@
 
 import sys, os
 import configparser
-from MESHJOB import ConfigParameter
-from salome.kernel.uiexception import AdminException, UiException
+from salome.kernel.MESHJOB import ConfigParameter
+from salome.kernel.salome.kernel.uiexception import AdminException, UiException
 
 from salome_pluginsmanager import PLUGIN_PATH_PATTERN
 CONFIG_RELPATH  = os.path.join(PLUGIN_PATH_PATTERN,'smesh')
@@ -134,7 +134,7 @@ def TEST_getDefaultConfig_withError():
     return False
 
 
-from salome.kernel import unittester
+from salome.kernel.salome.kernel import unittester
 moduleName = "configreader"
 
 def testsuite():

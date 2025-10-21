@@ -24,7 +24,7 @@ User Guide.
 
   The old mode (from dump)::
 
-	import smesh, SMESH, SALOMEDS
+	from salome.kernel import smesh, SMESH, SALOMEDS
 	smesh.SetCurrentStudy(salome.myStudy)
 
   The new mode::
@@ -91,18 +91,18 @@ User Guide.
 
   For instance::
 
-	import StdMeshers
-	import NETGENPlugin
-	import BLSURFPlugin
-	import GHS3DPlugin
+	from salome.kernel import StdMeshers
+	from salome.kernel import NETGENPlugin
+	from salome.kernel import BLSURFPlugin
+	from salome.kernel import GHS3DPlugin
 	import HexoticPLUGIN
 
   is replaced by:: 
 
-	from salome.StdMeshers import StdMeshersBuilder
-	from salome.NETGENPlugin import NETGENPluginBuilder
-	from salome.BLSURFPlugin import BLSURFPluginBuilder
-	from salome.GHS3DPlugin import GHS3DPluginBuilder
-	from salome.HexoticPLUGIN import HexoticPLUGINBuilder
+	from salome.kernel.StdMeshers import StdMeshersBuilder
+	from salome.kernel.NETGENPlugin import NETGENPluginBuilder
+	from salome.kernel.BLSURFPlugin import BLSURFPluginBuilder
+	from salome.kernel.GHS3DPlugin import GHS3DPluginBuilder
+	from salome.kernel.HexoticPLUGIN import HexoticPLUGINBuilder
 
 

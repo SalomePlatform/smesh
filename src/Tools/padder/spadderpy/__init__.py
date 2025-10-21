@@ -52,7 +52,7 @@ def getTestPadderDataDir():
     datadir = os.path.join(PADDERHOME,"tests")
     return datadir
 
-import MESHJOB # to get the enum constant values
+from salome.kernel import MESHJOB # to get the enum constant values
 from MESHJOB import MeshJobFile, MeshJobFileList
 
 DEFAULT_CONCRETE_FILENAME=os.path.join(getTestDataDir(),'concrete.med')
@@ -103,6 +103,6 @@ def loadSpadderCatalog():
     filename = getSpadderCatalogFilename()
     catalog.ImportXmlCatalogFile(filename)
 
-    from salome.kernel import services
+    from salome.kernel.salome.kernel import services
     print("The list of SALOME components is now:") 
     print(services.getComponentList())
