@@ -246,11 +246,10 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<smIdType>& idNodesOldToNew, 
   }
 
   // --- create new compacted Connectivity, Locations and Types
-
   vtkIdType newConnectivitySize = this->Connectivity->GetNumberOfConnectivityEntries();
   if ( newCellSize != oldCellSize )
     for ( vtkIdType i = 0; i < oldCellSize - 1; ++i )
-      if ( this->Types->GetValue( i ) == VTK_EMPTY_CELL )
+      if ( this->Types->GetVariantValue( i ).ToUnsignedChar() == VTK_EMPTY_CELL )
         newConnectivitySize -= this->Connectivity->GetCellSize( i );
 
   vtkNew<vtkCellArray> newConnectivity;
@@ -376,7 +375,7 @@ void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *  newTypes,
   for ( size_t iNew = 0; iNew < idCellsNewToOld.size(); iNew++ )
   {
     vtkIdType iOld = idCellsNewToOld[ iNew ];
-    newTypes->SetValue( iNew, this->Types->GetValue( iOld ));
+    newTypes->SetValue( iNew, this->Types->GetVariantValue( iOld ).ToUnsignedChar());
 
     vtkIdType oldLoc = ((vtkIdTypeArray *)(this->Connectivity->GetOffsetsArray()))->GetValue( iOld );
     vtkIdType nbpts;
