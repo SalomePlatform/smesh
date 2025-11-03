@@ -213,12 +213,13 @@ def perform(mesh, name, errors):
     Exports a given mesh and imports it back for each file format.
     """
 
-    for ext in file_extensions():
-        with tempfile.NamedTemporaryFile(suffix=ext, prefix=name) as file:
-            file.close() # prevents PermissionError on Windows
-            if (export_mesh(mesh, file.name, errors)):
+    with tempfile.TemporaryDirectory(prefix="Meshio_") as temp_dir:
+        for ext in file_extensions():
+            with tempfile.NamedTemporaryFile(suffix=ext, prefix=name, dir=temp_dir) as file:
                 file.close() # prevents PermissionError on Windows
-                import_file(file.name, errors)
+                if (export_mesh(mesh, file.name, errors)):
+                    file.close() # prevents PermissionError on Windows
+                    import_file(file.name, errors)
 
 
 def test_box(errors):

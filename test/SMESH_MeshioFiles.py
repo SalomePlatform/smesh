@@ -99,16 +99,17 @@ def perform_ext(directory, ext, errors):
 
             filepath = os.path.join(subdir, file)
 
-            with tempfile.NamedTemporaryFile(suffix=ext) as temp_file:
-                temp_file.close() # prevents PermissionError on Windows
-                if not convert(filepath, temp_file.name, errors):
-                    continue
-
-                file_extension = Path(file).suffix
-                with tempfile.NamedTemporaryFile(suffix=file_extension) as temp_file_back:
+            with tempfile.TemporaryDirectory(prefix="Meshio_") as temp_dir:
+                with tempfile.NamedTemporaryFile(suffix=ext, dir=temp_dir) as temp_file:
                     temp_file.close() # prevents PermissionError on Windows
-                    temp_file_back.close() # prevents PermissionError on Windows
-                    convert(temp_file.name, temp_file_back.name, errors)
+                    if not convert(filepath, temp_file.name, errors):
+                        continue
+
+                    file_extension = Path(file).suffix
+                    with tempfile.NamedTemporaryFile(suffix=file_extension, dir=temp_dir) as temp_file_back:
+                        temp_file.close() # prevents PermissionError on Windows
+                        temp_file_back.close() # prevents PermissionError on Windows
+                        convert(temp_file.name, temp_file_back.name, errors)
 
 
 def test_shell(directory, errors):
@@ -153,9 +154,10 @@ def test_salome(directory, errors):
                 continue
 
             file_extension = Path(file).suffix
-            with tempfile.NamedTemporaryFile(suffix=file_extension) as temp_file:
-                temp_file.close() # prevents PermissionError on Windows
-                export_mesh(mesh, temp_file.name, errors)
+            with tempfile.TemporaryDirectory(prefix="Meshio_") as temp_dir:
+                with tempfile.NamedTemporaryFile(suffix=file_extension, dir=temp_dir) as temp_file:
+                    temp_file.close() # prevents PermissionError on Windows
+                    export_mesh(mesh, temp_file.name, errors)
 
 
 def test():
