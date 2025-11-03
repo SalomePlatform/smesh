@@ -35,6 +35,7 @@
 
 // Qt
 #include <QFileInfo>
+#include <QDir>
 
 #include <fstream>
 
@@ -123,7 +124,11 @@ void SMESH_Meshio::RemoveTempFile()
 {
   if (!myTempFileName.isEmpty())
   {
-    std::remove(myTempFileName.toStdString().c_str());
+    const QFileInfo fileInfo{myTempFileName};
+    const QString path{fileInfo.path()};
+    QDir dir{path};
+    dir.remove(myTempFileName);
+    dir.rmdir(path);
     MESSAGE("Temp file " << myTempFileName.toStdString() << " was removed");
   }
 }
@@ -316,7 +321,7 @@ void SMESH_Meshio::CreateErrorFileName()
   const QString fileName = "meshio_errors.txt";
   const QString dirName(SALOMEDS_Tool::GetTmpDir().c_str());
   myErrorFileName = dirName + fileName;
-  
+
   MESSAGE("myErrorFileName: " << myErrorFileName.toStdString());
 }
 
@@ -327,7 +332,11 @@ void SMESH_Meshio::RemoveErrorFile()
 {
   if (!myErrorFileName.isEmpty())
   {
-    std::remove(myErrorFileName.toStdString().c_str());
+    const QFileInfo fileInfo{myErrorFileName};
+    const QString path{fileInfo.path()};
+    QDir dir{path};
+    dir.remove(myErrorFileName);
+    dir.rmdir(path);
     MESSAGE("Temp file " << myErrorFileName.toStdString() << " was removed");
   }
 }
