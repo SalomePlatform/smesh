@@ -233,6 +233,43 @@ module SMESH
       raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
+    * Pauses the Python dump recording.
+    * Increments internal counter (TPythonDump::myCounter)
+    * While myCounter > 0, SMESH operations are not recorded to the Python dump.
+    *
+    * Must be paired with ResumePythonDumpRecording().
+    * Can be nested - each Pause must have corresponding Resume.
+    *
+    * Used by SMESH Python plugins to hide intermediate operations and record
+    * only high-level commands.
+    *
+    */
+    void PausePythonDumpRecording();
+
+    /*!
+    * Resumes Python dump recording.
+    * Decrements internal counter (TPythonDump::myCounter)
+    * When counter reaches 0, recording resumes.
+    * Must be paired with PausePythonDumpRecording()().
+    * If called when counter is already 0, logs warning and does nothing.
+    */
+    void ResumePythonDumpRecording();
+
+    /*!
+     * Manually add a command to the Python dump script.
+     * Used for Python plugins and scripts that need to record their operations
+     * in Python dump.
+     * Example:
+     *   smesh.AddToPythonScript("# Some operation")
+     *   smesh.AddToPythonScript("result = myPlugin.Process(mesh1, mesh2)")
+     *
+     * \param theCommand The Python command to add (valid Python statement)
+     *
+     * \note No automatic newlines are added - include them if needed.
+     */
+    void AddToPythonScript(in string theCommand);
+
+    /*!
      * Create a Mesh object, given a geometry shape.
      * Mesh is created empty (no points, no elements).
      * Shape is explored via GEOM_Client to create local copies.

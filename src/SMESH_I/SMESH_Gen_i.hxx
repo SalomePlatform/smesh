@@ -497,7 +497,15 @@ public:
                                        CORBA::Boolean isMultiFile,
                                        CORBA::Boolean& isValidScript);
 
+  // Internal method used by C++ TPythonDump class destructor
   void AddToPythonScript (const TCollection_AsciiString& theString);
+
+  // CORBA interface method (idl interfaced) for Python plugins
+  virtual void AddToPythonScript (const char* theCommand);
+
+  void PausePythonDumpRecording();
+
+  void ResumePythonDumpRecording();
 
   void RemoveLastFromPythonScript();
 
