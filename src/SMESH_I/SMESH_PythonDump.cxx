@@ -73,6 +73,22 @@ namespace SMESH
   {
     ++myCounter;
   }
+
+  void TPythonDump::IncrementMyCounter()
+  {
+    ++myCounter;
+  }
+
+  void TPythonDump::DecrementMyCounter()
+  {
+    if (myCounter > 0) {
+      --myCounter;
+    }
+    else {
+      MESSAGE("Warning: TPythonDump::DecrementMyCounter() called when counter is 0");
+    }
+  }
+
   TPythonDump::
   ~TPythonDump()
   {
@@ -780,7 +796,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython( CORBA::Boolean  isPublished,
 
 //=============================================================================
 /*!
- *  AddToPythonScript
+ *  AddToPythonScript - C++ Internal version
  */
 //=============================================================================
 void SMESH_Gen_i::AddToPythonScript (const TCollection_AsciiString& theString)
@@ -789,6 +805,58 @@ void SMESH_Gen_i::AddToPythonScript (const TCollection_AsciiString& theString)
     myPythonScript = new TColStd_HSequenceOfAsciiString;
   }
   myPythonScript->Append(theString);
+}
+
+//=============================================================================
+/*!
+ *  AddToPythonScript - CORBA Interface version (for Python plugins)
+ */
+//=============================================================================
+void SMESH_Gen_i::AddToPythonScript (const char* theCommand)
+{
+  // avoid empty commands
+  if (!theCommand || theCommand[0] == '\0') {
+    return;
+  }
+
+  TCollection_AsciiString aCommand(theCommand);
+
+  // automatic object entry tracking (like TPythonDump does)
+  // const std::string & objEntry = GetLastObjEntry();
+  // if (!objEntry.empty()) {
+  //   aCommand += (SMESH::TVar::ObjPrefix() + objEntry).c_str();
+  // }
+
+  // call internal method
+  AddToPythonScript(aCommand);
+
+  MESSAGE("AddToPythonScript(CORBA): " << theCommand);
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::PausePythonDumpRecording
+ *
+ *  CORBA wrapper to increment TPythonDump suppression counter (myCounter).
+ *  Called from Python plugins to pause the record of intermediate operations.
+ */
+//=============================================================================
+void SMESH_Gen_i::PausePythonDumpRecording()
+{
+  SMESH::TPythonDump::IncrementMyCounter();
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::ResumePythonDumpRecording
+ *
+ *  CORBA wrapper to decrement TPythonDump suppression counter (myCounter).
+ *  Called from Python plugins to resume normal dump recording.
+ */
+//=============================================================================
+void SMESH_Gen_i::ResumePythonDumpRecording()
+{
+  SMESH::TPythonDump::DecrementMyCounter();
 }
 
 //=============================================================================

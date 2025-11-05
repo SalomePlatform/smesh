@@ -126,7 +126,36 @@ namespace SMESH
   public:
     TPythonDump(SMESH_Gen_i *smesh);
     TPythonDump();
+
+    /*!
+     * \brief Destroy the TPythonDump object
+     * \note Generates the content of the dumped Python script
+     * through a call to  SMESH_Gen_i::AddToPythonScript() when myCounter = 0.
+     * It induces a pattern where we can avoid dumping intermediate steps by
+     * simply instanciating a new TPythonDump object.
+     */
     virtual ~TPythonDump();
+
+    /*!
+    * \brief Increment the myCounter member.
+    * \note To use paired with DecrementMyCounter().
+    *
+    * While myCounter > 0, TPythonDump commands are not recorded.
+    * This method will be used by Python plugins through
+    * SMESH_Gen_:PausePythonDumpRecording() to suppress intermediate operations.
+    */
+    static void IncrementMyCounter();
+
+    /*!
+    * \brief  Decrement the myCounter member.
+    * \note To use paired with IncrementMyCounter().
+    *
+    * When counter returns to 0, TPythonDump recording resumes.
+    * This method will be used by Python plugins through
+    * SMESH_Gen_i::ResumePythonDumpRecording() to resume Python recording.
+    */
+    static void DecrementMyCounter();
+
 
     TPythonDump&
     operator<<(const TVar& theVariableValue);
