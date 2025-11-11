@@ -142,6 +142,14 @@ class SMESH_EXPORT SMESH_subMesh
                         SMESH_subMesh*     where);
 
   /*!
+   * \brief Adds event listener to a submesh
+    * \param listener - the listener to store
+   *
+   * It remembers the listener in order to clean it when submesh is deleted
+   */
+  void AddOwnListener(EventListener* listener);
+
+  /*!
    * \brief Return an event listener data
     * \param listener - the listener whose data is
     * \param myOwn - if \c true, returns a listener set by this sub-mesh,

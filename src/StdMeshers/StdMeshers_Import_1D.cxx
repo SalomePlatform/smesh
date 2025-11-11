@@ -423,29 +423,7 @@ namespace // INTERNAL STUFF
       if ( toCopyGroups ) _copyGroupSubM.insert( sm );
       else                _copyGroupSubM.erase( sm );
     }
-    void addComputed( SMESH_subMesh* sm )
-    {
-      SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
-                                                               /*complexShapeFirst=*/true);
-      while ( smIt->more() )
-      {
-        sm = smIt->next();
-        switch ( sm->GetSubShape().ShapeType() )
-        {
-        case TopAbs_EDGE:
-          if ( SMESH_Algo::isDegenerated( TopoDS::Edge( sm->GetSubShape() )))
-            continue;
-          // fall through
-        case TopAbs_FACE:
-          _subM.insert( sm );
-          if ( !sm->IsEmpty() )
-            _computedSubM.insert( sm );
-        case TopAbs_VERTEX:
-          break;
-        default:;
-        }
-      }
-    }
+    void addComputed( SMESH_subMesh* sm );
   };
   //================================================================================
   /*!
@@ -478,6 +456,9 @@ namespace // INTERNAL STUFF
     void clearSubmesh ( SMESH_subMesh* sm, _ListenerData* data, bool clearAllSub );
     void clearN2N     ( SMESH_Mesh* tgtMesh );
 
+    virtual void BeforeDelete(SMESH_subMesh*                  /*subMesh*/,
+                              SMESH_subMeshEventListenerData* /*data*/);
+
     // mark sm as missing src hyp with valid groups
     static void waitHypModification(SMESH_subMesh* sm)
     {
@@ -485,6 +466,35 @@ namespace // INTERNAL STUFF
         (get(), SMESH_subMeshEventListenerData::MakeData( sm, WAIT_HYP_MODIF ), sm);
     }
   };
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Add computed sub-mesh
+   */
+  void _ImportData::addComputed( SMESH_subMesh* sm )
+    {
+      SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
+                                                               /*complexShapeFirst=*/true);
+      while ( smIt->more() )
+      {
+        sm = smIt->next();
+        switch ( sm->GetSubShape().ShapeType() )
+        {
+        case TopAbs_EDGE:
+          if ( SMESH_Algo::isDegenerated( TopoDS::Edge( sm->GetSubShape() )))
+            continue;
+          // fall through
+        case TopAbs_FACE:
+          _subM.insert( sm );
+          // set listener on each sub-mesh for correct removal of sub-mesh data
+          sm->AddOwnListener( _Listener::get() );
+          if ( !sm->IsEmpty() )
+            _computedSubM.insert( sm );
+        case TopAbs_VERTEX:
+          break;
+        default:;
+        }
+      }
+    }
   //--------------------------------------------------------------------------------
   /*!
    * \brief Find or create ImportData for given meshes
@@ -503,7 +513,7 @@ namespace // INTERNAL STUFF
 
   //--------------------------------------------------------------------------------
   /*!
-   * \brief Remember an imported sub-mesh and set needed even listeners
+   * \brief Remember an imported sub-mesh and set needed event listeners
    *  \param importSub - submesh computed by Import algo
    *  \param srcMesh - source mesh
    *  \param srcHyp - ImportSource hypothesis
@@ -726,6 +736,15 @@ namespace // INTERNAL STUFF
       if ( SMESH_subMesh::ALGO_EVENT == eventType )
         clearN2N( subMesh->GetFather() );
     }
+  }
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Remove sub-mesh from listener
+   */
+  void _Listener::BeforeDelete(SMESH_subMesh*                  subMesh,
+                               SMESH_subMeshEventListenerData* data)
+  {
+    removeSubmesh(subMesh, (_ListenerData*)data);
   }
 
   //================================================================================

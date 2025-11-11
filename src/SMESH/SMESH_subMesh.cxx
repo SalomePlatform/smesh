@@ -2328,6 +2328,22 @@ void SMESH_subMesh::SetEventListener(EventListener*     listener,
 
 //================================================================================
 /*!
+ * \brief Adds event listener to a submesh
+ * \param listener - the listener to store
+ *
+ * It remembers the listener in order to clean it when submesh is deleted
+ */
+//================================================================================
+
+void SMESH_subMesh::AddOwnListener(EventListener* listener)
+{
+  if ( listener ) {
+    _ownListeners.push_back( OwnListenerData( this, listener ));
+  }
+}
+
+//================================================================================
+/*!
  * \brief Sets an event listener and its data to a submesh
  * \param listener - the listener to store
  * \param data - the listener data to store
@@ -2500,6 +2516,7 @@ void SMESH_subMesh::deleteOwnListeners()
   list< OwnListenerData >::iterator d;
   for ( d = _ownListeners.begin(); d != _ownListeners.end(); ++d )
   {
+    d->myListener->BeforeDelete( this, NULL );
     SMESH_Mesh* mesh = _father->FindMesh( d->myMeshID );
     if ( !mesh || !mesh->GetSubMeshContaining( d->mySubMeshID ))
       continue;
