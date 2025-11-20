@@ -166,6 +166,65 @@ namespace {
 
   void CheckObjectPresence( const Handle(_pyCommand)& cmd, set<_pyID> & presentObjects)
   {
+    // Handle import statements - register imported names in presentObjects
+    const TCollection_AsciiString& cmdStr = cmd->GetString();
+
+    // Pattern "... import name [as xxx]" -> add name or xxx to presentObjects
+    if ( cmdStr.Search("import ") > 0)
+    {
+      int importPos = cmdStr.Search("import ");
+      TCollection_AsciiString afterImport = cmdStr.SubString(importPos + 7, cmdStr.Length());
+      afterImport.LeftAdjust();  // Strip whitespaces
+      afterImport.RightAdjust();
+      // Handle " as "
+      int asPos = afterImport.Search(" as ");
+      if (asPos > 0)
+      {
+        TCollection_AsciiString alias = afterImport.SubString(asPos + 4, afterImport.Length());
+        alias.RightAdjust();
+        alias.LeftAdjust();
+        if (!alias.IsEmpty())
+          presentObjects.insert(alias);
+      }
+      else
+      {
+        // Pattern "... import name1, name2, name3" -> add name1 name2 and name3 to presentObjects
+        int commaPos = afterImport.Search(",");
+        if (commaPos > 0)
+        {
+          // Extract each import
+          TCollection_AsciiString remaining = afterImport;
+          while (!remaining.IsEmpty())
+          {
+            commaPos = remaining.Search(",");
+            TCollection_AsciiString name;
+            if (commaPos > 0)
+            {
+              name = remaining.SubString(1, commaPos - 1);
+              remaining = remaining.SubString(commaPos + 1, remaining.Length());
+              remaining.LeftAdjust();
+            }
+            else
+            {
+              name = remaining;
+              remaining.Clear(); // leave the while
+            }
+            name.RightAdjust();
+            name.LeftAdjust();
+            if (!name.IsEmpty())
+              presentObjects.insert(name); // add comma separated import
+          }
+        } // Take the first one after import if no comma
+        else
+        {
+          afterImport.LeftAdjust();
+          if (!afterImport.IsEmpty())
+            presentObjects.insert(afterImport);
+        }
+      }
+      return;
+    }
+
     // either comment or erase a command including NotPublishedObjectName()
     if ( cmd->GetString().Location( TPythonDump::NotPublishedObjectName(), 1, cmd->Length() ))
     {
