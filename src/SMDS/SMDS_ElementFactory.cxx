@@ -326,8 +326,7 @@ void SMDS_ElementFactory::Compact( std::vector<smIdType>& theVtkIDsNewToOld )
         const SMDS_MeshElement* newElem = FindElement( newVtkID );
         if ( !newElem )
           newElem = NewElement( newVtkID );
-        if ( int shapeID = oldElem->GetShapeID() )
-          const_cast< SMDS_MeshElement* >( newElem )->setShapeID( shapeID );
+        const_cast< SMDS_MeshElement* >( newElem )->setShapeID( oldElem->GetShapeID() );
         if ( oldID > newNbCells )
           Free( oldElem );
       }
