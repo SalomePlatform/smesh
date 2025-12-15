@@ -149,11 +149,14 @@ void SMESHGUI_Operation::setDialogActive( const bool active )
 void SMESHGUI_Operation::onOk()
 {
   setIsApplyAndClose( true );
-  if( onApply() )
+  if( onApply() ) {
     commit();
+  }
+  else {
+    // Ensure the operation gets aborted when Apply fails
+    abort();
+  }
   setIsApplyAndClose( false );
-  //else
-  //  abort();
 }
 
 //=======================================================================
