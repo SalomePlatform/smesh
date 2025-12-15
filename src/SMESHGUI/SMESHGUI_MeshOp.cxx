@@ -79,6 +79,7 @@
 #include <TopExp_Explorer.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Iterator.hxx>
 
 //================================================================================
 /*!
@@ -2178,7 +2179,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
           _PTR(SObject) pSubGeom = SMESH::getStudy()->FindObjectID(aSubGeomEntry.toUtf8().data());
           GEOM::GEOM_Object_var aSubGeomVar =
             GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
-          TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aSubGeomVar->GetShapeType();
+          TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aSubGeomVar->GetCommonShapeType();
           if (iSubSh == 0) {
             aGroupType = aSubShapeType;
           } else {
@@ -2439,7 +2440,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
 
         // Create algorithm
         if (aCreator)
-          aCreator->create( true, aHypName, myDlg, 0, QString::null );
+          aCreator->create( true, aHypName, myDlg, 0, QString() );
         else {
           SMESH::SMESH_Hypothesis_var aHyp =
             SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
