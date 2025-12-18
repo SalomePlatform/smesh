@@ -27,7 +27,8 @@ import pathlib
 
 # set seed
 from datetime import datetime
-random.seed(datetime.now())
+# see https://docs.python.org/3.13/library/random.html#random.seed
+random.seed(datetime.now().timestamp())
 
 import platform
 import tempfile
