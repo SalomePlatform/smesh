@@ -9,7 +9,7 @@ Checks the availability of the external plugins :
  4 MG-TETRA             (GHS3DPLUGIN)
  5 MG-HEXA              (HEXOTICPLUGIN)
  6 MG-HYBRID            (HYBRIDPLUGIN)
-Copyright 2017-2024 CEA, EDF
+Copyright 2017-2026 CEA, EDF
 """
 __revision__ = "V1.0"
 #
