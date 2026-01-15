@@ -257,6 +257,22 @@ public:
   SMESH::mesh_array* CreateMeshesFromMAIL( const char* theFileName,
                                           SMESH::DriverMED_ReadStatus& theStatus );
 
+  //  Create mesh(es) and import data from INP (abaqus) file
+  SMESH::mesh_array* CreateMeshesFromINP( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus ) override;
+                                          
+  //  Create mesh(es) and import data from CDB (ansys) file
+  SMESH::mesh_array* CreateMeshesFromCDB( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus ) override;
+
+  //  Create mesh(es) and import data from ASC (systus) file
+  SMESH::mesh_array* CreateMeshesFromASC( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus ) override;
+                                          
+  //  Create mesh(es) and import data from GEOF (zset) file
+  SMESH::mesh_array* CreateMeshesFromGEOF( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus ) override;
+
   //  Create a mesh and import data from a STL file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName );
 
@@ -669,6 +685,10 @@ public:
                                 CORBA::Double             theTolerance );
 
 private:
+
+  SMESH::mesh_array* CreateMeshesFromMEDConverterInMedcoupling( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus, const std::string& converterPyFuncName);
+
   // Get hypothesis creator
   GenericHypothesisCreator_i* getHypothesisCreator( const char*  theHypName,
                                                     const char*  theLibName,

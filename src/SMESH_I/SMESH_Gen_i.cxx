@@ -1487,7 +1487,7 @@ namespace
     */
   //================================================================================
 
-std::string readMailFileFromPy(const std::string& inputPath, const std::string& outputPath)
+std::string convertFileUsingMEDCouplngConverter(const std::string& inputPath, const std::string& outputPath, const std::string& converterPyFuncName)
 {
   AutoGIL gstate;
 
@@ -1498,15 +1498,15 @@ std::string readMailFileFromPy(const std::string& inputPath, const std::string& 
     throw(SALOME_Exception( anError.c_str()));
   }
 
-  AutoPyRef pName(PyUnicode_FromString("MCMailFileReader"));
+  AutoPyRef pName(PyUnicode_FromString("medcoupling"));
   AutoPyRef pModule(PyImport_Import(pName));
   if (pModule.isNull())
   {
-    std::string anError = "Failed to import Python module MCMailFileReader";
+    std::string anError = "Failed to import Python module medcoupling";
     throw(SALOME_Exception( anError.c_str()));
   }
 
-  AutoPyRef pFunc(PyObject_GetAttrString(pModule, "ConvertFromMailToMEDFile"));
+  AutoPyRef pFunc(PyObject_GetAttrString(pModule, converterPyFuncName.c_str() ));
   if (pFunc.isNull() || !PyCallable_Check(pFunc))
   {
     std::string anError = "Python function main_for_smesh not found or not callable";
@@ -1821,6 +1821,26 @@ SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMED(const char* theFileName, SME
   return aResult._retn();
 }
 
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDConverterInMedcoupling( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus, const std::string& converterPyFuncName)
+{
+  checkFileReadable(theFileName);
+
+  std::string outputPath;
+  std::string medFileName;
+
+  try
+  {
+    outputPath = changeExtensionToMed(std::string(theFileName));
+    medFileName = convertFileUsingMEDCouplngConverter(std::string(theFileName), outputPath, converterPyFuncName);
+    checkFileReadable(medFileName.c_str());
+    return CreateMeshesFromMED(medFileName.c_str(), theStatus);
+  }
+  catch (const SALOME_Exception& S_ex)
+  {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(),SALOME_CMOD::INTERNAL_ERROR);
+  }
+}
 
 //=============================================================================
 /*!
@@ -1833,24 +1853,32 @@ SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMED(const char* theFileName, SME
 SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMAIL( const char*                  theFileName,
                                                      SMESH::DriverMED_ReadStatus& theStatus )
 {
-  checkFileReadable(theFileName);
-
-  std::string outputPath;
-  std::string medFileName;
-
-  try
-  {
-    outputPath = changeExtensionToMed(std::string(theFileName));
-    medFileName = readMailFileFromPy(std::string(theFileName), outputPath);
-    checkFileReadable(medFileName.c_str());
-    return CreateMeshesFromMED(medFileName.c_str(), theStatus);
-  }
-  catch (const SALOME_Exception& S_ex)
-  {
-    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(),SALOME_CMOD::INTERNAL_ERROR);
-  }
+  return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromINPToMEDFile" );
 }
 
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromINP( const char*                  theFileName,
+                                                     SMESH::DriverMED_ReadStatus& theStatus )
+{
+  return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromINPToMEDFile" );
+}
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCDB( const char*                  theFileName,
+                                                     SMESH::DriverMED_ReadStatus& theStatus )
+{
+  return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromCDBToMEDFile" );
+}
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromASC( const char*                  theFileName,
+                                                     SMESH::DriverMED_ReadStatus& theStatus )
+{
+  return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromASCToMEDFile" );
+}
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromGEOF( const char*                  theFileName,
+                                                     SMESH::DriverMED_ReadStatus& theStatus )
+{
+  return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromGeofToMEDFile" );
+}
 
 //=============================================================================
 /*!

@@ -318,6 +318,35 @@ module SMESH
     mesh_array CreateMeshesFromMAIL( in string theFileName,
                                     out SMESH::DriverMED_ReadStatus theStatus )
       raises ( SALOME_CMOD::SALOME_Exception );
+    
+    /*!
+     * Create Mesh object(s) importing data from given INP (abaqus) file
+     */
+    mesh_array CreateMeshesFromINP( in string theFileName,
+                                    out SMESH::DriverMED_ReadStatus theStatus )
+      raises ( SALOME_CMOD::SALOME_Exception );
+
+    /*!
+     * Create Mesh object(s) importing data from given CDB (ansys) file
+     */
+    mesh_array CreateMeshesFromCDB( in string theFileName,
+                                    out SMESH::DriverMED_ReadStatus theStatus )
+      raises ( SALOME_CMOD::SALOME_Exception );
+      
+      
+    /*!
+     * Create Mesh object(s) importing data from given ASC (systus) file
+     */
+    mesh_array CreateMeshesFromASC( in string theFileName,
+                                    out SMESH::DriverMED_ReadStatus theStatus )
+      raises ( SALOME_CMOD::SALOME_Exception );
+      
+    /*!
+     * Create Mesh object(s) importing data from given GEOF (zset) file
+     */
+    mesh_array CreateMeshesFromGEOF( in string theFileName,
+                                    out SMESH::DriverMED_ReadStatus theStatus )
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create Mesh object importing data from given STL file

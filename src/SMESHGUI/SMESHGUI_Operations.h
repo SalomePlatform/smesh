@@ -43,6 +43,10 @@ namespace SMESHOp {
     OpImportGMF              = 1106,   // MENU FILE - IMPORT - GMF FILE
     OpImportMESHIO           = 1107,   // MENU FILE - IMPORT - other formats... (meshio)
     OpImportMAIL             = 1108,   // MENU FILE - IMPORT - MAIL FILE
+    OpImportINP              = 1109,   // MENU FILE - IMPORT - INP FILE
+    OpImportCDB              = 1110,   // MENU FILE - IMPORT - CDB FILE
+    OpImportASC              = 1111,   // MENU FILE - IMPORT - ASC FILE
+    OpImportGEOF             = 1112,   // MENU FILE - IMPORT - GEOF FILE
     OpPopupImportDAT         = 1120,   // POPUP MENU - IMPORT - DAT FILE
     OpPopupImportUNV         = 1121,   // POPUP MENU - IMPORT - UNV FILE
     OpPopupImportMED         = 1122,   // POPUP MENU - IMPORT - MED FILE
@@ -50,6 +54,10 @@ namespace SMESHOp {
     OpPopupImportCGNS        = 1124,   // POPUP MENU - IMPORT - CGNS FILE
     OpPopupImportGMF         = 1126,   // POPUP MENU - IMPORT - GMF FILE
     OpPopupImportMAIL        = 1128,   // MENU FILE - IMPORT - MAIL FILE
+    OpPopupImportINP         = 1129,   // MENU FILE - IMPORT - INP FILE
+    OpPopupImportCDB         = 1130,   // MENU FILE - IMPORT - INP FILE
+    OpPopupImportASC         = 1131,   // MENU FILE - IMPORT - INP FILE
+    OpPopupImportGEOF        = 1132,   // MENU FILE - IMPORT - INP FILE
     // Export -------------------------//--------------------------------
     OpExportDAT              = 1200,   // MENU FILE  - EXPORT - DAT FILE
     OpExportMED              = 1201,   // MENU FILE  - EXPORT - MED FILE
