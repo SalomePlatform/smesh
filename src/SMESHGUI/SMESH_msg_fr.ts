@@ -40,6 +40,10 @@
         <translation>Fichiers CGNS</translation>
     </message>
     <message>
+        <source>INP_FILES_FILTER</source>
+        <translation>Fichiers ABAQUS INP</translation>
+    </message>
+    <message>
         <source>CGNS_EXPORT_ELEMS_BY_TYPE</source>
         <translation>Groupe les éléments par type</translation>
     </message>
@@ -881,8 +885,40 @@
         <translation>Fichier MAIL</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_INP</source>
+        <translation>Fichier INP</translation>
+    </message>
+        <message>
+        <source>MEN_IMPORT_CDB</source>
+        <translation>Fichier CDB</translation>
+    </message>
+        <message>
+        <source>MEN_IMPORT_ASC</source>
+        <translation>Fichier ASC</translation>
+    </message>
+        <message>
+        <source>MEN_IMPORT_GEOF</source>
+        <translation>Fichier GEOF</translation>
+    </message>
+    <message>
         <source>MEN_MAIL</source>
         <translation>Fichier MAIL</translation>
+    </message>
+    <message>
+        <source>MEN_INP</source>
+        <translation>Fichier INP</translation>
+    </message>
+    <message>
+        <source>MEN_CDB</source>
+        <translation>Fichier CDB</translation>
+    </message>
+    <message>
+        <source>MEN_ASC</source>
+        <translation>Fichier ASC</translation>
+    </message>
+    <message>
+        <source>MEN_GEOF</source>
+        <translation>Fichier GEOF</translation>
     </message>
     <message>
         <source>MEN_IMPORT_CGNS</source>

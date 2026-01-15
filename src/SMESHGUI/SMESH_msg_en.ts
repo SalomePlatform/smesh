@@ -44,6 +44,10 @@
         <translation>Group elements by type</translation>
     </message>
     <message>
+        <source>INP_FILES_FILTER</source>
+        <translation>ABAQUS INP files</translation>
+    </message>
+    <message>
         <source>STRUCTUREDCGNS</source>
         <translation>Structured version (only for Hexahedron(i,j,k) and Quadrangle: Mapping meshes)</translation>
     </message>
@@ -885,8 +889,40 @@
         <translation>MAIL file</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_INP</source>
+        <translation>INP file</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_CDB</source>
+        <translation>CDB file</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_ASC</source>
+        <translation>ASC file</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_GEOF</source>
+        <translation>GEOF file</translation>
+    </message>
+    <message>
         <source>MEN_MAIL</source>
         <translation>MAIL file</translation>
+    </message>
+    <message>
+        <source>MEN_INP</source>
+        <translation>INP file</translation>
+    </message>
+    <message>
+        <source>MEN_CDB</source>
+        <translation>CDB file</translation>
+    </message>
+    <message>
+        <source>MEN_ASC</source>
+        <translation>ASC file</translation>
+    </message>
+    <message>
+        <source>MEN_GEOF</source>
+        <translation>GEOF file</translation>
     </message>
     <message>
         <source>MEN_IMPORT_CGNS</source>
