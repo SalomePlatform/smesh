@@ -1853,7 +1853,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDConverterInMedcoupling( const
 SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMAIL( const char*                  theFileName,
                                                      SMESH::DriverMED_ReadStatus& theStatus )
 {
-  return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromINPToMEDFile" );
+  return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromMailToMEDFile" );
 }
 
 SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromINP( const char*                  theFileName,
