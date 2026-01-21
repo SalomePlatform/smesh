@@ -1385,9 +1385,7 @@ TopoDS_Vertex StdMeshers_FaceSide::FirstVertex(int i) const
   TopoDS_Vertex v;
   if ( i < NbEdges() )
   {
-    v = myEdge[i].Orientation() <= TopAbs_REVERSED ? // FORWARD || REVERSED
-        TopExp::FirstVertex( myEdge[i], 1 )        :
-        TopoDS::Vertex( TopoDS_Iterator( myEdge[i] ).Value() );
+    v = TopExp::FirstVertex( myEdge[i], (myEdge[i].Orientation() <= TopAbs_REVERSED) );
   }
   return v;
 }
@@ -1404,11 +1402,7 @@ TopoDS_Vertex StdMeshers_FaceSide::LastVertex(int i) const
   if ( i < NbEdges() )
   {
     const TopoDS_Edge& edge = i<0 ? myEdge[ NbEdges() + i ] : myEdge[i];
-    if ( edge.Orientation() <= TopAbs_REVERSED ) // FORWARD || REVERSED
-      v = TopExp::LastVertex( edge, 1 );
-    else
-      for ( TopoDS_Iterator vIt( edge ); vIt.More(); vIt.Next() )
-        v = TopoDS::Vertex( vIt.Value() );
+    v = TopExp::LastVertex( edge, (edge.Orientation() <= TopAbs_REVERSED) );
   }
   return v;
 }
