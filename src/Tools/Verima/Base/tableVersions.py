@@ -17,7 +17,11 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-from qtsalome import QSqlQuery
+import os
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtSql import QSqlQuery
+else:
+  from PyQt5.Qt import QSqlQuery
 from Base.tableDeBase import TableDeBase
 
 class TableVersions (TableDeBase):

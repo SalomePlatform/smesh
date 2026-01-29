@@ -36,6 +36,10 @@ ELSE()
   MESSAGE(FATAL_ERROR "We absolutely need the Salome CMake configuration files, please define CONFIGURATION_ROOT_DIR !")
 ENDIF()
 
+# Use PySide2/Shiboken2 or PyQt5/SIP5
+# ===================================
+SET (SALOME_USE_PYSIDE $ENV{SALOME_USE_PYSIDE} CACHE BOOL "Use PySide or PyQt")
+
 # Versioning
 # ===========
 SALOME_SETUP_VERSION(9.15.0)
@@ -168,10 +172,12 @@ IF(SALOME_BUILD_GUI)
     ##
     # Qt
     FIND_PACKAGE(SalomeQt5 REQUIRED)
-    # SIP
-    FIND_PACKAGE(SalomeSIP REQUIRED)  # should come after Python and before PyQt5
-    # PyQt
-    FIND_PACKAGE(SalomePyQt5 REQUIRED)
+    IF(NOT SALOME_USE_PYSIDE)
+      # SIP
+      FIND_PACKAGE(SalomeSIP REQUIRED)  # should come after Python and before PyQt5
+      # PyQt
+      FIND_PACKAGE(SalomePyQt5 REQUIRED)
+    ENDIF(NOT SALOME_USE_PYSIDE)
     # Qwt
     FIND_PACKAGE(SalomeQwt REQUIRED)
   ELSE(EXISTS ${GUI_ROOT_DIR})

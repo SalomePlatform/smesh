@@ -24,7 +24,11 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+import os
+if 'SALOME_USE_PYSIDE' in os.environ:
+  PySide2 import QtCore, QtGui, QtWidgets
+else:
+  from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Choix(object):
     def setupUi(self, Choix):

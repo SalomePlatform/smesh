@@ -25,31 +25,37 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+import os
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QGridLayout, QLineEdit, QApplication, QDialog
+  from PySide2.QtCore import QMetaObject, QSize
+else:
+  from PyQt5.QtGui import QGridLayout, QLineEdit, QApplication, QDialog
+  from PyQt5.QtCore import QMetaObject, QSize
 
 class Ui_LEDataBaseName(object):
     def setupUi(self, LEDataBaseName):
         LEDataBaseName.setObjectName("LEDataBaseName")
         LEDataBaseName.resize(400, 61)
-        self.gridLayout = QtGui.QGridLayout(LEDataBaseName)
+        self.gridLayout = QGridLayout(LEDataBaseName)
         self.gridLayout.setObjectName("gridLayout")
-        self.LEBaseName = QtGui.QLineEdit(LEDataBaseName)
-        self.LEBaseName.setMinimumSize(QtCore.QSize(341, 41))
+        self.LEBaseName = QLineEdit(LEDataBaseName)
+        self.LEBaseName.setMinimumSize(QSize(341, 41))
         self.LEBaseName.setObjectName("LEBaseName")
         self.gridLayout.addWidget(self.LEBaseName, 0, 0, 1, 1)
 
         self.retranslateUi(LEDataBaseName)
-        QtCore.QMetaObject.connectSlotsByName(LEDataBaseName)
+        QMetaObject.connectSlotsByName(LEDataBaseName)
 
     def retranslateUi(self, LEDataBaseName):
-        LEDataBaseName.setWindowTitle(QtGui.QApplication.translate("LEDataBaseName", "Enter DataBase File", None, QtGui.QApplication.UnicodeUTF8))
-        self.LEBaseName.setText(QtGui.QApplication.translate("LEDataBaseName", "myMesh.db", None, QtGui.QApplication.UnicodeUTF8))
+        LEDataBaseName.setWindowTitle(QApplication.translate("LEDataBaseName", "Enter DataBase File", None, QApplication.UnicodeUTF8))
+        self.LEBaseName.setText(QApplication.translate("LEDataBaseName", "myMesh.db", None, QApplication.UnicodeUTF8))
 
 
 if __name__ == "__main__":
     import sys
-    app = QtGui.QApplication(sys.argv)
-    LEDataBaseName = QtGui.QDialog()
+    app = QApplication(sys.argv)
+    LEDataBaseName = QDialog()
     ui = Ui_LEDataBaseName()
     ui.setupUi(LEDataBaseName)
     LEDataBaseName.show()

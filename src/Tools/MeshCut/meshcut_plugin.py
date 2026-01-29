@@ -30,7 +30,10 @@ def MeshCut(context):
   import os
   import subprocess
   import tempfile
-  from qtsalome import QFileDialog, QMessageBox, QDialog
+  if 'SALOME_USE_PYSIDE' in os.environ:
+    from PySide2.QtWidgets import QFileDialog, QMessageBox, QDialog
+  else:
+    from PyQt5.Qt import QFileDialog, QMessageBox, QDialog
   from MeshCutDialog_ui import Ui_Dialog
   
   class CutDialog(QDialog):

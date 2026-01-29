@@ -26,9 +26,12 @@ os.environ['QT_QPA_PLATFORM_PLUGIN_PATH']=os.path.join(os.environ['QTDIR'],'plug
 #commande="/bin/bash -c ""source $HOME/zebulon/Z8.6.6_NEW/do_config_bash"""
 #os.system(commande)
 
-def IHM():
-
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QApplication
+else:
   from PyQt5.QtWidgets import QApplication
+
+def IHM():
 
   app = QApplication(sys.argv)
   myapp = main.ShipHolderApplication()

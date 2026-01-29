@@ -20,7 +20,11 @@
 ADD_SUBDIRECTORY(casTests)
 
 IF(SALOME_BUILD_GUI)
-  INCLUDE(UsePyQt)
+  INCLUDE(SalomeQtPythonBindings)
+  SALOME_SETUP_QT_PYTHON_BINDINGS()
+  IF(SALOME_USE_PYSIDE)
+    SALOME_SETUP_PYSIDE_SHIBOKEN()
+  ENDIF()
 ENDIF(SALOME_BUILD_GUI)
 
 # --- scripts ---
@@ -55,8 +59,8 @@ SET(_pyqrc_FILES
 )
 
   # scripts / pyuic wrappings
-  PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic OPTIONS "--import-from=Zcracks" "--resource-suffix=_qrc")
-  PYQT_WRAP_QRC(_pyqrc_SCRIPTS ${_pyqrc_FILES})
+  SALOME_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic OPTIONS "--import-from=Zcracks" "--resource-suffix=_qrc")
+  SALOME_WRAP_QRC(_pyqrc_SCRIPTS ${_pyqrc_FILES})
 ENDIF(SALOME_BUILD_GUI)
 
 # --- rules ---

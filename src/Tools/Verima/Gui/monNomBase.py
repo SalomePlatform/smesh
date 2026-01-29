@@ -17,7 +17,11 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-from qtsalome import *
+import os
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QDialog
+else:
+  from PyQt5.Qt import *
 from nomBase_ui import Ui_LEDataBaseName
 
 

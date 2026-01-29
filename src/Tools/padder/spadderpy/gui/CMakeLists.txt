@@ -17,7 +17,11 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(UsePyQt)
+INCLUDE(SalomeQtPythonBindings)
+SALOME_SETUP_QT_PYTHON_BINDINGS()
+IF(SALOME_USE_PYSIDE)
+  SALOME_SETUP_PYSIDE_SHIBOKEN()
+ENDIF()
 
 # --- scripts ---
 
@@ -52,8 +56,7 @@ SET(_pyuic_FILES
 )
 
 # scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
-
+SALOME_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
 # --- rules ---
 SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PYTHON}/salome/smesh/spadder/gui TARGET_NAME _target_name_pyuic_py)
 # add dependency of compiled py files on uic files in order

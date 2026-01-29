@@ -26,7 +26,10 @@ import tempfile
 import traceback
 import pprint as PP #pretty print
 
-from qtsalome import *
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QDialog, QMessageBox
+else:
+  from PyQt5.Qt import QDialog, QMessageBox
 
 # Import des panels
 

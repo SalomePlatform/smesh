@@ -23,7 +23,10 @@ rep=os.path.dirname(os.path.abspath(__file__))
 installDir=os.path.join(rep,'..')
 sys.path.insert(0,installDir)
 
-from qtsalome import QApplication
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QApplication
+else:
+  from PyQt5.Qt import QApplication
 from Gui.maFenetreChoix import MaFenetreChoix
 from Base.dataBase import Base
 

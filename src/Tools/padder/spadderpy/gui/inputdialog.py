@@ -20,7 +20,7 @@
 # Author : Guillaume Boulant (EDF)
 #
 
-import os
+import os, sys
 
 from salome.kernel import salome
 from salome.kernel.salome.kernel import studyedit
@@ -29,8 +29,13 @@ from salome.gui import helper as guihelper
 from salome.smesh.smeshstudytools import SMeshStudyTools
 
 from omniORB import CORBA
-
-from qtsalome import QIcon, QStandardItemModel, QStandardItem, QMessageBox, pyqtSignal
+usePySide = 'SALOME_USE_PYSIDE' in os.environ
+if usePySide:
+  from PySide2.QtGui import QIcon, QStandardItemModel, QStandardItem
+  from PySide2.QtWidgets import QMessageBox, QApplication
+  from PySide2.QtCore import QObject, Signal
+else:
+  from PyQt5.Qt import QIcon, QStandardItemModel, QStandardItem, QMessageBox, pyqtSignal, QApplication
 
 from salome.smesh.spadder.gui.inputframe_ui import Ui_InputFrame
 from salome.smesh.spadder.gui.inputdata import InputData
@@ -49,8 +54,10 @@ PARAM_RMAXRMIN_DEFAULT_VALUE = 3
 class InputDialog(GenericDialog):
 
     TBL_HEADER_LABEL=["Input Mesh", "Output group name"]
-
-    inputValidated = pyqtSignal()
+    if usePySide:
+      inputValidated = Signal(str)
+    else:
+      inputValidated = pyqtSignal()
 
     def __init__(self, parent=None, name="InputDialog", modal=0):
         """
@@ -361,8 +368,6 @@ class InputDialog(GenericDialog):
 # ==============================================================================
 #
 def TEST_InputDialog():
-    import sys
-    from qtsalome import QApplication
     app = QApplication(sys.argv)
     app.lastWindowClosed.connect( app.quit )
 
@@ -372,8 +377,6 @@ def TEST_InputDialog():
         print("OK has been pressed")
 
 def TEST_InputDialog_setData():
-    import sys
-    from qtsalome import QApplication
     app = QApplication(sys.argv)
     app.lastWindowClosed.connect( app.quit )
 

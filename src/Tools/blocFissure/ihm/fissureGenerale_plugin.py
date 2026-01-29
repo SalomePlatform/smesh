@@ -36,13 +36,22 @@ def fissureGeneraleDlg(context):
   import os
   #import subprocess
   #import tempfile
-  from PyQt5 import QtCore
-  from PyQt5 import QtWidgets
-  from PyQt5 import QtGui
-  from PyQt5.QtWidgets import QFileDialog
-  from PyQt5.QtWidgets import QMessageBox
-  from PyQt5.QtGui import QPalette
-  from PyQt5.QtGui import QColor
+  if 'SALOME_USE_PYSIDE' in os.environ:
+    from PySide2 import QtCore
+    from PySide2 import QtWidgets
+    from PySide2 import QtGui
+    from PySide2.QtWidgets import QFileDialog
+    from PySide2.QtWidgets import QMessageBox
+    from PySide2.QtGui import QPalette
+    from PySide2.QtGui import QColor
+  else:
+    from PyQt5 import QtCore
+    from PyQt5 import QtWidgets
+    from PyQt5 import QtGui
+    from PyQt5.QtWidgets import QFileDialog
+    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtGui import QPalette
+    from PyQt5.QtGui import QColor
   from blocFissure.ihm.fissureGenerale_ui import Ui_Dialog
 
   class fissureGeneraleDialog(QtWidgets.QDialog):
