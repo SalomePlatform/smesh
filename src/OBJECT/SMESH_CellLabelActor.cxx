@@ -189,7 +189,7 @@ void SMESH_CellLabelActor::AddToRender(vtkRenderer* theRenderer)
 {
   SMESH_DeviceActor::AddToRender(theRenderer);
   myClsSelectVisiblePoints->SetRenderer(theRenderer);
-  theRenderer->AddActor2D(myCellsLabels);
+  theRenderer->AddViewProp(myCellsLabels);
 }
 
 void SMESH_CellLabelActor::RemoveFromRender(vtkRenderer* theRenderer)
