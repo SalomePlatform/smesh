@@ -149,7 +149,7 @@ void SMESHGUI_IdPreview::AddToRender(vtkRenderer* theRenderer)
   myIdActor->AddToRender(theRenderer);
 
   myPtsSelectVisiblePoints->SetRenderer(theRenderer);
-  theRenderer->AddActor2D(myPointLabels);
+  theRenderer->AddViewProp(myPointLabels);
 }
 
 void SMESHGUI_IdPreview::RemoveFromRender(vtkRenderer* theRenderer)

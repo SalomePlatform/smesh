@@ -178,7 +178,7 @@ void SMESH_NodeLabelActor::AddToRender(vtkRenderer* theRenderer)
 {
   SMESH_DeviceActor::AddToRender(theRenderer);
   myPtsSelectVisiblePoints->SetRenderer(theRenderer);
-  theRenderer->AddActor2D(myPointLabels);
+  theRenderer->AddViewProp(myPointLabels);
 }
 
 void SMESH_NodeLabelActor::RemoveFromRender(vtkRenderer* theRenderer)

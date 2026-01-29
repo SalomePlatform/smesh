@@ -1206,7 +1206,7 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer)
 
   theRenderer->AddActor(myHighlitableActor);
 
-  theRenderer->AddActor2D(myScalarBarActor);
+  theRenderer->AddViewProp(myScalarBarActor);
 
   // the superclass' method should be called at the end
   // (in particular, for correct work of selection)
