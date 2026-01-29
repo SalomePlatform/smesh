@@ -29,7 +29,10 @@ def YamsLct(context):
   import os
   import subprocess
   import tempfile
-  from qtsalome import QFileDialog, QMessageBox
+  if 'SALOME_USE_PYSIDE' in os.environ:
+    from PySide2.QtWidgets import QFileDialog, QMessageBox
+  else:
+    from PyQt5.Qt import QFileDialog, QMessageBox
   
   import monYamsPlugDialog
   window = monYamsPlugDialog.getDialog()

@@ -34,8 +34,10 @@ import platform
 import tempfile
 from TopIIVolMeshPluginDialog_ui import Ui_TopIIVolMeshMainFrame
 from TopIIVolMeshMonitor import TopIIVolMeshMonitor
-from qtsalome import *
-
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QWidget, QMessageBox, QFileDialog
+else:
+  from PyQt5.Qt import QWidget, QMessageBox, QFileDialog
 verbose = True
 
 class TopIIVolMeshPluginDialog(Ui_TopIIVolMeshMainFrame,QWidget):

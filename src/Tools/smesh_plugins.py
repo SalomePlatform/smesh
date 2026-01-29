@@ -21,7 +21,10 @@
 #
 import salome_pluginsmanager
 import os
-from qtsalome import QIcon
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtGui import QIcon
+else:
+  from PyQt5.Qt import QIcon
 
 try:
   from spadderPlugin import runSpadderPlugin

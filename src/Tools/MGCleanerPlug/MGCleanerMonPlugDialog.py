@@ -21,11 +21,16 @@
 # Modules Python
 # Modules Eficas
 
+import sys
 import os, subprocess
 import tempfile
 from MGCleanerPlugDialog_ui import Ui_MGCleanerPlugDialog
 from MGCleanerMonViewText import MGCleanerMonViewText
-from qtsalome import *
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QWidget, QMessageBox, QFileDialog, QApplication
+  from PySide2.QtGui import QIcon, QDoubleValidator
+else:
+  from PyQt5.Qt import *
 
 verbose = True
 
@@ -634,8 +639,6 @@ def TEST_standalone():
 # ==============================================================================
 #
 def TEST_MGCleanerMonPlugDialog():
-  import sys
-  from qtsalome import QApplication
   app = QApplication(sys.argv)
   app.lastWindowClosed.connect(app.quit)
 

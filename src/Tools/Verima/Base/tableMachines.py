@@ -18,7 +18,11 @@
 #
 
 import os
-from qtsalome import QSqlQuery
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtSql import QSqlQuery
+else:
+  from PyQt5.Qt import QSqlQuery
+
 from Base.tableDeBase import TableDeBase
 
 class TableMachines (TableDeBase):

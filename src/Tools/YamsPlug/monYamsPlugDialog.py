@@ -21,11 +21,16 @@
 # Modules Python
 # Modules Eficas
 
+import sys
 import os, subprocess
 import tempfile
 from YamsPlugDialog_ui import Ui_YamsPlugDialog
 from monViewText import MonViewText
-from qtsalome import *
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QWidget, QMessageBox, QRadioButton, QFileDialog, QApplication
+  from PySide2.QtGui import QIcon, QDoubleValidator
+else:
+  from PyQt5.Qt import *
 
 verbose = True
 
@@ -598,8 +603,6 @@ def getDialog():
 # ==============================================================================
 #
 def TEST_MonYamsPlugDialog():
-  import sys
-  from qtsalome import QApplication
   app = QApplication(sys.argv)
   app.lastWindowClosed.connect(app.quit)
 

@@ -29,7 +29,10 @@ def TopIIVolMeshLct(context):
   import os
   import subprocess
   import tempfile
-  from qtsalome import QFileDialog, QMessageBox
+  if 'SALOME_USE_PYSIDE' in os.environ:
+    from PySide2.QtWidgets import QFileDialog, QMessageBox
+  else:
+    from PyQt.Qt import QFileDialog, QMessageBox
 
   import TopIIVolMeshPluginDialog
   window = TopIIVolMeshPluginDialog.getDialog()

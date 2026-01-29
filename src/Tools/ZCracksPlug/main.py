@@ -20,9 +20,14 @@
 import sys, pickle, tempfile, shutil
 from os import path, getpid, environ, remove, system
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtCore import *
+  from PySide2.QtGui import *
+  from PySide2.QtWidgets import *
+else:
+  from PyQt5.QtCore import *
+  from PyQt5.QtGui import *
+  from PyQt5.QtWidgets import *
 
 from . import utilityFunctions as uF
 from . import genereCrack, Zset, output, zcracks_ui

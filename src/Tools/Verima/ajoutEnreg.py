@@ -23,7 +23,10 @@ rep=os.path.dirname(os.path.abspath(__file__))
 installDir=os.path.join(rep,'..')
 sys.path.insert(0,installDir)
 
-from qtsalome import *
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtSql import QSqlTableModel
+else:
+  from PyQt5.Qt import QSqlTableModel
 from Base.dataBase import Base
 
 def completeDatabase(fichier,table,enregistrement):

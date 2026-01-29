@@ -22,7 +22,11 @@ IF(SALOME_BUILD_DOC)
 ENDIF(SALOME_BUILD_DOC)
 
 IF(SALOME_BUILD_GUI)
-  INCLUDE(UsePyQt)
+  INCLUDE(SalomeQtPythonBindings)
+  SALOME_SETUP_QT_PYTHON_BINDINGS()
+  IF(SALOME_USE_PYSIDE)
+    SALOME_SETUP_PYSIDE_SHIBOKEN()
+  ENDIF()
 ENDIF(SALOME_BUILD_GUI)
 
 # --- scripts ---
@@ -41,7 +45,7 @@ IF(SALOME_BUILD_GUI)
     MGCleanerViewText.ui
   )
   # scripts / pyuic wrappings
-  PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
+  SALOME_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
 ENDIF(SALOME_BUILD_GUI)
 
 # --- rules ---

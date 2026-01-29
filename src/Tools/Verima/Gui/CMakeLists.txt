@@ -17,7 +17,11 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(UsePyQt)
+INCLUDE(SalomeQtPythonBindings)
+SALOME_SETUP_QT_PYTHON_BINDINGS()
+IF(SALOME_USE_PYSIDE)
+  SALOME_SETUP_PYSIDE_SHIBOKEN()
+ENDIF()
 
 # --- scripts ---
 
@@ -41,8 +45,7 @@ SET(_pyuic_FILES
   tousLesJobs.ui
 )
 # scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
-
+SALOME_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
 # --- rules ---
 
 SALOME_INSTALL_SCRIPTS("${_plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/Verima/Gui)

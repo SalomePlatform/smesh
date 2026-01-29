@@ -20,7 +20,13 @@
 # Author : Guillaume Boulant (EDF)
 #
 
-from qtsalome import QDialog, QIcon, Qt
+import os
+if 'SALOME_USE_PYSIDE' in os.environ:
+  from PySide2.QtWidgets import QDialog, QApplication
+  from PySide2.QtGui import QIcon
+  from PySide2.QtCore import Qt
+else:
+  from PyQt5.Qt import QDialog, QIcon, Qt, QApplication
 
 from salome.smesh.spadder.gui.plugindialog_ui import Ui_PluginDialog
 from salome.smesh.spadder.gui.inputdialog import InputDialog, INPUTDATA_KEY_FILES, INPUTDATA_KEY_PARAM
@@ -407,8 +413,6 @@ def getDialog():
 # ==============================================================================
 #
 def TEST_PluginDialog():
-    import sys
-    from qtsalome import QApplication
     app = QApplication(sys.argv)
     app.lastWindowClosed.connect( app.quit )
 
