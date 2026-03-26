@@ -4108,15 +4108,17 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
 
 void SMESH_Mesh_i::ExportPartToMESHIO(SMESH::SMESH_IDSource_ptr meshPart,
                                       const char*               file,
-                                      const char*               selectedFilter)
+                                      const char*               selectedFilter,
+                                      const char*               converter)
 {
   // Get default MED version
   SMESH::long_array_var medVersions = GetMEDVersionsCompatibleForAppend();
   const CORBA::Long version = medVersions[0];
   MESSAGE("Export part with meshio through MED version: " << version);
 
-  // Default values are the same as for MED export
-  const bool auto_groups = false;
+  // Special case for Gmsh 2.2 format: to keep groups in the file, MED file should be written with auto_groups = true and then converted to Gmsh 2.2
+  // see gmsh user manual page 11 CAUTION: without -save_all option for Gmsh 2.2
+  const bool auto_groups = SMESHIOConverter::GetFilterLabel(selectedFilter).find("Gmsh 2.2") != std::string::npos;
   const bool overwrite = true;
   const bool autoDimension = true;
   const GEOM::ListOfFields fields;
@@ -4135,16 +4137,35 @@ void SMESH_Mesh_i::ExportPartToMESHIO(SMESH::SMESH_IDSource_ptr meshPart,
                                geomAssocFields, ZTolerance, saveNumbers);
 
   // Convert temp file into a target one with meshio command
-  meshio.Convert(tempFileName, file);
+  meshio.Convert(tempFileName, file, false, converter);
 
   // Prepare python dump
   SMESH_TRY;
 
-  TPythonDump() << _this() << ".ExportPartToMESHIO("
+  SMESHIOConverter::ExternalConverter externalConverter = SMESHIOConverter::ExternalConverter::Unknown;
+  externalConverter = meshio.GetConverterForExtension(selectedFilter, file, converter);
+  switch (externalConverter)
+  {
+    case SMESHIOConverter::ExternalConverter::Gmsh:
+      TPythonDump() << _this() << ".ExportPartToGMSHIO("
                 << meshPart << ", r'"
                 << file << "', '"
-                << selectedFilter << "'"
+                << SMESHIOConverter::GetFilterLabel(selectedFilter) << "'"
                 << ")";
+      break;
+
+    case SMESHIOConverter::ExternalConverter::MeshIo:
+      TPythonDump() << _this() << ".ExportPartToMESHIO("
+                << meshPart << ", r'"
+                << file << "', '"
+                << SMESHIOConverter::GetFilterLabel(selectedFilter) << "'"
+                << ")";
+      break;
+
+    case SMESHIOConverter::ExternalConverter::Unknown:
+    default:
+      break;
+  }
 
   SMESH_CATCH(SMESH::throwCorbaException);
 }

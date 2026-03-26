@@ -88,10 +88,10 @@ bool SMESHGUI_Meshio::CheckMeshCount(const meshList& aMeshList)
   Import mesh through an intermediate MED file
 */
 SMESH::mesh_array_var SMESHGUI_Meshio::ImportMesh(
-  SMESH::SMESH_Gen_ptr theComponentMesh, const QString& filename, QStringList& errors)
+  SMESH::SMESH_Gen_ptr theComponentMesh, const QString& filename, QStringList& errors, const QString& selectedFilter)
 {
   SMESH::DriverMED_ReadStatus res;
-  SMESH::mesh_array_var aMeshes = theComponentMesh->CreateMeshesFromMESHIO(filename.toUtf8().constData(), res);
+  SMESH::mesh_array_var aMeshes = theComponentMesh->CreateMeshesFromMESHIO(filename.toUtf8().constData(), res, selectedFilter.toUtf8().constData(), nullptr);
   if (res != SMESH::DRS_OK)
   {
     errors.append(QString("%1 :\n\t%2").arg(filename).arg(
@@ -102,13 +102,31 @@ SMESH::mesh_array_var SMESHGUI_Meshio::ImportMesh(
 }
 
 /*!
+  Returns all filter File dialog
+*/
+const QStringList& SMESHGUI_Meshio::GetAllFilters()
+{
+    static QStringList filter;
+
+    if (filter.isEmpty())
+    {
+        for (const auto& [fmt, info] : SMESHIOConverter::ExtensionMap)
+        {
+            filter << info.label;  // on ajoute directement le label du format
+        }
+    }
+
+    return filter;
+}
+
+/*!
   Returns a filter for Import File dialog
 */
 const QStringList& SMESHGUI_Meshio::GetImportFileFilter()
 {
   auto addAllFiles = []() -> QStringList
   {
-    QStringList filter = GetExportFileFilter();
+    QStringList filter = GetAllFilters();
 
     // Remove SVG because it works only for export
     const int svgIndex = filter.indexOf(QRegExp("^SVG.+"));
@@ -116,7 +134,12 @@ const QStringList& SMESHGUI_Meshio::GetImportFileFilter()
     {
       filter.removeAt(svgIndex);
     }
-
+    // Remove versioned Gmsh formats and leave only basic Gmsh (*.msh) for import
+    int gmshIndex;
+    while ((gmshIndex = filter.indexOf(QRegExp("^Gmsh \\d.+"))) >= 0) {
+      filter.removeAt(gmshIndex);
+    }
+    
     filter << QObject::tr("ALL_FILES_FILTER") + " (*)";
 
     return filter;
@@ -131,42 +154,22 @@ const QStringList& SMESHGUI_Meshio::GetImportFileFilter()
 */
 const QStringList& SMESHGUI_Meshio::GetExportFileFilter()
 {
-  static const QStringList filter = {
-    "Abaqus (*.inp)",
-    "ANSYS msh (*.msh)",
-    "AVS-UCD (*.avs)",
-    "CGNS (*.cgns)",
-    "DOLFIN XML (*.xml)",
-#if !defined(WIN32)
-    "Exodus (*.e *.exo)",
-#endif
-    "FLAC3D (*.f3grid)",
-    "Gmsh 2.2 (*.msh)",
-    "Gmsh 4.0 (*.msh)",
-    //"Gmsh 4.1 (*.msh)",
-    "H5M (*.h5m)",
-    "Kratos/MDPA (*.mdpa)",
-    "MED/Salome (*.med)",
-    "Medit (*.mesh *.meshb)",
-    "Nastran (*.bdf *.fem *.nas)",
-    "Netgen(*.vol *.vol.gz)",
-    "OBJ (*.obj)",
-    "OFF (*.off)",
-    "PERMAS (*.post *.post.gz *.dato *.dato.gz)",
-    "PLY (*.ply)",
-    "STL (*.stl)",
-    "SU2 (*.su2)",
-    "SVG, 2D output only (*.svg)",
-    "Tecplot (*.dat)",
-    "TetGen (*.node *.ele)",
-    "UGRID (*.ugrid)",
-    "VTK (*.vtk)",
-    "VTU (*.vtu)",
-    "WKT, TIN (*.wkt)",
-    "XDMF (*.xdmf *.xmf)"
-  };
+    //remove only Gmsh (*.msh) from filter and leave all other formats
+    auto removeGmsh = []() -> QStringList
+    {
+        QStringList filter = GetAllFilters();
 
-  return filter;
+        const int gmshIndex = filter.indexOf(QRegExp("^Gmsh.+"));
+        if (gmshIndex >= 0)
+        {
+            filter.removeAt(gmshIndex);
+        }
+
+        return filter;
+    };
+
+    static const QStringList filter = removeGmsh();
+    return filter;
 }
 
 /*!
@@ -178,6 +181,21 @@ void SMESHGUI_Meshio::ExportMesh(const meshList& aMeshList, const QString& targe
   // We need to save into separated files because meshio doesn't
   // support reading more than one mesh from a MED file.
   // Look at src/meshio/med/_med.py in meshio git repo for a reference.
+  SMESHIOConverter::ExternalConverter converter = SMESH_Meshio::GetConverterForExtension(selectedFilter);
+  if (!SMESHGUI_Meshio::IsConverterInstalled(converter))
+  {
+    return;
+  }
+  if (converter == SMESHIOConverter::ExternalConverter::Unknown)
+  {
+    SUIT_MessageBox::warning(
+      SMESHGUI::desktop(),
+      QObject::tr("SMESH_WARNING"),
+      QObject::tr("SMESH_EXPORT_UNKNOWN_LIB")
+    );
+    return;
+  }
+
   auto indexedFileName = [](const QString& targetFileName, const int index) -> QString
   {
     QString indexedFileName = targetFileName;
@@ -188,20 +206,6 @@ void SMESHGUI_Meshio::ExportMesh(const meshList& aMeshList, const QString& targe
     return indexedFileName;
   };
 
-  // Trim an extension from the filter like in example: 'VTK (.vtk)' => 'VTK'
-  auto getFilterWithoutExt = [](const QString& selectedFilter) -> QString
-  {
-    // Find the start index for an extension in the filter string
-    const int index = selectedFilter.indexOf('(');
-    if (index != -1)
-    {
-      const QString filterWithoutExt = selectedFilter.left(index);
-      return filterWithoutExt.trimmed();
-    }
-
-    return selectedFilter;
-  };
-
   // Iterate all the meshes from a list
   auto aMeshIter = aMeshList.begin();
   for(int aMeshIndex = 0; aMeshIter != aMeshList.end(); aMeshIter++, aMeshIndex++)
@@ -209,12 +213,22 @@ void SMESHGUI_Meshio::ExportMesh(const meshList& aMeshList, const QString& targe
     SMESH::SMESH_IDSource_var aMeshOrGroup = (*aMeshIter).first;
     SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
 
-    // Exprort this part.
+
+    // // Exprort this part.
+    // aMeshItem->ExportPartToMESHIO(
+    //   aMeshOrGroup, // mesh part
+    //   (aMeshIndex ? indexedFileName(targetFileName, aMeshIndex) : targetFileName).toUtf8().data(),
+    //   getFilterWithoutExt(selectedFilter).toLatin1().data()
+    // );
+
+    QString outFile = (aMeshIndex ? indexedFileName(targetFileName, aMeshIndex) : targetFileName);
+
     aMeshItem->ExportPartToMESHIO(
-      aMeshOrGroup, // mesh part
-      (aMeshIndex ? indexedFileName(targetFileName, aMeshIndex) : targetFileName).toUtf8().data(),
-      getFilterWithoutExt(selectedFilter).toLatin1().data()
-    );
+        aMeshOrGroup,
+        outFile.toUtf8().data(),
+        selectedFilter.toLatin1().data(),
+        nullptr
+      );
   }
 }
 
@@ -251,6 +265,24 @@ bool SMESHGUI_Meshio::IsMeshioInstalled()
       SMESHGUI::desktop(),
       QObject::tr("SMESH_WARNING"),
       QObject::tr("SMESH_MESHIO_NOT_INSTALLED")
+    );
+  }
+
+  return isInstalled;
+}
+
+/*!
+  Returns true if convert package is installed
+*/
+bool SMESHGUI_Meshio::IsConverterInstalled(SMESHIOConverter::ExternalConverter converter)
+{
+  const bool isInstalled = SMESH_Meshio::IsConverterInstalled(converter);
+  if (!isInstalled)
+  {
+    SUIT_MessageBox::warning(
+      SMESHGUI::desktop(),
+      QObject::tr("SMESH_WARNING"),
+      QObject::tr("SMESH_CONVERT_LIB_NOT_INSTALLED")
     );
   }
 

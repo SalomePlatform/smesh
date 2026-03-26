@@ -21,46 +21,68 @@ In MESH there is a functionality allowing import/export of meshes in the followi
 You can also export a group as a whole mesh.
 
 ------------------------------
-Additional file formats with meshio
+Additional file formats with **GMSH**
 ------------------------------
 
-It is possible to use additional file formats using **meshio** library.
-However, there are some restrictions because of way it uses in Salome. The main points here are:
+It is possible to use additional file formats using **GMSH** backend with the following approach:
 
-* We use intermediate MED file to communicate between Salome and **meshio**.
-* Conversion to the target format performs **meshio convert** command, using given **MED** file.
-* Current **meshio** version doesn't work well with all tested file formats. 
+* The mesh is first saved in a temporary MED file.
+* The MED file is then read by **GMSH** and converted to the desired file format using ``--format`` option.
 
-Anyway, you can try to import/export meshes with **meshio** using following formats:
+Following formats are currently supported:
 
+* Gmsh 4.1 (*.msh)
+* Gmsh 2.2 (*.msh)
+* MAIL (*.mail)
 * Abaqus (*.inp)
-* ANSYS msh (*.msh)
-* AVS-UCD (*.avs)
-* CGNS (*.cgns)
-* DOLFIN XML (*.xml)
-* Exodus (*.e *.exo)
-* FLAC3D (*.f3grid)
-* Gmsh 2.2, 4.0, and 4.1 (*.msh)
-* H5M (*.h5m)
-* Kratos/MDPA (*.mdpa)
 * MED/Salome (*.med)
-* Medit (*.mesh *.meshb)
-* Nastran (*.bdf *fem *.nas)
-* Netgen(*.vol *.vol.gz)
+* Medit MESH (*.mesh)
+* Nastran (*.bdf)
 * OBJ (*.obj)
 * OFF (*.off)
-* PERMAS (*.post *.post.gz *.dato *.dato.gz)
 * PLY (*.ply)
 * STL (*.stl)
 * SU2 (*.su2)
-* SVG, 2D output only (*.svg)
-* Tecplot (*.dat)
-* TetGen (*.node *.ele)
-* UGRID (*.ugrid)
+* Tecplot (*.tec)
 * VTK (*.vtk)
+
+**WARNING**: Due to limitations in the Gmsh 2.2 format, groups will be automatically created by dimension to export the various elements (Group_Of_All_Edges, Group_Of_All_Faces, Group_Of_All_Volumes).
+
+
+------------------------------
+Additional file formats with **MeshIO**
+------------------------------
+
+It is also possible to use additional file formats using **MeshIO** library:
+
+* The mesh is first saved in a temporary MED file.
+* The MED file is then read by **MeshIO** and converted to the desired file formatusing ``--output-format`` option.
+
+The following formats are currently supported:
+
+* ANSYS msh (*.msh)
+* AVS-UCD (*.avs)
+* DOLFIN XML (*.xml)
+* Exodus (*.e)
+* Exodus (*.exo)
+* FLAC3D (*.f3grid)
+* H5M (*.h5m)
+* Kratos/MDPA (*.mdpa)
+* Medit MESHB (*.meshb)
+* Nastran (*.fem)
+* Nastran (*.nas)
+* Netgen (*.vol)
+* Netgen (*.vol.gz)
+* PERMAS (*.post)
+* PERMAS (*.dato)
+* SVG, 2D output only (*.svg)
+* TetGen (*.node)
+* TetGen (*.ele)
+* UGRID (*.ugrid)
 * VTU (*.vtu)
 * WKT, TIN (*.wkt)
-* XDMF (*.xdmf *.xmf)
+* XDMF (*.xdmf)
+* XDMF (*.xmf)
 
 ==============================
 Import
@@ -99,6 +121,7 @@ If you try to export a group, the warning will be shown:
 Only MED format supports all types of elements that can be created in the module. If you export a mesh or group that includes elements of types that are not supported by chosen format, you will be warned about that.
 
 There are additional parameters available at export to MED format files.
+
 
 .. _export_auto_groups:
 

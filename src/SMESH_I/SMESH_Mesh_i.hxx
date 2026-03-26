@@ -255,7 +255,8 @@ public:
 
   void ExportPartToMESHIO(SMESH::SMESH_IDSource_ptr meshPart,
                           const char*               file,
-                          const char*               selectedFilter);
+                          const char*               selectedFilter,
+                          const char*               converter = nullptr);
 
   CORBA::LongLong ExportPartToMEDCoupling(SMESH::SMESH_IDSource_ptr meshPart,
                                           CORBA::Boolean            auto_groups,

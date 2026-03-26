@@ -299,11 +299,14 @@ public:
 
   //  Create a mesh and import data from any file supported by meshio library
   SMESH::mesh_array* CreateMeshesFromMESHIO(const char*             theFileName,
-                                            SMESH::DriverMED_ReadStatus& theStatus);
+                                            SMESH::DriverMED_ReadStatus& theStatus,
+                                            const char* selectedFilter = nullptr,
+                                            const char* converter = nullptr);
 
   SMESH::mesh_array* ReloadMeshesFromMESHIO(const char* theFileName,
                                           SMESH::SMESH_Mesh_ptr        sourceMesh,
-                                          SMESH::DriverMED_ReadStatus& theStatus);
+                                          SMESH::DriverMED_ReadStatus& theStatus,
+                                          const char* converter = nullptr);
 
   // Create dual mesh of a tetrahedron mesh
   SMESH::SMESH_Mesh_ptr CreateDualMesh(SMESH::SMESH_IDSource_ptr meshPart,

@@ -41,7 +41,7 @@ namespace SMESHOp {
     OpImportSTL              = 1103,   // MENU FILE - IMPORT - STL FILE
     OpImportCGNS             = 1104,   // MENU FILE - IMPORT - CGNS FILE
     OpImportGMF              = 1106,   // MENU FILE - IMPORT - GMF FILE
-    OpImportMESHIO           = 1107,   // MENU FILE - IMPORT - other formats... (meshio)
+    OpImportMESHIO           = 1107,   // MENU FILE - IMPORT - other formats
     OpImportMAIL             = 1108,   // MENU FILE - IMPORT - MAIL FILE
     OpImportINP              = 1109,   // MENU FILE - IMPORT - INP FILE
     OpImportCDB              = 1110,   // MENU FILE - IMPORT - CDB FILE
@@ -65,7 +65,7 @@ namespace SMESHOp {
     OpExportSTL              = 1203,   // MENU FILE  - EXPORT - STL FILE
     OpExportCGNS             = 1204,   // MENU FILE  - EXPORT - CGNS FILE
     OpExportGMF              = 1206,   // MENU FILE  - EXPORT - GMF FILE
-    OpExportMESHIO           = 1207,   // MENU FILE  - EXPORT - other formats... (meshio)
+    OpExportMESHIO           = 1207,   // MENU FILE  - EXPORT - other formats
     OpPopupExportDAT         = 1210,   // POPUP MENU - EXPORT - DAT FILE
     OpPopupExportMED         = 1211,   // POPUP MENU - EXPORT - MED FILE
     OpPopupExportUNV         = 1212,   // POPUP MENU - EXPORT - UNV FILE

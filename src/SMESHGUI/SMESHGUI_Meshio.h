@@ -29,6 +29,8 @@
 
 #include "SMESH_SMESHGUI.hxx"
 
+#include "SMESH_Meshio.h"
+
 #include <QList>
 #include <QPair>
 
@@ -50,8 +52,9 @@ public:
   static void ExportMesh(
     const meshList& aMeshList, const QString& targetFileName, const QString& selectedFilter);
   static SMESH::mesh_array_var ImportMesh(
-    SMESH::SMESH_Gen_ptr theComponentMesh, const QString& filename, QStringList& errors);
+    SMESH::SMESH_Gen_ptr theComponentMesh, const QString& filename, QStringList& errors, const QString& selectedFilter = QString());
 
+  static const QStringList& GetAllFilters();
   static const QStringList& GetImportFileFilter();
   static const QStringList& GetExportFileFilter();
 
@@ -59,6 +62,7 @@ public:
   static bool CheckMeshCount(const meshList& aMeshList);
 
   static bool IsMeshioInstalled();
+  static bool IsConverterInstalled(SMESHIOConverter::ExternalConverter converter = SMESHIOConverter::ExternalConverter::Gmsh);
 };
 
 #endif // SMESHGUI_MESHIO_H

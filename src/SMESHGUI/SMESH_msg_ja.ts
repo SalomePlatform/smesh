@@ -733,11 +733,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_MESHIO</source>
-        <translation>他の形式... (meshio)</translation>
+        <translation>他の形式</translation>
     </message>
     <message>
         <source>MEN_EXPORT_MESHIO</source>
-        <translation>他の形式... (meshio)</translation>
+        <translation>他の形式</translation>
     </message>
     <message>
       <source>MEN_MERGE</source>
@@ -3200,6 +3200,10 @@ pip install meshio[all]</translation>
       <translation>UNV形式でエクスポート</translation>
     </message>
     <message>
+      <source>STB_EXPORT_MESHIO</source>
+      <translation>GMSHまたはMESHIOを介して別の形式にエクスポートする</translation>
+    </message>
+    <message>
       <source>STB_EXTRUSION</source>
       <translation>Extrusion</translation>
     </message>
@@ -3314,6 +3318,10 @@ pip install meshio[all]</translation>
     <message>
       <source>STB_IMPORT_GMF</source>
       <translation>インポート組み換え</translation>
+    </message>
+    <message>
+      <source>STB_IMPORT_MESHIO</source>
+      <translation>GMSHまたはMESHIO経由でファイルをインポートする</translation>
     </message>
     <message>
       <source>STB_GMF</source>
