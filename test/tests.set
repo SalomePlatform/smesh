@@ -157,6 +157,9 @@ SET(SESSION_FREE_TESTS
   basic_geom_smesh_without_session.py
   ssl_hdf5_symbols_conflicts.py
   SMESH_MeshioShapes.py
+  SMESH_GmshIOShapes.py
+  SMESH_GmshFiles.py
+  SMESH_GmshGroups.py
   )
 
 SET(UNSTABLE_TESTS

@@ -938,11 +938,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_MESHIO</source>
-        <translation>autres formats... (meshio)</translation>
+        <translation>autres formats</translation>
     </message>
     <message>
         <source>MEN_EXPORT_MESHIO</source>
-        <translation>autres formats... (meshio)</translation>
+        <translation>autres formats</translation>
     </message>
     <message>
         <source>MEN_MERGE</source>
@@ -3617,6 +3617,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Exporter au format UNV</translation>
     </message>
     <message>
+        <source>STB_EXPORT_MESHIO</source>
+        <translation>Exporter vers autre format via GMSH ou MESHIO</translation>
+    </message>
+    <message>
         <source>STB_EXTRUSION</source>
         <translation>Extrusion</translation>
     </message>
@@ -3735,6 +3739,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_IMPORT_GMF</source>
         <translation>Importer un ficher GMF</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_MESHIO</source>
+        <translation>Importer un ficher via GMSH ou MESHIO</translation>
     </message>
     <message>
         <source>STB_GMF</source>

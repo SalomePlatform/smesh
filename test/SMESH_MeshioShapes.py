@@ -96,7 +96,7 @@ def file_extensions():
 
     extensions = [
         '.avs',
-        '.bdf',
+        # '.bdf', # convert with GMSH
         # '.cgns', # meshio IndexError: index 2 is out of bounds for axis 1 with size 2
         # '.dat', # meshio ValueError: need at least one array to concatenate
         '.dato',
@@ -107,10 +107,10 @@ def file_extensions():
         # '.f3grid', # meshio IndexError: Replacement index 3 out of range for positional args tuple
         '.fem',
         # '.h5m', # meshio AttributeError: 'list' object has no attribute 'items'
-        '.inp',
+        # '.inp', # convert with GMSH
         '.mdpa',
-        '.med',
-        '.mesh',
+        # '.med', # convert with GMSH
+        # '.mesh', # convert with GMSH
         '.meshb',
         # '.msh', # meshio KeyError: "Illegal ANSYS cell type 'line'
         '.nas',
@@ -120,13 +120,13 @@ def file_extensions():
         # '.ply', # Export Warning: PLY doesn't support 64-bit integers. Casting down to 32-bit. Then import failed
         '.post',
         '.post.gz',
-        '.stl',
+        # '.stl', # convert with GMSH
         # '.su2', # meshio TypeError: cannot unpack non-iterable CellBlock object
         # '.svg', # meshio._exceptions.WriteError: SVG can only handle flat 2D meshes
         # '.ugrid', # meshio AttributeError: 'list' object has no attribute 'reshape'
         '.vol',
         '.vol.gz',
-        '.vtk',
+        # '.vtk', # convert with GMSH
         '.vtu',
         # '.wkt', # Export Warning: WTK only supports triangle cells. Skipping {", ".join(skip)} then import failed
         '.xdmf',

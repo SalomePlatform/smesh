@@ -69,14 +69,107 @@ SMESH_Meshio::~SMESH_Meshio()
 /*!
   Convert file with meshio convert command
 */
-void SMESH_Meshio::Convert(const QString& sourceFileName, const QString& targetFileName) const
-{
+void SMESH_Meshio::Convert(const QString& sourceFileName, const QString& targetFileName, bool isImport, const QString& converter) const
+{ 
+  auto appendIfNotEmpty = [&](QStringList &parts, const QString &opt, const QString &val) {
+      if (!opt.isEmpty() && !val.isEmpty())
+          parts << opt << val;
+  };
   // Execute meshio convert command
-  const QString convert = IsModernMeshioVersion() ? "meshio convert " : "meshio-convert ";
-  const QString optArgs = GetConvertOptArgs();
+  SMESHIOConverter::ExternalConverter externalConverter = SMESHIOConverter::ExternalConverter::Unknown;
+  QString cmdExecutable;
+  QString cmdConvertOpt = "";
+  QString cmdInputOpt   = "";
+  QString cmdOutputOpt  = "";     // for output format
+  QString cmdOutputFileOpt = "";  // for output file name
+  QString cmdSaveOpts   = "";
+  QString cmdOpts   = "";
+  QString inputFmt  = "";
+  QString outputFmt = "";
 
-  const std::string cmd = 
-    (convert + optArgs + " " + sourceFileName + " " + targetFileName + " 2> " + myErrorFileName).toStdString();
+  if (isImport) {
+      externalConverter = SMESH_Meshio::GetConverterForExtension(mySelectedFilter, sourceFileName, converter);
+  } else {
+      externalConverter = SMESH_Meshio::GetConverterForExtension(mySelectedFilter, targetFileName, converter);
+  }
+
+  
+  switch (externalConverter)
+  {
+    case SMESHIOConverter::ExternalConverter::Gmsh:
+      cmdExecutable = "gmsh";
+      cmdOutputOpt = "-format";
+      cmdOutputFileOpt  = "-o";
+      cmdOpts = "-save_all";
+      cmdSaveOpts = "-save";
+      if (mySelectedFilter.contains("Gmsh", Qt::CaseInsensitive))
+      {
+        if (mySelectedFilter.contains("binary", Qt::CaseInsensitive))
+          cmdOutputOpt.prepend("-bin "); // for Gmsh binary format
+        
+        if (mySelectedFilter.contains("2.2", Qt::CaseInsensitive))
+          cmdOpts = "";
+      }
+      break;
+
+    case SMESHIOConverter::ExternalConverter::MeshIo:
+      cmdExecutable = IsModernMeshioVersion() ? "meshio convert" : "meshio-convert";
+      cmdInputOpt = "--input-format";
+      cmdOutputOpt = "--output-format";
+      break;
+
+    case SMESHIOConverter::ExternalConverter::Unknown:
+    default:
+      MESSAGE("Unknown library for conversion");
+      return;
+  }
+
+  // Decide input/output formats based on import/export
+  if (isImport) {
+      // Import case -> output format is always "med"
+      inputFmt = GetConvertOptArgs(externalConverter, sourceFileName); // detect actual input format
+      outputFmt = "med";
+  } else {
+      // Export case -> input format is always "med"
+      inputFmt = "med";
+      outputFmt = GetConvertOptArgs(externalConverter, targetFileName); // detect actual output format
+  }
+
+  // Build command parts
+  QStringList cmdParts;
+  cmdParts << cmdExecutable;
+
+  // Add convert option right after executable (if any)
+  if (!cmdConvertOpt.isEmpty())
+      cmdParts << cmdConvertOpt;
+
+  // Input option + format
+  appendIfNotEmpty(cmdParts, cmdInputOpt, inputFmt);
+
+  // Source file
+  cmdParts << sourceFileName;
+
+  // Output option + format
+  appendIfNotEmpty(cmdParts, cmdOutputOpt, outputFmt);
+
+  // Output file option + target file
+  if (!cmdOutputFileOpt.isEmpty())
+      cmdParts << cmdOutputFileOpt << targetFileName;
+  else
+      cmdParts << targetFileName;
+
+  // Additional options 
+  if (!cmdOpts.isEmpty())
+      cmdParts << cmdOpts;
+
+  // Save options (gmsh only)
+  if (!cmdSaveOpts.isEmpty())
+      cmdParts << cmdSaveOpts;
+
+  // Redirect errors
+  cmdParts << "2>" << myErrorFileName;
+
+  const std::string cmd = cmdParts.join(" ").toStdString();
   MESSAGE("Call system(\"" << cmd << "\") ...");
 
   const int status = system(cmd.c_str());
@@ -87,13 +180,13 @@ void SMESH_Meshio::Convert(const QString& sourceFileName, const QString& targetF
   {
     // Get all the output from an error file
     const std::string meshioErrors = ReadErrorsFromFile();
-    MESSAGE("meshioErrors: \n" << meshioErrors);
+    MESSAGE("External Converter Errors: \n" << meshioErrors);
 
     SALOME_CMOD::ExceptionStruct es;
     es.type = SALOME_CMOD::ExceptionType::BAD_PARAM;
     es.lineNumber = -1;
     es.text = CORBA::string_dup(
-      ("MESHIO\nFailed system(\"" + cmd + "\").\n\n" + meshioErrors + "\nOperation canceled.").c_str());
+      ("External Converter\nFailed system(\"" + cmd + "\").\n\n" + meshioErrors + "\nOperation canceled.").c_str());
 
     throw SALOME_CMOD::SALOME_Exception(es);
   }
@@ -361,23 +454,224 @@ std::string SMESH_Meshio::ReadErrorsFromFile() const
   return {};
 }
 
+
 /*!
   Get optional arguments for meshio convert command
 */
-QString SMESH_Meshio::GetConvertOptArgs() const
+QString SMESH_Meshio::GetConvertOptArgs(SMESHIOConverter::ExternalConverter externalConverter, const QString& fileName) const
 {
-  if (mySelectedFilter.isEmpty())
-    return mySelectedFilter;
+    SMESHIOConverter::Extension fmt = SMESHIOConverter::Extension::Unknown;
+    if (!mySelectedFilter.isEmpty())
+    {
+      fmt = SMESHIOConverter::fromLabel(mySelectedFilter);
+    }
 
-  // Check what kind of option we must provide
-  if (mySelectedFilter.startsWith("ANSYS"))
-    return "-o ansys";
-  else if (mySelectedFilter.startsWith("Gmsh 2"))
-    return "-o gmsh22";
-  else if (mySelectedFilter.startsWith("Gmsh 4.0"))
-    return "-o gmsh40";
-  else if (mySelectedFilter.startsWith("Gmsh 4.1"))
-    return "-o gmsh";
+    if (fmt == SMESHIOConverter::Extension::Unknown && !fileName.isEmpty())
+    {
+      const QString ext = QFileInfo(fileName).completeSuffix().toLower();
+      for (const auto& [f, info] : SMESHIOConverter::ExtensionMap)
+      {
+        if (info.extension.compare(ext, Qt::CaseInsensitive) == 0)
+        {
+          fmt = f;
+          break;
+        }
+      }
+    }
 
-  return {};
+    if (fmt == SMESHIOConverter::Extension::Unknown)
+    {
+      return "";
+    }
+    
+    // Chercher les infos du format
+    auto itFmt = SMESHIOConverter::ExtensionMap.find(fmt);
+    if (itFmt == SMESHIOConverter::ExtensionMap.end())
+        return "";
+
+    const auto& info = itFmt->second;
+
+    // Find the converter-specific option string
+    auto convIt = info.converters.find(externalConverter);
+    if (convIt != info.converters.end())
+        return convIt->second;
+
+    return "";
 }
+
+
+
+/*!
+  find library for extension
+*/
+SMESHIOConverter::ExternalConverter SMESH_Meshio::GetConverterForExtension(const QString& selectedFilter, const QString& sourceFileName, const QString& converter)
+{
+    if (!converter.isEmpty())
+    {
+      if (converter.compare("gmsh", Qt::CaseInsensitive) == 0)
+        return SMESHIOConverter::ExternalConverter::Gmsh;
+      else if (converter.compare("meshio", Qt::CaseInsensitive) == 0)
+        return SMESHIOConverter::ExternalConverter::MeshIo;
+      else
+        return SMESHIOConverter::ExternalConverter::Unknown;
+    }
+
+    if (!selectedFilter.isEmpty())
+    {
+      for (const auto& [fmt, info] : SMESHIOConverter::ExtensionMap)
+      {
+        // Compare against the full label
+        if (SMESHIOConverter::GetFilterLabel(info.label) == SMESHIOConverter::GetFilterLabel(selectedFilter))
+        {
+          // If multiple converters exist, return the first one
+          if (!info.converters.empty())
+            return info.converters.begin()->first;
+        }
+      }
+    }
+
+    if (!sourceFileName.isEmpty()){
+      const QString ext = QFileInfo(sourceFileName).completeSuffix().toLower();
+      for (const auto& [fmt, info] : SMESHIOConverter::ExtensionMap)
+      {
+        if (info.extension.compare(ext, Qt::CaseInsensitive) == 0)
+        {
+          // If multiple converters exist, return the first one
+          if (!info.converters.empty())
+            return info.converters.begin()->first;
+        }
+      }
+    }
+      
+    return SMESHIOConverter::ExternalConverter::Unknown;
+}
+
+/*!
+  Check if a given converter library is installed and allowed for use.
+  
+  This function performs two verifications:
+   1. Environment check:
+      - Reads the corresponding environment variable (e.g. GMSH_VERSION, MESHIO_VERSION).
+      - If the variable is set to 0 or invalid, the converter is considered disabled.
+   2. Executable check:
+      - Attempts to start the corresponding executable with "--version" (or "meshio-info --version" for legacy MeshIo).
+      - If the process starts and exits normally, the converter is considered available in PATH.
+
+  A converter is considered installed only if both checks succeed.
+
+  \param converter The converter to check (Gmsh, MeshIo).
+  \return true if the converter is allowed by environment and its executable is available, false otherwise.
+*/
+bool SMESH_Meshio::IsConverterInstalled(SMESHIOConverter::ExternalConverter converter)
+{
+  auto IsAllowedFromEnvironment = [&](SMESHIOConverter::ExternalConverter conv) -> bool
+  {
+    const QString curVersion = GetConverterVersion(conv);
+
+    // Check if we explicitly set off using of converter from environment
+    const QStringList curVersionNums = curVersion.split('.');
+    bool ok = false;
+    int firstNum = curVersionNums[0].toInt(&ok);
+    if (!ok || firstNum <= 0)
+    {
+      MESSAGE(SMESHIOConverter::toString(conv) << " was set as not installed from environment");
+      return false;
+    }
+
+    return true;
+  };
+
+  auto checkExecutable = [](const std::string& program) -> bool {
+    std::string cmd = program + " --version";
+    int ret = std::system(cmd.c_str());
+    MESSAGE("status: " << ret);
+    return (ret == 0);
+  };
+
+  // Decide executable name depending on converter
+  std::string program = SMESHIOConverter::toString(converter);
+
+  // Special case: meshio old versions use meshio-info
+  if (converter == SMESHIOConverter::ExternalConverter::MeshIo &&
+      !SMESH_Meshio::IsModernMeshioVersion())
+  {
+    program = "meshio-info";
+  }
+
+  static const bool isInstalled =
+      IsAllowedFromEnvironment(converter) && checkExecutable(program);
+
+  return isInstalled;
+}
+
+
+/*!
+  Returns lib version string that has valid integer at least in the first position.
+*/
+QString SMESH_Meshio::GetConverterVersion(SMESHIOConverter::ExternalConverter converter)
+{
+  auto IsVersionStringValid = [](const QString& version) -> bool
+  {
+    if (version.isEmpty())
+    {
+      return false;
+    }
+
+    // Check if we have an integer at least at the first position
+    const QStringList curVersionNums = version.split('.');
+
+    bool ok;
+    const int firstNum = curVersionNums[0].toInt(&ok);
+    if (!ok)
+    {
+      ERROR_MESSAGE("Converter version value is not valid!");
+      return false;
+    }
+
+    MESSAGE("Converter version first number: " << firstNum);
+    return true;
+  };
+
+  auto GetConverterVersionFromEnv = [&](SMESHIOConverter::ExternalConverter conv) -> QString
+  {
+    // Build env var name: uppercase + "_VERSION"
+    std::string envName = SMESHIOConverter::toString(conv);
+    std::transform(envName.begin(), envName.end(), envName.begin(), ::toupper);
+    envName += "_VERSION";
+
+    // Read environment variable
+    const char* envVar = std::getenv(envName.c_str());
+
+    if (envVar && (envVar[0] != '\0'))
+    {
+      MESSAGE(envName << ": " << envVar);
+      return envVar;
+    }
+
+    MESSAGE("MESHIO_VERSION is not set!");
+    return {};
+  };
+
+  auto GetConverterVersionHelper = [&](SMESHIOConverter::ExternalConverter conv) -> QString
+  {
+    // Try environment variable first
+    const QString versionEnv = GetConverterVersionFromEnv(conv);
+    if (IsVersionStringValid(versionEnv))
+      return versionEnv;
+
+    // Special fallback for MeshIo: guess by Python version
+    if (conv == SMESHIOConverter::ExternalConverter::MeshIo)
+    {
+      const QString meshioVersionByPython = IsModernPythonVersion() ? "5" : "4";
+      MESSAGE("meshio version was defined by Python version: " << meshioVersionByPython.toStdString());
+      return meshioVersionByPython;
+    }
+
+    // For other converters, just return "unknown"
+    return "unknown";
+  };
+
+  static const QString converterVersion = GetConverterVersionHelper(converter);
+  return converterVersion;
+};
+

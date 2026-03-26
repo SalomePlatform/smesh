@@ -721,7 +721,8 @@ module SMESH
      */
     void ExportPartToMESHIO(in SMESH_IDSource     meshPart,
                             in string             fileName,
-                            in string             selectedFilter) raises (SALOME_CMOD::SALOME_Exception);
+                            in string             selectedFilter,
+                            in string             converter) raises (SALOME_CMOD::SALOME_Exception);
 
     long long ExportPartToMEDCoupling( in SMESH_IDSource     meshPart,
                                        in boolean            auto_groups,

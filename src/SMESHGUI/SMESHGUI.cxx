@@ -247,6 +247,7 @@ namespace
   {
     QStringList filter;
     std::string myExtension;
+    QString selectedFilter; 
 
     if ( theCommandID == SMESHOp::OpImportMED ||
          theCommandID == SMESHOp::OpPopupImportMED ) {
@@ -275,8 +276,6 @@ namespace
       filter.append( QObject::tr( "GMF_BINARY_FILES_FILTER") + " (*.meshb)" );
     }
     else if (theCommandID == SMESHOp::OpImportMESHIO) {
-      if (!SMESHGUI_Meshio::IsMeshioInstalled())
-        return;
 
       filter = SMESHGUI_Meshio::GetImportFileFilter();
     }
@@ -324,6 +323,7 @@ namespace
       filenames = SUIT_FileDlg::getOpenFileNames( SMESHGUI::desktop(),
                                                   anInitialPath,
                                                   filter,
+                                                  selectedFilter,
                                                   QObject::tr( "SMESH_IMPORT_MESH" ) );
     }
     if ( filenames.count() > 0 )
@@ -416,7 +416,9 @@ namespace
             }
           case SMESHOp::OpImportMESHIO:
             {
-              aMeshes = SMESHGUI_Meshio::ImportMesh(theComponentMesh, filename, errors);
+              if (!SMESHGUI_Meshio::IsConverterInstalled(SMESH_Meshio::GetConverterForExtension(selectedFilter)))
+                return;
+              aMeshes = SMESHGUI_Meshio::ImportMesh(theComponentMesh, filename, errors, selectedFilter);
               break;
             }
           case SMESHOp::OpImportMAIL:
@@ -483,7 +485,7 @@ namespace
         }
         catch ( const SALOME_CMOD::SALOME_Exception& S_ex ) {
           const QString exText(S_ex.details.text);
-          if (exText.startsWith("MESHIO"))
+          if (exText.startsWith("External Converter"))
             errors.append('\n' + exText);
           else
             errors.append( QString( "%1 :\n\n%2 \n\n\t%3" ).arg( filename ).arg(exText).
@@ -556,10 +558,10 @@ namespace
                          theCommandID == SMESHOp::OpPopupExportGMF );
     const bool isMESHIO = (theCommandID == SMESHOp::OpExportMESHIO);
 
-    if (isMESHIO && !SMESHGUI_Meshio::IsMeshioInstalled())
-    {
-      return;
-    }
+    // if (isMESHIO && !SMESHGUI_Meshio::IsMeshioInstalled())
+    // {
+    //   return;
+    // }
 
     const bool multiMeshSupported = isMED || isCGNS || isMESHIO; // file can hold several meshes
     if ( selected.Extent() == 0 || ( selected.Extent() > 1 && !multiMeshSupported ))
@@ -1138,7 +1140,7 @@ namespace
           SUIT_MessageBox::critical(SMESHGUI::desktop(),
                                     QObject::tr("SMESH_WRN_WARNING"),
                                     QObject::tr(S_ex.details.text.in() ));
-        else if (exText.startsWith("MESHIO"))
+        else if (exText.startsWith("External Converter"))
         {
           SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                    QObject::tr("SMESH_WRN_WARNING"),

@@ -942,11 +942,11 @@
     </message>
     <message>
         <source>MEN_IMPORT_MESHIO</source>
-        <translation>other formats... (meshio)</translation>
+        <translation>other formats</translation>
     </message>
     <message>
         <source>MEN_EXPORT_MESHIO</source>
-        <translation>other formats... (meshio)</translation>
+        <translation>other formats</translation>
     </message>
     <message>
         <source>MEN_MERGE</source>
@@ -2087,6 +2087,18 @@ Operation will be canceled.
 
 Try to install meshio with a command:
 pip install meshio[all]</translation>
+    </message>
+    <message>
+        <source>SMESH_CONVERT_LIB_NOT_INSTALLED</source>
+        <translation>Converter is not installed!
+Operation will be canceled.
+        </translation>
+    </message>
+    <message>
+        <source>SMESH_EXPORT_UNKNOWN_LIB</source>
+        <translation>Unknown export library!
+Operation will be canceled.
+        </translation>
     </message>
     <message>
         <source>EXPORT_NOT_SUPPORTED</source>
@@ -3622,6 +3634,10 @@ Use Display Entity menu command to show them.
         <translation>Export to UNV file</translation>
     </message>
     <message>
+        <source>STB_EXPORT_MESHIO</source>
+        <translation>Export to other formats via GMSH or MESHIO</translation>
+    </message>
+    <message>
         <source>STB_EXTRUSION</source>
         <translation>Extrusion</translation>
     </message>
@@ -3740,6 +3756,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_IMPORT_GMF</source>
         <translation>Import GMF file</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_MESHIO</source>
+        <translation>Import file via GMSH or MESHIO</translation>
     </message>
     <message>
         <source>STB_GMF</source>

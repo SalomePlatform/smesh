@@ -2200,7 +2200,9 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::ReloadMeshesFromGMF(const char* theFileName, 
 //================================================================================
 
 SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMESHIO(const char* theFileName,
-                                                       SMESH::DriverMED_ReadStatus& theStatus)
+                                                       SMESH::DriverMED_ReadStatus& theStatus,
+                                                       const char* selectedFilter,
+                                                       const char* converter)
 {
   Unexpect aCatch(SALOME_SalomeException);
   checkFileReadable(theFileName);
@@ -2209,11 +2211,11 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMESHIO(const char* theFileName,
 
   // Create an object that holds a temp file name and
   // removes the file when goes out of scope.
-  SMESH_Meshio meshio;
+  SMESH_Meshio meshio((QString) selectedFilter);
   const QString tempFileName = meshio.CreateTempFileName(theFileName);
 
   // Convert temp file into a target one with meshio command
-  meshio.Convert(theFileName, tempFileName);
+  meshio.Convert(theFileName, tempFileName, true, converter);
 
   // We don't need a python dump from SMESH_Gen_i::CreateMeshesFromMED(), so
   // we can't use this method as is here. The followed code is an edited part of
@@ -2268,7 +2270,24 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMESHIO(const char* theFileName,
       aStudyBuilder->CommitCommand();
 
     // Python dump
-    const std::string functionName = std::string(".CreateMeshesFromMESHIO(r'") + theFileName + "')";
+    std::string functionName = "";
+    SMESHIOConverter::ExternalConverter externalConverter = SMESHIOConverter::ExternalConverter::Unknown;
+    externalConverter = meshio.GetConverterForExtension(selectedFilter, tempFileName, converter);
+    switch (externalConverter)
+    {
+      case SMESHIOConverter::ExternalConverter::Gmsh:
+        functionName = std::string(".CreateMeshesFromGMSHIO(r'") + theFileName + "', '" + SMESHIOConverter::GetFilterLabel(selectedFilter) + "')";
+        break;
+
+      case SMESHIOConverter::ExternalConverter::MeshIo:
+        functionName = std::string(".CreateMeshesFromMESHIO(r'") + theFileName + "', '" + SMESHIOConverter::GetFilterLabel(selectedFilter) + "')";
+        break;
+
+      case SMESHIOConverter::ExternalConverter::Unknown:
+      default:
+        break;
+    }
+
     functionToPythonDump(this, functionName, sobjects);
   }
 
@@ -2279,7 +2298,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMESHIO(const char* theFileName,
   return aResult._retn();
 }
 
-SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMESHIO(const char* theFileName, SMESH::SMESH_Mesh_ptr sourceMesh, SMESH::DriverMED_ReadStatus& theStatus)
+SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMESHIO(const char* theFileName, SMESH::SMESH_Mesh_ptr sourceMesh, SMESH::DriverMED_ReadStatus& theStatus, const char* converter)
 {
   Unexpect aCatch(SALOME_SalomeException);
   checkFileReadable(theFileName);
@@ -2292,7 +2311,7 @@ SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMESHIO(const char* theFileName, 
   const QString tempFileName = meshio.CreateTempFileName(theFileName);
 
   // Convert temp file into a target one with meshio command
-  meshio.Convert(theFileName, tempFileName);
+  meshio.Convert(theFileName, tempFileName, true, converter);
 
   // We don't need a python dump from SMESH_Gen_i::CreateMeshesFromMED(), so
   // we can't use this method as is here. The followed code is an edited part of
@@ -2344,7 +2363,24 @@ SMESH::mesh_array* SMESH_Gen_i::ReloadMeshesFromMESHIO(const char* theFileName, 
       aStudyBuilder->CommitCommand();
 
     // Python dump
-    const std::string functionName = std::string(".ReloadMeshesFromMESHIO(r'") + theFileName + "')";
+    std::string functionName = "";
+    SMESHIOConverter::ExternalConverter externalConverter = SMESHIOConverter::ExternalConverter::Unknown;
+    externalConverter = meshio.GetConverterForExtension(nullptr, tempFileName, converter);
+    switch (externalConverter)
+    {
+      case SMESHIOConverter::ExternalConverter::Gmsh:
+        functionName = std::string(".ReloadMeshesFromGMSHIO(r'") + theFileName + "')";
+        break;
+
+      case SMESHIOConverter::ExternalConverter::MeshIo:
+        functionName = std::string(".ReloadMeshesFromMESHIO(r'") + theFileName + "')";
+        break;
+
+      case SMESHIOConverter::ExternalConverter::Unknown:
+      default:
+        break;
+    }
+
     functionToPythonDump(this, functionName, sobjects);
   }
 
