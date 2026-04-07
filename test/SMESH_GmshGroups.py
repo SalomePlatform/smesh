@@ -24,14 +24,14 @@
 #  Module : SMESH
 
 import sys
-from salome.kernel import salome
+import salome
 import os
 import platform
 
 import tempfile
 
 salome.salome_init()
-from salome.kernel import salome_notebook
+import salome_notebook
 notebook = salome_notebook.NoteBook()
 # sys.path.insert(0, r'/home/catB/ng780475/workspace/SPNS-47907/SALOME-master-native-DB12')
 
@@ -39,10 +39,10 @@ notebook = salome_notebook.NoteBook()
 ### GEOM component
 ###
 
-from salome.kernel import GEOM
+import GEOM
 from salome.geom import geomBuilder
 import math
-from salome.kernel import SALOMEDS
+import SALOMEDS
 
 
 geompy = geomBuilder.New()
@@ -75,7 +75,7 @@ geompy.addToStudyInFather( Box_1, Group_Volume, 'Group_Volume' )
 ### SMESH component
 ###
 
-from salome.kernel import  SMESH, SALOMEDS
+import  SMESH, SALOMEDS, SALOME
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

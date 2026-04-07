@@ -24,7 +24,7 @@
 #  Module : SMESH
 
 import sys
-from salome.kernel import salome
+import salome
 import os
 import tempfile
 
@@ -34,10 +34,10 @@ salome.salome_init()
 ### GEOM component
 ###
 
-from salome.kernel import GEOM
+import GEOM
 from salome.geom import geomBuilder
 import math
-from salome.kernel import SALOMEDS
+import SALOMEDS, SALOME
 
 geompy = geomBuilder.New()
 
@@ -69,7 +69,7 @@ geompy.addToStudyInFather( Box_1, Group_Volume, 'Group_Volume' )
 ### SMESH component
 ###
 
-from salome.kernel import  SMESH, SALOMEDS
+import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

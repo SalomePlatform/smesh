@@ -28,9 +28,8 @@ import subprocess
 import os
 from pathlib import Path
 
-from salome.kernel import SALOME_CMOD, SMESH
+import SALOME, SMESH
 from salome.smesh import smeshBuilder
-
 # Constants
 EXPORT_TITLE = 'Export'
 IMPORT_TITLE = 'Import'
@@ -63,7 +62,7 @@ def export_mesh(mesh, file_name, filter='', errors=None):
         mesh.ExportGMSHIO(file_name, filter, mesh)
         return True
 
-    except SALOME_CMOD.SALOME_Exception as ex:
+    except SALOME.SALOME_Exception as ex:
         exception_handle(file_name, errors, EXPORT_TITLE, ex.details.text)
 
     except:
@@ -82,7 +81,7 @@ def import_file(file_name, filter='', errors=None):
         ([mesh], status) = smesh.CreateMeshesFromGMSHIO(file_name, filter)
         return mesh
 
-    except SALOME_CMOD.SALOME_Exception as ex:
+    except SALOME.SALOME_Exception as ex:
         exception_handle(file_name, errors, IMPORT_TITLE, ex.details.text)
 
     except:
