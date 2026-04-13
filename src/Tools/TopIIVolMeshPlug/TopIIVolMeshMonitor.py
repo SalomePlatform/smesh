@@ -29,7 +29,7 @@ import pprint as PP #pretty print
 if 'SALOME_USE_PYSIDE' in os.environ:
   from PySide2.QtWidgets import QDialog, QMessageBox
 else:
-  from PyQt5.Qt import QDialog, QMessageBox
+  from PyQt5.Qt import QDialog, QMessageBox, QProcess, QSize
 
 # Import des panels
 
