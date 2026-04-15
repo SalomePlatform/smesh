@@ -1926,7 +1926,10 @@ using namespace VISCOUS_3D;
 _ViscousBuilder::_ViscousBuilder()
 {
   _error = SMESH_ComputeError::New(COMPERR_OK);
-  _tmpFaceID = 0;
+  // start temporary faces ids from -2
+  // id == -1 reserved for disabled mesh elements, which should not be deleted
+  //_tmpFaceID = 0;
+  _tmpFaceID = -1;
 }
 
 //================================================================================
@@ -13019,7 +13022,13 @@ bool _ViscousBuilder::addBoundaryElements(_SolidData& data)
           helper.SetSubShape( eos->_sWOL );
           helper.SetElementsOnShape( true );
           for ( size_t z = 1; z < nn.size(); ++z )
-            helper.AddEdge( nn[z-1], nn[z] );
+          {
+            // prevent creation of duplicated edge
+            if (!getMeshDS()->FindEdge(nn[z-1], nn[z]))
+            {
+              helper.AddEdge( nn[z-1], nn[z] );
+            }
+          }
         }
       }
 

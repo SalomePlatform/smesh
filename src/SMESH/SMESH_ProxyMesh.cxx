@@ -590,7 +590,8 @@ void SMESH_ProxyMesh::setNode2Node(const SMDS_MeshNode* srcNode,
 
 bool SMESH_ProxyMesh::IsTemporary(const SMDS_MeshElement* elem ) const
 {
-  return ( elem->GetID() < 1 ) || _elemsInMesh.count( elem );
+  //return ( elem->GetID() < 1 ) || _elemsInMesh.count( elem );
+  return ( elem->GetID() < -1 ) || _elemsInMesh.count( elem );
 }
 
 //================================================================================
@@ -701,8 +702,15 @@ const SMDS_MeshNode* SMESH_ProxyMesh::SubMesh::GetProxyNode( const SMDS_MeshNode
 void SMESH_ProxyMesh::SubMesh::Clear()
 {
   for ( unsigned i = 0; i < _elements.size(); ++i )
-    if ( _elements[i]->GetID() < 0 )
+  {
+    // ids of temporary mesh elements start from -2.
+    // elements with id = -1 are disabled mesh elements, which should not be deleted
+    //if ( _elements[i]->GetID() < 0 )
+    if ( _elements[i]->GetID() < -1 )
+    {
       delete _elements[i];
+    }
+  }
   _elements.clear();
   if ( _n2n )
     delete _n2n, _n2n = 0;
