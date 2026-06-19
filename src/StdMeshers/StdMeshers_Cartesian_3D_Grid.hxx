@@ -307,6 +307,7 @@ namespace Cartesian3D
     double             _u, _v;
     mutable Transition _transition;
     mutable size_t     _indexOnLine;
+    bool               _isOnBoundary;
 
     bool operator< ( const F_IntersectPoint& o ) const { 
       return _paramOnLine < o._paramOnLine;         

@@ -4488,6 +4488,7 @@ void Hexahedron::removeExcessSideDivision(const vector< Hexahedron* >& allHexa)
           if ( !it2new.second ) // equal found, join loops
           {
             const TLinkDef* equal = &(*it2new.first);
+            equal = equal->_next->_prev; // get real address
             if ( equal->_loopIndex == l->_loopIndex )
               continue; // error?
 
@@ -4497,19 +4498,34 @@ void Hexahedron::removeExcessSideDivision(const vector< Hexahedron* >& allHexa)
               if ( loops[ i ] && loops[ i ]->_loopIndex == equal->_loopIndex )
                 loops[ i ] = 0;
 
-            // exclude l and equal and join two loops
-            if ( l->_prev != equal )
-              l->_prev->setNext( equal->_next );
-            if ( equal->_prev != l )
-              equal->_prev->setNext( l->_next );
-
             if ( volDef->_quantities[ l->_loopIndex ] > 0 )
               volDef->_quantities[ l->_loopIndex     ] *= -1;
             if ( volDef->_quantities[ equal->_loopIndex ] > 0 )
               volDef->_quantities[ equal->_loopIndex ] *= -1;
 
-            if ( loops[ iLoop ] == l )
-              loops[ iLoop ] = l->_prev->_next;
+            // exclude l and equal and join two loops
+            if ( l->_prev != equal )
+            {
+              l->_prev->setNext( equal->_next );
+
+              if ( loops[ iLoop             ] == l     ) loops[ iLoop             ] = l->_prev->_next;
+              if ( loops[ l->_loopIndex     ] == l     ) loops[ l->_loopIndex     ] = l->_prev->_next;
+              if ( loops[ iLoop             ] == equal ) loops[ iLoop             ] = equal->_next->_prev;
+              if ( loops[ equal->_loopIndex ] == equal ) loops[ equal->_loopIndex ] = equal->_next->_prev;
+            }
+            if ( equal->_prev != l )
+            {
+              equal->_prev->setNext( l->_next );
+
+              if ( loops[ iLoop             ] == l     ) loops[ iLoop             ] = l->_next->_prev;
+              if ( loops[ l->_loopIndex     ] == l     ) loops[ l->_loopIndex     ] = l->_next->_prev;
+              if ( loops[ iLoop             ] == equal ) loops[ iLoop             ] = equal->_prev->_next;
+              if ( loops[ equal->_loopIndex ] == equal ) loops[ equal->_loopIndex ] = equal->_prev->_next;
+            }
+            else
+            {
+              l = l->_prev;
+            }
           }
           beg = loops[ iLoop ];
         }

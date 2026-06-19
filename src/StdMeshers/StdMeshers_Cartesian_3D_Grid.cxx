@@ -75,6 +75,51 @@ void GridLine::RemoveExcessIntPoints( const double tol )
         (*ip1)._transition = isIN ? Trans_IN : Trans_OUT;
     }
   }
+
+  // Correct transition for points on face boundary (bos #43166 and #55013)
+  // considering transitions of previous and next points on the same line
+  if ( _intPoints.size() > 2 ) {
+    multiset< F_IntersectPoint >::iterator ip3 = _intPoints.begin();
+    ip1 = ip3++;
+    ip2 = ip3++;
+    while ( ip3 != _intPoints.end() )
+    {
+      // is middle point on boundary?
+      if ((*ip2)._isOnBoundary)
+      {
+        // IN  - any -  IN => IN  - OUT - IN
+        if ((*ip1)._transition == Trans_IN && (*ip3)._transition == Trans_IN)
+        {
+          // not boundary - boundary - not boundary
+          if (!(*ip1)._isOnBoundary && !(*ip3)._isOnBoundary)
+          {
+            (*ip2)._transition = Trans_OUT;
+          }
+        }
+        // OUT - any - OUT => OUT - IN  - OUT
+        else if ((*ip1)._transition == Trans_OUT && (*ip3)._transition == Trans_OUT)
+        {
+          // not boundary - boundary - not boundary
+          if (!(*ip1)._isOnBoundary && !(*ip3)._isOnBoundary)
+          {
+            (*ip2)._transition = Trans_IN;
+          }
+        }
+        // IN  - any - OUT => IN  - Tangent - OUT
+        // OUT - any - IN  => OUT - Tangent - IN
+        else if (((*ip1)._transition == Trans_IN && (*ip3)._transition == Trans_OUT) ||
+                 ((*ip1)._transition == Trans_OUT && (*ip3)._transition == Trans_IN))
+        {
+          // here we don't check, if previous and next points are not on boundary (bos #55013)
+          (*ip2)._transition = Trans_TANGENT;
+        }
+      }
+
+      ip1++;
+      ip2++;
+      ip3++;
+    }
+  }
 }
 //================================================================================
 /*
@@ -1265,14 +1310,29 @@ bool FaceGridIntersector::IsThreadSafe(std::set< const Standard_Transient* >& no
  */
 void FaceLineIntersector::addIntPoint(const bool toClassify)
 {
-  if ( !toClassify || UVIsOnFace() )
+  if ( !toClassify )
   {
     F_IntersectPoint p;
     p._paramOnLine = _w;
     p._u           = _u;
     p._v           = _v;
     p._transition  = _transition;
+    p._isOnBoundary = false;
     _intPoints.push_back( p );
+  }
+  else
+  {
+    TopAbs_State state = _surfaceInt->ClassifyUVPoint(gp_Pnt2d( _u,_v ));
+    if (state == TopAbs_IN || state == TopAbs_ON)
+    {
+      F_IntersectPoint p;
+      p._paramOnLine = _w;
+      p._u           = _u;
+      p._v           = _v;
+      p._transition  = _transition;
+      p._isOnBoundary = (state == TopAbs_ON);
+      _intPoints.push_back( p );
+    }
   }
 }
 
