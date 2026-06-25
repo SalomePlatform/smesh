@@ -63,7 +63,7 @@ def generate(data_rayon,data_centre,outFile):
   #
 
   from salome.kernel import SMESH
-from salome.kernel import  SALOMEDS
+  from salome.kernel import  SALOMEDS
   from salome.smesh import smeshBuilder
 
   smesh = smeshBuilder.New()

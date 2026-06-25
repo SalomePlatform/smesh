@@ -234,7 +234,7 @@ def generateCustom(crack, outFile):
   from salome.kernel import salome_notebook
   notebook = salome_notebook.NoteBook()
   from salome.kernel import SMESH
-from salome.kernel import  SALOMEDS
+  from salome.kernel import  SALOMEDS
   from salome.smesh import smeshBuilder
 
   smesh = smeshBuilder.New()

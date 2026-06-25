@@ -188,7 +188,7 @@ def generate(data_demi_grand_axe, data_centre, data_normale,
   #geompy.addToStudy( FACE_FISSURE, 'FACE_FISSURE' )
 
   from salome.kernel import SMESH
-from salome.kernel import  SALOMEDS
+  from salome.kernel import  SALOMEDS
   from salome.smesh import smeshBuilder
   smesh = smeshBuilder.New()
 

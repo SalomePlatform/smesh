@@ -26,7 +26,7 @@
 
 import os
 if 'SALOME_USE_PYSIDE' in os.environ:
-  PySide2 import QtCore, QtGui, QtWidgets
+  from PySide2 import QtCore, QtGui, QtWidgets
 else:
   from PyQt5 import QtCore, QtGui, QtWidgets
 
