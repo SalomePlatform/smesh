@@ -1360,6 +1360,9 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         * If *src2* is None, and *id2* = 0, distance from *src1* / *id1* to the origin is computed.
         * If *src2* is None, and *id2* != 0, it is assumed that both *id1* and *id2* belong to *src1*.
 
+        * Warning: currently implemented only the case when the first operand is node(s)
+        *          (either *src1* contains only nodes or id1!=0 and isElem1==False).
+
         Parameters:
                 src1 (SMESH.SMESH_IDSource): first source object
                 src2 (SMESH.SMESH_IDSource): second source object
@@ -1369,7 +1372,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
                 isElem2 (boolean): *True* if *id2* is element id, *False* if it is node id
 
         Returns:
-                minimum distance value
+                minimum distance value, negative value in case of failure
 
         See also:
                 :meth:`GetMinDistance`
@@ -1377,7 +1380,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
 
         result = self.GetMinDistance(src1, src2, id1, id2, isElem1, isElem2)
         if result is None:
-            result = 0.0
+            result = -1.0
         else:
             result = result.value
         return result
@@ -1388,6 +1391,9 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
 
         * If *src2* is None, and *id2*  = 0, distance from *src1* / *id1* to the origin is computed.
         * If *src2* is None, and *id2* != 0, it is assumed that both *id1* and *id2* belong to *src1*.
+
+        * Warning: currently implemented only the case when the first operand is node(s)
+        *          (either *src1* contains only nodes or id1!=0 and isElem1==False).
 
         Parameters:
                 src1 (SMESH.SMESH_IDSource): first source object
@@ -1434,6 +1440,8 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         aMeasurements = self.CreateMeasurements()
         unRegister.set( aMeasurements )
         result = aMeasurements.MinDistance(src1, src2)
+        if (result.value < 0.0):
+            result = None
         return result
 
     def BoundingBox(self, objects):
@@ -4143,6 +4151,8 @@ class Mesh(metaclass = MeshMeta):
         """
         Get minimum distance between two nodes, elements or distance to the origin
 
+        * Warning: currently implemented only for isElem1==False.
+
         Parameters:
                 id1: first node/element id
                 id2: second node/element id (if 0, distance from *id1* to the origin is computed)
@@ -4150,7 +4160,7 @@ class Mesh(metaclass = MeshMeta):
                 isElem2: *True* if *id2* is element id, *False* if it is node id
 
         Returns:
-            minimum distance value
+            minimum distance value, negative value in case of failure
         See Also:
             :meth:`GetMinDistance`
         """
@@ -4162,6 +4172,8 @@ class Mesh(metaclass = MeshMeta):
         """
         Get :class:`SMESH.Measure` structure specifying minimum distance data between two objects
 
+        * Warning: currently implemented only for isElem1==False.
+
         Parameters:
                 id1: first node/element id
                 id2: second node/element id (if 0, distance from *id1* to the origin is computed)
@@ -4169,7 +4181,7 @@ class Mesh(metaclass = MeshMeta):
                 isElem2: *True* if *id2* is element id, *False* if it is node id
 
         Returns:
-            :class:`SMESH.Measure` structure
+            :class:`SMESH.Measure` structure, SMESH.Measure.value is negative in case of failure
         See Also:
             :meth:`MinDistance`
         """

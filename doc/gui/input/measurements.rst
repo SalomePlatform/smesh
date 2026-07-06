@@ -13,7 +13,7 @@ All measurement operations are available via **Measurements** top-level menu. Ac
 Minimum Distance
 ################
 
-This operation allows measuring the distance between two objects. Currently only node-to-node and node-to-origin operations are available, but this operation will be extended in the future to support other mesh objects - elements, meshes, sub-meshes and groups.
+This operation allows measuring the distance between two objects. Currently only node is available as the first target, but this operation will be extended in the future to support other mesh objects - elements, meshes, sub-meshes and groups.
 
 To start **Minimum Distance** operation, select **Minimum Distance** tab in **Measurements** dialog.
 
@@ -25,9 +25,9 @@ Choose the first and the second target by switching the corresponding radio butt
 The following targets are supported:
 
 * **Node:** single mesh node;
-* **Element:** single mesh element (not available in this version);
-* **Object:** mesh, sub-mesh or group object (not available in this version);
-* **Origin:** origin of the global coordinate system.
+* **Element:** single mesh element (available only for the second target in this version);
+* **Object:** mesh, sub-mesh or group object (available only for the second target in this version);
+* **Origin:** origin of the global coordinate system (available only for the second target).
 
 The result will be shown in the bottom area of the dialog. In addition, a simple preview will be shown in the 3D viewer.
 
