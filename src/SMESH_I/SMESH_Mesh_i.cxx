@@ -3281,6 +3281,16 @@ bool SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
   if ( id_smptr != _mapSubMeshIor.end() )
     SMESH::SMESH_subMesh_var( id_smptr->second );
 
+  // remove from submesh order
+  TListOfListOfInt aNewOrder;
+  for (auto subMeshIds : GetImpl().GetMeshOrder())
+  {
+    subMeshIds.remove(subMeshId);
+    if (subMeshIds.size() > 1)
+      aNewOrder.push_back(subMeshIds);
+  }
+  GetImpl().SetMeshOrder(aNewOrder);
+
   _mapSubMesh.erase(subMeshId);
   _mapSubMesh_i.erase(subMeshId);
   _mapSubMeshIor.erase(subMeshId);
@@ -7010,8 +7020,8 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
     return aResult._retn();
 
   TListOfListOfInt      anOrder = GetImpl().GetMeshOrder(); // already defined order
-  TListOfListOfInt allConurrent = findConcurrentSubMeshes();
-  anOrder.splice( anOrder.end(), allConurrent );
+  TListOfListOfInt allConcurrent = findConcurrentSubMeshes();
+  anOrder.splice( anOrder.end(), allConcurrent );
 
   bool changed;
   do {
