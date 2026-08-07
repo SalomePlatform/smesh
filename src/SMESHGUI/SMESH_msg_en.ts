@@ -48,6 +48,10 @@
         <translation>ABAQUS INP files</translation>
     </message>
     <message>
+        <source>RAD_FILES_FILTER</source>
+        <translation>RADIOSS RAD files</translation>
+    </message>
+    <message>
         <source>STRUCTUREDCGNS</source>
         <translation>Structured version (only for Hexahedron(i,j,k) and Quadrangle: Mapping meshes)</translation>
     </message>
@@ -905,6 +909,10 @@
         <translation>GEOF file</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_RAD</source>
+        <translation>RAD file</translation>
+    </message>
+    <message>
         <source>MEN_MAIL</source>
         <translation>MAIL file</translation>
     </message>
@@ -923,6 +931,10 @@
     <message>
         <source>MEN_GEOF</source>
         <translation>GEOF file</translation>
+    </message>
+    <message>
+        <source>MEN_RAD</source>
+        <translation>RAD file</translation>
     </message>
     <message>
         <source>MEN_IMPORT_CGNS</source>

@@ -47,6 +47,7 @@ namespace SMESHOp {
     OpImportCDB              = 1110,   // MENU FILE - IMPORT - CDB FILE
     OpImportASC              = 1111,   // MENU FILE - IMPORT - ASC FILE
     OpImportGEOF             = 1112,   // MENU FILE - IMPORT - GEOF FILE
+    OpImportRAD              = 1113,   // MENU FILE - IMPORT - RAD FILE
     OpPopupImportDAT         = 1120,   // POPUP MENU - IMPORT - DAT FILE
     OpPopupImportUNV         = 1121,   // POPUP MENU - IMPORT - UNV FILE
     OpPopupImportMED         = 1122,   // POPUP MENU - IMPORT - MED FILE
@@ -58,6 +59,7 @@ namespace SMESHOp {
     OpPopupImportCDB         = 1130,   // MENU FILE - IMPORT - INP FILE
     OpPopupImportASC         = 1131,   // MENU FILE - IMPORT - INP FILE
     OpPopupImportGEOF        = 1132,   // MENU FILE - IMPORT - INP FILE
+    OpPopupImportRAD         = 1133,   // MENU FILE - IMPORT - RAD FILE
     // Export -------------------------//--------------------------------
     OpExportDAT              = 1200,   // MENU FILE  - EXPORT - DAT FILE
     OpExportMED              = 1201,   // MENU FILE  - EXPORT - MED FILE

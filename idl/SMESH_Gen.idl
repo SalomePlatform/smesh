@@ -347,6 +347,13 @@ module SMESH
     mesh_array CreateMeshesFromGEOF( in string theFileName,
                                     out SMESH::DriverMED_ReadStatus theStatus )
       raises ( SALOME_CMOD::SALOME_Exception );
+      
+    /*!
+     * Create Mesh object(s) importing data from given RAD (radiaoss) file
+     */
+    mesh_array CreateMeshesFromRAD( in string theFileName,
+                                    out SMESH::DriverMED_ReadStatus theStatus )
+      raises ( SALOME_CMOD::SALOME_Exception );
 
     /*!
      * Create Mesh object importing data from given STL file

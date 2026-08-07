@@ -299,6 +299,10 @@ namespace
               theCommandID == SMESHOp::OpPopupImportGEOF ) {
       filter.append( QObject::tr( "GEOF_FILES_FILTER" ) + " (*.geof)" );
       }
+    else if ( theCommandID == SMESHOp::OpImportRAD ||
+              theCommandID == SMESHOp::OpPopupImportRAD ) {
+      filter.append( QObject::tr( "RAD_FILES_FILTER" ) + " (*.rad)" );
+      }
     QString anInitialPath = "";
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
       anInitialPath = QDir::currentPath();
@@ -475,6 +479,18 @@ namespace
               // INP format
               SMESH::DriverMED_ReadStatus res;
               aMeshes = theComponentMesh->CreateMeshesFromGEOF( filename.toUtf8().constData(), res );
+              if ( res != SMESH::DRS_OK ) {
+                errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                               arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
+              }
+              break;
+            }
+          case SMESHOp::OpImportRAD:
+          case SMESHOp::OpPopupImportRAD:
+            {
+              // INP format
+              SMESH::DriverMED_ReadStatus res;
+              aMeshes = theComponentMesh->CreateMeshesFromRAD( filename.toUtf8().constData(), res );
               if ( res != SMESH::DRS_OK ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
@@ -2845,6 +2861,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpImportCDB:
   case SMESHOp::OpImportASC:
   case SMESHOp::OpImportGEOF:
+  case SMESHOp::OpImportRAD:
   case SMESHOp::OpPopupImportDAT:
   case SMESHOp::OpPopupImportUNV:
   case SMESHOp::OpPopupImportMED:
@@ -2856,6 +2873,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpPopupImportCDB:
   case SMESHOp::OpPopupImportASC:
   case SMESHOp::OpPopupImportGEOF:
+  case SMESHOp::OpPopupImportRAD:
     {
       if(isStudyLocked()) break;
       ::ImportMeshesFromFile(GetSMESHGen(),theCommandID);
@@ -4435,6 +4453,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpImportCDB, "IMPORT_CDB" );
   createSMESHAction( SMESHOp::OpImportASC, "IMPORT_ASC" );
   createSMESHAction( SMESHOp::OpImportGEOF, "IMPORT_GEOF" );
+  createSMESHAction( SMESHOp::OpImportRAD, "IMPORT_RAD" );
 #ifdef WITH_CGNS
   createSMESHAction( SMESHOp::OpImportCGNS, "IMPORT_CGNS" );
 #endif
@@ -4448,6 +4467,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpPopupImportCDB, "IMPORT_CDB");
   createSMESHAction( SMESHOp::OpPopupImportASC, "IMPORT_ASC");
   createSMESHAction( SMESHOp::OpPopupImportGEOF, "IMPORT_GEOF");
+  createSMESHAction( SMESHOp::OpPopupImportRAD, "IMPORT_RAD");
 #ifdef WITH_CGNS
   createSMESHAction( SMESHOp::OpPopupImportCGNS, "IMPORT_CGNS" );
 #endif
@@ -4722,6 +4742,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpImportCDB,  importId, -1 );
   createMenu( SMESHOp::OpImportASC,  importId, -1 );
   createMenu( SMESHOp::OpImportGEOF,  importId, -1 );
+  createMenu( SMESHOp::OpImportRAD,  importId, -1 );
 #ifdef WITH_CGNS
   createMenu( SMESHOp::OpImportCGNS, importId, -1 );
 #endif
@@ -5171,6 +5192,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( SMESHOp::OpPopupImportCDB,  OB, smesh, "", anId );
   createPopupItem( SMESHOp::OpPopupImportASC,  OB, smesh, "", anId );
   createPopupItem( SMESHOp::OpPopupImportGEOF,  OB, smesh, "", anId );
+  createPopupItem( SMESHOp::OpPopupImportRAD,  OB, smesh, "", anId );
 #ifdef WITH_CGNS
   createPopupItem( SMESHOp::OpPopupImportCGNS, OB, smesh, "", anId );
 #endif

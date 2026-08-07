@@ -273,6 +273,10 @@ public:
   SMESH::mesh_array* CreateMeshesFromGEOF( const char* theFileName,
                                           SMESH::DriverMED_ReadStatus& theStatus ) override;
 
+  //  Create mesh(es) and import data from RAD (radioss) file
+  SMESH::mesh_array* CreateMeshesFromRAD( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus ) override;
+
   //  Create a mesh and import data from a STL file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName );
 

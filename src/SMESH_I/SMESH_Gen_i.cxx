@@ -1880,6 +1880,12 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromGEOF( const char*               
   return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromGeofToMEDFile" );
 }
 
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromRAD( const char* theFileName,
+                                                    SMESH::DriverMED_ReadStatus& theStatus )
+{
+  return CreateMeshesFromMEDConverterInMedcoupling( theFileName, theStatus, "ConvertFromRadiossToMEDFile" );
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CreateMeshFromSTL

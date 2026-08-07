@@ -44,6 +44,10 @@
         <translation>Fichiers ABAQUS INP</translation>
     </message>
     <message>
+        <source>RAD_FILES_FILTER</source>
+        <translation>Fichiers RADIOSS RAD</translation>
+    </message>
+    <message>
         <source>CGNS_EXPORT_ELEMS_BY_TYPE</source>
         <translation>Groupe les éléments par type</translation>
     </message>
@@ -901,6 +905,10 @@
         <translation>Fichier GEOF</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_RAD</source>
+        <translation>Fichier RAD</translation>
+    </message>
+    <message>
         <source>MEN_MAIL</source>
         <translation>Fichier MAIL</translation>
     </message>
@@ -919,6 +927,10 @@
     <message>
         <source>MEN_GEOF</source>
         <translation>Fichier GEOF</translation>
+    </message>
+    <message>
+        <source>MEN_RAD</source>
+        <translation>Fichier RAD</translation>
     </message>
     <message>
         <source>MEN_IMPORT_CGNS</source>
