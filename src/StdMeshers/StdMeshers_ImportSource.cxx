@@ -363,8 +363,9 @@ void StdMeshers_ImportSource1D::resultGroupsToIntVec()
   TResGroupMap::iterator key2groups = _resultGroups.begin();
   for ( ; key2groups != _resultGroups.end(); ++key2groups )
   {
-    const pair<int, int>&          key = key2groups->first;
-    const vector<SMESH_Group*>& groups = key2groups->second;
+    const pair<int, int>&   key = key2groups->first;
+    vector<SMESH_Group*> groups = getValidGroups(key2groups->second,
+                                                 _gen->GetStudyContext());
     // mesh ids, nb groups
     _resultGroupsStorage.push_back( key.first );
     _resultGroupsStorage.push_back( key.second );
