@@ -78,6 +78,7 @@
 
 #include "SMESH_DriverUNV.hxx"
 
+#include <fstream>
 #include <string>
 #include <vector>
 

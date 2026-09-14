@@ -67,6 +67,7 @@
 
 #include "SMESH_DriverUNV.hxx"
 
+#include <fstream>
 #include <string>
 
 namespace UNV164
