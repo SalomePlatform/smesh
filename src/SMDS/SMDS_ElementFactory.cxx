@@ -553,7 +553,21 @@ SMDS_ElementChunk::SMDS_ElementChunk( SMDS_ElementFactory* factory, smIdType id0
 
 SMDS_ElementChunk::~SMDS_ElementChunk()
 {
+#if defined(__APPLE__)
+  // Delete the array with its real element type: deleting an array of
+  // SMDS_MeshNode/SMDS_MeshCell through a SMDS_MeshElement* is undefined
+  // behaviour. As SMDS_MeshElement is abstract, clang concludes that the
+  // destructor loop is unreachable: on Linux it is silently dropped, on macOS
+  // arm64 unreachable code is a trap (brk #1) => crash in SMESH_Mesh::Clear().
+  if ( !myFactory )
+    return;
+  if ( myFactory->myIsNodal )
+    delete [] static_cast< SMDS_MeshNode* >( myElements );
+  else
+    delete [] static_cast< SMDS_MeshCell* >( myElements );
+#else
   delete [] myElements;
+#endif
   myFactory->myChunksWithUnused.erase( this );
 }
 

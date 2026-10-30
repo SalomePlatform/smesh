@@ -24,6 +24,11 @@
 // Created   : Fri Nov 18 13:20:10 2005
 // Author    : Edward AGAPOV (eap)
 //
+
+#if defined(__APPLE__) && defined(__arm64__)
+#include <mach/arm/thread_status.h>
+#endif
+
 #include "SMESH_2smeshpy.hxx"
 
 #include "SMESH_PythonDump.hxx"

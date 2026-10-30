@@ -22,6 +22,10 @@
 //  File   : SMESHGUI.cxx
 //  Author : Nicolas REJNERI, Open CASCADE S.A.S.
 
+#if defined(__APPLE__) && defined(__arm64__)
+#include <mach/arm/thread_status.h>
+#endif
+
 #include <Basics_OCCTVersion.hxx>
 
 #if OCC_VERSION_LARGE < 0x07080000

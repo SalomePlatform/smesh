@@ -21,6 +21,11 @@
 // Author : Open CASCADE S.A.S. (dmv)
 // SMESH includes
 //
+
+#if defined(__APPLE__) && defined(__arm64__)
+#include <mach/arm/thread_status.h>
+#endif
+
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 // SMESH Includes

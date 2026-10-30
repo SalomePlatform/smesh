@@ -22,6 +22,10 @@
 //  File   : SMESHGUI_MeshOp.cxx
 //  Author : Sergey LITONIN, Open CASCADE S.A.S.
 
+#if defined(__APPLE__) && defined(__arm64__)
+#include <mach/arm/thread_status.h>
+#endif
+
 // SMESH includes
 #include "SMESHGUI_MeshOp.h"
 

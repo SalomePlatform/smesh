@@ -24,6 +24,10 @@
 // Author    : Edward AGAPOV (eap)
 //
 
+#if defined(__APPLE__) && defined(__arm64__)
+#include <mach/arm/thread_status.h>
+#endif
+
 #include "SMESH_PreMeshInfo.hxx"
 
 #include "DriverMED.hxx"

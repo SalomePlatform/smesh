@@ -20,6 +20,11 @@
 // File      : SMESH_NoteBook.cxx
 // Author    : Roman NIKOLAEV
 //
+
+#if defined(__APPLE__) && defined(__arm64__)
+#include <mach/arm/thread_status.h>
+#endif
+
 #include "SMESH_2smeshpy.hxx"
 #include "SMESH_NoteBook.hxx"
 #include "SMESH_Gen_i.hxx"

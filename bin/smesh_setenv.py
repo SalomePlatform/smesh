@@ -64,8 +64,15 @@ def set_env(args):
 
                     # setup environment needed for plugin
                     add_path(osp.join(plugin_root, 'bin', salome_subdir), 'PATH')
-                    add_path(osp.join(plugin_root, get_lib_dir(), salome_subdir), 'PATH' \
-                                 if sys.platform == 'win32' else 'LD_LIBRARY_PATH')
+
+                    if sys.platform == 'win32':
+                        lib_path_var = 'PATH'
+                    elif sys.platform == 'darwin':
+                        lib_path_var = 'DYLD_LIBRARY_PATH'
+                    else:
+                        lib_path_var = 'LD_LIBRARY_PATH'
+                    add_path(osp.join(plugin_root, get_lib_dir(), salome_subdir), lib_path_var)
+
                     add_path(osp.join(plugin_root, 'bin', salome_subdir), 'PYTHONPATH')
                     add_path(osp.join(plugin_root, get_lib_dir(), salome_subdir), 'PYTHONPATH')
                     add_path(osp.join(plugin_root, get_lib_dir(), py_version, 'site-packages',

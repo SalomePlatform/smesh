@@ -17,6 +17,10 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+#if defined(__APPLE__) && defined(__arm64__)
+#include <mach/arm/thread_status.h>
+#endif
+
 #include "SMESHGUI_MgAdaptDlg.h"
 
 #include "MED_Factory.hxx"
